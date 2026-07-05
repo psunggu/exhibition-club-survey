@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>전시 및 공연 동호회</title>
+  <meta name="description" content="전시 및 공연 동호회 모바일 안내 페이지" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero card">
+      <p class="eyebrow">40대 교회 청년회</p>
+      <h1>전시 및 공연 동호회</h1>
+      <p class="subtitle">함께 보고, 즐기고, 나누는 문화생활 모임</p>
+      <div class="hero-actions">
+        <a class="button primary" id="attendanceLink" href="#" target="_blank" rel="noopener">7월 참석 투표하기</a>
+        <a class="button secondary" id="recommendLink" href="#" target="_blank" rel="noopener">전시·공연 추천하기</a>
+      </div>
+      <p class="small" id="lastUpdated"></p>
+    </section>
+
+    <section class="card">
+      <h2>7월 정기 관람</h2>
+      <p class="event-title">퐁피두센터 한화 63빌딩 《큐비스트》</p>
+      <div class="schedule-grid">
+        <article class="schedule-item">
+          <span class="badge">주말 관람</span>
+          <h3>7.11.(토) 16:00</h3>
+          <p>관람료 28,000원</p>
+        </article>
+        <article class="schedule-item">
+          <span class="badge discount">문화의날</span>
+          <h3>7.29.(수) 19:00</h3>
+          <p>관람료 14,000원<br />마지막 주 수요일 50% 할인</p>
+        </article>
+      </div>
+      <p class="notice">각자 가능한 날짜에 투표해서 관람합니다. 같은 전시를 주말/평일로 나누어 참여 장벽을 낮춥니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>운영 흐름</h2>
+      <ol class="timeline">
+        <li><strong>첫째 주</strong><span>보고 싶은 전시·공연 제안</span></li>
+        <li><strong>둘째 주</strong><span>제안 후보 중 투표</span></li>
+        <li><strong>셋째 주</strong><span>관람 일시 투표</span></li>
+        <li><strong>넷째 주</strong><span>전시회 및 일시 확정 안내</span></li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>자율 관람</h2>
+      <p>국립현대미술관, 서울시립미술관 전시는 희망자끼리 자유롭게 관람합니다. 그 외 가고 싶은 전시나 공연도 누구나 편하게 제안할 수 있습니다.</p>
+      <a class="button full" id="recommendLink2" href="#" target="_blank" rel="noopener">내가 보고 싶은 전시 제안하기</a>
+    </section>
+
+    <section class="card">
+      <h2>전시 참고 링크</h2>
+      <div class="link-list">
+        <a href="https://artandculture.kr/exhibition/kr.php" target="_blank" rel="noopener">아트앤컬처 전시 캘린더</a>
+        <a href="https://www.nmf.or.kr/user/yearcal/year_list.do" target="_blank" rel="noopener">국립박물관문화재단 연간 일정</a>
+        <a href="https://www.mmca.go.kr/exhibitions/progressList.do" target="_blank" rel="noopener">국립현대미술관</a>
+        <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
+        <a href="https://www.leeumhoam.org/leeum" target="_blank" rel="noopener">리움미술관</a>
+        <a href="https://www.sac.or.kr/site/main/home" target="_blank" rel="noopener">예술의전당</a>
+        <a href="https://apma.amorepacific.com/index.do" target="_blank" rel="noopener">아모레퍼시픽미술관</a>
+      </div>
+    </section>
+
+    <section class="card muted">
+      <h2>개인정보 안내</h2>
+      <p>설문 응답은 전시 및 공연 동호회 운영을 위한 참석 일정 확인과 전시 추천 관리를 목적으로만 사용합니다. 수집 항목은 이름, 카카오톡 이름, 참석 가능 일정, 추천 전시 정보, 기타 의견입니다.</p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    const config = window.CLUB_CONFIG || {};
+    const attendanceUrl = config.attendanceFormUrl || '#';
+    const recommendUrl = config.recommendFormUrl || '#';
+
+    document.querySelectorAll('#attendanceLink').forEach((el) => { el.href = attendanceUrl; });
+    document.querySelectorAll('#recommendLink, #recommendLink2').forEach((el) => { el.href = recommendUrl; });
+
+    const updated = document.getElementById('lastUpdated');
+    if (updated && config.lastUpdated) {
+      updated.textContent = `마지막 업데이트: ${config.lastUpdated}`;
+    }
+  </script>
+</body>
+</html>
