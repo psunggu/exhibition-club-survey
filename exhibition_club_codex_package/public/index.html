@@ -3,89 +3,246 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>전시 및 공연 동호회</title>
-  <meta name="description" content="전시 및 공연 동호회 모바일 안내 페이지" />
+  <title>서울 공연·전시 공유 보드</title>
+  <meta name="description" content="서울 공연과 전시 정보를 동호회에서 모아 보고 공유하는 웹 보드" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="page">
-    <section class="hero card">
-      <p class="eyebrow">40대 교회 청년회</p>
-      <h1>전시 및 공연 동호회</h1>
-      <p class="subtitle">함께 보고, 즐기고, 나누는 문화생활 모임</p>
-      <div class="hero-actions">
-        <a class="button primary" id="attendanceLink" href="#" target="_blank" rel="noopener">7월 참석 투표하기</a>
-        <a class="button secondary" id="recommendLink" href="#" target="_blank" rel="noopener">전시·공연 추천하기</a>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">서울 문화 모임</p>
+        <h1>공연·전시 공유 보드</h1>
       </div>
-      <p class="small" id="lastUpdated"></p>
-    </section>
-
-    <section class="card">
-      <h2>7월 정기 관람</h2>
-      <p class="event-title">퐁피두센터 한화 63빌딩 《큐비스트》</p>
-      <div class="schedule-grid">
-        <article class="schedule-item">
-          <span class="badge">주말 관람</span>
-          <h3>7.11.(토) 16:00</h3>
-          <p>관람료 28,000원</p>
-        </article>
-        <article class="schedule-item">
-          <span class="badge discount">문화의날</span>
-          <h3>7.29.(수) 19:00</h3>
-          <p>관람료 14,000원<br />마지막 주 수요일 50% 할인</p>
-        </article>
+      <div class="top-actions">
+        <a class="ghost-link" id="sheetLink" href="https://docs.google.com/spreadsheets/d/1fOCPUeYC7h2mbnwwmmVAUlS21eylfYUBpot_RWiYNW0/edit?usp=drivesdk" target="_blank" rel="noopener">Google Sheets</a>
+        <button class="button secondary" id="exportCsvButton" type="button">CSV 내보내기</button>
+        <button class="button primary" id="openFormButton" type="button">새 정보 추가</button>
       </div>
-      <p class="notice">각자 가능한 날짜에 투표해서 관람합니다. 같은 전시를 주말/평일로 나누어 참여 장벽을 낮춥니다.</p>
+    </header>
+
+    <section class="summary-grid" aria-label="공유 현황">
+      <article class="metric">
+        <span>전체 등록</span>
+        <strong id="metricTotal">0</strong>
+      </article>
+      <article class="metric">
+        <span>관람 예정</span>
+        <strong id="metricPlanned">0</strong>
+      </article>
+      <article class="metric">
+        <span>무료·초대</span>
+        <strong id="metricFree">0</strong>
+      </article>
+      <article class="metric">
+        <span>평균 평점</span>
+        <strong id="metricRating">-</strong>
+      </article>
     </section>
 
-    <section class="card">
-      <h2>운영 흐름</h2>
-      <ol class="timeline">
-        <li><strong>첫째 주</strong><span>보고 싶은 전시·공연 제안</span></li>
-        <li><strong>둘째 주</strong><span>제안 후보 중 투표</span></li>
-        <li><strong>셋째 주</strong><span>관람 일시 투표</span></li>
-        <li><strong>넷째 주</strong><span>전시회 및 일시 확정 안내</span></li>
-      </ol>
+    <section class="toolbar" aria-label="검색 및 필터">
+      <label class="search-box">
+        <span>검색</span>
+        <input id="searchInput" type="search" placeholder="행사명, 장소, 내용, 추천 포인트" autocomplete="off" />
+      </label>
+      <label>
+        <span>지역</span>
+        <select id="regionFilter">
+          <option value="">전체</option>
+        </select>
+      </label>
+      <label>
+        <span>구분</span>
+        <select id="typeFilter">
+          <option value="">전체</option>
+        </select>
+      </label>
+      <label>
+        <span>상태</span>
+        <select id="statusFilter">
+          <option value="">전체</option>
+        </select>
+      </label>
+      <label>
+        <span>주차</span>
+        <select id="parkingFilter">
+          <option value="">전체</option>
+        </select>
+      </label>
+      <button class="button tertiary" id="resetButton" type="button">초기화</button>
     </section>
 
-    <section class="card">
-      <h2>자율 관람</h2>
-      <p>국립현대미술관, 서울시립미술관 전시는 희망자끼리 자유롭게 관람합니다. 그 외 가고 싶은 전시나 공연도 누구나 편하게 제안할 수 있습니다.</p>
-      <a class="button full" id="recommendLink2" href="#" target="_blank" rel="noopener">내가 보고 싶은 전시 제안하기</a>
-    </section>
+    <section class="content-layout">
+      <aside class="guide-panel" aria-label="공유 전 확인">
+        <h2>공유 전 확인</h2>
+        <ul class="check-list">
+          <li>공식 링크와 지도 링크를 함께 남겼는지 확인</li>
+          <li>시작일, 종료일, 관람 후보일을 날짜로 입력</li>
+          <li>가격은 정가 기준, 할인은 별도 메모</li>
+          <li>주차 가능 여부와 대중교통 메모 분리</li>
+          <li>관람 후 평점과 근거 업데이트</li>
+        </ul>
+        <div class="source-block">
+          <h3>추천 확인처</h3>
+          <a href="https://www.mmca.go.kr/exhibitions/progressList.do" target="_blank" rel="noopener">국립현대미술관</a>
+          <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
+          <a href="https://www.sac.or.kr/site/main/home" target="_blank" rel="noopener">예술의전당</a>
+          <a href="https://www.ntok.go.kr/kr/Main/Index" target="_blank" rel="noopener">국립극장</a>
+        </div>
+      </aside>
 
-    <section class="card">
-      <h2>전시 참고 링크</h2>
-      <div class="link-list">
-        <a href="https://artandculture.kr/exhibition/kr.php" target="_blank" rel="noopener">아트앤컬처 전시 캘린더</a>
-        <a href="https://www.nmf.or.kr/user/yearcal/year_list.do" target="_blank" rel="noopener">국립박물관문화재단 연간 일정</a>
-        <a href="https://www.mmca.go.kr/exhibitions/progressList.do" target="_blank" rel="noopener">국립현대미술관</a>
-        <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
-        <a href="https://www.leeumhoam.org/leeum" target="_blank" rel="noopener">리움미술관</a>
-        <a href="https://www.sac.or.kr/site/main/home" target="_blank" rel="noopener">예술의전당</a>
-        <a href="https://apma.amorepacific.com/index.do" target="_blank" rel="noopener">아모레퍼시픽미술관</a>
-      </div>
-    </section>
+      <section class="event-area" aria-labelledby="eventListTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">목록</p>
+            <h2 id="eventListTitle">공유할 공연·전시</h2>
+          </div>
+          <p id="resultCount" class="result-count">0건</p>
+        </div>
 
-    <section class="card muted">
-      <h2>개인정보 안내</h2>
-      <p>설문 응답은 전시 및 공연 동호회 운영을 위한 참석 일정 확인과 전시 추천 관리를 목적으로만 사용합니다. 수집 항목은 이름, 카카오톡 이름, 참석 가능 일정, 추천 전시 정보, 기타 의견입니다.</p>
+        <div class="table-wrap" role="region" aria-label="공연 및 전시 목록" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th>상태</th>
+                <th>구분</th>
+                <th>행사명</th>
+                <th>지역</th>
+                <th>일자</th>
+                <th>관람료</th>
+                <th>주차</th>
+                <th>평점</th>
+                <th>담당</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="eventRows"></tbody>
+          </table>
+        </div>
+
+        <div class="cards" id="eventCards" aria-label="모바일 목록"></div>
+        <p class="empty-state" id="emptyState" hidden>조건에 맞는 정보가 없습니다.</p>
+      </section>
     </section>
   </main>
 
+  <dialog id="eventDialog">
+    <form id="eventForm" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">정보 입력</p>
+          <h2 id="dialogTitle">새 공연·전시 추가</h2>
+        </div>
+        <button class="icon-button" id="closeDialogButton" type="button" aria-label="닫기">×</button>
+      </div>
+
+      <input id="eventId" type="hidden" />
+
+      <div class="form-grid">
+        <label>
+          <span>상태</span>
+          <select id="status" required></select>
+        </label>
+        <label>
+          <span>지역</span>
+          <select id="region" required></select>
+        </label>
+        <label>
+          <span>구분</span>
+          <select id="type" required></select>
+        </label>
+        <label>
+          <span>행사명</span>
+          <input id="title" type="text" required placeholder="공식 행사명" />
+        </label>
+        <label>
+          <span>장르·분야</span>
+          <input id="genre" type="text" placeholder="현대미술, 클래식, 연극" />
+        </label>
+        <label>
+          <span>시작일</span>
+          <input id="startDate" type="date" required />
+        </label>
+        <label>
+          <span>종료일</span>
+          <input id="endDate" type="date" required />
+        </label>
+        <label>
+          <span>관람일 후보</span>
+          <input id="visitDate" type="date" />
+        </label>
+        <label>
+          <span>시간</span>
+          <input id="time" type="text" placeholder="19:30 또는 10:00-18:00" />
+        </label>
+        <label>
+          <span>장소명</span>
+          <input id="venue" type="text" placeholder="공연장/전시장" />
+        </label>
+        <label class="wide">
+          <span>주소</span>
+          <input id="address" type="text" placeholder="서울시 ..." />
+        </label>
+        <label>
+          <span>관람료</span>
+          <input id="price" type="number" min="0" step="1000" placeholder="0" />
+        </label>
+        <label>
+          <span>할인·무료</span>
+          <select id="priceType"></select>
+        </label>
+        <label>
+          <span>주차 여부</span>
+          <select id="parking"></select>
+        </label>
+        <label>
+          <span>동행 난이도</span>
+          <select id="difficulty"></select>
+        </label>
+        <label>
+          <span>평점</span>
+          <select id="rating"></select>
+        </label>
+        <label>
+          <span>담당자</span>
+          <input id="owner" type="text" />
+        </label>
+        <label class="wide">
+          <span>예매·정보 링크</span>
+          <input id="infoUrl" type="url" placeholder="https://..." />
+        </label>
+        <label class="wide">
+          <span>위치 링크</span>
+          <input id="mapUrl" type="url" placeholder="https://map..." />
+        </label>
+        <label class="wide">
+          <span>내용 요약</span>
+          <textarea id="summary" rows="3" placeholder="핵심 내용과 관람 포인트를 2~3문장으로 정리"></textarea>
+        </label>
+        <label class="wide">
+          <span>추천 포인트</span>
+          <textarea id="recommendation" rows="2"></textarea>
+        </label>
+        <label class="wide">
+          <span>주의사항·주차 메모</span>
+          <textarea id="notes" rows="2"></textarea>
+        </label>
+        <label class="wide">
+          <span>평점 근거</span>
+          <textarea id="ratingReason" rows="2"></textarea>
+        </label>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="button danger" id="deleteButton" type="button" hidden>삭제</button>
+        <span></span>
+        <button class="button tertiary" id="cancelButton" type="button">취소</button>
+        <button class="button primary" type="submit">저장</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="config.js"></script>
-  <script>
-    const config = window.CLUB_CONFIG || {};
-    const attendanceUrl = config.attendanceFormUrl || '#';
-    const recommendUrl = config.recommendFormUrl || '#';
-
-    document.querySelectorAll('#attendanceLink').forEach((el) => { el.href = attendanceUrl; });
-    document.querySelectorAll('#recommendLink, #recommendLink2').forEach((el) => { el.href = recommendUrl; });
-
-    const updated = document.getElementById('lastUpdated');
-    if (updated && config.lastUpdated) {
-      updated.textContent = `마지막 업데이트: ${config.lastUpdated}`;
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
