@@ -8,6 +8,8 @@ const options = {
 };
 
 const storageKey = "seoul-culture-board-events-v1";
+const config = window.CLUB_CONFIG || {};
+const supabase = createSupabaseClient(config);
 
 const sampleEvents = [
   {
@@ -99,7 +101,7 @@ const fields = [
   "infoUrl", "mapUrl", "summary", "recommendation", "notes", "ratingReason",
 ];
 
-let events = loadEvents();
+let events = [];
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -123,7 +125,7 @@ const elements = {
 
 init();
 
-function init() {
+async function init() {
   applyConfig();
   populateSelect("#regionFilter", options.regions, true);
   populateSelect("#typeFilter", options.types, true);
@@ -150,11 +152,11 @@ function init() {
     control.addEventListener("change", render);
   });
 
+  events = await loadEvents();
   render();
 }
 
 function applyConfig() {
-  const config = window.CLUB_CONFIG || {};
   if (config.sheetUrl) {
     $("#sheetLink").href = config.sheetUrl;
   }
@@ -171,7 +173,16 @@ function populateSelect(selector, values, includeAll = false, placeholder = "") 
   values.forEach((value) => select.append(new Option(value, value)));
 }
 
-function loadEvents() {
+async function loadEvents() {
+  if (supabase) {
+    try {
+      const remoteEvents = await supabase.list();
+      return remoteEvents;
+    } catch (error) {
+      console.warn("Supabase load failed. Falling back to local data.", error);
+    }
+  }
+
   try {
     const saved = localStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : sampleEvents;
@@ -336,7 +347,7 @@ function closeDialog() {
   elements.form.reset();
 }
 
-function saveFromForm(event) {
+async function saveFromForm(event) {
   event.preventDefault();
   const id = $("#eventId").value || crypto.randomUUID();
   const payload = { id, updatedAt: new Date().toISOString().slice(0, 10) };
@@ -348,23 +359,43 @@ function saveFromForm(event) {
 
   payload.price = Number(payload.price || 0);
 
-  const existingIndex = events.findIndex((item) => item.id === id);
-  if (existingIndex >= 0) {
-    events[existingIndex] = payload;
-  } else {
-    events.unshift(payload);
+  try {
+    const saved = supabase
+      ? await supabase.upsert(payload)
+      : payload;
+
+    const existingIndex = events.findIndex((item) => item.id === id);
+    if (existingIndex >= 0) {
+      events[existingIndex] = saved;
+    } else {
+      events.unshift(saved);
+    }
+
+    if (!supabase) persist();
+  } catch (error) {
+    console.error("Save failed.", error);
+    alert("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    return;
   }
 
-  persist();
   closeDialog();
   render();
 }
 
-function deleteCurrentEvent() {
+async function deleteCurrentEvent() {
   const id = $("#eventId").value;
   if (!id) return;
-  events = events.filter((event) => event.id !== id);
-  persist();
+
+  try {
+    if (supabase) await supabase.remove(id);
+    events = events.filter((event) => event.id !== id);
+    if (!supabase) persist();
+  } catch (error) {
+    console.error("Delete failed.", error);
+    alert("삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    return;
+  }
+
   closeDialog();
   render();
 }
@@ -412,4 +443,116 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value);
+}
+
+function createSupabaseClient({ supabaseUrl, supabaseAnonKey }) {
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+
+  const baseUrl = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/events`;
+  const headers = {
+    apikey: supabaseAnonKey,
+    Authorization: `Bearer ${supabaseAnonKey}`,
+    "Content-Type": "application/json",
+  };
+
+  async function request(path = "", init = {}) {
+    const response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      headers: {
+        ...headers,
+        Prefer: "return=representation",
+        ...(init.headers || {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Supabase ${response.status}: ${await response.text()}`);
+    }
+
+    if (response.status === 204) return null;
+    return response.json();
+  }
+
+  return {
+    async list() {
+      const rows = await request("?select=*&order=visit_date.asc.nullslast&order=start_date.asc.nullslast");
+      return rows.map(fromDbEvent);
+    },
+    async upsert(event) {
+      const isExisting = events.some((item) => item.id === event.id);
+      const payload = toDbEvent(event);
+      const rows = isExisting
+        ? await request(`?id=eq.${encodeURIComponent(event.id)}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          })
+        : await request("", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+      return fromDbEvent(rows[0]);
+    },
+    async remove(id) {
+      await request(`?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    },
+  };
+}
+
+function toDbEvent(event) {
+  return {
+    id: event.id,
+    status: event.status || "검토중",
+    region: event.region || "서울 전체",
+    type: event.type || "전시",
+    title: event.title,
+    genre: event.genre || null,
+    start_date: event.startDate || null,
+    end_date: event.endDate || null,
+    visit_date: event.visitDate || null,
+    time: event.time || null,
+    venue: event.venue || null,
+    address: event.address || null,
+    price: Number(event.price || 0),
+    price_type: event.priceType || "유료",
+    parking: event.parking || "확인 필요",
+    difficulty: event.difficulty || "가볍게",
+    rating: event.rating ? Number(event.rating) : null,
+    owner: event.owner || null,
+    info_url: event.infoUrl || null,
+    map_url: event.mapUrl || null,
+    summary: event.summary || null,
+    recommendation: event.recommendation || null,
+    notes: event.notes || null,
+    rating_reason: event.ratingReason || null,
+  };
+}
+
+function fromDbEvent(row) {
+  return {
+    id: row.id,
+    status: row.status,
+    region: row.region,
+    type: row.type,
+    title: row.title,
+    genre: row.genre || "",
+    startDate: row.start_date || "",
+    endDate: row.end_date || "",
+    visitDate: row.visit_date || "",
+    time: row.time || "",
+    venue: row.venue || "",
+    address: row.address || "",
+    price: row.price || 0,
+    priceType: row.price_type,
+    parking: row.parking,
+    difficulty: row.difficulty,
+    rating: row.rating ? String(Number(row.rating)) : "",
+    owner: row.owner || "",
+    infoUrl: row.info_url || "",
+    mapUrl: row.map_url || "",
+    summary: row.summary || "",
+    recommendation: row.recommendation || "",
+    notes: row.notes || "",
+    ratingReason: row.rating_reason || "",
+    updatedAt: String(row.updated_at || "").slice(0, 10),
+  };
 }
