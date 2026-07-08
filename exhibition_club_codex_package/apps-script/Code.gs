@@ -7,70 +7,91 @@
  * 3. 이 파일 내용을 Code.gs에 붙여넣기
  * 4. setupClubSurveySystem() 실행
  * 5. 권한 승인
- * 6. 실행 로그 또는 생성된 Sheet의 [설정] 시트에서 링크 확인
+ * 6. 생성된 Sheet의 [설정] 시트에서 Form 응답 URL 2개 확인
  */
 
 function setupClubSurveySystem() {
   const clubName = '전시 및 공연 동호회';
   const monthLabel = '2026년 7월';
+  const eventName = '퐁피두센터 한화 63빌딩 《큐비스트》';
 
   const spreadsheet = SpreadsheetApp.create(`${clubName} 운영 관리 시트`);
   const spreadsheetId = spreadsheet.getId();
 
-  setupBaseSheets_(spreadsheet);
+  setupBaseSheets_(spreadsheet, eventName);
 
-  const attendanceForm = createAttendanceForm_(clubName, monthLabel, spreadsheetId);
+  const attendanceForm = createAttendanceForm_(clubName, monthLabel, eventName, spreadsheetId);
   const recommendForm = createRecommendForm_(clubName, spreadsheetId);
 
-  const settings = spreadsheet.getSheetByName('설정');
-  settings.appendRow(['항목', '값']);
-  settings.appendRow(['운영 관리 Sheet URL', spreadsheet.getUrl()]);
-  settings.appendRow(['7월 참석 설문 응답 URL', attendanceForm.getPublishedUrl()]);
-  settings.appendRow(['7월 참석 설문 편집 URL', attendanceForm.getEditUrl()]);
-  settings.appendRow(['전시·공연 추천 설문 응답 URL', recommendForm.getPublishedUrl()]);
-  settings.appendRow(['전시·공연 추천 설문 편집 URL', recommendForm.getEditUrl()]);
-  settings.autoResizeColumns(1, 2);
+  writeSettingsSheet_(spreadsheet, attendanceForm, recommendForm);
+  SpreadsheetApp.flush();
 
   Logger.log('운영 관리 Sheet URL: ' + spreadsheet.getUrl());
   Logger.log('7월 참석 설문 응답 URL: ' + attendanceForm.getPublishedUrl());
   Logger.log('전시·공연 추천 설문 응답 URL: ' + recommendForm.getPublishedUrl());
 }
 
-function setupBaseSheets_(spreadsheet) {
-  const defaultSheet = spreadsheet.getSheets()[0];
-  defaultSheet.setName('대시보드');
-  defaultSheet.getRange('A1').setValue('전시 및 공연 동호회 운영 대시보드');
-  defaultSheet.getRange('A3').setValue('사용 방법');
-  defaultSheet.getRange('A4').setValue('1. [설정] 시트에서 생성된 Google Form 링크를 확인합니다.');
-  defaultSheet.getRange('A5').setValue('2. Form 응답이 쌓이면 응답 시트가 자동 생성됩니다.');
-  defaultSheet.getRange('A6').setValue('3. 참석자 집계와 추천 전시는 월별로 확인합니다.');
-  defaultSheet.autoResizeColumns(1, 4);
+function setupBaseSheets_(spreadsheet, eventName) {
+  const dashboard = spreadsheet.getSheets()[0];
+  dashboard.setName('대시보드');
+  setRows_(dashboard, [
+    ['전시 및 공연 동호회 운영 대시보드', ''],
+    ['', ''],
+    ['이번 달 정기 관람', eventName],
+    ['주말 관람', '2026-07-11 16:00 / 28,000원'],
+    ['평일 관람', '2026-07-29 19:00 / 14,000원 / 문화의날 50% 할인'],
+    ['', ''],
+    ['운영 순서', '1. [설정] 시트의 Form 응답 URL을 public/config.js에 입력합니다.'],
+    ['', '2. 단톡방에 모바일 안내 페이지 링크를 공유합니다.'],
+    ['', '3. Form 응답 시트와 월별 운영 기록을 함께 확인합니다.']
+  ]);
+  dashboard.getRange('A1:B1').merge().setFontWeight('bold').setFontSize(14);
+  dashboard.getRange('A3:A9').setFontWeight('bold');
+  dashboard.autoResizeColumns(1, 2);
 
   const members = spreadsheet.insertSheet('회원 메모');
-  members.appendRow(['이름', '카카오톡 이름', '관심 분야', '주말 가능 여부', '평일 가능 여부', '비고']);
-  members.setFrozenRows(1);
-  members.autoResizeColumns(1, 6);
+  setRows_(members, [
+    ['이름', '카카오톡 이름', '관심 분야', '주말 가능 여부', '평일 가능 여부', '비고']
+  ]);
+  formatHeader_(members, 6);
 
   const monthly = spreadsheet.insertSheet('월별 운영 기록');
-  monthly.appendRow(['월', '정기 관람 전시', '주말 관람일', '평일 관람일', '참석자 수', '후기 공유 여부', '비고']);
-  monthly.appendRow(['2026-07', '퐁피두센터 한화 63빌딩 《큐비스트》', '2026-07-11 16:00', '2026-07-29 19:00', '', '', '첫 정기 관람']);
-  monthly.setFrozenRows(1);
-  monthly.autoResizeColumns(1, 7);
+  setRows_(monthly, [
+    ['월', '정기 관람 전시', '주말 관람일', '평일 관람일', '참석자 수', '후기 공유 여부', '비고'],
+    ['2026-07', eventName, '2026-07-11 16:00', '2026-07-29 19:00', '', '', '첫 정기 관람']
+  ]);
+  formatHeader_(monthly, 7);
 
   const candidates = spreadsheet.insertSheet('전시 후보 수동 기록');
-  candidates.appendRow(['추천일', '추천자', '전시/공연명', '장소', '기간', '관람료', '추천 이유', '관련 링크', '투표 여부', '비고']);
-  candidates.setFrozenRows(1);
-  candidates.autoResizeColumns(1, 10);
+  setRows_(candidates, [
+    ['추천일', '추천자', '전시/공연명', '장소', '기간', '관람료', '추천 이유', '관련 링크', '투표 여부', '비고']
+  ]);
+  formatHeader_(candidates, 10);
 
   spreadsheet.insertSheet('설정');
 }
 
-function createAttendanceForm_(clubName, monthLabel, spreadsheetId) {
+function writeSettingsSheet_(spreadsheet, attendanceForm, recommendForm) {
+  const settings = spreadsheet.getSheetByName('설정');
+  settings.clear();
+  setRows_(settings, [
+    ['항목', '값'],
+    ['운영 관리 Sheet URL', spreadsheet.getUrl()],
+    ['7월 참석 설문 응답 URL', attendanceForm.getPublishedUrl()],
+    ['7월 참석 설문 편집 URL', attendanceForm.getEditUrl()],
+    ['전시·공연 추천 설문 응답 URL', recommendForm.getPublishedUrl()],
+    ['전시·공연 추천 설문 편집 URL', recommendForm.getEditUrl()],
+    ['config.js 입력 위치', 'attendanceFormUrl에는 참석 설문 응답 URL, recommendFormUrl에는 추천 설문 응답 URL을 넣습니다.']
+  ]);
+  formatHeader_(settings, 2);
+}
+
+function createAttendanceForm_(clubName, monthLabel, eventName, spreadsheetId) {
   const form = FormApp.create(`${clubName} - ${monthLabel} 정기 관람 참석 설문`);
   form.setDescription(
     `${monthLabel} 정기 관람 참석 가능 일정을 확인하기 위한 설문입니다.\n` +
-    `이번 달 정기 관람은 퐁피두센터 한화 63빌딩 《큐비스트》입니다.\n` +
-    `응답은 동호회 운영 목적으로만 사용합니다.`
+    `이번 달 정기 관람은 ${eventName}입니다.\n` +
+    '응답은 동호회 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
   );
   form.setCollectEmail(false);
   form.setLimitOneResponsePerUser(false);
@@ -122,8 +143,9 @@ function createAttendanceForm_(clubName, monthLabel, spreadsheetId) {
 function createRecommendForm_(clubName, spreadsheetId) {
   const form = FormApp.create(`${clubName} - 전시·공연 추천 설문`);
   form.setDescription(
-    `함께 보고 싶은 전시, 공연, 박물관 일정을 자유롭게 추천해 주세요.\n` +
-    `추천된 내용은 월별 후보 선정과 자율 관람 안내에 활용합니다.`
+    '함께 보고 싶은 전시, 공연, 박물관 일정을 자유롭게 추천해 주세요.\n' +
+    '추천된 내용은 월별 후보 선정과 자율 관람 안내에 활용합니다.\n' +
+    '응답은 동호회 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
   );
   form.setCollectEmail(false);
   form.setLimitOneResponsePerUser(false);
@@ -147,4 +169,17 @@ function createRecommendForm_(clubName, spreadsheetId) {
     .setRequired(true);
 
   return form;
+}
+
+function setRows_(sheet, rows) {
+  sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+}
+
+function formatHeader_(sheet, columnCount) {
+  sheet.setFrozenRows(1);
+  sheet.getRange(1, 1, 1, columnCount)
+    .setFontWeight('bold')
+    .setBackground('#0f766e')
+    .setFontColor('#ffffff');
+  sheet.autoResizeColumns(1, columnCount);
 }
