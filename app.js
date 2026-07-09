@@ -1,8 +1,8 @@
 const options = {
   statuses: ["검토중", "공유완료", "관람예정", "관람완료", "보류", "취소"],
-  regions: ["서울 전체", "종로/중구", "강남/서초", "마포/서대문", "용산/성동", "송파/강동", "영등포/구로", "동대문/성북", "노원/도봉/강북", "강서/양천", "관악/동작/금천"],
+  regions: ["서울 전체", "종로/중구", "강남/서초", "마포/서대문", "용산/성동", "송파/강동", "영등포/구로", "동대문/성북", "노원/도봉/강북", "강서/양천", "관악/동작/금천", "수원/경기"],
   types: ["전시", "공연", "기타"],
-  priceTypes: ["무료", "유료", "할인 확인", "초대/이벤트"],
+  priceTypes: ["무료", "유료", "할인 확인", "초대/이벤트", "확인 필요"],
   parking: ["가능", "불가", "확인 필요"],
   difficulty: ["가볍게", "사전예약", "긴 관람"],
 };
@@ -487,6 +487,99 @@ const recommendedEvents = [
     sourceLabel: "SeMA 공식 전시 목록",
     updatedAt: "2026-07-09",
   },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010101",
+    recommendedRank: 101,
+    status: "공유완료",
+    region: "수원/경기",
+    type: "전시",
+    title: "국립농업박물관 《손끝에서 핀 나날의 꽃》",
+    genre: "소장품전, 공예, 생활문화",
+    startDate: "2026-06-09",
+    endDate: "2026-10-05",
+    visitDate: "2026-08-03",
+    time: "10:00-18:00(17:00 입장 마감), 매주 월요일 휴관. 10월 5일은 대체공휴일로 개관",
+    venue: "국립농업박물관",
+    address: "경기도 수원시 권선구 수인로 154",
+    price: 0,
+    priceType: "무료",
+    discount: "관람료 무료",
+    parking: "확인 필요",
+    docent: "전시해설 여부는 박물관 공식 안내 확인",
+    difficulty: "가볍게",
+    rating: "4",
+    owner: "수원 추천 1",
+    infoUrl: "https://www.swcf.or.kr/?curMonth=7&curYear=2026&idx=2984&listUrl=29&p=29_view&page=1&searchDetail_flag=",
+    mapUrl: "https://map.kakao.com/?q=%EA%B5%AD%EB%A6%BD%EB%86%8D%EC%97%85%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%88%98%EC%9B%90",
+    summary: "꽃이 자연에서 삶, 문화, 산업으로 이어지는 과정을 회화와 공예 등 소장품으로 살펴보는 전시입니다.",
+    recommendation: "무료 전시이고 기간이 길어 수원권 회원과 가볍게 모이기 좋습니다. 꽃과 생활문화 주제라 대화 소재도 편안합니다.",
+    notes: "수원문화재단 행사정보 기준. 주차와 도슨트는 국립농업박물관 공식 안내를 방문 전 재확인하세요.",
+    ratingReason: "무료, 긴 전시 기간, 생활문화 주제의 접근성이 좋음.",
+    sourceLabel: "수원문화재단 행사정보",
+    updatedAt: "2026-07-09",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010102",
+    recommendedRank: 102,
+    status: "공유완료",
+    region: "수원/경기",
+    type: "전시",
+    title: "미디어·아트 융합 전시 《DREAM LIGHT》",
+    genre: "미디어아트, 레이저, 공간음향",
+    startDate: "2025-09-26",
+    endDate: "2026-12-31",
+    visitDate: "2026-08-10",
+    time: "화-토 09:30-21:30(입장 마감 21:00), 일 09:30-17:30(입장 마감 17:00), 월요일·법정공휴일 휴관",
+    venue: "수원시미디어센터",
+    address: "수원시미디어센터",
+    price: 0,
+    priceType: "확인 필요",
+    discount: "관람료와 할인 여부는 공식 안내 확인",
+    parking: "확인 필요",
+    docent: "도슨트 여부는 공식 안내 확인",
+    difficulty: "가볍게",
+    rating: "4",
+    owner: "수원 추천 2",
+    infoUrl: "https://www.swcf.or.kr/?p=396",
+    mapUrl: "https://map.kakao.com/?q=%EC%88%98%EC%9B%90%EC%8B%9C%EB%AF%B8%EB%94%94%EC%96%B4%EC%84%BC%ED%84%B0",
+    summary: "레이저, 미디어아트, 공간 음향이 어우러진 상설 미디어 전시입니다. 수원의 역사와 빛의 이미지를 감각적으로 볼 수 있습니다.",
+    recommendation: "저녁 운영 시간이 길어 평일 퇴근 후 모임 후보로 좋습니다. 사진·영상 촬영은 가능하지만 삼각대와 플래시는 사용할 수 없습니다.",
+    notes: "내부가 어두워 이동 시 주의 필요. 관람료, 주차, 해설은 공식 안내를 방문 전 재확인하세요.",
+    ratingReason: "야간 시간대 활용성, 미디어아트 체험성, 수원 지역성이 좋음.",
+    sourceLabel: "수원문화재단 Dream Light 안내",
+    updatedAt: "2026-07-09",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010103",
+    recommendedRank: 103,
+    status: "공유완료",
+    region: "수원/경기",
+    type: "전시",
+    title: "수원전통문화관 《혜경궁홍씨의 봉수당 진찬연》",
+    genre: "전통문화, 상설전시, 역사",
+    startDate: "2024-12-24",
+    endDate: "2026-12-31",
+    visitDate: "2026-08-17",
+    time: "화-토 10:00-17:00, 월요일·법정공휴일 휴관",
+    venue: "수원전통문화관 식생활체험관 상설전시실",
+    address: "경기도 수원시 팔달구 정조로 893(장안동)",
+    price: 0,
+    priceType: "무료",
+    discount: "관람료 무료",
+    parking: "불가",
+    docent: "도슨트 여부는 수원전통문화관 공식 안내 확인",
+    difficulty: "가볍게",
+    rating: "4",
+    owner: "수원 추천 3",
+    infoUrl: "https://www.swcf.or.kr/?curMonth=7&curYear=2026&idx=2776&listUrl=29&p=29_view&page=1&searchDetail_flag=",
+    mapUrl: "https://map.kakao.com/?q=%EC%88%98%EC%9B%90%EC%A0%84%ED%86%B5%EB%AC%B8%ED%99%94%EA%B4%80%20%EC%8B%9D%EC%83%9D%ED%99%9C%EC%B2%B4%ED%97%98%EA%B4%80",
+    summary: "1795년 을묘원행 당시 봉수당 진찬연에서 혜경궁 홍씨에게 올린 반과상을 재현한 전통문화 상설전시입니다.",
+    recommendation: "수원화성·행궁권 산책과 함께 묶기 좋습니다. 짧고 무료라 부담 없이 공유할 수 있는 보조 후보입니다.",
+    notes: "전시관 주차공간 없음. 자차 이용 시 장안동 공영주차장 등 인근 공영주차장 확인 필요.",
+    ratingReason: "무료, 역사성, 행궁권 동선 장점이 있으나 규모는 비교적 작을 수 있음.",
+    sourceLabel: "수원문화재단 행사정보",
+    updatedAt: "2026-07-09",
+  },
 ];
 
 const fields = [
@@ -728,7 +821,7 @@ function renderExhibitionPage(list) {
       <div class="exhibition-body">
         <div class="exhibition-head">
           <div>
-            <p class="exhibition-venue">${escapeHtml(event.venue || "장소 확인 필요")}</p>
+            <p class="exhibition-venue">${escapeHtml([event.region, event.venue || "장소 확인 필요"].filter(Boolean).join(" · "))}</p>
             <h3>${escapeHtml(event.title)}</h3>
           </div>
           <div class="stars" aria-label="추천 별점 ${escapeHtml(event.rating || "-")}점">${formatStars(event.rating)}</div>
@@ -787,6 +880,7 @@ function formatDateRange(event) {
 
 function formatPrice(event) {
   const price = Number(event.price || 0);
+  if (event.priceType === "확인 필요") return "확인 필요";
   if (event.priceType === "무료" || price === 0) return "무료";
   return `${price.toLocaleString("ko-KR")}원`;
 }
@@ -805,7 +899,7 @@ function formatStars(rating) {
 
 function topRecommendedEvents(source = events) {
   return [...source]
-    .filter((event) => event.type === "전시")
+    .filter((event) => event.type === "전시" && event.recommendedRank)
     .sort((a, b) => {
       const rankDiff = Number(a.recommendedRank || 999) - Number(b.recommendedRank || 999);
       if (rankDiff) return rankDiff;
@@ -813,7 +907,7 @@ function topRecommendedEvents(source = events) {
       if (ratingDiff) return ratingDiff;
       return (a.visitDate || a.startDate || "").localeCompare(b.visitDate || b.startDate || "");
     })
-    .slice(0, 10);
+    .slice(0, 20);
 }
 
 function renderKakaoShare() {
@@ -837,7 +931,7 @@ async function copyKakaoShare() {
 function buildKakaoShareText() {
   const list = topRecommendedEvents();
   const lines = [
-    "[서울 7~8월 추천 전시 TOP 10]",
+    "[서울·수원 7~8월 추천 전시]",
     "2026.07.09 기준 / 모임 전 공식 페이지 재확인",
     "",
   ];
