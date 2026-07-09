@@ -219,7 +219,7 @@ const recommendedEvents = [
     startDate: "2026-06-04",
     endDate: "2026-10-04",
     visitDate: "2026-08-01",
-    time: "운영시간은 공식 예매 페이지 확인",
+    time: "공식 운영시간 공개자료 확인 불가 (2026.07.09 검색 기준, 방문 전 공식 예매/안내 재확인 필수)",
     venue: "센터 퐁피두 한화 서울",
     address: "서울 영등포구 63로 50, 63빌딩 별관",
     price: 28000,
@@ -234,7 +234,7 @@ const recommendedEvents = [
     mapUrl: "https://map.kakao.com/?q=%EC%84%BC%ED%84%B0%20%ED%90%81%ED%94%BC%EB%91%90%20%ED%95%9C%ED%99%94%20%EC%84%9C%EC%9A%B8",
     summary: "센터 퐁피두 한화 서울 개관전. 1907~1927년 입체주의 흐름을 피카소, 브라크, 후안 그리스 등 주요 작가 중심으로 소개합니다.",
     recommendation: "신규 미술관 개관전이라 화제성이 높고, 7~8월 유료 특별전 후보로 가장 강합니다.",
-    notes: "보도 기준 일반권 28,000원. 운영시간, 할인, 주차, 혼잡도는 방문 전 예매처에서 재확인.",
+    notes: "보도 기준 일반권 28,000원. 운영시간은 공식/예매처 공개 웹 검색에서 확정 출처를 찾지 못했습니다. 방문 전 예매처, 공식 안내, 현장 안내를 필수 확인하세요.",
     ratingReason: "국제 컬렉션, 개관전 화제성, 작품 대중성이 높음.",
     sourceLabel: "Wallpaper·Le Monde 보도",
     updatedAt: "2026-07-09",
@@ -502,6 +502,7 @@ const $ = (selector) => document.querySelector(selector);
 const elements = {
   rows: $("#eventRows"),
   cards: $("#eventCards"),
+  exhibitionPageCards: $("#exhibitionPageCards"),
   empty: $("#emptyState"),
   resultCount: $("#resultCount"),
   kakaoShareText: $("#kakaoShareText"),
@@ -648,6 +649,7 @@ function render() {
   const list = filteredEvents();
   renderMetrics();
   renderKakaoShare();
+  renderExhibitionPage(topRecommendedEvents());
   renderRows(list);
   renderCards(list);
   elements.resultCount.textContent = `${list.length}건`;
@@ -717,6 +719,51 @@ function renderCards(list) {
   elements.cards.querySelectorAll("[data-edit]").forEach((button) => {
     button.addEventListener("click", () => openDialog(button.dataset.edit));
   });
+}
+
+function renderExhibitionPage(list) {
+  elements.exhibitionPageCards.innerHTML = list.map((event, index) => `
+    <article class="exhibition-card">
+      <div class="exhibition-rank">${index + 1}</div>
+      <div class="exhibition-body">
+        <div class="exhibition-head">
+          <div>
+            <p class="exhibition-venue">${escapeHtml(event.venue || "장소 확인 필요")}</p>
+            <h3>${escapeHtml(event.title)}</h3>
+          </div>
+          <div class="stars" aria-label="추천 별점 ${escapeHtml(event.rating || "-")}점">${formatStars(event.rating)}</div>
+        </div>
+
+        <p class="exhibition-summary">${escapeHtml(event.summary || event.recommendation || "")}</p>
+
+        <dl class="exhibition-details">
+          ${detailItem("관람일정", formatDateRange(event))}
+          ${detailItem("운영시간", event.time || "확인 필요")}
+          ${detailItem("관람료", formatSharePrice(event))}
+          ${detailItem("할인", event.discount || "확인 필요")}
+          ${detailItem("위치", [event.venue, event.address].filter(Boolean).join(" · ") || "확인 필요")}
+          ${detailItem("도슨트", event.docent || "확인 필요")}
+          ${detailItem("주차", event.parking || "확인 필요")}
+        </dl>
+
+        <p class="exhibition-reason">${escapeHtml(event.recommendation || "")}</p>
+
+        <div class="exhibition-actions">
+          <a class="button primary" href="${escapeAttribute(kakaoMapUrl(event))}" target="_blank" rel="noopener">카카오맵</a>
+          ${event.infoUrl ? `<a class="button tertiary" href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">전시 정보</a>` : ""}
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function detailItem(label, value) {
+  return `
+    <div>
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(value || "-")}</dd>
+    </div>
+  `;
 }
 
 function statusPill(status) {
@@ -835,6 +882,12 @@ function formatShareParking(event) {
   if (!event.parking) return "확인 필요";
   if (event.notes) return `${event.parking} (${event.notes})`;
   return event.parking;
+}
+
+function kakaoMapUrl(event) {
+  if (event.mapUrl) return event.mapUrl;
+  const query = [event.venue, event.address].filter(Boolean).join(" ");
+  return `https://map.kakao.com/?q=${encodeURIComponent(query || event.title || "서울 전시")}`;
 }
 
 function openDialog(id = "") {
