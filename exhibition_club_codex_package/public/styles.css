@@ -219,6 +219,49 @@ h3 {
   font-weight: 700;
 }
 
+.recommendation-sections,
+.recommendation-group {
+  display: grid;
+  gap: 18px;
+}
+
+.recommendation-group + .recommendation-group {
+  padding-top: 4px;
+}
+
+.recommendation-group-head {
+  display: flex;
+  gap: 14px;
+  align-items: end;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 10px;
+}
+
+.recommendation-group-head h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.recommendation-group-head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.recommendation-group-head span {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  padding: 5px 10px;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .exhibition-grid {
   display: grid;
   gap: 12px;
@@ -760,6 +803,10 @@ dialog::backdrop {
 
   .exhibition-card {
     grid-template-columns: 1fr;
+  }
+
+  .recommendation-group-head {
+    align-items: start;
   }
 
   .exhibition-rank {
