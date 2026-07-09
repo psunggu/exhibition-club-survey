@@ -193,9 +193,11 @@ const recommendedEvents = [
     address: "서울 중구 덕수궁길 61",
     price: 0,
     priceType: "무료",
-    discount: "유료전시일 경우 관람자 최초 20분 주차요금 면제. 장애인, 국가유공자, 경차, 저공해차, 다둥이카드 등 주차 할인.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
-    docent: "오디오 가이드와 연계 프로그램 운영. 전시해설 일정은 공식 페이지 확인.",
+    parkingFee: "평일 5분 400원(시간당 4,800원), 토·공휴일 5분 300원(시간당 3,600원). 주차장 협소·요일제 운영",
+    docent: "서울시립미술관 정규 전시해설 운영",
+    docentTime: "화~일 11:00, 14:00, 17:00(1일 3회). 전시·관 사정에 따라 변동 가능하므로 방문 전 공식 전시해설 페이지 확인",
     difficulty: "긴 관람",
     rating: "5",
     owner: "TOP 1",
@@ -224,9 +226,11 @@ const recommendedEvents = [
     address: "서울 영등포구 63로 50, 63빌딩 별관",
     price: 28000,
     priceType: "유료",
-    discount: "할인권, 패키지, 주차 할인은 예매처 확인 필요.",
+    discount: "카드·통신사·예매처 할인은 공식 예매 페이지 확인",
     parking: "확인 필요",
+    parkingFee: "63빌딩/전시장 공식 주차요금 확인 필요",
     docent: "전시해설·오디오가이드 여부는 예매처 확인.",
+    docentTime: "공식 공개 도슨트 시간 확인 필요. 오디오가이드·전시해설은 예매처/전시장 공지 기준으로 방문 전 확인",
     difficulty: "사전예약",
     rating: "5",
     owner: "TOP 2",
@@ -255,9 +259,11 @@ const recommendedEvents = [
     address: "서울 도봉구 마들로13길 68",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 부설주차장은 운영체제 개편으로 이용 어려움.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "불가",
-    docent: "7월 18일 전시 연계 세미나가 있으며, 전시해설은 공식 페이지 확인.",
+    parkingFee: "부설주차장 운영체제 개편으로 이용 어려움. 인근 공영·민영주차장 요금 별도 확인",
+    docent: "전시해설은 공식 페이지 확인.",
+    docentTime: "서울시립 사진미술관 전시해설 회차는 전시별 공지 확인. 7월 18일 전시 연계 세미나 별도",
     difficulty: "가볍게",
     rating: "5",
     owner: "TOP 3",
@@ -286,9 +292,11 @@ const recommendedEvents = [
     address: "서울 중구 덕수궁길 61",
     price: 0,
     priceType: "무료",
-    discount: "유료전시일 경우 관람자 최초 20분 주차요금 면제. 공공주차 할인 적용.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
+    parkingFee: "평일 5분 400원(시간당 4,800원), 토·공휴일 5분 300원(시간당 3,600원). 주차장 협소·요일제 운영",
     docent: "퍼포먼스, 대담, 강연 등 연계 프로그램 운영.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 연계 프로그램은 회차별 별도 공지",
     difficulty: "긴 관람",
     rating: "4",
     owner: "TOP 4",
@@ -317,9 +325,11 @@ const recommendedEvents = [
     address: "서울 노원구 동일로 1238",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 주차요금 경차, 저공해차, 다둥이카드 등 할인.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
+    parkingFee: "5분 250원(시간당 3,000원), 월요일 무료. 요일제 운영",
     docent: "어린이 해설 프로그램과 워크숍 운영.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 어린이 해설·워크숍은 프로그램별 회차 확인",
     difficulty: "가볍게",
     rating: "4",
     owner: "TOP 5",
@@ -348,9 +358,11 @@ const recommendedEvents = [
     address: "서울 금천구 시흥대로79길 65",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 주차요금 5분당 250원, 일 최대 24,000원.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
+    parkingFee: "5분 250원(시간당 3,000원), 일 최대 24,000원. 입차는 관람 종료 30분 전까지",
     docent: "전시해설 여부는 공식 페이지 확인.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 서서울미술관 회차는 공식 페이지 재확인",
     difficulty: "가볍게",
     rating: "4",
     owner: "TOP 6",
@@ -379,9 +391,11 @@ const recommendedEvents = [
     address: "서울 관악구 남부순환로 2076",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 미술관 내 주차 시설 없음.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "불가",
+    parkingFee: "미술관 내 주차 시설 없음. 인근 사당 공영주차장 등 외부 주차장 요금 별도 확인",
     docent: "전시해설 여부는 공식 페이지 확인.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 남서울미술관 회차는 공식 페이지 재확인",
     difficulty: "가볍게",
     rating: "4",
     owner: "TOP 7",
@@ -410,9 +424,11 @@ const recommendedEvents = [
     address: "서울 노원구 동일로 1238",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 주차요금 경차, 저공해차, 다둥이카드 등 할인.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
+    parkingFee: "5분 250원(시간당 3,000원), 월요일 무료. 요일제 운영",
     docent: "전시해설 여부는 공식 페이지 확인.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 북서울미술관 회차는 공식 페이지 재확인",
     difficulty: "가볍게",
     rating: "4",
     owner: "TOP 8",
@@ -441,9 +457,11 @@ const recommendedEvents = [
     address: "서울 노원구 동일로 1238",
     price: 0,
     priceType: "무료",
-    discount: "관람료 무료. 주차요금 경차, 저공해차, 다둥이카드 등 할인.",
+    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
+    parkingFee: "5분 250원(시간당 3,000원), 월요일 무료. 요일제 운영",
     docent: "다양한 연계 프로그램 예정. 전시해설 여부는 공식 페이지 확인.",
+    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 연계 프로그램은 회차별 별도 공지",
     difficulty: "가볍게",
     rating: "4",
     owner: "TOP 9",
@@ -472,9 +490,11 @@ const recommendedEvents = [
     address: "서울 세부 장소 공식 페이지 확인",
     price: 0,
     priceType: "무료",
-    discount: "관람료와 할인은 상세 페이지 확인.",
+    discount: "무료 전시로 확인되나 세부 장소·예매 조건은 공식 상세 확인",
     parking: "확인 필요",
+    parkingFee: "세부 장소 확정 후 해당 전시장 주차요금 확인 필요",
     docent: "작가/전시해설 여부는 공식 페이지 확인.",
+    docentTime: "세부 장소 및 전시해설 회차는 서울시립미술관 신진미술인 지원 상세 페이지 확인",
     difficulty: "가볍게",
     rating: "3",
     owner: "TOP 10",
@@ -596,8 +616,9 @@ const recommendedEvents = [
     address: "서울 서초구 남부순환로 2406",
     price: 0,
     priceType: "확인 필요",
-    discount: "공연별 좌석 등급, 할인, 예매 가능 여부는 공식 일정 확인",
+    discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
+    parkingFee: "예술의전당 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
     docent: "해당 없음",
     docentTime: "음악공연은 도슨트 운영 없음. 공연 전 프로그램북·공식 소개 확인",
     difficulty: "사전예약",
@@ -628,8 +649,9 @@ const recommendedEvents = [
     address: "서울 종로구 세종대로 175",
     price: 0,
     priceType: "확인 필요",
-    discount: "공연별 좌석 등급, 할인, 패키지 여부는 공식 일정 확인",
+    discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
+    parkingFee: "세종문화회관 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
     docent: "해당 없음",
     docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설·프리토크가 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
@@ -660,8 +682,9 @@ const recommendedEvents = [
     address: "서울 송파구 올림픽로 300 롯데월드몰 8층",
     price: 0,
     priceType: "확인 필요",
-    discount: "공연별 좌석 등급, 할인, 예매 가능 여부는 공식 일정 확인",
+    discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
+    parkingFee: "롯데콘서트홀 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
     docent: "해당 없음",
     docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설 프로그램이 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
@@ -932,10 +955,10 @@ function renderExhibitionPage(list) {
           ${detailItem("관람일정", formatDateRange(event))}
           ${detailItem("운영시간", event.time || "확인 필요")}
           ${detailItem("관람료", formatSharePrice(event))}
-          ${detailItem("할인", event.discount || "확인 필요")}
+          ${detailItem("카드·통신사 할인", event.discount || "확인 필요")}
           ${detailItem("위치", [event.venue, event.address].filter(Boolean).join(" · ") || "확인 필요")}
           ${detailItem(event.type === "공연" ? "해설 운영" : "도슨트 운영시간", formatDocentTime(event))}
-          ${detailItem("주차", event.parking || "확인 필요")}
+          ${detailItem("주차/주차료", formatParkingInfo(event))}
         </dl>
 
         <p class="exhibition-reason">${escapeHtml(event.recommendation || "")}</p>
@@ -1021,6 +1044,12 @@ function formatDocentTime(event) {
   if (event.type === "공연") return "해당 없음";
   if (event.docent) return `${event.docent} / 시간은 공식 페이지 확인`;
   return "공식 페이지 확인";
+}
+
+function formatParkingInfo(event) {
+  const status = event.parking || "확인 필요";
+  if (event.parkingFee) return `${status} · ${event.parkingFee}`;
+  return status;
 }
 
 function renderKakaoShare() {
