@@ -184,6 +184,7 @@ h3 {
 .toolbar,
 .share-panel,
 .exhibition-page,
+.verification-panel,
 .guide-panel,
 .event-area {
   border: 1px solid var(--line);
@@ -203,6 +204,19 @@ h3 {
   order: 1;
   margin-bottom: 14px;
   padding: 18px;
+}
+
+.verification-panel {
+  order: 2;
+  margin-bottom: 14px;
+  padding: 16px 18px;
+}
+
+.verification-panel p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .exhibition-grid {
