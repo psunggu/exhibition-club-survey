@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>서울 공연·전시 공유 보드</title>
-  <meta name="description" content="서울 공연과 전시 정보를 동호회에서 모아 보고 공유하는 웹 보드" />
+  <title>서울·수원 전시 공유 보드</title>
+  <meta name="description" content="서울과 수원 지역 전시 정보를 동호회에서 카카오톡으로 쉽게 공유하기 위한 보드" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">서울 문화 모임</p>
-        <h1>공연·전시 공유 보드</h1>
+        <p class="eyebrow">문화 모임</p>
+        <h1>서울·수원 전시 공유 보드</h1>
       </div>
     </header>
 
@@ -41,19 +41,19 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">카카오톡 공유</p>
-          <h2 id="weeklyShareTitle">7~8월 추천 전시 TOP 10</h2>
+          <h2 id="weeklyShareTitle">7~8월 추천 전시 목록</h2>
         </div>
         <button class="button secondary" id="copyKakaoButton" type="button">공유문 복사</button>
       </div>
-      <p class="share-meta">2026.07.09 기준 · 매주 모임 전 공식 페이지에서 일정, 휴관, 예매 여부를 다시 확인하세요.</p>
+      <p class="share-meta">2026.07.09 기준. 매주 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.</p>
       <pre class="share-text" id="kakaoShareText" aria-live="polite"></pre>
     </section>
 
     <section class="exhibition-page" aria-labelledby="exhibitionPageTitle">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">전시 웹페이지</p>
-          <h2 id="exhibitionPageTitle">이번 모임 추천 전시</h2>
+          <p class="eyebrow">전시 한눈에 보기</p>
+          <h2 id="exhibitionPageTitle">서울·수원 추천 전시</h2>
         </div>
         <p class="result-count">장소 버튼은 카카오맵으로 열립니다</p>
       </div>
@@ -72,7 +72,7 @@
       <section class="toolbar" aria-label="검색 및 필터">
         <label class="search-box">
           <span>검색</span>
-          <input id="searchInput" type="search" placeholder="행사명, 장소, 내용, 추천 포인트" autocomplete="off" />
+          <input id="searchInput" type="search" placeholder="행사명, 장소, 내용, 추천 사유" autocomplete="off" />
         </label>
         <label>
           <span>지역</span>
@@ -102,56 +102,56 @@
       </section>
 
       <section class="content-layout">
-      <aside class="guide-panel" aria-label="공유 전 확인">
-        <h2>공유 전 확인</h2>
-        <ul class="check-list">
-          <li>공식 링크와 지도 링크를 함께 남겼는지 확인</li>
-          <li>시작일, 종료일, 관람 후보일을 날짜로 입력</li>
-          <li>가격은 정가 기준, 할인은 별도 메모</li>
-          <li>주차 가능 여부와 대중교통 메모 분리</li>
-          <li>관람 후 평점과 근거 업데이트</li>
-        </ul>
-        <div class="source-block">
-          <h3>추천 확인처</h3>
-          <a href="https://www.mmca.go.kr/exhibitions/progressList.do" target="_blank" rel="noopener">국립현대미술관</a>
-          <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
-          <a href="https://www.sac.or.kr/site/main/home" target="_blank" rel="noopener">예술의전당</a>
-          <a href="https://www.ntok.go.kr/kr/Main/Index" target="_blank" rel="noopener">국립극장</a>
-        </div>
-      </aside>
-
-      <section class="event-area" aria-labelledby="eventListTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">목록</p>
-            <h2 id="eventListTitle">공유할 공연·전시</h2>
+        <aside class="guide-panel" aria-label="공유 전 확인">
+          <h2>공유 전 확인</h2>
+          <ul class="check-list">
+            <li>공식 링크와 지도 링크가 안전한지 확인</li>
+            <li>시작일, 종료일, 관람 후보일을 날짜로 입력</li>
+            <li>가격은 정가 기준, 할인은 별도 메모</li>
+            <li>주차 가능 여부와 대중교통 메모 분리</li>
+            <li>관람 후 평점과 근거 업데이트</li>
+          </ul>
+          <div class="source-block">
+            <h3>추천 확인처</h3>
+            <a href="https://www.mmca.go.kr/exhibitions/progressList.do" target="_blank" rel="noopener">국립현대미술관</a>
+            <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
+            <a href="https://www.swcf.or.kr/?p=29" target="_blank" rel="noopener">수원문화재단 행사정보</a>
+            <a href="https://www.suwonartcenter.org/" target="_blank" rel="noopener">수원시립미술관</a>
           </div>
-          <p id="resultCount" class="result-count">0건</p>
-        </div>
+        </aside>
 
-        <div class="table-wrap" role="region" aria-label="공연 및 전시 목록" tabindex="0">
-          <table>
-            <thead>
-              <tr>
-                <th>상태</th>
-                <th>구분</th>
-                <th>행사명</th>
-                <th>지역</th>
-                <th>일자</th>
-                <th>관람료</th>
-                <th>주차·도슨트</th>
-                <th>평점</th>
-                <th>담당</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody id="eventRows"></tbody>
-          </table>
-        </div>
+        <section class="event-area" aria-labelledby="eventListTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">목록</p>
+              <h2 id="eventListTitle">공유할 공연·전시</h2>
+            </div>
+            <p id="resultCount" class="result-count">0건</p>
+          </div>
 
-        <div class="cards" id="eventCards" aria-label="모바일 목록"></div>
-        <p class="empty-state" id="emptyState" hidden>조건에 맞는 정보가 없습니다.</p>
-      </section>
+          <div class="table-wrap" role="region" aria-label="공연 및 전시 목록" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>상태</th>
+                  <th>구분</th>
+                  <th>행사명</th>
+                  <th>지역</th>
+                  <th>일자</th>
+                  <th>관람료</th>
+                  <th>주차·도슨트</th>
+                  <th>평점</th>
+                  <th>담당</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="eventRows"></tbody>
+            </table>
+          </div>
+
+          <div class="cards" id="eventCards" aria-label="모바일 목록"></div>
+          <p class="empty-state" id="emptyState" hidden>조건에 맞는 정보가 없습니다.</p>
+        </section>
       </section>
     </details>
   </main>
@@ -207,11 +207,11 @@
         </label>
         <label>
           <span>장소명</span>
-          <input id="venue" type="text" placeholder="공연장/전시장" />
+          <input id="venue" type="text" placeholder="공연장·전시장" />
         </label>
         <label class="wide">
           <span>주소</span>
-          <input id="address" type="text" placeholder="서울시 ..." />
+          <input id="address" type="text" placeholder="서울 또는 수원 주소" />
         </label>
         <label>
           <span>관람료</span>
@@ -250,7 +250,7 @@
           <textarea id="summary" rows="3" placeholder="핵심 내용과 관람 포인트를 2~3문장으로 정리"></textarea>
         </label>
         <label class="wide">
-          <span>추천 포인트</span>
+          <span>추천 사유</span>
           <textarea id="recommendation" rows="2"></textarea>
         </label>
         <label class="wide">
