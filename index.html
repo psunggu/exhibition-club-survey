@@ -14,11 +14,6 @@
         <p class="eyebrow">서울 문화 모임</p>
         <h1>공연·전시 공유 보드</h1>
       </div>
-      <div class="top-actions">
-        <a class="ghost-link" id="sheetLink" href="https://docs.google.com/spreadsheets/d/1fOCPUeYC7h2mbnwwmmVAUlS21eylfYUBpot_RWiYNW0/edit?usp=drivesdk" target="_blank" rel="noopener">Google Sheets</a>
-        <button class="button secondary" id="exportCsvButton" type="button">CSV 내보내기</button>
-        <button class="button primary" id="openFormButton" type="button">새 정보 추가</button>
-      </div>
     </header>
 
     <section class="summary-grid" aria-label="공유 현황">
@@ -52,39 +47,59 @@
       <pre class="share-text" id="kakaoShareText" aria-live="polite"></pre>
     </section>
 
-    <section class="toolbar" aria-label="검색 및 필터">
-      <label class="search-box">
-        <span>검색</span>
-        <input id="searchInput" type="search" placeholder="행사명, 장소, 내용, 추천 포인트" autocomplete="off" />
-      </label>
-      <label>
-        <span>지역</span>
-        <select id="regionFilter">
-          <option value="">전체</option>
-        </select>
-      </label>
-      <label>
-        <span>구분</span>
-        <select id="typeFilter">
-          <option value="">전체</option>
-        </select>
-      </label>
-      <label>
-        <span>상태</span>
-        <select id="statusFilter">
-          <option value="">전체</option>
-        </select>
-      </label>
-      <label>
-        <span>주차</span>
-        <select id="parkingFilter">
-          <option value="">전체</option>
-        </select>
-      </label>
-      <button class="button tertiary" id="resetButton" type="button">초기화</button>
+    <section class="exhibition-page" aria-labelledby="exhibitionPageTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">전시 웹페이지</p>
+          <h2 id="exhibitionPageTitle">이번 모임 추천 전시</h2>
+        </div>
+        <p class="result-count">장소 버튼은 카카오맵으로 열립니다</p>
+      </div>
+      <div class="exhibition-grid" id="exhibitionPageCards"></div>
     </section>
 
-    <section class="content-layout">
+    <details class="admin-tools">
+      <summary>관리·검색 화면 열기</summary>
+
+      <div class="top-actions admin-actions">
+        <a class="ghost-link" id="sheetLink" href="https://docs.google.com/spreadsheets/d/1fOCPUeYC7h2mbnwwmmVAUlS21eylfYUBpot_RWiYNW0/edit?usp=drivesdk" target="_blank" rel="noopener">Google Sheets</a>
+        <button class="button secondary" id="exportCsvButton" type="button">CSV 내보내기</button>
+        <button class="button primary" id="openFormButton" type="button">새 정보 추가</button>
+      </div>
+
+      <section class="toolbar" aria-label="검색 및 필터">
+        <label class="search-box">
+          <span>검색</span>
+          <input id="searchInput" type="search" placeholder="행사명, 장소, 내용, 추천 포인트" autocomplete="off" />
+        </label>
+        <label>
+          <span>지역</span>
+          <select id="regionFilter">
+            <option value="">전체</option>
+          </select>
+        </label>
+        <label>
+          <span>구분</span>
+          <select id="typeFilter">
+            <option value="">전체</option>
+          </select>
+        </label>
+        <label>
+          <span>상태</span>
+          <select id="statusFilter">
+            <option value="">전체</option>
+          </select>
+        </label>
+        <label>
+          <span>주차</span>
+          <select id="parkingFilter">
+            <option value="">전체</option>
+          </select>
+        </label>
+        <button class="button tertiary" id="resetButton" type="button">초기화</button>
+      </section>
+
+      <section class="content-layout">
       <aside class="guide-panel" aria-label="공유 전 확인">
         <h2>공유 전 확인</h2>
         <ul class="check-list">
@@ -135,7 +150,8 @@
         <div class="cards" id="eventCards" aria-label="모바일 목록"></div>
         <p class="empty-state" id="emptyState" hidden>조건에 맞는 정보가 없습니다.</p>
       </section>
-    </section>
+      </section>
+    </details>
   </main>
 
   <dialog id="eventDialog">
