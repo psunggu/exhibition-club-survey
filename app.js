@@ -580,6 +580,102 @@ const recommendedEvents = [
     sourceLabel: "수원문화재단 행사정보",
     updatedAt: "2026-07-09",
   },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010201",
+    recommendedRank: 201,
+    status: "공유완료",
+    region: "강남/서초",
+    type: "공연",
+    title: "예술의전당 7~8월 음악공연 추천",
+    genre: "클래식, 실내악, 리사이틀",
+    startDate: "2026-07-09",
+    endDate: "2026-08-31",
+    visitDate: "2026-08-02",
+    time: "공연별 상이. 예술의전당 공식 일정에서 공연 시작시간 확인",
+    venue: "예술의전당 콘서트홀·IBK챔버홀·리사이틀홀",
+    address: "서울 서초구 남부순환로 2406",
+    price: 0,
+    priceType: "확인 필요",
+    discount: "공연별 좌석 등급, 할인, 예매 가능 여부는 공식 일정 확인",
+    parking: "가능",
+    docent: "해당 없음",
+    docentTime: "음악공연은 도슨트 운영 없음. 공연 전 프로그램북·공식 소개 확인",
+    difficulty: "사전예약",
+    rating: "4",
+    owner: "서울 음악 1",
+    infoUrl: "https://www.sac.or.kr/site/main/show/show_list?show_type=music",
+    mapUrl: "https://map.kakao.com/?q=%EC%98%88%EC%88%A0%EC%9D%98%EC%A0%84%EB%8B%B9%20%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80",
+    summary: "예술의전당 공식 음악공연 일정에서 7~8월 클래식, 실내악, 리사이틀 공연을 골라 볼 수 있는 후보입니다.",
+    recommendation: "공연장 접근성과 일정 선택지가 좋아 전시 외 음악 모임 후보로 넣기 좋습니다. 예매 전 공연별 좌석과 시간을 확인하세요.",
+    notes: "공식 일정 페이지 기준으로 매주 업데이트 필요.",
+    ratingReason: "서울 대표 클래식 공연장, 공연 선택지, 접근성, 단체 관람 편의성을 기준으로 한 모임 추천 별점.",
+    sourceLabel: "예술의전당 공식 음악공연 일정",
+    updatedAt: "2026-07-09",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010202",
+    recommendedRank: 202,
+    status: "공유완료",
+    region: "종로/중구",
+    type: "공연",
+    title: "세종문화회관 7~8월 음악공연 추천",
+    genre: "오케스트라, 합창, 국악·크로스오버",
+    startDate: "2026-07-09",
+    endDate: "2026-08-31",
+    visitDate: "2026-08-09",
+    time: "공연별 상이. 세종문화회관 공식 공연일정에서 시작시간 확인",
+    venue: "세종문화회관",
+    address: "서울 종로구 세종대로 175",
+    price: 0,
+    priceType: "확인 필요",
+    discount: "공연별 좌석 등급, 할인, 패키지 여부는 공식 일정 확인",
+    parking: "가능",
+    docent: "해당 없음",
+    docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설·프리토크가 있으면 공식 상세에서 확인",
+    difficulty: "사전예약",
+    rating: "4",
+    owner: "서울 음악 2",
+    infoUrl: "https://www.sejongpac.or.kr/portal/performance/performance/list.do",
+    mapUrl: "https://map.kakao.com/?q=%EC%84%B8%EC%A2%85%EB%AC%B8%ED%99%94%ED%9A%8C%EA%B4%80",
+    summary: "광화문 접근성이 좋은 세종문화회관의 7~8월 음악공연 후보입니다. 클래식, 합창, 국악·크로스오버 공연을 함께 검토하기 좋습니다.",
+    recommendation: "식사·산책 동선과 묶기 쉬워 주말 모임 후보로 좋습니다. 공연별 예매 상태와 시작시간을 먼저 확인하세요.",
+    notes: "공식 공연일정 페이지 기준으로 매주 업데이트 필요.",
+    ratingReason: "도심 접근성, 장르 폭, 모임 전후 동선 편의성을 기준으로 한 모임 추천 별점.",
+    sourceLabel: "세종문화회관 공식 공연일정",
+    updatedAt: "2026-07-09",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010203",
+    recommendedRank: 203,
+    status: "공유완료",
+    region: "송파/강동",
+    type: "공연",
+    title: "롯데콘서트홀 7~8월 음악공연 추천",
+    genre: "클래식, 오케스트라, 리사이틀",
+    startDate: "2026-07-09",
+    endDate: "2026-08-31",
+    visitDate: "2026-08-16",
+    time: "공연별 상이. 롯데콘서트홀 공식 공연일정에서 시작시간 확인",
+    venue: "롯데콘서트홀",
+    address: "서울 송파구 올림픽로 300 롯데월드몰 8층",
+    price: 0,
+    priceType: "확인 필요",
+    discount: "공연별 좌석 등급, 할인, 예매 가능 여부는 공식 일정 확인",
+    parking: "가능",
+    docent: "해당 없음",
+    docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설 프로그램이 있으면 공식 상세에서 확인",
+    difficulty: "사전예약",
+    rating: "4",
+    owner: "서울 음악 3",
+    infoUrl: "https://www.lotteconcerthall.com/kor/Performance/Schedule",
+    mapUrl: "https://map.kakao.com/?q=%EB%A1%AF%EB%8D%B0%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80",
+    summary: "잠실권에서 접근하기 좋은 롯데콘서트홀의 7~8월 음악공연 후보입니다. 오케스트라와 리사이틀 일정 확인에 적합합니다.",
+    recommendation: "동쪽·남쪽 지역 회원이 모이기 편하고, 공연 전후 식사 동선도 잡기 쉽습니다.",
+    notes: "공식 공연일정 페이지 기준으로 매주 업데이트 필요.",
+    ratingReason: "음향과 공연장 환경, 잠실 접근성, 공연 전후 편의성을 기준으로 한 모임 추천 별점.",
+    sourceLabel: "롯데콘서트홀 공식 공연일정",
+    updatedAt: "2026-07-09",
+  },
 ];
 
 const fields = [
@@ -824,7 +920,10 @@ function renderExhibitionPage(list) {
             <p class="exhibition-venue">${escapeHtml([event.region, event.venue || "장소 확인 필요"].filter(Boolean).join(" · "))}</p>
             <h3>${escapeHtml(event.title)}</h3>
           </div>
-          <div class="stars" aria-label="추천 별점 ${escapeHtml(event.rating || "-")}점">${formatStars(event.rating)}</div>
+          <div class="rating-box">
+            <div class="stars" aria-label="추천 별점 ${escapeHtml(event.rating || "-")}점">${formatStars(event.rating)}</div>
+            <div class="rating-source">${escapeHtml(formatRatingSource(event))}</div>
+          </div>
         </div>
 
         <p class="exhibition-summary">${escapeHtml(event.summary || event.recommendation || "")}</p>
@@ -835,7 +934,7 @@ function renderExhibitionPage(list) {
           ${detailItem("관람료", formatSharePrice(event))}
           ${detailItem("할인", event.discount || "확인 필요")}
           ${detailItem("위치", [event.venue, event.address].filter(Boolean).join(" · ") || "확인 필요")}
-          ${detailItem("도슨트", event.docent || "확인 필요")}
+          ${detailItem(event.type === "공연" ? "해설 운영" : "도슨트 운영시간", formatDocentTime(event))}
           ${detailItem("주차", event.parking || "확인 필요")}
         </dl>
 
@@ -843,7 +942,7 @@ function renderExhibitionPage(list) {
 
         <div class="exhibition-actions">
           <a class="button primary" href="${escapeAttribute(kakaoMapUrl(event))}" target="_blank" rel="noopener">카카오맵</a>
-          ${event.infoUrl ? `<a class="button tertiary" href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">전시 정보</a>` : ""}
+          ${event.infoUrl ? `<a class="button tertiary" href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">${event.type === "공연" ? "공연 정보" : "전시 정보"}</a>` : ""}
         </div>
       </div>
     </article>
@@ -898,8 +997,9 @@ function formatStars(rating) {
 }
 
 function topRecommendedEvents(source = events) {
+  const visibleTypes = new Set(["전시", "공연"]);
   return [...source]
-    .filter((event) => event.type === "전시" && event.recommendedRank)
+    .filter((event) => visibleTypes.has(event.type) && event.recommendedRank && event.region !== "수원/경기")
     .sort((a, b) => {
       const rankDiff = Number(a.recommendedRank || 999) - Number(b.recommendedRank || 999);
       if (rankDiff) return rankDiff;
@@ -908,6 +1008,19 @@ function topRecommendedEvents(source = events) {
       return (a.visitDate || a.startDate || "").localeCompare(b.visitDate || b.startDate || "");
     })
     .slice(0, 20);
+}
+
+function formatRatingSource(event) {
+  const source = event.sourceLabel || "공식 정보";
+  const reason = event.ratingReason || "모임 추천 기준";
+  return `별점 출처: ${source} · 기준: ${reason}`;
+}
+
+function formatDocentTime(event) {
+  if (event.docentTime) return event.docentTime;
+  if (event.type === "공연") return "해당 없음";
+  if (event.docent) return `${event.docent} / 시간은 공식 페이지 확인`;
+  return "공식 페이지 확인";
 }
 
 function renderKakaoShare() {

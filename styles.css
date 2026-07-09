@@ -194,6 +194,7 @@ h3 {
 
 .share-panel {
   order: 2;
+  display: none;
   margin-bottom: 14px;
   padding: 18px;
 }
@@ -256,11 +257,27 @@ h3 {
 }
 
 .stars {
-  flex: 0 0 auto;
   color: #b56b00;
   font-size: 14px;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.rating-box {
+  flex: 0 0 min(260px, 36%);
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  text-align: right;
+}
+
+.rating-source {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 700;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .exhibition-summary,
@@ -313,6 +330,7 @@ h3 {
 
 .admin-tools {
   order: 3;
+  display: none;
   margin-top: 14px;
 }
 
@@ -738,6 +756,12 @@ dialog::backdrop {
 
   .exhibition-head {
     display: grid;
+  }
+
+  .rating-box {
+    width: 100%;
+    justify-items: start;
+    text-align: left;
   }
 
   .exhibition-details {
