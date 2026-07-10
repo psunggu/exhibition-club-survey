@@ -385,58 +385,73 @@ h3 {
   margin-top: 14px;
 }
 
-.recommendation-dialog {
-  padding: 22px;
+.recommendation-inline-details {
+  position: relative;
 }
 
-.recommendation-dialog-summary {
-  margin: 0 0 16px;
+.recommendation-inline-details > summary {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.recommendation-inline-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.recommendation-inline-body {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: calc(100% + 8px);
+  width: min(420px, calc(100vw - 48px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.recommendation-inline-body p {
+  margin: 0 0 12px;
   color: var(--ink);
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.recommendation-dialog-details {
+.recommendation-inline-body dl {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
+  gap: 8px;
   margin: 0;
 }
 
-.recommendation-dialog-details div {
+.recommendation-inline-body dl div {
   border-top: 1px solid var(--line-soft);
-  padding-top: 9px;
+  padding-top: 8px;
 }
 
-.recommendation-dialog-details dt {
+.recommendation-inline-body dt {
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
 }
 
-.recommendation-dialog-details dd {
-  margin: 4px 0 0;
+.recommendation-inline-body dd {
+  margin: 3px 0 0;
   color: var(--ink);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-.recommendation-dialog-reason {
-  margin: 16px 0 0;
-  color: var(--muted);
+.official-info-link {
+  display: inline-flex;
+  margin-top: 12px;
+  color: var(--green-dark);
   font-size: 13px;
-  line-height: 1.6;
-}
-
-.recommendation-dialog-actions {
-  align-items: center;
-}
-
-.dialog-note {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-weight: 900;
+  text-decoration: underline;
 }
 
 .admin-tools {
@@ -837,8 +852,9 @@ dialog::backdrop {
     padding: 14px;
   }
 
-  .recommendation-dialog-details {
-    grid-template-columns: 1fr;
+  .recommendation-inline-body {
+    right: auto;
+    left: 0;
   }
 
   .topbar {
