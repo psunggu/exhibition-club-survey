@@ -789,7 +789,7 @@ const fields = [
 ];
 
 let events = [];
-const boardUpdatedAt = "2026.07.10 22:05";
+const boardUpdatedAt = "2026.07.10 22:10";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -1089,8 +1089,12 @@ function infoPageUrl(event) {
 }
 
 function renderInlineRecommendationInfo(event) {
-  const label = event.type === "공연" ? "공연 정보" : "전시 정보";
-  const officialLabel = event.type === "공연" ? "공식 예매 페이지" : "공식 상세 페이지";
+  if (event.type === "전시") {
+    return `<a class="button tertiary" href="${escapeAttribute(infoPageUrl(event))}" target="_blank" rel="noopener">전시 정보·예약</a>`;
+  }
+
+  const label = "공연 정보";
+  const officialLabel = "공식 예매 페이지";
   return `
     <details class="recommendation-inline-details">
       <summary class="button tertiary">${label}</summary>
