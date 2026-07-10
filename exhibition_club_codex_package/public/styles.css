@@ -98,6 +98,13 @@ h3 {
   letter-spacing: 0;
 }
 
+.board-updated {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .top-actions,
 .dialog-actions {
   display: flex;
@@ -386,7 +393,8 @@ h3 {
 }
 
 .recommendation-inline-details {
-  position: relative;
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .recommendation-inline-details > summary {
@@ -401,11 +409,9 @@ h3 {
 }
 
 .recommendation-inline-body {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: calc(100% + 8px);
-  width: min(420px, calc(100vw - 48px));
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
@@ -850,11 +856,6 @@ dialog::backdrop {
 @media (max-width: 760px) {
   .app-shell {
     padding: 14px;
-  }
-
-  .recommendation-inline-body {
-    right: auto;
-    left: 0;
   }
 
   .topbar {
