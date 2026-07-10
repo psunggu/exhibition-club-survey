@@ -628,7 +628,7 @@ const recommendedEvents = [
     type: "공연",
     title: "예술의전당 7~8월 음악공연 추천",
     genre: "클래식, 실내악, 리사이틀",
-    startDate: "2026-07-09",
+    startDate: "2026-07-10",
     endDate: "2026-08-31",
     visitDate: "2026-08-02",
     time: "공연별 상이. 예술의전당 공식 일정에서 공연 시작시간 확인",
@@ -639,19 +639,18 @@ const recommendedEvents = [
     discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
     parkingFee: "예술의전당 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
-    docent: "해당 없음",
-    docentTime: "음악공연은 도슨트 운영 없음. 공연 전 프로그램북·공식 소개 확인",
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 1",
     infoUrl: "https://www.sac.or.kr/site/main/show/show_list?show_type=music",
+    mainUrl: "https://www.sac.or.kr/",
     mapUrl: "https://map.kakao.com/?q=%EC%98%88%EC%88%A0%EC%9D%98%EC%A0%84%EB%8B%B9%20%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80",
     summary: "예술의전당 공식 음악공연 일정에서 7~8월 클래식, 실내악, 리사이틀 공연을 골라 볼 수 있는 후보입니다.",
     recommendation: "공연장 접근성과 일정 선택지가 좋아 전시 외 음악 모임 후보로 넣기 좋습니다. 예매 전 공연별 좌석과 시간을 확인하세요.",
     notes: "공식 일정 페이지 기준으로 매주 업데이트 필요.",
     ratingReason: "서울 대표 클래식 공연장, 공연 선택지, 접근성, 단체 관람 편의성을 기준으로 한 모임 추천 별점.",
     sourceLabel: "예술의전당 공식 음악공연 일정",
-    updatedAt: "2026-07-09",
+    updatedAt: "2026-07-10",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010202",
@@ -661,7 +660,7 @@ const recommendedEvents = [
     type: "공연",
     title: "세종문화회관 7~8월 음악공연 추천",
     genre: "오케스트라, 합창, 국악·크로스오버",
-    startDate: "2026-07-09",
+    startDate: "2026-07-10",
     endDate: "2026-08-31",
     visitDate: "2026-08-09",
     time: "공연별 상이. 세종문화회관 공식 공연일정에서 시작시간 확인",
@@ -672,19 +671,18 @@ const recommendedEvents = [
     discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
     parkingFee: "세종문화회관 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
-    docent: "해당 없음",
-    docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설·프리토크가 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 2",
-    infoUrl: "https://www.sejongpac.or.kr/portal/performance/performance/list.do",
+    infoUrl: "https://www.sejongpac.or.kr/portal/performance/scheduleMng/performanceSchedule.do?menuNo=200280",
+    mainUrl: "https://www.sejongpac.or.kr/",
     mapUrl: "https://map.kakao.com/?q=%EC%84%B8%EC%A2%85%EB%AC%B8%ED%99%94%ED%9A%8C%EA%B4%80",
     summary: "광화문 접근성이 좋은 세종문화회관의 7~8월 음악공연 후보입니다. 클래식, 합창, 국악·크로스오버 공연을 함께 검토하기 좋습니다.",
     recommendation: "식사·산책 동선과 묶기 쉬워 주말 모임 후보로 좋습니다. 공연별 예매 상태와 시작시간을 먼저 확인하세요.",
     notes: "공식 공연일정 페이지 기준으로 매주 업데이트 필요.",
     ratingReason: "도심 접근성, 장르 폭, 모임 전후 동선 편의성을 기준으로 한 모임 추천 별점.",
     sourceLabel: "세종문화회관 공식 공연일정",
-    updatedAt: "2026-07-09",
+    updatedAt: "2026-07-10",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010203",
@@ -694,7 +692,7 @@ const recommendedEvents = [
     type: "공연",
     title: "롯데콘서트홀 7~8월 음악공연 추천",
     genre: "클래식, 오케스트라, 리사이틀",
-    startDate: "2026-07-09",
+    startDate: "2026-07-10",
     endDate: "2026-08-31",
     visitDate: "2026-08-16",
     time: "공연별 상이. 롯데콘서트홀 공식 공연일정에서 시작시간 확인",
@@ -705,19 +703,18 @@ const recommendedEvents = [
     discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
     parkingFee: "롯데콘서트홀 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
-    docent: "해당 없음",
-    docentTime: "음악공연은 도슨트 운영 없음. 공연별 해설 프로그램이 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 3",
     infoUrl: "https://www.lotteconcerthall.com/kor/Performance/Schedule",
+    mainUrl: "https://www.lotteconcerthall.com/",
     mapUrl: "https://map.kakao.com/?q=%EB%A1%AF%EB%8D%B0%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80",
     summary: "잠실권에서 접근하기 좋은 롯데콘서트홀의 7~8월 음악공연 후보입니다. 오케스트라와 리사이틀 일정 확인에 적합합니다.",
     recommendation: "동쪽·남쪽 지역 회원이 모이기 편하고, 공연 전후 식사 동선도 잡기 쉽습니다.",
     notes: "공식 공연일정 페이지 기준으로 매주 업데이트 필요.",
     ratingReason: "음향과 공연장 환경, 잠실 접근성, 공연 전후 편의성을 기준으로 한 모임 추천 별점.",
     sourceLabel: "롯데콘서트홀 공식 공연일정",
-    updatedAt: "2026-07-09",
+    updatedAt: "2026-07-10",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010204",
@@ -727,7 +724,7 @@ const recommendedEvents = [
     type: "공연",
     title: "국립극장 7~8월 음악·국악공연 추천",
     genre: "국악, 창극, 음악극, 오케스트라",
-    startDate: "2026-07-09",
+    startDate: "2026-07-10",
     endDate: "2026-08-31",
     visitDate: "2026-08-23",
     time: "공연별 상이. 국립극장 공식 공연일정에서 시작시간 확인",
@@ -738,12 +735,11 @@ const recommendedEvents = [
     discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
     parkingFee: "국립극장 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
-    docent: "해당 없음",
-    docentTime: "음악·국악공연은 도슨트 운영 없음. 공연별 해설·아티스트 토크가 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 4",
     infoUrl: "https://www.ntok.go.kr/ntok/pm/prfmng/monthPerfList.do?mi=21009",
+    mainUrl: "https://www.ntok.go.kr/",
     mapUrl: "https://map.kakao.com/?q=%EA%B5%AD%EB%A6%BD%EA%B7%B9%EC%9E%A5%20%EC%84%9C%EC%9A%B8",
     summary: "남산 장충동에 있는 국립극장의 7~8월 음악·국악공연 후보입니다. 국악관현악, 창극, 음악극 계열을 전시 모임과 다른 결로 추천하기 좋습니다.",
     recommendation: "클래식 공연장 중심 목록에 한국음악·무대공연 선택지를 더해 줍니다. 공연별 시작시간과 할인 조건은 공식 상세에서 확인하세요.",
@@ -760,7 +756,7 @@ const recommendedEvents = [
     type: "공연",
     title: "LG아트센터 서울 7~8월 음악·공연 추천",
     genre: "클래식, 재즈, 현대음악, 무대공연",
-    startDate: "2026-07-09",
+    startDate: "2026-07-10",
     endDate: "2026-08-31",
     visitDate: "2026-08-30",
     time: "공연별 상이. LG아트센터 서울 공식 공연일정에서 시작시간 확인",
@@ -771,12 +767,11 @@ const recommendedEvents = [
     discount: "공연별 카드·통신사·예매처 할인은 공식 예매 상세 확인",
     parking: "가능",
     parkingFee: "LG아트센터 서울 공식 주차 안내/공연 예매 상세에서 시간당 요금 및 공연 관람권 기준 확인 필요",
-    docent: "해당 없음",
-    docentTime: "음악·무대공연은 도슨트 운영 없음. 공연별 프리토크·해설 회차가 있으면 공식 상세에서 확인",
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 5",
     infoUrl: "https://www.lgart.com/ko/performance/list",
+    mainUrl: "https://www.lgart.com/",
     mapUrl: "https://map.kakao.com/?q=LG%EC%95%84%ED%8A%B8%EC%84%BC%ED%84%B0%20%EC%84%9C%EC%9A%B8",
     summary: "마곡권에서 접근하기 좋은 LG아트센터 서울의 7~8월 음악·공연 후보입니다. 클래식뿐 아니라 재즈, 현대음악, 무대공연까지 함께 검토하기 좋습니다.",
     recommendation: "강서·마곡권 회원에게 접근성이 좋고, 전시 위주 모임에 공연 선택지를 넓혀 줍니다.",
@@ -1070,7 +1065,7 @@ function renderRecommendationCard(event, index) {
           ${detailItem("관람료", formatSharePrice(event))}
           ${detailItem("카드·통신사 할인", event.discount || "확인 필요")}
           ${detailItem("위치", [event.venue, event.address].filter(Boolean).join(" · ") || "확인 필요")}
-          ${detailItem(event.type === "공연" ? "해설 운영" : "도슨트 운영시간", formatDocentTime(event))}
+          ${event.type === "공연" ? "" : detailItem("도슨트 운영시간", formatDocentTime(event))}
           ${detailItem("주차/주차료", formatParkingInfo(event))}
         </dl>
 
@@ -1078,11 +1073,15 @@ function renderRecommendationCard(event, index) {
 
         <div class="exhibition-actions">
           <a class="button primary" href="${escapeAttribute(kakaoMapUrl(event))}" target="_blank" rel="noopener">카카오맵</a>
-          ${event.infoUrl ? `<a class="button tertiary" href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">${event.type === "공연" ? "공연 정보" : "전시 정보"}</a>` : ""}
+          ${infoPageUrl(event) ? `<a class="button tertiary" href="${escapeAttribute(infoPageUrl(event))}" target="_blank" rel="noopener">${event.type === "공연" ? "공연 정보" : "전시 정보"}</a>` : ""}
         </div>
       </div>
     </article>
   `;
+}
+
+function infoPageUrl(event) {
+  return event.infoUrl || event.mainUrl || "";
 }
 
 function detailItem(label, value) {
@@ -1122,6 +1121,7 @@ function formatPrice(event) {
 
 function formatParkingDocent(event) {
   const parking = escapeHtml(event.parking || "-");
+  if (event.type === "공연") return parking;
   const docent = event.docent ? `<span class="sub-note">도슨트 ${escapeHtml(event.docent)}</span>` : "";
   return `${parking}${docent}`;
 }
@@ -1190,8 +1190,8 @@ async function copyKakaoShare() {
 function buildKakaoShareText() {
   const list = topRecommendedEvents();
   const lines = [
-    "[서울·수원 7~8월 추천 전시]",
-    "2026.07.09 기준 / 모임 전 공식 페이지 재확인",
+    "[서울 7~8월 추천 전시·음악공연]",
+    "2026.07.10 기준 / 모임 전 공식 페이지 재확인",
     "",
   ];
 
@@ -1200,9 +1200,13 @@ function buildKakaoShareText() {
     lines.push(`   일정: ${formatShareDateRange(event)} / 운영: ${event.time || "확인 필요"}`);
     lines.push(`   장소: ${event.venue || "-"} (${event.address || "주소 확인 필요"})`);
     lines.push(`   관람료: ${formatSharePrice(event)} / 할인: ${event.discount || "확인 필요"}`);
-    lines.push(`   도슨트: ${event.docent || "확인 필요"} / 주차: ${formatShareParking(event)}`);
+    if (event.type === "공연") {
+      lines.push(`   주차: ${formatShareParking(event)}`);
+    } else {
+      lines.push(`   도슨트: ${event.docent || "확인 필요"} / 주차: ${formatShareParking(event)}`);
+    }
     lines.push(`   추천: ${event.recommendation || event.summary || "-"}`);
-    if (event.infoUrl) lines.push(`   링크: ${event.infoUrl}`);
+    if (infoPageUrl(event)) lines.push(`   링크: ${infoPageUrl(event)}`);
     lines.push("");
   });
 
