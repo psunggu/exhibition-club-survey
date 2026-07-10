@@ -789,6 +789,7 @@ const fields = [
 ];
 
 let events = [];
+const boardUpdatedAt = "2026.07.10 22:05";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -800,6 +801,7 @@ const elements = {
   resultCount: $("#resultCount"),
   kakaoShareText: $("#kakaoShareText"),
   copyKakaoButton: $("#copyKakaoButton"),
+  boardUpdatedAt: $("#boardUpdatedAt"),
   dialog: $("#eventDialog"),
   form: $("#eventForm"),
   dialogTitle: $("#dialogTitle"),
@@ -817,6 +819,7 @@ init();
 
 async function init() {
   applyConfig();
+  elements.boardUpdatedAt.textContent = `최종 업데이트: ${boardUpdatedAt}`;
   populateSelect("#regionFilter", options.regions, true);
   populateSelect("#typeFilter", options.types, true);
   populateSelect("#statusFilter", options.statuses, true);
