@@ -279,6 +279,24 @@
     </form>
   </dialog>
 
+  <dialog id="recommendationDialog" aria-labelledby="recommendationDialogTitle">
+    <div class="recommendation-dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">공연 상세</p>
+          <h2 id="recommendationDialogTitle">공연 정보</h2>
+        </div>
+        <button class="icon-button" id="closeRecommendationButton" type="button" aria-label="닫기">×</button>
+      </div>
+      <div id="recommendationDialogBody"></div>
+      <div class="dialog-actions recommendation-dialog-actions">
+        <span class="dialog-note">앱에 저장된 검증 정보</span>
+        <a class="button tertiary" id="recommendationOfficialLink" href="#" target="_blank" rel="noopener">공식 페이지</a>
+        <button class="button primary" id="closeRecommendationAction" type="button">닫기</button>
+      </div>
+    </div>
+  </dialog>
+
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>

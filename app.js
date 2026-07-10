@@ -801,6 +801,10 @@ const elements = {
   kakaoShareText: $("#kakaoShareText"),
   copyKakaoButton: $("#copyKakaoButton"),
   dialog: $("#eventDialog"),
+  recommendationDialog: $("#recommendationDialog"),
+  recommendationDialogTitle: $("#recommendationDialogTitle"),
+  recommendationDialogBody: $("#recommendationDialogBody"),
+  recommendationOfficialLink: $("#recommendationOfficialLink"),
   form: $("#eventForm"),
   dialogTitle: $("#dialogTitle"),
   deleteButton: $("#deleteButton"),
@@ -832,6 +836,8 @@ async function init() {
   $("#openFormButton").addEventListener("click", () => openDialog());
   $("#closeDialogButton").addEventListener("click", closeDialog);
   $("#cancelButton").addEventListener("click", closeDialog);
+  $("#closeRecommendationButton").addEventListener("click", closeRecommendationDialog);
+  $("#closeRecommendationAction").addEventListener("click", closeRecommendationDialog);
   $("#resetButton").addEventListener("click", resetFilters);
   $("#exportCsvButton").addEventListener("click", exportCsv);
   elements.copyKakaoButton.addEventListener("click", copyKakaoShare);
@@ -1039,6 +1045,10 @@ function renderExhibitionPage(list) {
       </section>
     `;
   }).join("");
+
+  elements.exhibitionPageCards.querySelectorAll("[data-recommendation-info]").forEach((button) => {
+    button.addEventListener("click", () => openRecommendationDialog(button.dataset.recommendationInfo));
+  });
 }
 
 function renderRecommendationCard(event, index) {
@@ -1073,7 +1083,7 @@ function renderRecommendationCard(event, index) {
 
         <div class="exhibition-actions">
           <a class="button primary" href="${escapeAttribute(kakaoMapUrl(event))}" target="_blank" rel="noopener">카카오맵</a>
-          ${infoPageUrl(event) ? `<a class="button tertiary" href="${escapeAttribute(infoPageUrl(event))}" target="_blank" rel="noopener">${event.type === "공연" ? "공연 정보" : "전시 정보"}</a>` : ""}
+          ${infoPageUrl(event) ? `<button class="button tertiary" type="button" data-recommendation-info="${escapeAttribute(event.id)}">${event.type === "공연" ? "공연 정보" : "전시 정보"}</button>` : ""}
         </div>
       </div>
     </article>
@@ -1082,6 +1092,33 @@ function renderRecommendationCard(event, index) {
 
 function infoPageUrl(event) {
   return event.infoUrl || event.mainUrl || "";
+}
+
+function openRecommendationDialog(id) {
+  const event = events.find((item) => item.id === id);
+  if (!event) return;
+
+  elements.recommendationDialogTitle.textContent = event.title;
+  elements.recommendationDialogBody.innerHTML = `
+    ${event.summary ? `<p class="recommendation-dialog-summary">${escapeHtml(event.summary)}</p>` : ""}
+    <dl class="recommendation-dialog-details">
+      ${detailItem("관람일정", formatDateRange(event))}
+      ${detailItem("운영시간", event.time || "확인 필요")}
+      ${detailItem("관람료", formatSharePrice(event))}
+      ${detailItem("할인", event.discount || "확인 필요")}
+      ${detailItem("위치", [event.venue, event.address].filter(Boolean).join(" · ") || "확인 필요")}
+      ${event.type === "공연" ? "" : detailItem("도슨트 운영시간", formatDocentTime(event))}
+      ${detailItem("주차/주차료", formatParkingInfo(event))}
+      ${detailItem("정보 기준일", event.updatedAt || "확인 필요")}
+    </dl>
+    ${event.recommendation ? `<p class="recommendation-dialog-reason">${escapeHtml(event.recommendation)}</p>` : ""}
+  `;
+  elements.recommendationOfficialLink.href = infoPageUrl(event);
+  elements.recommendationDialog.showModal();
+}
+
+function closeRecommendationDialog() {
+  elements.recommendationDialog.close();
 }
 
 function detailItem(label, value) {
