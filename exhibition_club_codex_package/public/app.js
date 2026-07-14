@@ -907,7 +907,7 @@ const fields = [
 let events = [];
 const supportedAreas = ["서울", "경기", "인천"];
 let activeArea = "서울";
-const boardUpdatedAt = "2026.07.15 00:56";
+const boardUpdatedAt = "2026.07.15 01:39";
 const dataUpdatedAt = "2026-07-15";
 
 const $ = (selector) => document.querySelector(selector);

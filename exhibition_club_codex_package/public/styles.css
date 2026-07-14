@@ -131,8 +131,17 @@ h3 {
   letter-spacing: 0;
 }
 
-.board-updated {
-  margin: 8px 0 0;
+.board-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.board-updated,
+.update-schedule {
+  margin: 0;
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
