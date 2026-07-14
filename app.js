@@ -462,35 +462,35 @@ const recommendedEvents = [
     recommendedRank: 9,
     verified: true,
     status: "공유완료",
-    region: "노원/도봉/강북",
+    region: "강서/양천",
     type: "전시",
-    title: "《글짓, 쓰는 예술》",
-    genre: "동시대미술, 텍스트, 설치",
-    startDate: "2026-04-23",
-    endDate: "2026-07-12",
-    visitDate: "2026-07-11",
-    time: "화-목 10:00-20:00, 금 10:00-21:00, 토/일/공휴일 10:00-19:00, 월 휴관",
-    venue: "서울시립 북서울미술관",
-    address: "서울 노원구 동일로 1238",
+    title: "서울식물원 여름행사 《식물원은 미술관: 프리다가 사랑한 식물들》",
+    genre: "식물·예술, 전시·문화행사",
+    startDate: "2026-07-15",
+    endDate: "2026-08-17",
+    visitDate: "2026-07-25",
+    time: "10:00-17:00, 매주 월요일 휴관",
+    venue: "서울식물원 식물문화센터",
+    address: "서울 강서구 마곡동로 161",
     price: 0,
-    priceType: "무료",
-    discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
+    priceType: "프로그램별 상이",
+    discount: "온실·주제정원 성인 5,000원, 30명 이상 단체 성인 3,500원. 체험·강연은 프로그램별 참가비 별도 확인",
     parking: "가능",
-    parkingFee: "5분 250원(시간당 3,000원), 월요일 무료. 요일제 운영",
-    docent: "다양한 연계 프로그램 예정. 전시해설 여부는 공식 페이지 확인.",
-    docentTime: "서울시립미술관 정규 전시해설: 화~일 11:00, 14:00, 17:00(1일 3회). 연계 프로그램은 회차별 별도 공지",
+    parkingFee: "08:00-21:00(지상 주차장은 24시간), 승용차 5분당 150원(시간당 1,800원). 주차장 협소",
+    docent: "도슨트 강연·저자강연 운영",
+    docentTime: "행사 기간 중 프로그램별 회차 확인. 공식 안내에 도슨트 강연 포함",
     difficulty: "가볍게",
-    rating: "4",
+    rating: "5",
     owner: "TOP 9",
-    infoUrl: "https://sema.seoul.go.kr/kr/whatson/exhibition/detail?exNo=1521429",
-    mapUrl: "https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%8B%9C%EB%A6%BD%20%EB%B6%81%EC%84%9C%EC%9A%B8%EB%AF%B8%EC%88%A0%EA%B4%80",
-    summary: "글쓰기를 미술의 재료로 삼는 10인(팀)의 작가가 펼치는 전시입니다.",
-    recommendation: "7월 12일까지라 이번 주 긴급 후보. 글과 시각예술을 함께 보는 모임에 좋습니다.",
-    notes: "종료 임박. 방문 가능 여부를 먼저 확인하세요.",
-    ratingReason: "주제는 좋지만 종료가 임박해 일정 리스크가 있음.",
-    sourceLabel: "SeMA 공식 전시 상세·보도자료",
-    verificationNote: "SeMA 공식 전시 목록에서 전시명, 장소, 기간 확인",
-    updatedAt: "2026-07-10",
+    infoUrl: "https://botanicpark.seoul.go.kr/front/board/newsView.do?sn=19301",
+    mapUrl: "https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%8B%9D%EB%AC%BC%EC%9B%90%20%EC%8B%9D%EB%AC%BC%EB%AC%B8%ED%99%94%EC%84%BC%ED%84%B0",
+    summary: "프리다 칼로가 사랑한 꽃과 식물을 주제로 전시·공간 연출과 음악회, 영화, 도슨트 강연, 체험 프로그램을 함께 즐기는 서울식물원 여름행사입니다.",
+    recommendation: "전시와 식물원 산책, 도슨트·체험 프로그램을 함께 구성할 수 있어 동호회 모임에 특히 좋습니다.",
+    notes: "서울식물원 공식 안내 기준. 행사 세부 프로그램과 참가비는 공식 공지·프로그램별 안내에서 재확인하세요.",
+    ratingReason: "전시·식물원 산책·도슨트·체험 프로그램을 함께 구성할 수 있어 단체 모임 적합성이 높음.",
+    sourceLabel: "서울식물원 공식 행사 안내",
+    verificationNote: "서울식물원 공식 안내에서 행사 기간, 운영시간, 프로그램, 주차료 확인",
+    updatedAt: "2026-07-14",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010010",
@@ -706,14 +706,15 @@ const recommendedEvents = [
     difficulty: "사전예약",
     rating: "4",
     owner: "서울 음악 3",
-    infoUrl: "https://www.lotteconcerthall.com/product/ko/performance/261070",
+    infoUrl: "https://nol.yanolja.com/ticket/products/26006406",
+    linkLabel: "NOL 티켓 예매",
     mainUrl: "https://www.lotteconcerthall.com/",
     mapUrl: "https://map.kakao.com/?q=%EB%A1%AF%EB%8D%B0%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80",
     summary: "스튜디오 지브리와 디즈니 영화음악을 서울 페스타 필하모닉 오케스트라의 연주로 감상하는 공연입니다.",
     recommendation: "회원들이 함께 즐기기 쉬운 친숙한 영화음악 공연으로, 8월 모임 후보에 추천합니다.",
-    notes: "공식 공연 상세 페이지에서 회차별 잔여석과 예매 상태를 확인하세요.",
+    notes: "롯데콘서트홀과 연동 판매되는 NOL 티켓 공연 전용 페이지에서 예매·잔여석을 확인하세요.",
     ratingReason: "영화음악의 대중성, 단체 관람 적합성, 롯데콘서트홀 접근성을 기준으로 한 모임 추천 별점.",
-    sourceLabel: "롯데콘서트홀 공식 공연 상세",
+    sourceLabel: "NOL 티켓 공연 전용 페이지(롯데콘서트홀 연동 판매)",
     updatedAt: "2026-07-10",
   },
   {
@@ -789,7 +790,8 @@ const fields = [
 ];
 
 let events = [];
-const boardUpdatedAt = "2026.07.10 22:10";
+const boardUpdatedAt = "2026.07.14 22:16";
+const dataUpdatedAt = "2026-07-14";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -904,6 +906,7 @@ function mergeRecommendedEvents(sourceEvents = []) {
     return {
       ...(existing || {}),
       ...event,
+      updatedAt: dataUpdatedAt,
       id: existing?.id || event.id,
     };
   });
@@ -1094,7 +1097,7 @@ function renderInlineRecommendationInfo(event) {
   }
 
   const label = "공연 정보";
-  const officialLabel = "공식 예매 페이지";
+  const officialLabel = event.linkLabel || "공식 예매 페이지";
   return `
     <details class="recommendation-inline-details">
       <summary class="button tertiary">${label}</summary>
@@ -1107,7 +1110,7 @@ function renderInlineRecommendationInfo(event) {
           ${detailItem("할인", event.discount || "확인 필요")}
           ${detailItem("정보 기준일", event.updatedAt || "확인 필요")}
         </dl>
-        <a class="official-info-link" href="${escapeAttribute(infoPageUrl(event))}" target="_blank" rel="noopener">${officialLabel}</a>
+        <a class="official-info-link" href="${escapeAttribute(infoPageUrl(event))}" target="_blank" rel="noopener">${escapeHtml(officialLabel)}</a>
       </div>
     </details>
   `;
@@ -1144,6 +1147,7 @@ function formatDateRange(event) {
 function formatPrice(event) {
   const price = Number(event.price || 0);
   if (event.priceType === "확인 필요") return "확인 필요";
+  if (price === 0 && event.priceType && event.priceType !== "무료") return event.priceType;
   if (event.priceType === "무료" || price === 0) return "무료";
   return `${price.toLocaleString("ko-KR")}원`;
 }
@@ -1220,7 +1224,7 @@ function buildKakaoShareText() {
   const list = topRecommendedEvents();
   const lines = [
     "[서울 7~8월 추천 전시·음악공연]",
-    "2026.07.10 기준 / 모임 전 공식 페이지 재확인",
+    "2026.07.14 기준 / 모임 전 공식 페이지 재확인",
     "",
   ];
 
