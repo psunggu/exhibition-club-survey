@@ -6,19 +6,25 @@
   <meta http-equiv="Content-Language" content="ko-KR" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>서울 전시·음악공연 공유 보드</title>
-  <meta name="description" content="서울 지역 전시와 음악공연 정보를 동호회에서 쉽게 공유하기 위한 보드" />
-  <link rel="stylesheet" href="styles.css" />
+  <title>수도권 전시·음악공연 공유 보드</title>
+  <meta name="description" content="서울·경기·인천 전시와 음악공연 정보를 동호회에서 쉽게 공유하기 위한 보드" />
+  <link rel="stylesheet" href="styles.css?v=20260715-1" />
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
         <p class="eyebrow">문화 모임</p>
-        <h1>서울 전시·음악공연 공유 보드</h1>
-        <p class="board-updated" id="boardUpdatedAt">최종 업데이트: 2026.07.14 22:16</p>
+        <h1>수도권 전시·음악공연 공유 보드</h1>
+        <p class="board-updated" id="boardUpdatedAt">최종 업데이트: 2026.07.15 00:56</p>
       </div>
     </header>
+
+    <nav class="area-tabs" role="tablist" aria-label="추천 지역 선택">
+      <button class="area-tab is-active" type="button" role="tab" data-area="서울" aria-selected="true">서울</button>
+      <button class="area-tab" type="button" role="tab" data-area="경기" aria-selected="false">경기</button>
+      <button class="area-tab" type="button" role="tab" data-area="인천" aria-selected="false">인천</button>
+    </nav>
 
     <section class="summary-grid" aria-label="공유 현황">
       <article class="metric">
@@ -47,7 +53,7 @@
         </div>
         <button class="button secondary" id="copyKakaoButton" type="button">공유문 복사</button>
       </div>
-      <p class="share-meta">2026.07.14 기준. 매주 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.</p>
+      <p class="share-meta" id="shareMeta">2026.07.15 기준. 매주 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.</p>
       <pre class="share-text" id="kakaoShareText" aria-live="polite"></pre>
     </section>
 
@@ -281,6 +287,6 @@
   </dialog>
 
   <script src="config.js"></script>
-  <script src="app.js?v=20260714-4"></script>
+  <script src="app.js?v=20260715-1"></script>
 </body>
 </html>

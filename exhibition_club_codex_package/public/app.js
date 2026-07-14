@@ -1,6 +1,6 @@
 const options = {
   statuses: ["검토중", "공유완료", "관람예정", "관람완료", "보류", "취소"],
-  regions: ["서울 전체", "종로/중구", "강남/서초", "마포/서대문", "용산/성동", "송파/강동", "영등포/구로", "동대문/성북", "노원/도봉/강북", "강서/양천", "관악/동작/금천", "수원/경기"],
+  regions: ["서울 전체", "종로/중구", "강남/서초", "마포/서대문", "용산/성동", "송파/강동", "영등포/구로", "동대문/성북", "노원/도봉/강북", "강서/양천", "관악/동작/금천", "수원/경기", "인천"],
   types: ["전시", "공연", "기타"],
   priceTypes: ["무료", "유료", "할인 확인", "초대/이벤트", "확인 필요"],
   parking: ["가능", "불가", "확인 필요"],
@@ -530,6 +530,7 @@ const recommendedEvents = [
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010101",
     recommendedRank: 101,
+    verified: true,
     status: "공유완료",
     region: "수원/경기",
     type: "전시",
@@ -544,23 +545,27 @@ const recommendedEvents = [
     price: 0,
     priceType: "무료",
     discount: "관람료 무료",
-    parking: "확인 필요",
+    parking: "가능",
+    parkingFee: "국립농업박물관 공식 관람 안내에서 당일 주차요금 재확인",
     docent: "전시해설 여부는 박물관 공식 안내 확인",
+    docentTime: "정규 해설 회차는 국립농업박물관 공식 관람 안내에서 확인",
     difficulty: "가볍게",
     rating: "4",
     owner: "수원 추천 1",
-    infoUrl: "https://www.swcf.or.kr/?curMonth=7&curYear=2026&idx=2984&listUrl=29&p=29_view&page=1&searchDetail_flag=",
+    infoUrl: "https://www.namuk.or.kr/kr/1332/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGa3IlMkY5NSUyRjE4NTYlMkZhcnRjbFZpZXcuZG8lM0Y%3D",
     mapUrl: "https://map.kakao.com/?q=%EA%B5%AD%EB%A6%BD%EB%86%8D%EC%97%85%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%88%98%EC%9B%90",
     summary: "꽃이 자연에서 삶, 문화, 산업으로 이어지는 과정을 회화와 공예 등 소장품으로 살펴보는 전시입니다.",
     recommendation: "무료 전시이고 기간이 길어 수원권 회원과 가볍게 모이기 좋습니다. 꽃과 생활문화 주제라 대화 소재도 편안합니다.",
-    notes: "수원문화재단 행사정보 기준. 주차와 도슨트는 국립농업박물관 공식 안내를 방문 전 재확인하세요.",
+    notes: "국립농업박물관 공식 전시 안내 기준. 주차와 도슨트는 방문 전 관람 안내에서 재확인하세요.",
     ratingReason: "무료, 긴 전시 기간, 생활문화 주제의 접근성이 좋음.",
-    sourceLabel: "수원문화재단 행사정보",
+    sourceLabel: "국립농업박물관 공식 전시 공지",
+    verificationNote: "공식 상세에서 전시명, 기간, 운영시간, 장소, 관람료 확인",
     updatedAt: "2026-07-09",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010102",
     recommendedRank: 102,
+    verified: true,
     status: "공유완료",
     region: "수원/경기",
     type: "전시",
@@ -569,7 +574,7 @@ const recommendedEvents = [
     startDate: "2025-09-26",
     endDate: "2026-12-31",
     visitDate: "2026-08-10",
-    time: "화-토 09:30-21:30(입장 마감 21:00), 일 09:30-17:30(입장 마감 17:00), 월요일·법정공휴일 휴관",
+    time: "화-토 09:00-21:30(입장 마감 21:00), 일 09:00-17:30(입장 마감 17:00), 월요일·법정공휴일 휴관",
     venue: "수원시미디어센터",
     address: "수원시미디어센터",
     price: 0,
@@ -587,11 +592,13 @@ const recommendedEvents = [
     notes: "내부가 어두워 이동 시 주의 필요. 관람료, 주차, 해설은 공식 안내를 방문 전 재확인하세요.",
     ratingReason: "야간 시간대 활용성, 미디어아트 체험성, 수원 지역성이 좋음.",
     sourceLabel: "수원문화재단 Dream Light 안내",
+    verificationNote: "공식 안내에서 전시 기간, 운영시간, 장소 확인",
     updatedAt: "2026-07-09",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010103",
     recommendedRank: 103,
+    verified: true,
     status: "공유완료",
     region: "수원/경기",
     type: "전시",
@@ -607,18 +614,126 @@ const recommendedEvents = [
     priceType: "무료",
     discount: "관람료 무료",
     parking: "불가",
+    parkingFee: "전시관 주차공간 없음. 인근 공영주차장 요금 별도 확인",
     docent: "도슨트 여부는 수원전통문화관 공식 안내 확인",
+    docentTime: "별도 정규 도슨트 회차 공지 없음",
     difficulty: "가볍게",
     rating: "4",
     owner: "수원 추천 3",
-    infoUrl: "https://www.swcf.or.kr/?curMonth=7&curYear=2026&idx=2776&listUrl=29&p=29_view&page=1&searchDetail_flag=",
+    infoUrl: "https://www.swcf.or.kr/?cate=&curMonth=1&curYear=2026&idx=2776&listUrl=29&p=29_view",
     mapUrl: "https://map.kakao.com/?q=%EC%88%98%EC%9B%90%EC%A0%84%ED%86%B5%EB%AC%B8%ED%99%94%EA%B4%80%20%EC%8B%9D%EC%83%9D%ED%99%9C%EC%B2%B4%ED%97%98%EA%B4%80",
     summary: "1795년 을묘원행 당시 봉수당 진찬연에서 혜경궁 홍씨에게 올린 반과상을 재현한 전통문화 상설전시입니다.",
     recommendation: "수원화성·행궁권 산책과 함께 묶기 좋습니다. 짧고 무료라 부담 없이 공유할 수 있는 보조 후보입니다.",
     notes: "전시관 주차공간 없음. 자차 이용 시 장안동 공영주차장 등 인근 공영주차장 확인 필요.",
     ratingReason: "무료, 역사성, 행궁권 동선 장점이 있으나 규모는 비교적 작을 수 있음.",
     sourceLabel: "수원문화재단 행사정보",
+    verificationNote: "공식 상세에서 기간, 운영시간, 장소, 관람료, 주차 불가 확인",
     updatedAt: "2026-07-09",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010301",
+    recommendedRank: 301,
+    verified: true,
+    status: "공유완료",
+    region: "인천",
+    type: "전시",
+    title: "《VITAL NATURE 26》",
+    genre: "현대미술, 자연, 그룹전",
+    startDate: "2026-07-14",
+    endDate: "2026-07-19",
+    visitDate: "2026-07-18",
+    time: "10:00-19:00, 전시 기간 중 휴관 없음",
+    venue: "인천아트플랫폼 E1 전시장2",
+    address: "인천광역시 제물포구 제물량로218번길 3",
+    price: 0,
+    priceType: "무료",
+    discount: "관람료 무료",
+    parking: "확인 필요",
+    parkingFee: "인천아트플랫폼 공식 방문 안내 또는 인근 공영주차장 요금 확인",
+    docent: "별도 도슨트 안내 없음",
+    docentTime: "별도 도슨트 운영 공지 없음",
+    difficulty: "가볍게",
+    rating: "4",
+    owner: "인천 추천 1",
+    infoUrl: "https://inartplatform.kr/program/view?no=1302",
+    mapUrl: "https://map.kakao.com/?q=%EC%9D%B8%EC%B2%9C%EC%95%84%ED%8A%B8%ED%94%8C%EB%9E%AB%ED%8F%BC",
+    summary: "자연과 생명성을 주제로 여러 작가의 시선을 한자리에서 만나는 현대미술 전시입니다.",
+    recommendation: "이번 주말까지 열리는 짧은 무료 전시라 개항장 산책과 함께 묶기 좋습니다.",
+    notes: "7월 19일 종료. 인천아트플랫폼 공식 상세에서 방문 당일 운영 여부를 다시 확인하세요.",
+    ratingReason: "개항장 동선과 무료 관람 장점이 있으나 전시 기간이 짧음.",
+    sourceLabel: "인천아트플랫폼 공식 전시 상세",
+    verificationNote: "공식 상세에서 기간, 운영시간, 장소, 관람료 확인",
+    updatedAt: "2026-07-15",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010302",
+    recommendedRank: 302,
+    verified: true,
+    status: "공유완료",
+    region: "인천",
+    type: "전시",
+    title: "《바윗돌에 숨은 비밀, 인천 고인돌 이야기》",
+    genre: "고고학, 어린이 체험, 역사",
+    startDate: "2026-07-14",
+    endDate: "2027-05-16",
+    visitDate: "2026-08-01",
+    time: "화-일 09:00-18:00, 수요일 20:00까지 연장, 월요일·1월 1일 휴관(월요일이 공휴일이면 개관)",
+    venue: "검단선사박물관 2층 특별전시실",
+    address: "인천광역시 검단구 고산후로121번길 7",
+    price: 0,
+    priceType: "무료",
+    discount: "관람료 무료",
+    parking: "확인 필요",
+    parkingFee: "공식 관람 안내에 주차요금 미공개. 방문 전 박물관(032-440-6790) 확인",
+    docent: "정기 전시해설 운영",
+    docentTime: "개관일 10:30, 13:30, 15:00. 정규 시간 외 요청 가능, 단체는 사전 신청",
+    difficulty: "가볍게",
+    rating: "5",
+    owner: "인천 추천 2",
+    infoUrl: "https://www.incheon.go.kr/culture/CU050101/view?nttNo=2045983",
+    mapUrl: "https://map.kakao.com/?q=%EA%B2%80%EB%8B%A8%EC%84%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80",
+    summary: "인천의 고인돌을 어린이 눈높이의 유물, 이야기, 체험으로 살펴보는 특별전입니다.",
+    recommendation: "전시 기간이 길고 무료라 가족 회원과 함께 보기 좋으며, 인천의 지역사를 대화 주제로 삼기 좋습니다.",
+    notes: "인천광역시 공식 문화행사 안내 기준. 수요일은 오후 8시까지 연장 운영합니다.",
+    ratingReason: "무료 관람, 긴 전시 기간, 어린이·성인 모두 접근하기 쉬운 지역사 주제.",
+    sourceLabel: "인천광역시·검단선사박물관 공식 전시 안내",
+    verificationNote: "공식 상세에서 기간, 운영시간, 휴관일, 장소, 관람료 확인",
+    updatedAt: "2026-07-15",
+  },
+  {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010303",
+    recommendedRank: 303,
+    verified: true,
+    status: "공유완료",
+    region: "인천",
+    type: "전시",
+    title: "검단선사박물관 작은전시 《뼈로 만든 장신구》",
+    genre: "고고학, 유물, 장신구",
+    startDate: "2026-06-09",
+    endDate: "2026-09-06",
+    visitDate: "2026-08-08",
+    time: "화-일 09:00-18:00, 수요일 20:00까지 연장, 월요일·1월 1일 휴관(월요일이 공휴일이면 개관)",
+    venue: "검단선사박물관 1층 상설전시실",
+    address: "인천광역시 검단구 고산후로121번길 7",
+    price: 0,
+    priceType: "무료",
+    discount: "관람료 무료",
+    parking: "확인 필요",
+    parkingFee: "공식 관람 안내에 주차요금 미공개. 방문 전 박물관(032-440-6790) 확인",
+    docent: "박물관 정기 전시해설 운영",
+    docentTime: "개관일 10:30, 13:30, 15:00. 작은전시 해설 포함 여부는 현장 확인, 단체는 사전 신청",
+    difficulty: "가볍게",
+    rating: "4",
+    owner: "인천 추천 3",
+    infoUrl: "https://www.incheon.go.kr/museum/MU060103/3076040",
+    mapUrl: "https://map.kakao.com/?q=%EA%B2%80%EB%8B%A8%EC%84%A0%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80",
+    summary: "운남동 패총에서 나온 뼈와 이빨 재질 장신구 6점을 통해 선사시대 사람들의 꾸밈 문화를 살펴봅니다.",
+    recommendation: "고인돌 특별전과 같은 박물관에서 함께 볼 수 있어 한 번의 방문으로 두 전시를 비교하기 좋습니다.",
+    notes: "작은전시 공식 상세와 박물관 공통 관람시간 기준. 방문 전 휴관일을 재확인하세요.",
+    ratingReason: "무료이고 다른 특별전과 연계 관람하기 좋지만 전시 규모가 작음.",
+    sourceLabel: "검단선사박물관 공식 전시 안내",
+    verificationNote: "공식 상세에서 전시명, 기간, 장소, 출품 내용 확인",
+    updatedAt: "2026-07-15",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010201",
@@ -790,8 +905,10 @@ const fields = [
 ];
 
 let events = [];
-const boardUpdatedAt = "2026.07.14 22:16";
-const dataUpdatedAt = "2026-07-14";
+const supportedAreas = ["서울", "경기", "인천"];
+let activeArea = "서울";
+const boardUpdatedAt = "2026.07.15 00:56";
+const dataUpdatedAt = "2026-07-15";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -804,6 +921,10 @@ const elements = {
   kakaoShareText: $("#kakaoShareText"),
   copyKakaoButton: $("#copyKakaoButton"),
   boardUpdatedAt: $("#boardUpdatedAt"),
+  areaTabs: [...document.querySelectorAll("[data-area]")],
+  weeklyShareTitle: $("#weeklyShareTitle"),
+  shareMeta: $("#shareMeta"),
+  exhibitionPageTitle: $("#exhibitionPageTitle"),
   dialog: $("#eventDialog"),
   form: $("#eventForm"),
   dialogTitle: $("#dialogTitle"),
@@ -842,6 +963,9 @@ async function init() {
   elements.copyKakaoButton.addEventListener("click", copyKakaoShare);
   elements.form.addEventListener("submit", saveFromForm);
   elements.deleteButton.addEventListener("click", deleteCurrentEvent);
+  elements.areaTabs.forEach((tab) => {
+    tab.addEventListener("click", () => setActiveArea(tab.dataset.area));
+  });
 
   Object.values(elements.filters).forEach((control) => {
     control.addEventListener("input", render);
@@ -944,8 +1068,29 @@ function matchesFilter(value, filter) {
   return !filter || value === filter;
 }
 
+function setActiveArea(area) {
+  if (!supportedAreas.includes(area) || area === activeArea) return;
+  activeArea = area;
+  elements.areaTabs.forEach((tab) => {
+    const selected = tab.dataset.area === activeArea;
+    tab.classList.toggle("is-active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+  });
+  render();
+}
+
+function eventArea(event) {
+  const location = [event.area, event.region, event.address, event.venue].filter(Boolean).join(" ");
+  if (location.includes("인천")) return "인천";
+  if (location.includes("경기") || location.includes("수원")) return "경기";
+  return "서울";
+}
+
 function render() {
   const list = filteredEvents();
+  elements.weeklyShareTitle.textContent = `${activeArea} 7~8월 추천 목록`;
+  elements.shareMeta.textContent = `2026.07.15 기준. ${activeArea} 추천 정보는 매주 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.`;
+  elements.exhibitionPageTitle.textContent = `${activeArea} 추천 전시·음악공연`;
   renderMetrics();
   renderKakaoShare();
   renderExhibitionPage(topRecommendedEvents());
@@ -956,14 +1101,15 @@ function render() {
 }
 
 function renderMetrics() {
-  const ratings = events.map((event) => Number(event.rating)).filter(Boolean);
+  const areaEvents = events.filter((event) => eventArea(event) === activeArea);
+  const ratings = areaEvents.map((event) => Number(event.rating)).filter(Boolean);
   const avg = ratings.length
     ? (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1)
     : "-";
 
-  $("#metricTotal").textContent = events.length;
-  $("#metricPlanned").textContent = events.filter((event) => event.status === "관람예정").length;
-  $("#metricFree").textContent = events.filter((event) => event.priceType === "무료" || event.priceType === "초대/이벤트").length;
+  $("#metricTotal").textContent = areaEvents.length;
+  $("#metricPlanned").textContent = areaEvents.filter((event) => event.status === "관람예정").length;
+  $("#metricFree").textContent = areaEvents.filter((event) => event.priceType === "무료" || event.priceType === "초대/이벤트").length;
   $("#metricRating").textContent = avg;
 }
 
@@ -1022,8 +1168,8 @@ function renderCards(list) {
 
 function renderExhibitionPage(list) {
   const groups = [
-    { type: "전시", title: "추천 전시", subtitle: "공식 상세 페이지로 확인한 서울 7~8월 전시", max: 10 },
-    { type: "공연", title: "추천 음악공연", subtitle: "공식 공연장 일정 페이지에서 고르는 서울 7~8월 공연 후보", max: 10 },
+    { type: "전시", title: "추천 전시", subtitle: `공식 상세 페이지로 확인한 ${activeArea} 7~8월 전시`, max: 10 },
+    { type: "공연", title: "추천 음악공연", subtitle: `공식 공연장 일정 페이지에서 고르는 ${activeArea} 7~8월 공연 후보`, max: 10 },
   ];
 
   elements.exhibitionPageCards.innerHTML = groups.map((group) => {
@@ -1165,11 +1311,11 @@ function formatStars(rating) {
   return `${"★".repeat(value)}${"☆".repeat(5 - value)}`;
 }
 
-function topRecommendedEvents(source = events) {
+function topRecommendedEvents(source = events, area = activeArea) {
   const visibleTypes = new Set(["전시", "공연"]);
   return [...source]
     .filter((event) => {
-      if (!visibleTypes.has(event.type) || !event.recommendedRank || event.region === "수원/경기") return false;
+      if (!visibleTypes.has(event.type) || !event.recommendedRank || eventArea(event) !== area) return false;
       if (event.type === "전시") return event.verified === true;
       return true;
     })
@@ -1223,8 +1369,8 @@ async function copyKakaoShare() {
 function buildKakaoShareText() {
   const list = topRecommendedEvents();
   const lines = [
-    "[서울 7~8월 추천 전시·음악공연]",
-    "2026.07.14 기준 / 모임 전 공식 페이지 재확인",
+    `[${activeArea} 7~8월 추천 전시·음악공연]`,
+    "2026.07.15 기준 / 모임 전 공식 페이지 재확인",
     "",
   ];
 

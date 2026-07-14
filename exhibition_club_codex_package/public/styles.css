@@ -64,6 +64,39 @@ a {
   padding: 22px 0 18px;
 }
 
+.area-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 520px);
+  margin: 0 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 4px;
+  box-shadow: var(--shadow);
+}
+
+.area-tab {
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.area-tab:hover,
+.area-tab:focus-visible {
+  background: var(--panel-soft);
+  color: var(--green-dark);
+}
+
+.area-tab.is-active {
+  background: var(--green);
+  color: #ffffff;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--green-dark);
