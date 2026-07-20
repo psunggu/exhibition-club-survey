@@ -37,7 +37,7 @@ const sampleEvents = [
     recommendation: "7~8월 모임의 대표 후보로 적합합니다. 대형 개관전이라 사전 예매와 혼잡도 확인을 권장합니다.",
     notes: "출처: 퐁피두센터 한화 한국어 공식 상세·관람 안내.",
     ratingReason: "",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: crypto.randomUUID(),
@@ -210,7 +210,7 @@ const recommendedEvents = [
     ratingReason: "작품 규모, 작가 중요도, 연계 프로그램, 모임 대화성 모두 높음.",
     sourceLabel: "SeMA 공식 전시 상세",
     verificationNote: "공식 상세 페이지에서 전시명, 장소, 기간, 관람료, 도슨트 회차 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010002",
@@ -245,7 +245,7 @@ const recommendedEvents = [
     ratingReason: "국제 컬렉션, 개관전 화제성, 작품 대중성이 높음.",
     sourceLabel: "퐁피두센터 한화 한국어 공식 상세·관람 안내",
     verificationNote: "한국어 공식 페이지에서 전시명, 작품 수, 운영시간, 관람료·문화가 있는 날 할인, 도슨트, 주차료 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010003",
@@ -280,7 +280,7 @@ const recommendedEvents = [
     ratingReason: "사진 장르의 접근성, 신설 미술관 방문성, 8월 일정 안정성이 좋음.",
     sourceLabel: "SeMA 공식 전시 상세·사진미술관 방문안내",
     verificationNote: "SeMA 공식 상세에서 전시명, 장소, 기간, 관람료, 도슨트 3회차 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010004",
@@ -315,7 +315,7 @@ const recommendedEvents = [
     ratingReason: "여러 작가와 매체를 한 번에 볼 수 있어 단체 관람 후 토론에 좋음.",
     sourceLabel: "SeMA 공식 전시 상세·보도자료",
     verificationNote: "SeMA 공식 상세에서 전시명, 장소, 기간, 관람료, 도슨트 15:00 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010005",
@@ -350,7 +350,7 @@ const recommendedEvents = [
     ratingReason: "체험성, 사운드, 어린이 친화 프로그램의 장점이 뚜렷함.",
     sourceLabel: "SeMA 공식 전시 상세·북서울미술관 방문안내",
     verificationNote: "SeMA 공식 상세에서 전시명, 기간, 관람료, 매일 14:30 도슨트 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010006",
@@ -385,7 +385,7 @@ const recommendedEvents = [
     ratingReason: "신규 공립 미디어 특화 미술관의 개관 분위기를 볼 수 있음.",
     sourceLabel: "SeMA 공식 전시 상세·서서울미술관 방문안내",
     verificationNote: "SeMA 공식 상세에서 전시명, 기간, 관람료, 운영시간 확인; 도슨트 공지 없음",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010007",
@@ -420,7 +420,7 @@ const recommendedEvents = [
     ratingReason: "8월 일정 안정성, 교통 접근성, 조각 장르의 차별성이 좋음.",
     sourceLabel: "SeMA 공식 전시 상세·남서울미술관 방문안내",
     verificationNote: "SeMA 공식 상세에서 전시명, 기간, 관람료, 매일 13:00 도슨트 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010008",
@@ -455,7 +455,7 @@ const recommendedEvents = [
     ratingReason: "일정 여유가 크고 북서울권 회원 접근성이 좋음.",
     sourceLabel: "SeMA 공식 전시 상세·북서울미술관 방문안내",
     verificationNote: "SeMA 공식 상세에서 전시명, 기간, 관람료, 도슨트 미운영 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010009",
@@ -490,42 +490,42 @@ const recommendedEvents = [
     ratingReason: "전시·식물원 산책·도슨트·체험 프로그램을 함께 구성할 수 있어 단체 모임 적합성이 높음.",
     sourceLabel: "서울식물원 공식 행사 안내",
     verificationNote: "서울식물원 공식 안내에서 행사 기간, 운영시간, 프로그램, 주차료 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010010",
     recommendedRank: 10,
     verified: true,
     status: "공유완료",
-    region: "서울 전체",
+    region: "종로/중구",
     type: "전시",
-    title: "[2026 신진미술인 지원 프로그램] 허수인 개인전 《사적인 프로토콜》",
-    genre: "동시대미술, 신진작가",
-    startDate: "2026-07-01",
-    endDate: "2026-07-18",
-    visitDate: "2026-07-12",
-    time: "11:00-18:00, 일요일·월요일 휴관. 전시 사전 예약 권장",
-    venue: "더레퍼런스",
-    address: "서울 종로구 자하문로24길 44",
+    title: "《알렉사에게》",
+    genre: "동시대미술, 인공지능, 아카이브",
+    startDate: "2026-03-26",
+    endDate: "2026-07-26",
+    visitDate: "2026-07-25",
+    time: "화-금 10:00-20:00, 토·일·공휴일 10:00-19:00, 월요일·1월 1일 휴관. 관람 종료 1시간 전 입장 마감",
+    venue: "서울시립 미술아카이브 모음동",
+    address: "서울 종로구 평창문화로 101",
     price: 0,
     priceType: "무료",
     discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
-    parking: "불가",
-    parkingFee: "별도 주차공간 없음. 경복궁역 인근 공영·민영주차장 이용 시 해당 요금 적용",
-    docent: "본 전시는 도슨트를 운영하지 않습니다.",
-    docentTime: "도슨트 미운영. 전시 연계 퍼포먼스는 2026-07-01 16:00, 더레퍼런스, 별도 사전예약 없이 가능",
+    parking: "가능",
+    parkingFee: "화-일 5분당 150원, 1일(8시간) 최대 14,400원. 주차장 협소·승용차 5부제 시행",
+    docent: "정기 전시해설 운영",
+    docentTime: "매주 화-일 13:00, 14:00, 15:00. 휴관일·전시 개막일 미운영",
     difficulty: "가볍게",
-    rating: "3",
+    rating: "4",
     owner: "TOP 10",
-    infoUrl: "https://sema.seoul.go.kr/kr/whatson/exhibition/detail?exNo=1554633",
-    mapUrl: "https://map.kakao.com/?q=%EB%8D%94%EB%A0%88%ED%8D%BC%EB%9F%B0%EC%8A%A4%20%EC%9E%90%ED%95%98%EB%AC%B8%EB%A1%9C24%EA%B8%B8%2044",
-    summary: "서울시립미술관 2026 신진미술인 지원 프로그램에 선정된 허수인 작가의 개인전입니다. 사물을 수집하고 배열하는 과정을 통해 기록과 관계 맺기의 방식을 탐구합니다.",
-    recommendation: "짧은 기간 전시라 신진작가 전시에 관심 있는 회원에게 빠르게 공유하면 좋습니다.",
-    notes: "7월 18일까지. 일요일과 월요일 휴관이며 별도 주차공간이 없습니다.",
-    ratingReason: "무료 신진작가 전시이지만 종료가 임박해 보조 후보로 추천.",
-    sourceLabel: "SeMA 공식 전시 상세",
-    verificationNote: "공식 상세 페이지에서 전시명, 기간, 운영시간, 장소, 관람료, 도슨트 미운영 확인",
-    updatedAt: "2026-07-16",
+    infoUrl: "https://sema.seoul.go.kr/kr/whatson/exhibition/detail?exNo=1513028",
+    mapUrl: "https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%8B%9C%EB%A6%BD%20%EB%AF%B8%EC%88%A0%EC%95%84%EC%B9%B4%EC%9D%B4%EB%B8%8C",
+    summary: "인공지능과 검색 알고리즘이 정보를 재구성하는 방식을 영상, 조각, 사진, 회화, 아카이브 등으로 되짚는 전시입니다.",
+    recommendation: "7월 26일까지라 이번 주말 우선 후보입니다. 하루 세 차례 정기 해설이 있어 전시 주제를 함께 이해하기 좋습니다.",
+    notes: "7월 26일 종료. 주차장이 협소하고 승용차 5부제를 시행하므로 대중교통 이용을 권장합니다.",
+    ratingReason: "무료 관람, 하루 3회 해설, 인공지능이라는 시의성 있는 주제가 모임 대화에 적합함.",
+    sourceLabel: "SeMA 공식 전시 상세·미술아카이브 방문안내",
+    verificationNote: "공식 상세에서 기간, 운영시간, 관람료, 도슨트 3회차 확인; 방문안내에서 주차요금·5부제 확인",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010101",
@@ -560,7 +560,7 @@ const recommendedEvents = [
     ratingReason: "무료, 긴 전시 기간, 생활문화 주제의 접근성이 좋음.",
     sourceLabel: "국립농업박물관 공식 전시 공지",
     verificationNote: "공식 상세에서 전시명, 기간, 운영시간, 장소, 관람료 확인; 공식 오시는 길에서 무료 주차와 206대 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010102",
@@ -595,7 +595,7 @@ const recommendedEvents = [
     ratingReason: "야간 시간대 활용성, 미디어아트 체험성, 수원 지역성이 좋음.",
     sourceLabel: "수원문화재단 Dream Light 안내",
     verificationNote: "수원문화재단·수원시미디어센터 공식 페이지에서 상설운영, 09:30 개장, 주소, 주차 불가 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010103",
@@ -630,7 +630,7 @@ const recommendedEvents = [
     ratingReason: "무료, 역사성, 행궁권 동선 장점이 있으나 규모는 비교적 작을 수 있음.",
     sourceLabel: "수원문화재단 행사정보",
     verificationNote: "공식 상세에서 기간, 운영시간, 장소, 관람료, 주차 불가 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010301",
@@ -639,33 +639,33 @@ const recommendedEvents = [
     status: "공유완료",
     region: "인천",
     type: "전시",
-    title: "《VITAL NATURE 26》",
-    genre: "현대미술, 자연, 그룹전",
-    startDate: "2026-07-14",
-    endDate: "2026-07-19",
-    visitDate: "2026-07-18",
-    time: "10:00-19:00, 전시 기간 중 휴관 없음",
-    venue: "인천아트플랫폼 E1 전시장2",
-    address: "인천광역시 제물포구 제물량로218번길 3",
+    title: "박신양 작가 초대전 《제4의 벽》",
+    genre: "회화, 표현주의, 기획초대전",
+    startDate: "2026-07-09",
+    endDate: "2026-08-02",
+    visitDate: "2026-08-01",
+    time: "10:00-18:00(17:30 입장 마감), 전시 기간 중 휴관 없음",
+    venue: "인천문화예술회관 대전시실",
+    address: "인천광역시 남동구 예술로 149",
     price: 0,
     priceType: "무료",
     discount: "무료 전시: 카드·통신사 할인 적용 대상 없음",
     parking: "가능",
-    parkingFee: "09:00-18:00, 최초 30분 1,000원·이후 15분당 500원. 부설주차장 협소, 행사·단체관람 시 이용 불가 가능",
-    docent: "별도 도슨트 안내 없음",
-    docentTime: "별도 도슨트 운영 공지 없음",
+    parkingFee: "전시 관람객 로비 사전정산기 이용 시 1,500원. 일반요금 최초 30분 600원, 이후 15분당 300원, 전일 6,000원",
+    docent: "도슨트 프로그램과 박신양 작가 아티스트 토크 운영",
+    docentTime: "아티스트 토크 2026-08-01 14:00(예약 필수, 1회차 7월 18일 종료). 일반 도슨트는 고정 회차 미공지",
     difficulty: "가볍게",
-    rating: "4",
+    rating: "5",
     owner: "인천 추천 1",
-    infoUrl: "https://inartplatform.kr/program/view?no=1302",
-    mapUrl: "https://map.kakao.com/?q=%EC%9D%B8%EC%B2%9C%EC%95%84%ED%8A%B8%ED%94%8C%EB%9E%AB%ED%8F%BC",
-    summary: "자연과 생명성을 주제로 여러 작가의 시선을 한자리에서 만나는 현대미술 전시입니다.",
-    recommendation: "이번 주말까지 열리는 짧은 무료 전시라 개항장 산책과 함께 묶기 좋습니다.",
-    notes: "7월 19일 종료. 인천아트플랫폼 공식 상세에서 방문 당일 운영 여부를 다시 확인하세요.",
-    ratingReason: "개항장 동선과 무료 관람 장점이 있으나 전시 기간이 짧음.",
-    sourceLabel: "인천아트플랫폼 공식 전시 상세",
-    verificationNote: "공식 상세에서 기간, 운영시간, 장소, 관람료 확인",
-    updatedAt: "2026-07-16",
+    infoUrl: "https://www.incheon.go.kr/art/ART010201/view?progrmSn=10823&resveGroupSn=25&resveProgrmSeCode=C",
+    mapUrl: "https://map.kakao.com/?q=%EC%9D%B8%EC%B2%9C%EB%AC%B8%ED%99%94%EC%98%88%EC%88%A0%ED%9A%8C%EA%B4%80%20%EB%8C%80%EC%A0%84%EC%8B%9C%EC%8B%A4",
+    summary: "박신양 작가가 14년간 작업한 회화 120여 점을 통해 작가와 관객 사이의 심리적 벽을 허물고 소통을 시도하는 기획 초대전입니다.",
+    recommendation: "무료 대규모 회화전이며 8월 1일 작가 토크가 남아 있어 인천 모임 대표 후보로 추천합니다.",
+    notes: "초등학생 이상 관람. 전시는 예약 없이 관람할 수 있으나 아티스트 토크는 선착순 예약이 필요합니다.",
+    ratingReason: "무료 대규모 기획전, 남은 작가 토크 회차, 명확한 주차 정보와 대중교통 접근성이 강점.",
+    sourceLabel: "인천문화예술회관 공식 전시·아티스트 토크·주차 안내",
+    verificationNote: "공식 상세에서 기간, 운영시간, 휴관 없음, 무료, 아티스트 토크 예약 조건 확인; 공식 이미지에서 8월 1일 14:00 회차 확인",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010302",
@@ -700,7 +700,7 @@ const recommendedEvents = [
     ratingReason: "무료 관람, 긴 전시 기간, 어린이·성인 모두 접근하기 쉬운 지역사 주제.",
     sourceLabel: "인천광역시·검단선사박물관 공식 전시 안내",
     verificationNote: "공식 상세에서 기간, 운영시간, 휴관일, 장소, 관람료 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010303",
@@ -735,7 +735,7 @@ const recommendedEvents = [
     ratingReason: "무료이고 다른 특별전과 연계 관람하기 좋지만 전시 규모가 작음.",
     sourceLabel: "검단선사박물관 공식 전시 안내",
     verificationNote: "공식 상세에서 전시명, 기간, 장소, 출품 내용 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010201",
@@ -770,7 +770,7 @@ const recommendedEvents = [
     ratingReason: "대중성, 오케스트라 규모, 공식 예매 정보의 명확성, 단체 관람 적합성이 높음.",
     sourceLabel: "예술의전당 공식 공연 상세·주차 안내",
     verificationNote: "공식 상세에서 일시, 러닝타임, 좌석별 관람료, 할인과 주차요금 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010202",
@@ -805,7 +805,7 @@ const recommendedEvents = [
     ratingReason: "합리적인 가격, 해설 구성, 경기 남부 접근성, 공식 할인 정보가 명확함.",
     sourceLabel: "성남문화재단 공식 공연 상세·주차 안내",
     verificationNote: "공식 상세에서 일시, 러닝타임, 관람료, 할인과 공연 관람객 주차요금 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010203",
@@ -841,7 +841,7 @@ const recommendedEvents = [
     ratingReason: "영화음악의 대중성, 단체 관람 적합성, 롯데콘서트홀 접근성을 기준으로 한 모임 추천 별점.",
     sourceLabel: "롯데콘서트홀 공식 일정·주차 안내 및 연동 NOL 예매",
     verificationNote: "공식 일정과 연동 예매에서 일시, 러닝타임, 관람료, 할인 확인; 공식 주차 안내에서 요금 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010204",
@@ -876,7 +876,7 @@ const recommendedEvents = [
     ratingReason: "지역 대표 오케스트라, 오전 시간대, 합리적인 가격, 할인 폭이 강점.",
     sourceLabel: "아트센터인천 공식 공연 상세·예매 안내",
     verificationNote: "공식 상세에서 일시, 러닝타임, 관람료, 할인, 공식 예매 링크 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
   {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010205",
@@ -911,7 +911,7 @@ const recommendedEvents = [
     ratingReason: "무료 관람, 지역 초연성, 토요일 시간대, 대공연장 접근성이 좋음.",
     sourceLabel: "인천문화예술회관 공식 공연 상세·주차 안내",
     verificationNote: "공식 상세에서 일시, 무료 사전예약 조건, 장소 확인; 공식 주차 안내에서 요금 확인",
-    updatedAt: "2026-07-16",
+    updatedAt: "2026-07-20",
   },
 ];
 
@@ -924,8 +924,8 @@ const fields = [
 let events = [];
 const supportedAreas = ["서울", "경기", "인천"];
 let activeArea = "서울";
-const boardUpdatedAt = "2026.07.16 20:56";
-const dataUpdatedAt = "2026-07-16";
+const boardUpdatedAt = "2026.07.20 21:10";
+const dataUpdatedAt = "2026-07-20";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -1052,7 +1052,11 @@ function mergeRecommendedEvents(sourceEvents = []) {
     };
   });
 
-  const extras = originals.filter((event) => !recommendedTitles.has(normalizeTitle(event.title)));
+  const extras = originals.filter((event) => {
+    const isRecommended = recommendedTitles.has(normalizeTitle(event.title));
+    const isCurrent = !event.endDate || event.endDate >= dataUpdatedAt;
+    return !isRecommended && isCurrent;
+  });
   return [...recommended, ...extras];
 }
 
@@ -1106,7 +1110,7 @@ function eventArea(event) {
 function render() {
   const list = filteredEvents();
   elements.weeklyShareTitle.textContent = `${activeArea} 7~8월 추천 목록`;
-  elements.shareMeta.textContent = `2026.07.16 기준. ${activeArea} 추천 정보는 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.`;
+  elements.shareMeta.textContent = `2026.07.20 기준. ${activeArea} 추천 정보는 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.`;
   elements.exhibitionPageTitle.textContent = `${activeArea} 추천 전시·음악공연`;
   renderMetrics();
   renderKakaoShare();
@@ -1387,7 +1391,7 @@ function buildKakaoShareText() {
   const list = topRecommendedEvents();
   const lines = [
     `[${activeArea} 7~8월 추천 전시·음악공연]`,
-    "2026.07.16 기준 / 모임 전 공식 페이지 재확인",
+    "2026.07.20 기준 / 모임 전 공식 페이지 재확인",
     "",
   ];
 
