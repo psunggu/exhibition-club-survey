@@ -214,7 +214,7 @@
       time: "오후 3시 ~ 5시",
       venue: "서울역사박물관 · 종로구 새문안로 55",
       description: "서울의 장소와 역사, 기억을 살펴보는 정기관람입니다. 관람 중 퀴즈 이벤트와 정답자 선물을 진행합니다.",
-      note: "참고자료와 담당 임원은 톡게시판에서 확인해 주세요.",
+      note: "참고자료와 담당 운영진은 톡게시판에서 확인해 주세요.",
       infoUrl: "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
       infoLabel: "박물관 관람 안내 보기 →",
       mapUrl: "https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80"

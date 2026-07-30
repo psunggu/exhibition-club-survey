@@ -27,7 +27,7 @@
 - **모바일 우선**: 회원 대부분이 카톡 링크로 휴대폰에서 열람. 375px 폭에서 가로 스크롤 없어야 함.
 - **한국어 텍스트 줄바꿈**: `word-break: keep-all` 사용 (음절 단위 줄바꿈 방지).
 - **개인정보 최소화**: 이름 외 연락처·생년월일 등 수집·게시 금지. 결제·로그인 기능 없음 (docs/CODEX_TASK.md의 운영 원칙 계승).
-- **주간 정리 공개 데이터**: GitHub Pages는 임원 전용이 아니라 공개 페이지다. 원본 `digest-*.json`을 복사하지 말고, 원문·실명·닉네임·구역번호+이름·개인별 평가를 뺀 `weekly-digest.public.json`만 갱신한다. 배포 전 `node scripts/validate-weekly-digest.mjs`를 실행한다.
+- **주간 정리 공개 데이터**: GitHub Pages는 운영진 전용이 아니라 공개 페이지다. 원본 `digest-*.json`을 복사하지 말고, 원문·실명·닉네임·구역번호+이름·개인별 평가를 뺀 `weekly-digest.public.json`만 갱신한다. 배포 전 `node scripts/validate-weekly-digest.mjs`를 실행한다.
 - 커밋 작성자: `psunggu <psunggu@users.noreply.github.com>`, 커밋 메시지는 영어 또는 한국어 명령형 한 줄.
 
 ## notice 페이지 (2026-07-21 추가)
