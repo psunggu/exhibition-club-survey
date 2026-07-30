@@ -9,6 +9,8 @@ public/
   index.html       # 모바일 안내 페이지
   styles.css       # 모바일 우선 스타일
   config.js        # Google Form 응답 URL 설정
+  notice.html      # 주간 정리봇 + 모임 일정 안내
+  weekly-digest.public.json # 공개용 주간 요약 데이터
 apps-script/
   Code.gs          # Google Form 2개 + Google Sheet 1개 생성 스크립트
 docs/
@@ -111,3 +113,24 @@ Vercel을 쓰면 이 패키지의 `public` 폴더를 그대로 사이트 루트�
 - 전화번호, 주소, 생년월일은 수집하지 않습니다.
 - 결제 기능과 로그인 기능은 포함하지 않습니다.
 - 첫 버전은 7월 정기 관람을 실제로 운영하는 데 필요한 범위만 유지합니다.
+
+## 주간 정리봇 공개 페이지 운영
+
+`notice.html`의 상단 `주간 정리봇` 영역은
+`public/weekly-digest.public.json`만 읽습니다. 이 페이지는 로그인 없이
+접근 가능한 GitHub Pages이므로 다음 항목만 수동 검토 후 넣습니다.
+
+- 일정 결정, 마감일, 확정 여부와 임원 후속 확인사항
+- 완료된 모임의 인원수·공개된 비용처럼 개인을 식별하지 않는 집계
+- 공개해도 되는 운영 공지
+
+대화 원문, 실명, 카카오 닉네임, `구역번호(4자리)+이름`, 전화번호,
+이메일, 개인별 평가와 사적인 내용은 넣지 않습니다. 원본
+`digest-*.json`을 이름만 바꿔 복사하지 마세요.
+
+배포 전 아래 명령으로 공개 필드와 민감정보 패턴을 검사합니다.
+GitHub Pages 배포 작업에서도 같은 검사가 자동으로 실행됩니다.
+
+```powershell
+node scripts/validate-weekly-digest.mjs
+```

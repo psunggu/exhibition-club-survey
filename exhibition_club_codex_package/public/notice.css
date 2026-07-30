@@ -46,6 +46,200 @@ h1 {
   font-weight: 600;
 }
 
+.digest {
+  margin-top: 26px;
+  padding: 20px;
+  border: 1px solid #d7d2fb;
+  border-radius: 18px;
+  background: #f4f2ff;
+  box-shadow: 0 12px 30px rgba(62, 48, 129, 0.08);
+}
+
+.digest-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.digest-eyebrow {
+  margin: 0 0 3px;
+  color: #6250a4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.digest h2 {
+  margin: 0;
+  color: #2f245c;
+  font-size: 23px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.digest-period {
+  flex-shrink: 0;
+  border: 1px solid #cfc7f4;
+  border-radius: 999px;
+  background: #fff;
+  color: #51418a;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.digest-intro {
+  margin: 12px 0 16px;
+  color: #504a65;
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.digest-loading,
+.digest-error {
+  margin: 0;
+  border-radius: 10px;
+  background: #fff;
+  color: #6d6686;
+  padding: 14px;
+  font-size: 13px;
+}
+
+.digest-error {
+  border: 1px solid #f0b9b9;
+  color: #922828;
+}
+
+.digest-subtitle {
+  margin: 0 0 9px;
+  color: #302b3c;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.digest-highlights {
+  display: grid;
+  gap: 8px;
+}
+
+.digest-item {
+  display: flex;
+  gap: 11px;
+  border: 1px solid;
+  border-left-width: 5px;
+  border-radius: 12px;
+  padding: 13px 13px 13px 11px;
+}
+
+.digest-marker {
+  display: inline-flex;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.digest-item-body {
+  min-width: 0;
+}
+
+.digest-status {
+  display: inline-block;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.digest-item h4 {
+  margin: 0 0 4px;
+  color: #27242e;
+  font-size: 14.5px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.digest-item p {
+  margin: 0;
+  color: #514d59;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.digest-item-urgent {
+  border-color: #e8a3a3;
+  background: #fff0f0;
+}
+.digest-item-urgent .digest-marker { background: #a92525; }
+.digest-item-urgent .digest-status { background: #a92525; color: #fff; }
+
+.digest-item-check {
+  border-color: #ebbf70;
+  background: #fff7e7;
+}
+.digest-item-check .digest-marker { background: #a15c00; }
+.digest-item-check .digest-status { background: #f1c66f; color: #623700; }
+
+.digest-item-planning {
+  border-color: #9ebee6;
+  background: #edf5ff;
+}
+.digest-item-planning .digest-marker { background: #2866ad; }
+.digest-item-planning .digest-status { background: #cfe2f9; color: #174d89; }
+
+.digest-item-done {
+  border-color: #8fcdb5;
+  background: #eaf8f2;
+}
+.digest-item-done .digest-marker { background: #08745a; }
+.digest-item-done .digest-status { background: #bde9d8; color: #075b47; }
+
+.digest-decisions {
+  margin-top: 14px;
+  border: 1px solid #ddd7f7;
+  border-radius: 12px;
+  background: #fff;
+  padding: 13px 14px;
+}
+
+.digest-decisions ul {
+  margin: 0;
+  padding-left: 19px;
+  color: #4c4857;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.digest-decisions li + li {
+  margin-top: 5px;
+}
+
+.digest-source {
+  margin: 10px 0 0;
+  color: #777086;
+  font-size: 11.5px;
+}
+
+.digest-disclaimer {
+  margin: 13px 0 0;
+  border-top: 1px solid #ddd7f7;
+  padding-top: 11px;
+  color: #696277;
+  font-size: 11.5px;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
 .sec {
   display: flex;
   align-items: center;
@@ -124,6 +318,21 @@ h1 {
 }
 
 .meta b { color: #1f1e1b; font-weight: 700; }
+
+.card-alert {
+  margin: 10px 0 0;
+  border-radius: 8px;
+  background: #fff3da;
+  color: #764300;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.card-alert b {
+  color: #623700;
+}
 
 .legend {
   display: flex;
@@ -295,7 +504,28 @@ h1 {
 
 @media (min-width: 480px) {
   h1 { font-size: 30px; }
+  .digest { padding: 22px; }
   .cell { min-height: 54px; }
   .chip { font-size: 12.5px; }
   .dnum { font-size: 14px; }
+}
+
+@media (max-width: 380px) {
+  .wrap {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .digest {
+    padding: 16px;
+  }
+
+  .digest-head {
+    display: block;
+  }
+
+  .digest-period {
+    display: inline-block;
+    margin-top: 8px;
+  }
 }
