@@ -8,8 +8,8 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>주간 정리봇 · 7·8월 모임 일정 | 41교구 박물관·갤러리 동호회</title>
   <meta name="description" content="주간 정리봇이 정리한 41교구 박물관·갤러리 동호회 주요 확인사항과 7월, 8월 모임 일정" />
-  <link rel="stylesheet" href="notice.css?v=20260731-2" />
-  <script src="notice.js?v=20260731-3" defer></script>
+  <link rel="stylesheet" href="notice.css?v=20260731-3" />
+  <script src="notice.js?v=20260731-4" defer></script>
 </head>
 <body>
 <main class="wrap">
@@ -62,6 +62,9 @@
       <p class="card-alert"><b>운영진 확인:</b> 최신 주간 정리에서는 집결 시간과 세부 일정이 미정으로 감지되었습니다.</p>
     </div>
   </article>
+
+  <h2 class="sec"><span class="dot dot-tent"></span>조율 중 · 미정</h2>
+  <p class="trow"><span class="ttag t1">미정</span><span><b>가우디 서울전</b> (신사동) — 8월 중 관람 추진 · <span class="warn">얼리버드 예매 7/31 마감</span> (30% 할인 19,000원)</span></p>
 
   <h2 class="sec"><span class="dot dot-dark"></span>한눈에 보는 달력</h2>
   <p class="legend">
@@ -171,15 +174,17 @@
     </div>
   </dialog>
 
-  <h2 class="sec"><span class="dot dot-done"></span>완료된 모임</h2>
-  <p class="drow"><span class="ck">✓</span><span><b>7/5 (일) 12:30</b> 킥오프 첫모임 · 2별관 2층</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/11 (토) 16:00</b> 7월 정기관람 ① 〈큐비스트〉 주말 관람 · 퐁피두센터 한화</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/26 (일) 3부 예배 후</b> 성률 기획전 〈여름을 닮은 우리〉 관람</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 10:00</b> 〈큐비스트〉 오전 벙개 · 퐁피두센터 한화</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 19:00</b> 7월 정기관람 ② 〈큐비스트〉 평일 관람 · 식사 후 퐁피두센터 한화 관람</span></p>
-
-  <h2 class="sec"><span class="dot dot-tent"></span>조율 중 · 미정</h2>
-  <p class="trow"><span class="ttag t1">미정</span><span><b>가우디 서울전</b> (신사동) — 8월 중 관람 추진 · <span class="warn">얼리버드 예매 7/31 마감</span> (30% 할인 19,000원)</span></p>
+  <h2 class="sec" id="completedMeetingsTitle"><span class="dot dot-done"></span>완료된 모임</h2>
+  <div class="completed-list" id="completedMeetings" aria-labelledby="completedMeetingsTitle">
+    <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 19:00</b> 7월 정기관람 ② 〈큐비스트〉 평일 관람 · 식사 후 퐁피두센터 한화 관람</span></p>
+    <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 10:00</b> 〈큐비스트〉 오전 벙개 · 퐁피두센터 한화</span></p>
+    <p class="drow"><span class="ck">✓</span><span><b>7/26 (일) 3부 예배 후</b> 성률 기획전 〈여름을 닮은 우리〉 관람</span></p>
+    <p class="drow"><span class="ck">✓</span><span><b>7/11 (토) 16:00</b> 7월 정기관람 ① 〈큐비스트〉 주말 관람 · 퐁피두센터 한화</span></p>
+    <p class="drow"><span class="ck">✓</span><span><b>7/5 (일) 12:30</b> 킥오프 첫모임 · 2별관 2층</span></p>
+  </div>
+  <button class="completed-toggle" id="completedMeetingsToggle" type="button" aria-controls="completedMeetings" aria-expanded="false" hidden>
+    이전 완료 모임 보기
+  </button>
 
   <footer class="foot">
     <p>2026. 7. 30. (목)까지의 단체방 대화·공지 기준으로 정리했습니다.<br />일정 변경 시 톡방 공지를 확인해 주세요.</p>

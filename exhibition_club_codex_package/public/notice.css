@@ -528,6 +528,54 @@ h1 {
 .drow .ck { color: #0f6e56; font-weight: 800; font-size: 14px; flex-shrink: 0; }
 .drow b { color: #4a4840; font-weight: 700; }
 
+.completed-list .drow[hidden] {
+  display: none;
+}
+
+.completed-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 9px;
+  border: 1px solid #d9d6cc;
+  border-radius: 10px;
+  background: #fff;
+  color: #555149;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.completed-toggle::after {
+  content: "⌄";
+  font-size: 15px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.completed-toggle[aria-expanded="true"]::after {
+  content: "⌃";
+  transform: translateY(1px);
+}
+
+.completed-toggle:hover {
+  border-color: #bcb8ad;
+  background: #f9f8f4;
+}
+
+.completed-toggle:focus-visible {
+  outline: 3px solid rgba(15, 110, 86, 0.24);
+  outline-offset: 3px;
+}
+
+.completed-toggle[hidden] {
+  display: none;
+}
+
 .trow {
   display: flex;
   gap: 10px;

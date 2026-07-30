@@ -125,7 +125,39 @@
       .catch(renderDigestError);
   }
 
+  function setupCompletedMeetings() {
+    var visibleLimit = 3;
+    var list = document.getElementById("completedMeetings");
+    var toggle = document.getElementById("completedMeetingsToggle");
+    if (!list || !toggle) return;
+
+    var rows = list.querySelectorAll(".drow");
+    if (rows.length <= visibleLimit) return;
+
+    var hiddenCount = rows.length - visibleLimit;
+    for (var rowIndex = visibleLimit; rowIndex < rows.length; rowIndex++) {
+      rows[rowIndex].hidden = true;
+    }
+
+    function updateCompletedState(expanded) {
+      for (var index = visibleLimit; index < rows.length; index++) {
+        rows[index].hidden = !expanded;
+      }
+      toggle.setAttribute("aria-expanded", String(expanded));
+      toggle.textContent = expanded
+        ? "완료된 모임 접기"
+        : "이전 완료 모임 " + hiddenCount + "개 더 보기";
+    }
+
+    toggle.hidden = false;
+    updateCompletedState(false);
+    toggle.addEventListener("click", function () {
+      updateCompletedState(toggle.getAttribute("aria-expanded") !== "true");
+    });
+  }
+
   loadDigest();
+  setupCompletedMeetings();
 
   var eventDetails = {
     kickoff: {
