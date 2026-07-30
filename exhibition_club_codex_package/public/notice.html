@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Content-Language" content="ko-KR" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; media-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>주간 정리봇 · 7·8월 모임 일정 | 41교구 박물관·갤러리 동호회</title>
   <meta name="description" content="주간 정리봇이 정리한 41교구 박물관·갤러리 동호회 주요 확인사항과 7월, 8월 모임 일정" />
-  <link rel="stylesheet" href="notice.css?v=20260731-1" />
-  <script src="notice.js?v=20260731-1" defer></script>
+  <link rel="stylesheet" href="notice.css?v=20260731-2" />
+  <script src="notice.js?v=20260731-2" defer></script>
 </head>
 <body>
 <main class="wrap">
@@ -17,6 +17,17 @@
   <p class="ov">41교구 박물관 · 갤러리 동호회</p>
   <h1>7 · 8월 모임 일정 안내</h1>
   <span class="upd">업데이트 2026. 7. 31. (금) 01:50 기준</span>
+
+  <section class="board-jump" aria-labelledby="boardJumpTitle">
+    <div>
+      <p class="board-jump-kicker">전시·공연 더 찾아보기</p>
+      <h2 id="boardJumpTitle">수도권 추천 문화 보드</h2>
+      <p>서울·경기·인천의 최신 전시와 음악공연 정보를 한곳에서 확인하세요.</p>
+    </div>
+    <a class="board-jump-link" href="./">
+      수도권 전시·음악공연 공유 보드 보러가기 <span aria-hidden="true">→</span>
+    </a>
+  </section>
 
   <section class="digest" aria-labelledby="weeklyDigestTitle">
     <div class="digest-head">
@@ -68,13 +79,13 @@
     <div class="cell"><span class="dnum">2</span></div>
     <div class="cell"><span class="dnum">3</span></div>
     <div class="cell"><span class="dnum">4</span></div>
-    <div class="cell"><span class="dnum">5</span><span class="chip done">킥오프 12:30</span></div>
+    <div class="cell"><span class="dnum">5</span><button class="chip done event-trigger" type="button" data-event-id="kickoff" aria-haspopup="dialog" aria-controls="eventDetailsDialog">킥오프 12:30</button></div>
     <div class="cell"><span class="dnum">6</span></div>
     <div class="cell"><span class="dnum">7</span></div>
     <div class="cell"><span class="dnum">8</span></div>
     <div class="cell"><span class="dnum">9</span></div>
     <div class="cell"><span class="dnum">10</span></div>
-    <div class="cell"><span class="dnum">11</span><span class="chip done">큐비스트 16시</span></div>
+    <div class="cell"><span class="dnum">11</span><button class="chip done event-trigger" type="button" data-event-id="cubist-weekend" aria-haspopup="dialog" aria-controls="eventDetailsDialog">큐비스트 16시</button></div>
     <div class="cell"><span class="dnum">12</span></div>
     <div class="cell"><span class="dnum">13</span></div>
     <div class="cell"><span class="dnum">14</span></div>
@@ -89,12 +100,12 @@
     <div class="cell"><span class="dnum">23</span></div>
     <div class="cell"><span class="dnum">24</span></div>
     <div class="cell"><span class="dnum">25</span></div>
-    <div class="cell"><span class="dnum">26</span><span class="chip conf">성률전 예배후</span></div>
+    <div class="cell"><span class="dnum">26</span><button class="chip done event-trigger" type="button" data-event-id="seongryul" aria-haspopup="dialog" aria-controls="eventDetailsDialog">성률전 관람</button></div>
     <div class="cell"><span class="dnum">27</span></div>
     <div class="cell"><span class="dnum">28</span></div>
-    <div class="cell"><span class="dnum">29</span><span class="chip conf">큐비스트 19시</span><span class="chip tent">오전벙개 10시</span></div>
+    <div class="cell"><span class="dnum">29</span><button class="chip done event-trigger" type="button" data-event-id="cubist-evening" aria-haspopup="dialog" aria-controls="eventDetailsDialog">식사·관람 19시</button><button class="chip done event-trigger" type="button" data-event-id="cubist-morning" aria-haspopup="dialog" aria-controls="eventDetailsDialog">오전벙개 10시</button></div>
     <div class="cell"><span class="dnum">30</span></div>
-    <div class="cell"><span class="dnum">31</span><span class="chip dead">가우디 마감</span></div>
+    <div class="cell"><span class="dnum">31</span><button class="chip dead event-trigger" type="button" data-event-id="gaudi-deadline" aria-haspopup="dialog" aria-controls="eventDetailsDialog">가우디 마감</button></div>
     <div class="cell off"></div>
   </div>
 
@@ -123,7 +134,7 @@
     <div class="cell"><span class="dnum">19</span></div>
     <div class="cell"><span class="dnum">20</span></div>
     <div class="cell"><span class="dnum">21</span></div>
-    <div class="cell"><span class="dnum">22</span><span class="chip conf">박물관 15시</span></div>
+    <div class="cell"><span class="dnum">22</span><button class="chip conf event-trigger" type="button" data-event-id="history-museum" aria-haspopup="dialog" aria-controls="eventDetailsDialog">박물관 15시</button></div>
     <div class="cell"><span class="dnum">23</span></div>
     <div class="cell"><span class="dnum">24</span></div>
     <div class="cell"><span class="dnum">25</span></div>
@@ -136,19 +147,42 @@
     <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
   </div>
 
+  <dialog class="event-dialog" id="eventDetailsDialog" aria-labelledby="eventDialogTitle">
+    <div class="event-dialog-card">
+      <div class="event-dialog-head">
+        <div>
+          <span class="event-dialog-status" id="eventDialogStatus"></span>
+          <h2 id="eventDialogTitle"></h2>
+        </div>
+        <button class="event-dialog-close" type="button" data-dialog-close aria-label="일정 상세 닫기">×</button>
+      </div>
+      <dl class="event-dialog-facts">
+        <div><dt>날짜</dt><dd id="eventDialogDate"></dd></div>
+        <div><dt>시간</dt><dd id="eventDialogTime"></dd></div>
+        <div><dt>장소</dt><dd id="eventDialogVenue"></dd></div>
+      </dl>
+      <p class="event-dialog-description" id="eventDialogDescription"></p>
+      <p class="event-dialog-note" id="eventDialogNote"></p>
+      <div class="event-dialog-actions">
+        <a class="event-dialog-link primary" id="eventDialogInfoLink" target="_blank" rel="noopener noreferrer">공식 정보 보기 →</a>
+        <a class="event-dialog-link secondary" id="eventDialogMapLink" target="_blank" rel="noopener noreferrer">카카오맵 보기</a>
+        <button class="event-dialog-dismiss" type="button" data-dialog-close>닫기</button>
+      </div>
+    </div>
+  </dialog>
+
   <h2 class="sec"><span class="dot dot-done"></span>완료된 모임</h2>
   <p class="drow"><span class="ck">✓</span><span><b>7/5 (일) 12:30</b> 킥오프 첫모임 · 2별관 2층</span></p>
   <p class="drow"><span class="ck">✓</span><span><b>7/11 (토) 16:00</b> 7월 정기관람 ① 〈큐비스트〉 주말 관람 · 퐁피두센터 한화</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/26 (일)</b> 성률 기획전 〈여름을 닮은 우리〉 관람</span></p>
-  <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 19:00</b> 7월 정기관람 ② 〈큐비스트〉 평일 관람 · 관람 및 비용 정산 완료</span></p>
+  <p class="drow"><span class="ck">✓</span><span><b>7/26 (일) 3부 예배 후</b> 성률 기획전 〈여름을 닮은 우리〉 관람</span></p>
+  <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 10:00</b> 〈큐비스트〉 오전 벙개 · 퐁피두센터 한화</span></p>
+  <p class="drow"><span class="ck">✓</span><span><b>7/29 (수) 19:00</b> 7월 정기관람 ② 〈큐비스트〉 평일 관람 · 식사 후 퐁피두센터 한화 관람</span></p>
 
   <h2 class="sec"><span class="dot dot-tent"></span>조율 중 · 미정</h2>
   <p class="trow"><span class="ttag t1">미정</span><span><b>가우디 서울전</b> (신사동) — 8월 중 관람 추진 · <span class="warn">얼리버드 예매 7/31 마감</span> (30% 할인 19,000원)</span></p>
-  <p class="trow"><span class="ttag t2">자율</span><span>서울시립미술관(유영국전 추천) · 국립현대미술관 전시는 희망자끼리 자율 관람</span></p>
 
   <footer class="foot">
     <p>2026. 7. 30. (목)까지의 단체방 대화·공지 기준으로 정리했습니다.<br />일정 변경 시 톡방 공지를 확인해 주세요.</p>
-    <p><a href="./">수도권 전시·음악공연 공유 보드 보러가기 →</a></p>
   </footer>
 
 </main>
