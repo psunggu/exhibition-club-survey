@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260731-2";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260731-3";
   var SEVERITY_ICONS = {
     urgent: "!",
     check: "?",
@@ -232,6 +232,19 @@
       venue: "신사하우스",
       description: "가우디 서거 100주기를 맞아 원본 작품과 유물, 공식 공인 레플리카로 그의 창작 세계를 살펴보는 전시입니다. 전시는 8월 1일부터 10월 31일까지 열립니다.",
       note: "얼리버드 30% 할인가는 19,000원이며, 실제 예매 가능 여부와 조건은 예매 페이지에서 다시 확인하세요.",
+      infoUrl: "https://feverup.com/m/665616",
+      infoLabel: "전시·예매 정보 보기 →",
+      mapUrl: "https://map.kakao.com/?q=%EC%8B%A0%EC%82%AC%ED%95%98%EC%9A%B0%EC%8A%A4"
+    },
+    "gaudi-visit": {
+      status: "확정",
+      tone: "conf",
+      title: "가우디 서울전 관람",
+      date: "2026. 8. 29. (토)",
+      time: "시간 확인 중",
+      venue: "신사하우스 · 신사동",
+      description: "가우디 서거 100주기를 맞아 원본 작품과 유물, 공식 공인 레플리카로 그의 창작 세계를 살펴보는 전시입니다.",
+      note: "관람일은 8월 29일로 확정되었습니다. 집결 시간과 최종 참석자는 톡방 공지를 확인해 주세요.",
       infoUrl: "https://feverup.com/m/665616",
       infoLabel: "전시·예매 정보 보기 →",
       mapUrl: "https://map.kakao.com/?q=%EC%8B%A0%EC%82%AC%ED%95%98%EC%9A%B0%EC%8A%A4"
