@@ -2,6 +2,46 @@
   "use strict";
 
   var DIGEST_URL = "weekly-digest.public.json?v=20260731-3";
+  var FALLBACK_DIGEST = {
+    "schema_version": 1,
+    "bot_name": "주간 정리봇",
+    "period_label": "7월 24일 ~ 7월 30일",
+    "updated_label": "2026. 7. 31. 23:21 기준",
+    "message_count": 288,
+    "summary": "최근 7일 대화에서 일정과 후속 확인이 필요한 내용만 선별했습니다.",
+    "highlights": [
+      {
+        "severity": "planning",
+        "label": "날짜 확정",
+        "title": "가우디 서울전 8월 29일 관람",
+        "text": "관람일은 8월 29일로 확정됐습니다. 집결 시간과 최종 참석자는 추가 확인이 필요합니다."
+      },
+      {
+        "severity": "check",
+        "label": "확인 필요",
+        "title": "8월 22일 서울역사박물관 세부 일정",
+        "text": "기존 공지에는 오후 3시~5시로 표시됐지만 최신 정리에는 집결 시간과 세부 일정이 미정으로 남아 있습니다."
+      },
+      {
+        "severity": "planning",
+        "label": "조율 중",
+        "title": "영화 《오디세이》 정기관람",
+        "text": "2026년 2차 정기관람 영화편으로 추진 중입니다. 날짜, 상영관, 시간과 참여자 확정이 필요합니다."
+      },
+      {
+        "severity": "done",
+        "label": "완료",
+        "title": "7월 29일 《큐비스트》 관람",
+        "text": "7명이 관람했고 티켓 비용은 1인 14,000원으로 정산을 마쳤습니다."
+      }
+    ],
+    "decisions": [
+      "가우디 서울전 관람일을 8월 29일로 확정했습니다.",
+      "모임 일정은 안내 페이지와 단체방 공지를 함께 사용해 공유합니다.",
+      "영화 《오디세이》를 2026년 2차 정기관람 영화편으로 추진합니다.",
+      "7월 29일 《큐비스트》 관람과 비용 정산을 완료했습니다."
+    ]
+  };
   var SEVERITY_ICONS = {
     urgent: "!",
     check: "?",
@@ -93,27 +133,8 @@
     content.replaceChildren(priorityTitle, highlightList, decisionPanel, source);
   }
 
-  function renderDigestError() {
-    var period = document.getElementById("weeklyDigestPeriod");
-    var content = document.getElementById("weeklyDigestContent");
-    if (period) period.textContent = "확인 필요";
-    if (!content) return;
-
-    var error = createElement(
-      "p",
-      "digest-error",
-      "주간 정리 내용을 불러오지 못했습니다. 최신 일정은 단체방 공지를 확인해 주세요."
-    );
-    content.replaceChildren(error);
-  }
-
-  function loadDigest() {
-    if (!window.fetch) {
-      renderDigestError();
-      return;
-    }
-
-    fetch(DIGEST_URL, { credentials: "same-origin", cache: "no-store" })
+  function fetchDigest(retriesRemaining) {
+    fetch(DIGEST_URL, { credentials: "same-origin" })
       .then(function (response) {
         if (!response.ok) throw new Error("digest fetch failed");
         return response.json();
@@ -122,7 +143,18 @@
         if (!isSafeDigest(data)) throw new Error("invalid digest schema");
         renderDigest(data);
       })
-      .catch(renderDigestError);
+      .catch(function () {
+        if (retriesRemaining < 1) return;
+        window.setTimeout(function () {
+          fetchDigest(retriesRemaining - 1);
+        }, 800);
+      });
+  }
+
+  function loadDigest() {
+    // JSON 요청이 막혀도 검토를 마친 공개 요약 사본은 즉시 표시한다.
+    renderDigest(FALLBACK_DIGEST);
+    if (window.fetch) fetchDigest(1);
   }
 
   function setupCompletedMeetings() {

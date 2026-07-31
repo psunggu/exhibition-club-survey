@@ -6,6 +6,11 @@ const digestPath = resolve(
   "public",
   "weekly-digest.public.json"
 );
+const noticeScriptPath = resolve(
+  "exhibition_club_codex_package",
+  "public",
+  "notice.js"
+);
 
 const allowedRootKeys = new Set([
   "schema_version",
@@ -40,6 +45,7 @@ function assertPublicText(value, path, maxLength) {
 
 const raw = await readFile(digestPath, "utf8");
 const data = JSON.parse(raw);
+const noticeScript = await readFile(noticeScriptPath, "utf8");
 
 if (!data || Array.isArray(data) || typeof data !== "object") {
   fail("최상위 값은 객체여야 합니다.");
@@ -92,4 +98,18 @@ for (const { label, pattern } of sensitivePatterns) {
   if (pattern.test(publicText)) fail(`${label}로 보이는 값이 포함되어 있습니다.`);
 }
 
-console.log("weekly-digest.public.json 공개 데이터 검증 통과");
+const fallbackMatch = noticeScript.match(/var FALLBACK_DIGEST = (\{[\s\S]*?\n  \});/u);
+if (!fallbackMatch) fail("notice.js에 공개 요약 대체 사본이 없습니다.");
+
+let fallbackData;
+try {
+  fallbackData = JSON.parse(fallbackMatch[1]);
+} catch {
+  fail("notice.js의 공개 요약 대체 사본이 올바른 JSON이 아닙니다.");
+}
+
+if (JSON.stringify(fallbackData) !== JSON.stringify(data)) {
+  fail("notice.js의 공개 요약 대체 사본이 weekly-digest.public.json과 다릅니다.");
+}
+
+console.log("weekly-digest.public.json 및 notice.js 대체 사본 공개 데이터 검증 통과");
