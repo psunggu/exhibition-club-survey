@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260731-1";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260731-2";
   var SEVERITY_ICONS = {
     urgent: "!",
     check: "?",
@@ -342,15 +342,12 @@
   var month = now.getMonth() + 1;
   var day = now.getDate();
 
-  var headings = document.querySelectorAll(".mon");
-  for (var i = 0; i < headings.length; i++) {
-    var match = headings[i].textContent.match(/(\d{4})년\s*(\d{1,2})월/);
-    if (!match || Number(match[1]) !== year || Number(match[2]) !== month) continue;
+  var calendars = document.querySelectorAll(".cal[data-year][data-month]");
+  for (var i = 0; i < calendars.length; i++) {
+    if (Number(calendars[i].dataset.year) !== year ||
+        Number(calendars[i].dataset.month) !== month) continue;
 
-    var cal = headings[i].nextElementSibling;
-    if (!cal || !cal.classList.contains("cal")) continue;
-
-    var nums = cal.querySelectorAll(".cell .dnum");
+    var nums = calendars[i].querySelectorAll(".cell .dnum");
     for (var j = 0; j < nums.length; j++) {
       if (Number(nums[j].textContent.trim()) !== day) continue;
       nums[j].classList.add("is-today");

@@ -412,6 +412,77 @@ h1 {
   word-break: keep-all;
 }
 
+.calendar-fold {
+  margin-top: 18px;
+  border: 1px solid #dedbd2;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.calendar-fold summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  color: #4a4840;
+  cursor: pointer;
+  list-style: none;
+}
+
+.calendar-fold summary::-webkit-details-marker {
+  display: none;
+}
+
+.calendar-fold summary::after {
+  content: "⌄";
+  margin-left: auto;
+  color: #77736a;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.calendar-fold[open] summary::after {
+  content: "⌃";
+}
+
+.calendar-fold summary:hover {
+  background: #f9f8f4;
+}
+
+.calendar-fold summary:focus-visible {
+  outline: 3px solid rgba(15, 110, 86, 0.24);
+  outline-offset: -3px;
+}
+
+.calendar-fold-title {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.calendar-fold-hint {
+  color: #88847b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.calendar-fold-body {
+  border-top: 1px solid #ece9e1;
+  padding: 10px;
+}
+
+.month-empty {
+  margin: -1px 0 9px;
+  border-radius: 9px;
+  background: #eef1f8;
+  color: #4b6283;
+  padding: 9px 11px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
 .mon {
   font-size: 16px;
   font-weight: 700;
