@@ -12,6 +12,11 @@
   --red: #9f2d44;
   --amber: #b56b00;
   --amber-soft: #fff4d8;
+  --purple: #7048a8;
+  --purple-soft: #f0e9fb;
+  --orange: #a54f1f;
+  --orange-dark: #7c3513;
+  --orange-soft: #fff0e7;
   --shadow: 0 18px 48px rgba(31, 41, 55, 0.08);
 }
 
@@ -67,34 +72,195 @@ a {
 .area-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(100%, 520px);
-  margin: 0 0 18px;
+  width: min(100%, 760px);
+  margin: 0 0 10px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--panel);
-  padding: 4px;
-  box-shadow: var(--shadow);
+  padding: 3px;
 }
 
 .area-tab {
+  --area-accent: var(--green);
+  --area-accent-soft: #e7f4ed;
   min-width: 0;
-  min-height: 44px;
+  min-height: 48px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 2px;
   background: transparent;
   color: var(--muted);
   font-weight: 800;
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
-.area-tab:hover,
+.area-tab[data-area="경기"] {
+  --area-accent: #355ca8;
+  --area-accent-soft: #edf2fb;
+}
+
+.area-tab[data-area="인천"] {
+  --area-accent: #a04a2a;
+  --area-accent-soft: #fff0ea;
+}
+
+.area-tab:hover {
+  background: var(--area-accent-soft);
+  color: var(--area-accent);
+}
+
 .area-tab:focus-visible {
-  background: var(--panel-soft);
-  color: var(--green-dark);
+  outline: 2px solid var(--area-accent);
+  outline-offset: 2px;
 }
 
 .area-tab.is-active {
-  background: var(--green);
+  background: var(--area-accent);
   color: #ffffff;
+}
+
+.content-type-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(100%, 760px);
+  margin: 0 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  padding: 3px;
+}
+
+.content-type-tab {
+  --tab-accent: #344054;
+  --tab-accent-soft: #eef1f4;
+  min-width: 0;
+  min-height: 58px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tab-accent);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  word-break: keep-all;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.content-type-tab[data-content-type="전시"] {
+  --tab-accent: var(--green);
+  --tab-accent-soft: #e7f4ed;
+}
+
+.content-type-tab[data-content-type="공연"] {
+  --tab-accent: var(--purple);
+  --tab-accent-soft: var(--purple-soft);
+}
+
+.content-type-tab[data-content-type="영화"] {
+  --tab-accent: var(--red);
+  --tab-accent-soft: #faecef;
+}
+
+.content-type-tab:hover {
+  background: var(--tab-accent-soft);
+  color: var(--tab-accent);
+}
+
+.content-type-tab:focus-visible {
+  outline: 2px solid var(--tab-accent);
+  outline-offset: 2px;
+}
+
+.content-type-tab.is-active {
+  background: var(--tab-accent);
+  color: #ffffff;
+}
+
+.content-type-tab-label {
+  line-height: 1.2;
+}
+
+.content-type-tab-icon {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  color: currentColor;
+}
+
+.content-type-tab.is-active .content-type-tab-icon {
+  color: #ffffff;
+}
+
+.tab-icon-all {
+  background:
+    linear-gradient(currentColor 0 0) 4px 4px / 8px 8px no-repeat,
+    linear-gradient(currentColor 0 0) 16px 4px / 8px 8px no-repeat,
+    linear-gradient(currentColor 0 0) 4px 16px / 8px 8px no-repeat,
+    linear-gradient(currentColor 0 0) 16px 16px / 8px 8px no-repeat;
+}
+
+.tab-icon-exhibition {
+  width: 26px;
+  height: 22px;
+  margin-inline: 1px;
+  margin-block: 3px;
+  border: 2px solid currentColor;
+}
+
+.tab-icon-exhibition::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.tab-icon-exhibition::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+  height: 7px;
+  background: currentColor;
+  clip-path: polygon(0 100%, 34% 28%, 52% 68%, 72% 12%, 100% 100%);
+}
+
+.tab-icon-music::before {
+  content: "♪";
+  position: absolute;
+  inset: -2px 0 0;
+  display: grid;
+  place-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tab-icon-movie {
+  width: 26px;
+  height: 20px;
+  margin-inline: 1px;
+  margin-block: 4px;
+  border: 2px solid currentColor;
+}
+
+.tab-icon-movie::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  left: 3px;
+  height: 2px;
+  background: currentColor;
+  box-shadow: 0 8px 0 currentColor;
 }
 
 .eyebrow {
@@ -324,6 +490,100 @@ h3 {
   border-radius: 8px;
   background: #ffffff;
   padding: 16px;
+}
+
+.performance-card {
+  border-left: 5px solid var(--purple);
+}
+
+.performance-card .exhibition-rank {
+  background: var(--purple);
+}
+
+.performance-card .exhibition-venue,
+.performance-card .exhibition-reason {
+  color: #55317f;
+}
+
+.performance-card .exhibition-reason {
+  border-left-color: var(--purple);
+}
+
+.movie-card {
+  border-left: 5px solid var(--orange);
+}
+
+.movie-card .exhibition-rank {
+  background: var(--orange-dark);
+}
+
+.movie-card .exhibition-venue {
+  color: var(--orange-dark);
+}
+
+.movie-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.movie-status-badge,
+.movie-ranking-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.movie-status-badge {
+  background: #e9f8ee;
+  color: var(--green-dark);
+}
+
+.movie-status-badge.upcoming {
+  background: var(--orange-soft);
+  color: var(--orange-dark);
+}
+
+.movie-ranking-badge {
+  background: var(--amber-soft);
+  color: #7b4900;
+}
+
+.movie-booking-box {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+  text-align: right;
+}
+
+.movie-booking-box strong {
+  color: var(--orange-dark);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.movie-booking-box span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.movie-card .exhibition-reason {
+  border-left-color: var(--orange);
+  color: var(--orange-dark);
+}
+
+.button.movie-booking-button {
+  background: var(--orange);
+  color: #ffffff;
 }
 
 .exhibition-rank {
@@ -942,6 +1202,11 @@ dialog::backdrop {
     text-align: left;
   }
 
+  .movie-booking-box {
+    justify-items: start;
+    text-align: left;
+  }
+
   .exhibition-details {
     grid-template-columns: 1fr;
   }
@@ -976,5 +1241,15 @@ dialog::backdrop {
 
   .dialog-actions span {
     display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .content-type-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-type-tab {
+    min-height: 54px;
   }
 }

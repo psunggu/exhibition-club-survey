@@ -6,19 +6,19 @@
   <meta http-equiv="Content-Language" content="ko-KR" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>수도권 전시·음악공연 공유 보드</title>
-  <meta name="description" content="서울·경기·인천 전시와 음악공연 정보를 동호회에서 쉽게 공유하기 위한 보드" />
-  <link rel="stylesheet" href="styles.css?v=20260715-2" />
+  <title>문화 콘텐츠 공유 보드</title>
+  <meta name="description" content="100주년 기념교회 41교구 문화 모임에서 서울·경기·인천의 전시·음악공연·영화 정보를 함께 나누는 문화 콘텐츠 공유 보드" />
+  <link rel="stylesheet" href="styles.css?v=20260802-3" />
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">문화 모임</p>
-        <h1>수도권 전시·음악공연 공유 보드</h1>
+        <p class="eyebrow">100주년 기념교회 41교구 문화 모임</p>
+        <h1>문화 콘텐츠 공유 보드</h1>
         <div class="board-meta-line">
-          <p class="board-updated" id="boardUpdatedAt">최종 업데이트: 2026.07.31 21:15</p>
-          <span class="update-schedule">· 매주 월요일 오후 9시 업데이트</span>
+          <p class="board-updated" id="boardUpdatedAt">최종 업데이트: 2026.08.02 02:22</p>
+          <span class="update-schedule">· 매주 수요일·토요일 22시 업데이트</span>
         </div>
       </div>
     </header>
@@ -27,6 +27,25 @@
       <button class="area-tab is-active" type="button" role="tab" data-area="서울" aria-selected="true">서울</button>
       <button class="area-tab" type="button" role="tab" data-area="경기" aria-selected="false">경기</button>
       <button class="area-tab" type="button" role="tab" data-area="인천" aria-selected="false">인천</button>
+    </nav>
+
+    <nav class="content-type-tabs" role="tablist" aria-label="문화 유형 선택">
+      <button class="content-type-tab is-active" type="button" role="tab" data-content-type="전체" aria-controls="recommendationPanel" aria-selected="true">
+        <span class="content-type-tab-icon tab-icon-all" aria-hidden="true"></span>
+        <span class="content-type-tab-label">전체</span>
+      </button>
+      <button class="content-type-tab" type="button" role="tab" data-content-type="전시" aria-controls="recommendationPanel" aria-selected="false">
+        <span class="content-type-tab-icon tab-icon-exhibition" aria-hidden="true"></span>
+        <span class="content-type-tab-label">전시</span>
+      </button>
+      <button class="content-type-tab" type="button" role="tab" data-content-type="공연" aria-controls="recommendationPanel" aria-selected="false">
+        <span class="content-type-tab-icon tab-icon-music" aria-hidden="true"></span>
+        <span class="content-type-tab-label">음악공연</span>
+      </button>
+      <button class="content-type-tab" type="button" role="tab" data-content-type="영화" aria-controls="recommendationPanel" aria-selected="false">
+        <span class="content-type-tab-icon tab-icon-movie" aria-hidden="true"></span>
+        <span class="content-type-tab-label">영화</span>
+      </button>
     </nav>
 
     <section class="summary-grid" aria-label="공유 현황">
@@ -52,29 +71,29 @@
       <div class="section-heading">
         <div>
           <p class="eyebrow">카카오톡 공유</p>
-          <h2 id="weeklyShareTitle">8~9월 추천 전시·음악공연</h2>
+          <h2 id="weeklyShareTitle">서울 전체 추천</h2>
         </div>
         <button class="button secondary" id="copyKakaoButton" type="button">공유문 복사</button>
       </div>
-      <p class="share-meta" id="shareMeta">2026.07.31 기준. 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.</p>
+      <p class="share-meta" id="shareMeta">공식 상세와 영화진흥위원회 실시간 예매율을 기준으로 정리했습니다.</p>
       <pre class="share-text" id="kakaoShareText" aria-live="polite"></pre>
     </section>
 
-    <section class="exhibition-page" aria-labelledby="exhibitionPageTitle">
+    <section class="exhibition-page" id="recommendationPanel" role="tabpanel" aria-labelledby="exhibitionPageTitle">
       <div class="section-heading">
         <div>
           <p class="eyebrow">공유용 목록</p>
-          <h2 id="exhibitionPageTitle">서울 추천 전시·음악공연</h2>
+          <h2 id="exhibitionPageTitle">서울 전체 추천</h2>
         </div>
-        <p class="result-count">장소 버튼은 카카오맵으로 열립니다</p>
+        <p class="result-count" id="recommendationHint">지역과 유형을 차례로 선택하세요</p>
       </div>
       <div class="recommendation-sections" id="exhibitionPageCards"></div>
     </section>
 
     <section class="verification-panel" aria-labelledby="verificationTitle">
       <p class="eyebrow">검증 기준</p>
-      <h2 id="verificationTitle">공식 한국어 페이지로 확인한 정보만 노출</h2>
-      <p>전시는 공식 상세 페이지에서 전시명, 장소, 기간, 운영시간, 도슨트, 주차 정보를 확인한 항목을 표시합니다. 공연은 공식 공연장 일정 페이지 기준의 후보로 제공하며, 개별 공연 시간·좌석·할인은 예매 전 공식 상세에서 다시 확인하세요.</p>
+      <h2 id="verificationTitle">공식 한국어 페이지와 KOBIS 자료로 확인한 정보만 노출</h2>
+      <p>전시·공연은 공식 상세 페이지의 일정, 관람료, 해설, 주차 정보를 확인합니다. 영화는 영화진흥위원회 실시간 예매율의 전국 순위를 사용하며, 예매율과 지역별 상영 회차는 수시로 바뀌므로 영화관 공식 예매 화면에서 다시 확인하세요.</p>
     </section>
 
     <details class="admin-tools">
@@ -134,6 +153,8 @@
             <a href="https://sema.seoul.go.kr/kr/whatson/landing" target="_blank" rel="noopener">서울시립미술관</a>
             <a href="https://www.sac.or.kr/site/main/show/show_list?show_type=music" target="_blank" rel="noopener">예술의전당 음악공연</a>
             <a href="https://www.sejongpac.or.kr/portal/performance/performance/list.do" target="_blank" rel="noopener">세종문화회관 공연일정</a>
+            <a href="https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&amp;dmlMode=search&amp;loadEnd=0" target="_blank" rel="noopener">KOBIS 실시간 예매율</a>
+            <a href="https://cgv.co.kr/cnm/cgvChart/movieChart" target="_blank" rel="noopener">CGV 영화관 예매</a>
           </div>
         </aside>
 
@@ -141,7 +162,7 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">목록</p>
-              <h2 id="eventListTitle">공유할 공연·전시</h2>
+              <h2 id="eventListTitle">공유할 전시·공연·영화</h2>
             </div>
             <p id="resultCount" class="result-count">0건</p>
           </div>
@@ -290,6 +311,6 @@
   </dialog>
 
   <script src="config.js?v=20260727-2"></script>
-  <script src="app.js?v=20260731-3"></script>
+  <script src="app.js?v=20260802-1"></script>
 </body>
 </html>

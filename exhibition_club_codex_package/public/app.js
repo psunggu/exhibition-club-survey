@@ -1,7 +1,7 @@
 const options = {
   statuses: ["검토중", "공유완료", "관람예정", "관람완료", "보류", "취소"],
   regions: ["서울 전체", "종로/중구", "강남/서초", "마포/서대문", "용산/성동", "송파/강동", "영등포/구로", "동대문/성북", "노원/도봉/강북", "강서/양천", "관악/동작/금천", "수원/경기", "인천"],
-  types: ["전시", "공연", "기타"],
+  types: ["전시", "공연", "영화", "기타"],
   priceTypes: ["무료", "유료", "할인 확인", "초대/이벤트", "확인 필요"],
   parking: ["가능", "불가", "확인 필요"],
   difficulty: ["가볍게", "사전예약", "긴 관람"],
@@ -923,6 +923,162 @@ const recommendedEvents = [
   },
 ];
 
+const movieRankingSourceUrl = "https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0";
+const movieBookingUrl = "https://cgv.co.kr/cnm/cgvChart/movieChart";
+const movieRankingUpdatedAt = "2026.08.02 02:22";
+const recommendedMovies = [
+  {
+    id: "movie-20262770",
+    movieCode: "20262770",
+    bookingRank: 1,
+    bookingRate: 58.8,
+    title: "스파이더맨: 브랜드 뉴 데이",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-07-29",
+    runtime: 144,
+    genre: "액션, 어드벤처, 판타지",
+    ageRating: "12세 이상 관람가",
+    director: "데스틴 다니엘 크리튼",
+    summary: "모두의 기억에서 사라진 피터 파커가 통제하기 힘든 힘과 자신의 정체를 아는 적을 마주하는 새로운 스파이더맨 이야기입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20262770",
+  },
+  {
+    id: "movie-20250654",
+    movieCode: "20250654",
+    bookingRank: 2,
+    bookingRate: 23.9,
+    title: "오디세이",
+    releaseStatus: "개봉 예정",
+    releaseDate: "2026-08-05",
+    runtime: 172,
+    genre: "액션, 드라마, 어드벤처",
+    ageRating: "15세 이상 관람가",
+    director: "크리스토퍼 놀란",
+    summary: "트로이 전쟁을 마친 오디세우스가 신들의 분노와 괴물의 시련을 넘어 가족이 기다리는 왕국으로 돌아가는 여정입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20250654",
+  },
+  {
+    id: "movie-20233219",
+    movieCode: "20233219",
+    bookingRank: 3,
+    bookingRate: 6.0,
+    title: "호프",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-07-15",
+    runtime: 156,
+    genre: "SF, 스릴러, 액션",
+    ageRating: "15세 이상 관람가",
+    director: "나홍진",
+    summary: "통신이 끊긴 외딴 마을에서 주민들이 정체불명의 존재와 맞서는 나홍진 감독의 SF 스릴러입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20233219",
+  },
+  {
+    id: "movie-20262381",
+    movieCode: "20262381",
+    bookingRank: 4,
+    bookingRate: 4.5,
+    title: "사랑의 하츄핑: 고래보석의 전설",
+    releaseStatus: "개봉 예정",
+    releaseDate: "2026-08-05",
+    runtime: 105,
+    genre: "애니메이션",
+    ageRating: "전체 관람가",
+    director: "김수훈",
+    summary: "로미와 하츄핑이 바닷속으로 사라진 엄마를 찾아 거대한 심해의 비밀과 맞서는 가족 애니메이션입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20262381",
+  },
+  {
+    id: "movie-20255484",
+    movieCode: "20255484",
+    bookingRank: 5,
+    bookingRate: 1.1,
+    title: "오케이 마담2",
+    releaseStatus: "개봉 예정",
+    releaseDate: "2026-08-12",
+    runtime: 108,
+    genre: "코미디",
+    ageRating: "15세 이상 관람가",
+    director: "이철하",
+    summary: "초호화 크루즈가 납치 사건 현장이 되면서 평범한 가족의 엄마 미영이 다시 전직 요원의 실력을 발휘하는 코미디 액션입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20255484",
+  },
+  {
+    id: "movie-20261784",
+    movieCode: "20261784",
+    bookingRank: 6,
+    bookingRate: 1.0,
+    title: "미니언즈 & 몬스터즈",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-07-15",
+    runtime: 89,
+    genre: "애니메이션",
+    ageRating: "전체 관람가",
+    director: "피에르 꼬팽",
+    summary: "천만 관객 감독을 꿈꾸는 미니언즈 제임스·헨리·에드가 몬스터를 찾아 떠나는 어드벤처입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20261784",
+  },
+  {
+    id: "movie-20264148",
+    movieCode: "20264148",
+    bookingRank: 7,
+    bookingRate: 0.8,
+    title: "어떻게 해야 했을까?",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-07-29",
+    runtime: 101,
+    genre: "다큐멘터리",
+    ageRating: "12세 이상 관람가",
+    director: "공식 정보 확인",
+    summary: "조현병 증상이 나타난 누나와 20여 년간 침묵한 가족을 남동생이 기록한 일본 다큐멘터리입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20264148",
+  },
+  {
+    id: "movie-20264635",
+    movieCode: "20264635",
+    bookingRank: 8,
+    bookingRate: 0.7,
+    title: "명탐정 코난: 하이웨이의 타천사",
+    releaseStatus: "개봉 예정",
+    releaseDate: "2026-08-12",
+    runtime: 109,
+    genre: "애니메이션",
+    ageRating: "12세 이상 관람가",
+    director: "공식 정보 확인",
+    summary: "요코하마 모터사이클 축제에서 벌어진 폭주 오토바이 사건과 AI 사이카의 연관성을 쫓는 코난 극장판입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20264635",
+  },
+  {
+    id: "movie-20259946",
+    movieCode: "20259946",
+    bookingRank: 9,
+    bookingRate: 0.6,
+    title: "모아나",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-07-08",
+    runtime: 115,
+    genre: "어드벤처, 액션",
+    ageRating: "전체 관람가",
+    director: "토마스 케일",
+    summary: "모투누이 섬의 모아나가 저주를 풀기 위해 마우이와 바다로 나서는 디즈니 실사 모험입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20259946",
+  },
+  {
+    id: "movie-20259781",
+    movieCode: "20259781",
+    bookingRank: 10,
+    bookingRate: 0.6,
+    title: "토이 스토리 5",
+    releaseStatus: "상영 중",
+    releaseDate: "2026-06-17",
+    runtime: 101,
+    genre: "애니메이션, 어드벤처, 코미디",
+    ageRating: "전체 관람가",
+    director: "앤드류 스탠튼",
+    summary: "픽사의 대표 장난감 시리즈가 다섯 번째 장편 애니메이션으로 돌아온 작품입니다.",
+    infoUrl: "https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20259781",
+  },
+];
+
 const fields = [
   "status", "region", "type", "title", "genre", "startDate", "endDate", "visitDate", "time",
   "venue", "address", "price", "priceType", "parking", "difficulty", "rating", "owner",
@@ -931,9 +1087,11 @@ const fields = [
 
 let events = [];
 const supportedAreas = ["서울", "경기", "인천"];
+const supportedContentTypes = ["전체", "전시", "공연", "영화"];
 let activeArea = "서울";
-const boardUpdatedAt = "2026.07.31 21:15";
-const dataUpdatedAt = "2026-07-31";
+let activeContentType = "전체";
+const boardUpdatedAt = "2026.08.02 02:22";
+const dataUpdatedAt = "2026-08-02";
 const dataUpdatedLabel = dataUpdatedAt.replace(/-/g, ".");
 const retiredRecommendationTitles = new Set([
   "《큐비스트: 시각의 혁신가들》",
@@ -956,9 +1114,11 @@ const elements = {
   copyKakaoButton: $("#copyKakaoButton"),
   boardUpdatedAt: $("#boardUpdatedAt"),
   areaTabs: [...document.querySelectorAll("[data-area]")],
+  contentTypeTabs: [...document.querySelectorAll("[data-content-type]")],
   weeklyShareTitle: $("#weeklyShareTitle"),
   shareMeta: $("#shareMeta"),
   exhibitionPageTitle: $("#exhibitionPageTitle"),
+  recommendationHint: $("#recommendationHint"),
   dialog: $("#eventDialog"),
   form: $("#eventForm"),
   dialogTitle: $("#dialogTitle"),
@@ -1000,6 +1160,11 @@ async function init() {
   elements.areaTabs.forEach((tab) => {
     tab.addEventListener("click", () => setActiveArea(tab.dataset.area));
   });
+  elements.contentTypeTabs.forEach((tab) => {
+    tab.addEventListener("click", () => setActiveContentType(tab.dataset.contentType));
+  });
+  setupTabKeyboard(elements.areaTabs);
+  setupTabKeyboard(elements.contentTypeTabs);
 
   Object.values(elements.filters).forEach((control) => {
     control.addEventListener("input", render);
@@ -1118,6 +1283,43 @@ function setActiveArea(area) {
   render();
 }
 
+function setupTabKeyboard(tabs) {
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("keydown", (event) => {
+      let nextIndex = index;
+      if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+      else if (event.key === "Home") nextIndex = 0;
+      else if (event.key === "End") nextIndex = tabs.length - 1;
+      else return;
+
+      event.preventDefault();
+      tabs[nextIndex].focus();
+      tabs[nextIndex].click();
+    });
+  });
+}
+
+function setActiveContentType(contentType) {
+  if (!supportedContentTypes.includes(contentType) || contentType === activeContentType) return;
+  activeContentType = contentType;
+  elements.contentTypeTabs.forEach((tab) => {
+    const selected = tab.dataset.contentType === activeContentType;
+    tab.classList.toggle("is-active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+  });
+  render();
+}
+
+function contentTypeLabel(contentType = activeContentType) {
+  return {
+    전체: "전체",
+    전시: "전시",
+    공연: "음악공연",
+    영화: "영화",
+  }[contentType] || "전체";
+}
+
 function eventArea(event) {
   const location = [event.area, event.region, event.address, event.venue].filter(Boolean).join(" ");
   if (location.includes("인천")) return "인천";
@@ -1127,9 +1329,18 @@ function eventArea(event) {
 
 function render() {
   const list = filteredEvents();
-  elements.weeklyShareTitle.textContent = `${activeArea} 8~9월 추천 목록`;
-  elements.shareMeta.textContent = `${dataUpdatedLabel} 기준. ${activeArea} 추천 정보는 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.`;
-  elements.exhibitionPageTitle.textContent = `${activeArea} 추천 전시·음악공연`;
+  const typeLabel = contentTypeLabel();
+  if (activeContentType === "영화") {
+    elements.weeklyShareTitle.textContent = "전국 영화 실시간 예매 순위";
+    elements.shareMeta.textContent = `${movieRankingUpdatedAt} KOBIS 기준. 순위는 전국 기준이며 ${activeArea} 상영 회차는 영화관 예매 화면에서 확인하세요.`;
+    elements.exhibitionPageTitle.textContent = `${activeArea}에서 볼 영화 예매 순위`;
+    elements.recommendationHint.textContent = "전국 예매 순위 · 선택 지역의 영화관 회차 확인";
+  } else {
+    elements.weeklyShareTitle.textContent = `${activeArea} ${typeLabel} 추천`;
+    elements.shareMeta.textContent = `${dataUpdatedLabel} 기준. 모임 전 공식 페이지에서 일정, 휴관일, 예매, 주차 정보를 다시 확인하세요.`;
+    elements.exhibitionPageTitle.textContent = `${activeArea} ${typeLabel} 추천`;
+    elements.recommendationHint.textContent = "지역과 유형을 차례로 선택하세요";
+  }
   renderMetrics();
   renderKakaoShare();
   renderExhibitionPage(topRecommendedEvents());
@@ -1206,13 +1417,34 @@ function renderCards(list) {
 }
 
 function renderExhibitionPage(list) {
-  const groups = [
-    { type: "전시", title: "추천 전시", subtitle: `공식 상세 페이지로 확인한 ${activeArea} 8~9월 전시`, max: 10 },
-    { type: "공연", title: "추천 음악공연", subtitle: `공식 공연장 일정 페이지에서 고르는 ${activeArea} 8~9월 공연 후보`, max: 10 },
-  ];
+  const groups = [];
+  if (activeContentType === "전체" || activeContentType === "전시") {
+    groups.push({
+      type: "전시",
+      title: "추천 전시",
+      subtitle: `공식 상세 페이지로 확인한 ${activeArea} 8~9월 전시`,
+      items: list.filter((event) => event.type === "전시").slice(0, 10),
+    });
+  }
+  if (activeContentType === "전체" || activeContentType === "공연") {
+    groups.push({
+      type: "공연",
+      title: "추천 음악공연",
+      subtitle: `공식 공연장 일정 페이지에서 고르는 ${activeArea} 8~9월 공연 후보`,
+      items: list.filter((event) => event.type === "공연").slice(0, 10),
+    });
+  }
+  if (activeContentType === "전체" || activeContentType === "영화") {
+    groups.push({
+      type: "영화",
+      title: "실시간 영화 예매 순위",
+      subtitle: `${movieRankingUpdatedAt} KOBIS 전국 기준 · ${activeArea} 영화관별 상영 회차 확인`,
+      items: recommendedMovies.slice(0, activeContentType === "영화" ? 10 : 5),
+    });
+  }
 
   elements.exhibitionPageCards.innerHTML = groups.map((group) => {
-    const items = list.filter((event) => event.type === group.type).slice(0, group.max);
+    const items = group.items;
     if (!items.length) return "";
 
     return `
@@ -1225,7 +1457,7 @@ function renderExhibitionPage(list) {
           <span>${items.length}건</span>
         </div>
         <div class="exhibition-grid">
-          ${items.map((event, index) => renderRecommendationCard(event, index)).join("")}
+          ${items.map((item, index) => group.type === "영화" ? renderMovieCard(item) : renderRecommendationCard(item, index)).join("")}
         </div>
       </section>
     `;
@@ -1233,9 +1465,64 @@ function renderExhibitionPage(list) {
 
 }
 
-function renderRecommendationCard(event, index) {
+function renderMovieCard(movie) {
+  const upcomingClass = movie.releaseStatus === "개봉 예정" ? " upcoming" : "";
   return `
-    <article class="exhibition-card">
+    <article class="exhibition-card movie-card">
+      <div class="exhibition-rank">${escapeHtml(movie.bookingRank)}</div>
+      <div class="exhibition-body">
+        <div class="exhibition-head">
+          <div>
+            <div class="movie-status-line">
+              <span class="movie-status-badge${upcomingClass}">${escapeHtml(movie.releaseStatus)}</span>
+              <span class="movie-ranking-badge">전국 예매 ${escapeHtml(movie.bookingRank)}위</span>
+            </div>
+            <h3>${escapeHtml(movie.title)}</h3>
+          </div>
+          <div class="movie-booking-box" aria-label="KOBIS 예매율 ${escapeHtml(movie.bookingRate)}퍼센트">
+            <strong>${escapeHtml(movie.bookingRate)}%</strong>
+            <span>KOBIS 실시간 예매율</span>
+          </div>
+        </div>
+
+        <p class="exhibition-summary">${escapeHtml(movie.summary)}</p>
+
+        <dl class="exhibition-details">
+          ${detailItem("개봉일", formatKoreanDate(movie.releaseDate))}
+          ${detailItem("러닝타임", `${movie.runtime}분`)}
+          ${detailItem("장르", movie.genre)}
+          ${detailItem("관람등급", movie.ageRating)}
+          ${detailItem("감독", movie.director)}
+          ${detailItem("상영관", `${activeArea} 지역 영화관별 회차 확인`)}
+        </dl>
+
+        <p class="exhibition-reason">전국 실시간 예매 ${escapeHtml(movie.bookingRank)}위입니다. 예매율은 조회 시점에 따라 수시로 바뀝니다.</p>
+
+        <div class="exhibition-actions">
+          <a class="button movie-booking-button" href="${escapeAttribute(movieBookingUrl)}" target="_blank" rel="noopener">영화관 예매</a>
+          <a class="button tertiary" href="${escapeAttribute(movie.infoUrl)}" target="_blank" rel="noopener">KOBIS 영화정보</a>
+          <a class="button tertiary" href="${escapeAttribute(movieTheaterMapUrl())}" target="_blank" rel="noopener">주변 영화관</a>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function formatKoreanDate(value) {
+  if (!value) return "확인 필요";
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${year}. ${Number(month)}. ${Number(day)}.`;
+}
+
+function movieTheaterMapUrl(area = activeArea) {
+  return `https://map.kakao.com/?q=${encodeURIComponent(`${area} 영화관`)}`;
+}
+
+function renderRecommendationCard(event, index) {
+  const cardClass = event.type === "공연" ? " performance-card" : "";
+  return `
+    <article class="exhibition-card${cardClass}">
       <div class="exhibition-rank">${index + 1}</div>
       <div class="exhibition-body">
         <div class="exhibition-head">
@@ -1407,9 +1694,13 @@ async function copyKakaoShare() {
 }
 
 function buildKakaoShareText() {
-  const list = topRecommendedEvents();
+  if (activeContentType === "영화") return buildMovieKakaoShareText(recommendedMovies);
+
+  const list = topRecommendedEvents().filter((event) => (
+    activeContentType === "전체" || event.type === activeContentType
+  ));
   const lines = [
-    `[${activeArea} 8~9월 추천 전시·음악공연]`,
+    `[${activeArea} ${contentTypeLabel()} 추천]`,
     `${dataUpdatedLabel} 기준 / 모임 전 공식 페이지 재확인`,
     "",
   ];
@@ -1429,7 +1720,38 @@ function buildKakaoShareText() {
     lines.push("");
   });
 
-  lines.push("업데이트 원칙: 매주 모임 전 일정, 휴관일, 예매, 도슨트, 주차 정보를 공식 페이지 기준으로 갱신");
+  if (activeContentType === "전체") {
+    lines.push("[전국 영화 실시간 예매 TOP 5]");
+    recommendedMovies.slice(0, 5).forEach((movie) => {
+      lines.push(`${movie.bookingRank}. [${movie.releaseStatus}] ${movie.title} · 예매율 ${movie.bookingRate}%`);
+      lines.push(`   개봉: ${formatKoreanDate(movie.releaseDate)} / ${movie.runtime}분 / ${movie.ageRating}`);
+      lines.push(`   영화정보: ${movie.infoUrl}`);
+    });
+    lines.push("");
+  }
+
+  lines.push("업데이트 원칙: 전시·공연은 공식 상세, 영화는 KOBIS 실시간 예매율 기준으로 갱신");
+  return lines.join("\n");
+}
+
+function buildMovieKakaoShareText(movies) {
+  const lines = [
+    "[전국 영화 실시간 예매 TOP 10]",
+    `${movieRankingUpdatedAt} KOBIS 기준 / ${activeArea} 영화관별 회차 확인`,
+    "",
+  ];
+
+  movies.forEach((movie) => {
+    lines.push(`${movie.bookingRank}. [${movie.releaseStatus}] ${movie.title} · 예매율 ${movie.bookingRate}%`);
+    lines.push(`   개봉: ${formatKoreanDate(movie.releaseDate)} / ${movie.runtime}분 / ${movie.genre}`);
+    lines.push(`   등급: ${movie.ageRating} / 감독: ${movie.director}`);
+    lines.push(`   영화정보: ${movie.infoUrl}`);
+    lines.push("");
+  });
+
+  lines.push(`실시간 순위: ${movieRankingSourceUrl}`);
+  lines.push(`영화관 예매: ${movieBookingUrl}`);
+  lines.push("예매율과 상영 회차는 수시로 바뀌므로 예매 직전에 다시 확인하세요.");
   return lines.join("\n");
 }
 
