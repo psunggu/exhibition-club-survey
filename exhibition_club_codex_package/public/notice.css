@@ -117,9 +117,66 @@ h1 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.digest-head::-webkit-details-marker {
+  display: none;
+}
+
+.digest-head:focus-visible {
+  outline: 3px solid rgba(98, 80, 164, 0.24);
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+
+.digest-summary-meta {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.digest-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #6250a4;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.digest-toggle-close {
+  display: none;
+}
+
+.digest-chevron {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.digest[open] .digest-toggle-open {
+  display: none;
+}
+
+.digest[open] .digest-toggle-close {
+  display: inline;
+}
+
+.digest[open] .digest-chevron {
+  transform: rotate(180deg);
+}
+
+.digest-body {
+  margin-top: 12px;
 }
 
 .digest-eyebrow {
+  display: block;
   margin: 0 0 3px;
   color: #6250a4;
   font-size: 11px;
@@ -127,7 +184,8 @@ h1 {
   letter-spacing: 0.08em;
 }
 
-.digest h2 {
+.digest-title {
+  display: block;
   margin: 0;
   color: #2f245c;
   font-size: 23px;
@@ -295,6 +353,10 @@ h1 {
   font-size: 11.5px;
   line-height: 1.55;
   word-break: keep-all;
+}
+
+.digest + .sec {
+  margin-top: 24px;
 }
 
 .sec {
@@ -898,8 +960,8 @@ h1 {
     display: block;
   }
 
-  .digest-period {
-    display: inline-block;
+  .digest-summary-meta {
+    justify-content: space-between;
     margin-top: 8px;
   }
 }

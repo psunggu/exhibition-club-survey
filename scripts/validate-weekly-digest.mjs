@@ -22,7 +22,13 @@ const allowedRootKeys = new Set([
   "highlights",
   "decisions"
 ]);
-const allowedHighlightKeys = new Set(["severity", "label", "title", "text"]);
+const allowedHighlightKeys = new Set([
+  "severity",
+  "label",
+  "title",
+  "text",
+  "completed_date"
+]);
 const allowedSeverities = new Set(["urgent", "check", "planning", "done"]);
 
 function fail(message) {
@@ -41,6 +47,19 @@ function assertPublicText(value, path, maxLength) {
   }
   if (value.length > maxLength) fail(`${path} 값이 ${maxLength}자를 초과합니다.`);
   if (/[<>]/u.test(value)) fail(`${path} 값에 HTML 문자가 포함되어 있습니다.`);
+}
+
+function assertIsoDate(value, path) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) {
+    fail(`${path} 값은 YYYY-MM-DD 형식이어야 합니다.`);
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (parsed.getUTCFullYear() !== year ||
+      parsed.getUTCMonth() !== month - 1 ||
+      parsed.getUTCDate() !== day) {
+    fail(`${path} 값은 실제 달력 날짜여야 합니다.`);
+  }
 }
 
 const raw = await readFile(digestPath, "utf8");
@@ -76,6 +95,11 @@ for (const [index, item] of data.highlights.entries()) {
   assertPublicText(item.label, `highlights[${index}].label`, 20);
   assertPublicText(item.title, `highlights[${index}].title`, 80);
   assertPublicText(item.text, `highlights[${index}].text`, 240);
+  if (item.severity === "done") {
+    assertIsoDate(item.completed_date, `highlights[${index}].completed_date`);
+  } else if (Object.hasOwn(item, "completed_date")) {
+    fail(`highlights[${index}].completed_date는 완료 항목에만 사용할 수 있습니다.`);
+  }
 }
 
 if (!Array.isArray(data.decisions) || data.decisions.length > 8) {

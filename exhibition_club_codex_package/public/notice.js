@@ -1,7 +1,9 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260801-1";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260802-1";
+  var COMPLETED_VISIBLE_DAYS = 3;
+  var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
     "schema_version": 1,
     "bot_name": "주간 정리봇",
@@ -32,14 +34,14 @@
         "severity": "done",
         "label": "완료",
         "title": "7월 29일 《큐비스트》 관람",
-        "text": "7명이 관람했고 티켓 비용은 1인 14,000원으로 정산을 마쳤습니다."
+        "text": "7명이 관람했고 티켓 비용은 1인 14,000원으로 정산을 마쳤습니다.",
+        "completed_date": "2026-07-29"
       }
     ],
     "decisions": [
       "가우디 서울전 관람일을 8월 29일로 확정했습니다.",
       "영화 모임은 전시·공연과 구분해 일정표에 표시합니다.",
-      "영화 《오디세이》를 2026년 2차 정기관람 영화편으로 추진합니다.",
-      "7월 29일 《큐비스트》 관람과 비용 정산을 완료했습니다."
+      "영화 《오디세이》를 2026년 2차 정기관람 영화편으로 추진합니다."
     ]
   };
   var SEVERITY_ICONS = {
@@ -60,6 +62,56 @@
     return typeof value === "string" && value.trim().length > 0;
   }
 
+  function isoDateToDayNumber(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || "");
+    if (!match) return null;
+
+    var year = Number(match[1]);
+    var month = Number(match[2]);
+    var day = Number(match[3]);
+    var timestamp = Date.UTC(year, month - 1, day);
+    var parsed = new Date(timestamp);
+    if (parsed.getUTCFullYear() !== year ||
+        parsed.getUTCMonth() !== month - 1 ||
+        parsed.getUTCDate() !== day) return null;
+
+    return Math.floor(timestamp / DAY_IN_MILLISECONDS);
+  }
+
+  function koreanTodayDayNumber(now) {
+    var current = now || new Date();
+    try {
+      var parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(current);
+      var values = {};
+      parts.forEach(function (part) {
+        if (part.type !== "literal") values[part.type] = part.value;
+      });
+      return isoDateToDayNumber(values.year + "-" + values.month + "-" + values.day);
+    } catch (error) {
+      return Math.floor(Date.UTC(
+        current.getFullYear(),
+        current.getMonth(),
+        current.getDate()
+      ) / DAY_IN_MILLISECONDS);
+    }
+  }
+
+  function isRecentCompletedDate(value, todayDayNumber) {
+    var completedDayNumber = isoDateToDayNumber(value);
+    var today = Number.isInteger(todayDayNumber)
+      ? todayDayNumber
+      : koreanTodayDayNumber();
+    if (completedDayNumber === null || today === null) return false;
+
+    var elapsedDays = today - completedDayNumber;
+    return elapsedDays >= 0 && elapsedDays < COMPLETED_VISIBLE_DAYS;
+  }
+
   function isSafeDigest(data) {
     if (!data || data.schema_version !== 1) return false;
     if (!isNonEmptyString(data.bot_name) ||
@@ -75,11 +127,16 @@
         data.decisions.length > 8) return false;
 
     return data.highlights.every(function (item) {
-      return item &&
-        Object.prototype.hasOwnProperty.call(SEVERITY_ICONS, item.severity) &&
-        isNonEmptyString(item.label) &&
-        isNonEmptyString(item.title) &&
-        isNonEmptyString(item.text);
+      if (!item ||
+          !Object.prototype.hasOwnProperty.call(SEVERITY_ICONS, item.severity) ||
+          !isNonEmptyString(item.label) ||
+          !isNonEmptyString(item.title) ||
+          !isNonEmptyString(item.text)) return false;
+
+      var hasCompletedDate = Object.prototype.hasOwnProperty.call(item, "completed_date");
+      return item.severity === "done"
+        ? hasCompletedDate && isoDateToDayNumber(item.completed_date) !== null
+        : !hasCompletedDate;
     }) && data.decisions.every(isNonEmptyString);
   }
 
@@ -97,7 +154,11 @@
     var priorityTitle = createElement("h3", "digest-subtitle", "중요 확인사항");
     var highlightList = createElement("div", "digest-highlights");
 
-    data.highlights.forEach(function (item) {
+    var visibleHighlights = data.highlights.filter(function (item) {
+      return item.severity !== "done" || isRecentCompletedDate(item.completed_date);
+    });
+
+    visibleHighlights.forEach(function (item) {
       var card = createElement("article", "digest-item digest-item-" + item.severity);
       var marker = createElement("span", "digest-marker", SEVERITY_ICONS[item.severity]);
       marker.setAttribute("aria-hidden", "true");
@@ -114,6 +175,14 @@
       card.appendChild(body);
       highlightList.appendChild(card);
     });
+
+    if (visibleHighlights.length === 0) {
+      highlightList.appendChild(createElement(
+        "p",
+        "digest-loading",
+        "현재 표시할 중요 확인사항이 없습니다."
+      ));
+    }
 
     var decisionPanel = createElement("section", "digest-decisions");
     var decisionTitle = createElement("h3", "digest-subtitle", "이번 주 정리");
@@ -158,16 +227,32 @@
   }
 
   function setupCompletedMeetings() {
+    var title = document.getElementById("completedMeetingsTitle");
     var list = document.getElementById("completedMeetings");
     var toggle = document.getElementById("completedMeetingsToggle");
     if (!list || !toggle) return;
 
-    var rows = list.querySelectorAll(".drow");
-    if (rows.length === 0) return;
-
-    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-      rows[rowIndex].hidden = true;
+    var allRows = Array.prototype.slice.call(list.querySelectorAll(".drow"));
+    var rows = [];
+    for (var rowIndex = 0; rowIndex < allRows.length; rowIndex++) {
+      var row = allRows[rowIndex];
+      row.hidden = true;
+      if (isRecentCompletedDate(row.getAttribute("data-completed-date"))) {
+        rows.push(row);
+      } else {
+        row.remove();
+      }
     }
+
+    if (rows.length === 0) {
+      list.hidden = true;
+      toggle.hidden = true;
+      if (title) title.hidden = true;
+      return;
+    }
+
+    list.hidden = false;
+    if (title) title.hidden = false;
 
     function updateCompletedState(expanded) {
       for (var index = 0; index < rows.length; index++) {
