@@ -1,47 +1,46 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260802-1";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260803-1";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
     "schema_version": 1,
     "bot_name": "주간 정리봇",
-    "period_label": "7월 25일 ~ 7월 31일",
-    "updated_label": "2026. 7. 31. 22:32 기준",
-    "message_count": 324,
-    "summary": "최근 7일 대화에서 일정과 후속 확인이 필요한 내용만 선별했습니다.",
+    "period_label": "7월 27일 ~ 8월 2일",
+    "updated_label": "2026. 8. 2. 19:41 기준",
+    "message_count": 300,
+    "summary": "최근 7일 대화에서 확정 일정과 투표 중인 영화 모임, 추가 공연 참여 확인사항을 선별했습니다.",
     "highlights": [
+      {
+        "severity": "planning",
+        "label": "투표 진행",
+        "title": "영화 《오디세이》 정기관람",
+        "text": "8월 9일 16:20 연남 CGV 2D와 8월 16일 14:00·17:30 영등포 타임스퀘어 IMAX가 후보입니다. 투표 종료 후 최종 날짜와 상영 시간을 확정해야 합니다."
+      },
+      {
+        "severity": "check",
+        "label": "참여 확인",
+        "title": "8월 15일 무료 클래식 공연",
+        "text": "오후 2시 세종문화회관 체임버홀 공연의 제한 좌석 참여자를 모집 중입니다. 최종 참석자와 주차 가능 여부 확인이 필요합니다."
+      },
+      {
+        "severity": "check",
+        "label": "세부 확인",
+        "title": "8월 22일 서울역사박물관 정기관람",
+        "text": "오후 3시부터 5시까지의 확정 일정입니다. 집결 장소, 진행 순서와 최종 참석자는 톡게시판에서 다시 확인해야 합니다."
+      },
       {
         "severity": "planning",
         "label": "날짜 확정",
         "title": "가우디 서울전 8월 29일 관람",
         "text": "관람일은 8월 29일로 확정됐습니다. 집결 시간과 최종 참석자는 추가 확인이 필요합니다."
-      },
-      {
-        "severity": "check",
-        "label": "확인 필요",
-        "title": "8월 22일 서울역사박물관 세부 일정",
-        "text": "기존 공지에는 오후 3시~5시로 표시됐지만 최신 정리에는 집결 시간과 세부 일정이 미정으로 남아 있습니다."
-      },
-      {
-        "severity": "planning",
-        "label": "조율 중",
-        "title": "영화 《오디세이》 정기관람",
-        "text": "2026년 2차 정기관람 영화편으로 추진 중이며 토요일 관람 의견이 나왔습니다. 날짜, 상영관, 시간과 참여자 확정이 필요합니다."
-      },
-      {
-        "severity": "done",
-        "label": "완료",
-        "title": "7월 29일 《큐비스트》 관람",
-        "text": "7명이 관람했고 티켓 비용은 1인 14,000원으로 정산을 마쳤습니다.",
-        "completed_date": "2026-07-29"
       }
     ],
     "decisions": [
       "가우디 서울전 관람일을 8월 29일로 확정했습니다.",
-      "영화 모임은 전시·공연과 구분해 일정표에 표시합니다.",
-      "영화 《오디세이》를 2026년 2차 정기관람 영화편으로 추진합니다."
+      "영화 《오디세이》 관람일을 세 가지 후보로 투표하고 있습니다.",
+      "8월 15일 무료 클래식 공연 참여자를 제한 좌석 범위에서 모집하고 있습니다."
     ]
   };
   var SEVERITY_ICONS = {
@@ -365,6 +364,19 @@
       infoUrl: "https://feverup.com/m/665616",
       infoLabel: "전시·예매 정보 보기 →",
       mapUrl: "https://map.kakao.com/?q=%EC%8B%A0%EC%82%AC%ED%95%98%EC%9A%B0%EC%8A%A4"
+    },
+    "classic-concert": {
+      status: "모집 중",
+      tone: "tent",
+      title: "S Classic Week 무료 클래식 공연",
+      date: "2026. 8. 15. (토)",
+      time: "오후 2시",
+      venue: "세종문화회관 체임버홀",
+      description: "제한된 초청 좌석으로 함께 관람할 참여자를 모집 중인 클래식 공연입니다.",
+      note: "최종 참석 여부와 주차 가능 여부는 톡방 공지를 확인해 주세요.",
+      infoUrl: "",
+      infoLabel: "",
+      mapUrl: "https://map.kakao.com/?q=%EC%84%B8%EC%A2%85%EB%AC%B8%ED%99%94%ED%9A%8C%EA%B4%80%20%EC%B2%B4%EC%9E%84%EB%B2%84%ED%99%80"
     },
     "history-museum": {
       status: "확정",
