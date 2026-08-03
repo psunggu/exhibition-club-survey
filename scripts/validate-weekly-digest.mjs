@@ -11,6 +11,11 @@ const noticeScriptPath = resolve(
   "public",
   "notice.js"
 );
+const noticeHtmlPath = resolve(
+  "exhibition_club_codex_package",
+  "public",
+  "notice.html"
+);
 
 const allowedRootKeys = new Set([
   "schema_version",
@@ -65,6 +70,7 @@ function assertIsoDate(value, path) {
 const raw = await readFile(digestPath, "utf8");
 const data = JSON.parse(raw);
 const noticeScript = await readFile(noticeScriptPath, "utf8");
+const noticeHtml = await readFile(noticeHtmlPath, "utf8");
 
 if (!data || Array.isArray(data) || typeof data !== "object") {
   fail("최상위 값은 객체여야 합니다.");
@@ -136,4 +142,69 @@ if (JSON.stringify(fallbackData) !== JSON.stringify(data)) {
   fail("notice.js의 공개 요약 대체 사본이 weekly-digest.public.json과 다릅니다.");
 }
 
-console.log("weekly-digest.public.json 및 notice.js 대체 사본 공개 데이터 검증 통과");
+const confirmedStart = noticeHtml.indexOf("다가오는 확정 모임");
+const tentativeStart = noticeHtml.indexOf("조율 중 · 미정");
+const calendarStart = noticeHtml.indexOf("한눈에 보는 달력");
+if (!(confirmedStart >= 0 && confirmedStart < tentativeStart && tentativeStart < calendarStart)) {
+  fail("notice.html의 확정·미정·달력 영역 순서를 확인할 수 없습니다.");
+}
+
+const confirmedSection = noticeHtml.slice(confirmedStart, tentativeStart);
+const tentativeSection = noticeHtml.slice(tentativeStart, calendarStart);
+// 요약에서는 확정인데 본문·달력에는 미정으로 남는 분류 회귀를 배포 전에 차단한다.
+const confirmedEvents = [
+  {
+    id: "classic-concert",
+    titleToken: "8월 15일",
+    digestTokens: ["오후 2시", "세종문화회관 체임버홀", "참여자 2명", "확정"]
+  },
+  {
+    id: "history-museum",
+    titleToken: "8월 22일",
+    digestTokens: ["오후 2시 50분", "서울역사박물관 앞", "오후 3시", "오후 5시", "확정"]
+  },
+  {
+    id: "gaudi-visit",
+    titleToken: "8월 29일",
+    digestTokens: ["8월 29일", "확정"]
+  }
+];
+
+for (const expected of confirmedEvents) {
+  const eventMarker = `data-event-id="${expected.id}"`;
+  if (!confirmedSection.includes(eventMarker)) {
+    fail(`${expected.id}가 다가오는 확정 모임 영역에 없습니다.`);
+  }
+  if (tentativeSection.includes(eventMarker)) {
+    fail(`${expected.id}가 조율 중·미정 영역에도 중복되어 있습니다.`);
+  }
+
+  const calendarButton = noticeHtml.match(
+    new RegExp(`<button[^>]*class="[^"]*\\bconf\\b[^"]*"[^>]*${eventMarker}[^>]*>`, "u")
+  );
+  if (!calendarButton) fail(`${expected.id} 달력 표시가 확정 상태가 아닙니다.`);
+
+  const detailsStart = noticeScript.indexOf(`"${expected.id}": {`);
+  const detailsEnd = noticeScript.indexOf("\n    }", detailsStart);
+  const detailsBlock = detailsStart >= 0 && detailsEnd > detailsStart
+    ? noticeScript.slice(detailsStart, detailsEnd)
+    : "";
+  if (!detailsBlock.includes('tone: "conf"')) {
+    fail(`${expected.id} 상세 팝업 상태가 확정이 아닙니다.`);
+  }
+
+  const digestItem = data.highlights.find((item) => item.title.includes(expected.titleToken));
+  if (!digestItem) fail(`${expected.titleToken} 일정이 주간 정리봇에 없습니다.`);
+  const digestText = `${digestItem.label} ${digestItem.title} ${digestItem.text}`;
+  for (const token of expected.digestTokens) {
+    if (!digestText.includes(token)) {
+      fail(`${expected.titleToken} 일정의 '${token}' 정보가 주간 정리봇과 일치하지 않습니다.`);
+    }
+  }
+}
+
+if (!tentativeSection.includes("《오디세이》") || confirmedSection.includes("《오디세이》")) {
+  fail("영화 《오디세이》 투표는 조율 중·미정 영역에만 있어야 합니다.");
+}
+
+console.log("주간 정리봇 공개 데이터와 모임 일정 안내 정합성 검증 통과");
