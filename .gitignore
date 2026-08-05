@@ -1,0 +1,18 @@
+# Dependencies and local runtime files
+node_modules/
+*.log
+
+# Local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+
+# Generated and private operational artifacts
+outputs/
+backups/
+local-backups/
+events-*.json
+events-*.json.sha256

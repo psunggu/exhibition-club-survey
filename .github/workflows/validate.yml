@@ -1,28 +1,24 @@
-name: Deploy exhibition page
+name: Validate
 
 on:
-  push:
+  pull_request:
     branches:
       - main
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: validate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  security-and-content:
+    name: Security and content checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout without persisted credentials
         uses: actions/checkout@v6
         with:
           persist-credentials: false
@@ -40,16 +36,7 @@ jobs:
         run: node scripts/validate-supabase-p1.mjs
 
       - name: Check public JavaScript syntax
-        run: node --check exhibition_club_codex_package/public/app.js
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: exhibition_club_codex_package/public
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: |
+          node --check exhibition_club_codex_package/public/app.js
+          node --check exhibition_club_codex_package/public/config.js
+          node --check exhibition_club_codex_package/public/notice.js
