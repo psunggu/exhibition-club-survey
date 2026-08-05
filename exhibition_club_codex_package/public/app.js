@@ -1121,8 +1121,8 @@ const supportedAreas = ["서울", "경기", "인천"];
 const supportedContentTypes = ["전체", "전시", "공연", "영화"];
 let activeArea = "서울";
 let activeContentType = "전체";
-const boardUpdatedAt = "2026.08.02 23:58";
-const dataUpdatedAt = "2026-08-02";
+const boardUpdatedAt = "2026.08.05 22:04";
+const dataUpdatedAt = "2026-08-05";
 const dataUpdatedLabel = dataUpdatedAt.replace(/-/g, ".");
 const retiredRecommendationTitles = new Set([
   "《큐비스트: 시각의 혁신가들》",
