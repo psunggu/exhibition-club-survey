@@ -28,6 +28,12 @@ jobs:
       - name: Validate public weekly digest
         run: node scripts/validate-weekly-digest.mjs
 
+      - name: Validate Supabase read-only boundary
+        run: node scripts/validate-supabase-readonly.mjs
+
+      - name: Check public JavaScript syntax
+        run: node --check exhibition_club_codex_package/public/app.js
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

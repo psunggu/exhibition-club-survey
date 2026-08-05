@@ -46,32 +46,31 @@ for each row
 execute function public.set_updated_at();
 
 alter table public.events enable row level security;
+alter table public.events force row level security;
 
-drop policy if exists "events_select_public" on public.events;
+-- 공개 웹은 읽기 전용이다. anon 키는 공개 식별자이므로 보안 경계는
+-- 테이블 권한과 RLS가 함께 강제해야 한다.
+revoke all on table public.events from public, anon, authenticated;
+grant select on table public.events to anon, authenticated;
+revoke execute on function public.set_updated_at() from public, anon, authenticated;
+
+do $drop_events_policies$
+declare
+  existing_policy record;
+begin
+  for existing_policy in
+    select policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'events'
+  loop
+    execute format('drop policy %I on public.events', existing_policy.policyname);
+  end loop;
+end
+$drop_events_policies$;
+
 create policy "events_select_public"
 on public.events
 for select
-to anon
-using (true);
-
-drop policy if exists "events_insert_public" on public.events;
-create policy "events_insert_public"
-on public.events
-for insert
-to anon
-with check (true);
-
-drop policy if exists "events_update_public" on public.events;
-create policy "events_update_public"
-on public.events
-for update
-to anon
-using (true)
-with check (true);
-
-drop policy if exists "events_delete_public" on public.events;
-create policy "events_delete_public"
-on public.events
-for delete
-to anon
+to anon, authenticated
 using (true);
