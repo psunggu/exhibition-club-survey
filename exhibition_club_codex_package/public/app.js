@@ -7,7 +7,6 @@ const options = {
   difficulty: ["가볍게", "사전예약", "긴 관람"],
 };
 
-const storageKey = "seoul-culture-board-events-v1";
 const config = window.CLUB_CONFIG || {};
 const supabase = createSupabaseClient(config);
 
@@ -1115,11 +1114,7 @@ const recommendedMovies = [
   },
 ];
 
-const fields = [
-  "status", "region", "type", "title", "genre", "startDate", "endDate", "visitDate", "time",
-  "venue", "address", "price", "priceType", "parking", "difficulty", "rating", "owner",
-  "infoUrl", "mapUrl", "summary", "recommendation", "notes", "ratingReason",
-];
+const fields = [];
 
 let events = [];
 const supportedAreas = ["서울", "경기", "인천"];
@@ -1155,10 +1150,6 @@ const elements = {
   shareMeta: $("#shareMeta"),
   exhibitionPageTitle: $("#exhibitionPageTitle"),
   recommendationHint: $("#recommendationHint"),
-  dialog: $("#eventDialog"),
-  form: $("#eventForm"),
-  dialogTitle: $("#dialogTitle"),
-  deleteButton: $("#deleteButton"),
   filters: {
     search: $("#searchInput"),
     region: $("#regionFilter"),
@@ -1171,28 +1162,14 @@ const elements = {
 init();
 
 async function init() {
-  applyConfig();
   elements.boardUpdatedAt.textContent = `최종 업데이트: ${boardUpdatedAt}`;
   populateSelect("#regionFilter", options.regions, true);
   populateSelect("#typeFilter", options.types, true);
   populateSelect("#statusFilter", options.statuses, true);
   populateSelect("#parkingFilter", options.parking, true);
-  populateSelect("#status", options.statuses);
-  populateSelect("#region", options.regions);
-  populateSelect("#type", options.types);
-  populateSelect("#priceType", options.priceTypes);
-  populateSelect("#parking", options.parking);
-  populateSelect("#difficulty", options.difficulty);
-  populateSelect("#rating", ["", "1", "2", "3", "4", "5"], false, "관람 후 입력");
-
-  $("#openFormButton").addEventListener("click", () => openDialog());
-  $("#closeDialogButton").addEventListener("click", closeDialog);
-  $("#cancelButton").addEventListener("click", closeDialog);
   $("#resetButton").addEventListener("click", resetFilters);
   $("#exportCsvButton").addEventListener("click", exportCsv);
   elements.copyKakaoButton.addEventListener("click", copyKakaoShare);
-  elements.form.addEventListener("submit", saveFromForm);
-  elements.deleteButton.addEventListener("click", deleteCurrentEvent);
   elements.areaTabs.forEach((tab) => {
     tab.addEventListener("click", () => setActiveArea(tab.dataset.area));
   });
@@ -1209,12 +1186,6 @@ async function init() {
 
   events = await loadEvents();
   render();
-}
-
-function applyConfig() {
-  if (config.sheetUrl) {
-    $("#sheetLink").href = config.sheetUrl;
-  }
 }
 
 function populateSelect(selector, values, includeAll = false, placeholder = "") {
@@ -1238,16 +1209,7 @@ async function loadEvents() {
     }
   }
 
-  try {
-    const saved = localStorage.getItem(storageKey);
-    return mergeRecommendedEvents(saved ? JSON.parse(saved) : sampleEvents);
-  } catch {
-    return mergeRecommendedEvents(sampleEvents);
-  }
-}
-
-function persist() {
-  localStorage.setItem(storageKey, JSON.stringify(events));
+  return mergeRecommendedEvents(sampleEvents);
 }
 
 function mergeRecommendedEvents(sourceEvents = []) {
@@ -1416,16 +1378,11 @@ function renderRows(list) {
       <td>${escapeHtml(event.owner || "-")}</td>
       <td>
         <div class="row-actions">
-          ${event.infoUrl ? `<a href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">링크</a>` : ""}
-          <button type="button" data-edit="${event.id}">수정</button>
+          ${event.infoUrl ? `<a href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">공식 정보</a>` : "-"}
         </div>
       </td>
     </tr>
   `).join("");
-
-  elements.rows.querySelectorAll("[data-edit]").forEach((button) => {
-    button.addEventListener("click", () => openDialog(button.dataset.edit));
-  });
 }
 
 function renderCards(list) {
@@ -1433,7 +1390,7 @@ function renderCards(list) {
     <article class="event-card">
       <div class="card-head">
         ${statusPill(event.status)}
-        <button class="button tertiary" type="button" data-edit="${event.id}">수정</button>
+        ${event.infoUrl ? `<a class="button tertiary" href="${escapeAttribute(event.infoUrl)}" target="_blank" rel="noopener">공식 정보</a>` : ""}
       </div>
       <div class="card-title">${escapeHtml(event.title)}</div>
       <div class="card-meta">
@@ -1447,9 +1404,6 @@ function renderCards(list) {
     </article>
   `).join("");
 
-  elements.cards.querySelectorAll("[data-edit]").forEach((button) => {
-    button.addEventListener("click", () => openDialog(button.dataset.edit));
-  });
 }
 
 function renderExhibitionPage(list) {
@@ -1824,87 +1778,6 @@ function kakaoMapUrl(event) {
   return `https://map.kakao.com/?q=${encodeURIComponent(query || event.title || "서울 전시")}`;
 }
 
-function openDialog(id = "") {
-  const event = id ? events.find((item) => item.id === id) : null;
-  elements.dialogTitle.textContent = event ? "공연·전시 정보 수정" : "새 공연·전시 추가";
-  elements.deleteButton.hidden = !event;
-  $("#eventId").value = event?.id || "";
-
-  fields.forEach((field) => {
-    const input = $(`#${field}`);
-    if (input) input.value = event?.[field] ?? "";
-  });
-
-  if (!event) {
-    $("#status").value = "검토중";
-    $("#region").value = "서울 전체";
-    $("#type").value = "전시";
-    $("#priceType").value = "유료";
-    $("#parking").value = "확인 필요";
-    $("#difficulty").value = "가볍게";
-  }
-
-  elements.dialog.showModal();
-}
-
-function closeDialog() {
-  elements.dialog.close();
-  elements.form.reset();
-}
-
-async function saveFromForm(event) {
-  event.preventDefault();
-  const id = $("#eventId").value || crypto.randomUUID();
-  const payload = { id, updatedAt: new Date().toISOString().slice(0, 10) };
-
-  fields.forEach((field) => {
-    const input = $(`#${field}`);
-    payload[field] = input?.value.trim() || "";
-  });
-
-  payload.price = Number(payload.price || 0);
-
-  try {
-    const saved = supabase
-      ? await supabase.upsert(payload)
-      : payload;
-
-    const existingIndex = events.findIndex((item) => item.id === id);
-    if (existingIndex >= 0) {
-      events[existingIndex] = saved;
-    } else {
-      events.unshift(saved);
-    }
-
-    if (!supabase) persist();
-  } catch (error) {
-    console.error("Save failed.", error);
-    alert("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    return;
-  }
-
-  closeDialog();
-  render();
-}
-
-async function deleteCurrentEvent() {
-  const id = $("#eventId").value;
-  if (!id) return;
-
-  try {
-    if (supabase) await supabase.remove(id);
-    events = events.filter((event) => event.id !== id);
-    if (!supabase) persist();
-  } catch (error) {
-    console.error("Delete failed.", error);
-    alert("삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    return;
-  }
-
-  closeDialog();
-  render();
-}
-
 function resetFilters() {
   Object.values(elements.filters).forEach((control) => {
     control.value = "";
@@ -1957,79 +1830,21 @@ function createSupabaseClient({ supabaseUrl, supabaseAnonKey }) {
   const headers = {
     apikey: supabaseAnonKey,
     Authorization: `Bearer ${supabaseAnonKey}`,
-    "Content-Type": "application/json",
   };
 
-  async function request(path = "", init = {}) {
-    const response = await fetch(`${baseUrl}${path}`, {
-      ...init,
-      headers: {
-        ...headers,
-        Prefer: "return=representation",
-        ...(init.headers || {}),
-      },
-    });
+  async function list() {
+    const query = "?select=*&order=visit_date.asc.nullslast&order=start_date.asc.nullslast";
+    const response = await fetch(`${baseUrl}${query}`, { headers });
 
     if (!response.ok) {
       throw new Error(`Supabase ${response.status}: ${await response.text()}`);
     }
 
-    if (response.status === 204) return null;
-    return response.json();
+    const rows = await response.json();
+    return rows.map(fromDbEvent);
   }
 
-  return {
-    async list() {
-      const rows = await request("?select=*&order=visit_date.asc.nullslast&order=start_date.asc.nullslast");
-      return rows.map(fromDbEvent);
-    },
-    async upsert(event) {
-      const isExisting = events.some((item) => item.id === event.id);
-      const payload = toDbEvent(event);
-      const rows = isExisting
-        ? await request(`?id=eq.${encodeURIComponent(event.id)}`, {
-            method: "PATCH",
-            body: JSON.stringify(payload),
-          })
-        : await request("", {
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
-      return fromDbEvent(rows[0]);
-    },
-    async remove(id) {
-      await request(`?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-    },
-  };
-}
-
-function toDbEvent(event) {
-  return {
-    id: event.id,
-    status: event.status || "검토중",
-    region: event.region || "서울 전체",
-    type: event.type || "전시",
-    title: event.title,
-    genre: event.genre || null,
-    start_date: event.startDate || null,
-    end_date: event.endDate || null,
-    visit_date: event.visitDate || null,
-    time: event.time || null,
-    venue: event.venue || null,
-    address: event.address || null,
-    price: Number(event.price || 0),
-    price_type: event.priceType || "유료",
-    parking: event.parking || "확인 필요",
-    difficulty: event.difficulty || "가볍게",
-    rating: event.rating ? Number(event.rating) : null,
-    owner: event.owner || null,
-    info_url: event.infoUrl || null,
-    map_url: event.mapUrl || null,
-    summary: event.summary || null,
-    recommendation: event.recommendation || null,
-    notes: event.notes || null,
-    rating_reason: event.ratingReason || null,
-  };
+  return { list };
 }
 
 function fromDbEvent(row) {
