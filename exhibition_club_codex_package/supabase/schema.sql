@@ -1,5 +1,16 @@
 create extension if not exists pgcrypto;
 
+-- New objects in the exposed public schema must be private by default.
+-- Grant only the privileges that each application object explicitly needs.
+alter default privileges for role postgres in schema public
+  revoke all on tables from public, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke all on sequences from public, anon, authenticated, service_role;
+alter default privileges for role postgres
+  revoke execute on functions from public;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from anon, authenticated, service_role;
+
 create table if not exists public.events (
   id uuid primary key default gen_random_uuid(),
   status text not null default '검토중',
@@ -32,6 +43,7 @@ create table if not exists public.events (
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at = now();
