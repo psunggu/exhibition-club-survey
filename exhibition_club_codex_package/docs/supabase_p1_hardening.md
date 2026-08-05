@@ -41,3 +41,11 @@ managed role. The application therefore follows these additional rules:
 The adjacent rollback file restores the previous broad defaults and should be
 used only for diagnosis. Default privilege changes do not affect existing
 objects, so normal service recovery should not require that rollback.
+
+## Auth runtime configuration
+
+- New user signups are disabled because the public board has no login flow.
+- Manual account linking and anonymous sign-ins remain disabled.
+- The Auth Site URL is the production GitHub Pages URL, not localhost.
+- Re-enable Auth features only with a reviewed login flow, redirect allowlist,
+  CAPTCHA/attack protection, and matching RLS policies.
