@@ -391,6 +391,12 @@ h1 {
   align-items: flex-start;
 }
 
+.card-official {
+  border-color: #b9c3f5;
+  background: #fcfcff;
+  box-shadow: inset 4px 0 0 #4f46e5;
+}
+
 .db {
   min-width: 68px;
   text-align: center;
@@ -404,6 +410,11 @@ h1 {
 .db .d { font-size: 25px; font-weight: 800; line-height: 1.15; }
 .db .w { font-size: 12px; font-weight: 600; opacity: 0.9; }
 
+.db-official {
+  background: #4338ca;
+  color: #fff;
+}
+
 .tag {
   display: inline-block;
   background: #e1f5ee;
@@ -413,6 +424,17 @@ h1 {
   border-radius: 999px;
   padding: 3px 10px;
   margin-bottom: 6px;
+}
+
+.tag-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-official {
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
 .tag-tent {
@@ -493,6 +515,13 @@ h1 {
 .ttag.movie {
   background: #ede9fe;
   color: #5b21b6;
+}
+
+.lchip.official,
+.chip.official {
+  border-color: #a5b4fc;
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
 .calendar-fold summary {
@@ -816,6 +845,7 @@ h1 {
 
 .event-dialog-status[data-tone="done"] { background: #f1efe8; color: #747168; }
 .event-dialog-status[data-tone="conf"] { background: #e1f5ee; color: #0a5b45; }
+.event-dialog-status[data-tone="official"] { background: #e0e7ff; color: #3730a3; }
 .event-dialog-status[data-tone="tent"] { background: #faeeda; color: #854f0b; }
 .event-dialog-status[data-tone="dead"] { background: #fcebeb; color: #a32d2d; }
 
