@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260806-2";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260806-3";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
@@ -14,7 +14,7 @@
     "highlights": [
       {
         "severity": "planning",
-        "label": "일정 확정",
+        "label": "공식 정기관람",
         "title": "8월 16일 영화 《오디세이》 정기관람",
         "text": "오후 5시 영등포 타임스퀘어 IMAX 집결, 오후 5시 30분부터 오후 8시 32분까지 관람으로 확정됐습니다. 관람비는 2만원이며 이후 저녁식사·티타임 예정입니다."
       },
@@ -26,7 +26,7 @@
       },
       {
         "severity": "planning",
-        "label": "집결 확정",
+        "label": "공식 정기관람",
         "title": "8월 22일 서울역사박물관 정기관람",
         "text": "오후 2시 50분 서울역사박물관 앞 집결로 확정됐습니다. 오후 3시에 관람을 시작하며 전체 일정은 오후 5시까지입니다."
       },
@@ -380,8 +380,8 @@
       mapUrl: "https://map.kakao.com/?q=%EC%84%B8%EC%A2%85%EB%AC%B8%ED%99%94%ED%9A%8C%EA%B4%80%20%EC%B2%B4%EC%9E%84%EB%B2%84%ED%99%80"
     },
     "odyssey-movie": {
-      status: "확정 · 영화",
-      tone: "conf",
+      status: "공식 정기관람 · 영화",
+      tone: "official",
       title: "영화 《오디세이》 정기관람",
       date: "2026. 8. 16. (일)",
       time: "오후 5시 집결 · 오후 5시 30분~오후 8시 32분 관람",
@@ -393,8 +393,8 @@
       mapUrl: "https://map.kakao.com/?q=%EC%98%81%EB%93%B1%ED%8F%AC%20%ED%83%80%EC%9E%84%EC%8A%A4%ED%80%98%EC%96%B4%20IMAX"
     },
     "history-museum": {
-      status: "확정",
-      tone: "conf",
+      status: "공식 정기관람",
+      tone: "official",
       title: "8월 정기관람 · 서울역사박물관",
       date: "2026. 8. 22. (토)",
       time: "오후 2시 50분 집결 · 오후 3시 관람 시작",
