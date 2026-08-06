@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260806-1";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260806-2";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
