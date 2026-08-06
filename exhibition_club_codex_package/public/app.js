@@ -185,6 +185,42 @@ const recommendedEvents = [
     updatedAt: "2026-07-31",
   },
   {
+    id: "79c9f5b1-8684-4c2e-89be-a71bc5010002",
+    recommendedRank: 2,
+    verified: true,
+    status: "공유완료",
+    region: "강남/서초",
+    type: "전시",
+    title: "《스페인 미술 500년: 빛과 어둠의 연대기》",
+    genre: "스페인 미술, 서양미술, 해외명화",
+    startDate: "2026-09-22",
+    endDate: "2027-01-20",
+    visitDate: "2026-10-17",
+    time: "화-일 10:00-19:00, 입장 마감 18:00. 매주 월요일 휴관, 공휴일 정상 운영",
+    venue: "예술의전당 한가람디자인미술관 제1·2·3전시실",
+    address: "서울 서초구 남부순환로 2406",
+    price: 0,
+    priceType: "성인 23,000원, 청소년 18,000원, 어린이 14,000원",
+    discount: "NOL 얼리버드 14,000원(정가 23,000원 대비 39% 할인, 선착순 한정). 예술의전당 유료회원 성인·청소년 10%, 현장 우대권 11,500원(대상·증빙 조건 확인)",
+    parking: "가능",
+    parkingFee: "전시 관객 3시간 평일 4,000원, 주말·공휴일 6,000원. 초과 시 일반요금 10분당 1,000원(주말·공휴일 1,500원)",
+    docent: "공식 상세에 정기 도슨트 공지 없음",
+    docentTime: "별도 정기 도슨트 회차 공지 없음(2026-08-06 확인)",
+    difficulty: "사전예약",
+    rating: "5",
+    owner: "운영진 추천",
+    infoUrl: "https://nol.yanolja.com/ticket/products/26010709",
+    mainUrl: "https://www.sac.or.kr/site/main/show/show_view?SN=77679",
+    mapUrl: "https://map.kakao.com/?q=%EC%98%88%EC%88%A0%EC%9D%98%EC%A0%84%EB%8B%B9%20%ED%95%9C%EA%B0%80%EB%9E%8C%EB%94%94%EC%9E%90%EC%9D%B8%EB%AF%B8%EC%88%A0%EA%B4%80",
+    summary: "엘 그레코부터 벨라스케스·고야·소로야까지, 500년에 걸친 스페인 미술의 흐름을 예술의전당 한가람디자인미술관에서 만나는 특별전입니다.",
+    recommendation: "운영진 추천 · NOL 전시/행사 주간 1위(2026-08-06 확인) 전시입니다. 9~10월 정기관람으로 추진하기 좋고, 얼리버드 사용 가능 기간 안에서 일정 조율을 권장합니다.",
+    notes: "얼리버드 티켓 사용 가능 기간은 2026-09-22~11-29이며, 선착순 한정 판매로 조기 매진될 수 있습니다. 주말·공휴일 예술의전당 주차장은 혼잡할 수 있어 대중교통을 권장합니다.",
+    ratingReason: "운영진 추천, 현재 예매처 전시/행사 주간 1위, 9~10월의 넉넉한 일정과 스페인 거장 미술을 폭넓게 보는 주제성을 높게 평가.",
+    sourceLabel: "예술의전당 공식 전시 상세·NOL 공식 예매·예술의전당 주차 안내",
+    verificationNote: "예술의전당 공식 상세에서 기간·운영시간·장소·정가·할인·정기 도슨트 공지 여부 확인; NOL 예매에서 얼리버드 가격·사용 기간·전시/행사 주간 1위 표시 확인; 공식 주차 안내에서 관객 요금 확인",
+    updatedAt: "2026-08-06",
+  },
+  {
     id: "79c9f5b1-8684-4c2e-89be-a71bc5010003",
     recommendedRank: 3,
     verified: true,
@@ -1121,8 +1157,8 @@ const supportedAreas = ["서울", "경기", "인천"];
 const supportedContentTypes = ["전체", "전시", "공연", "영화"];
 let activeArea = "서울";
 let activeContentType = "전체";
-const boardUpdatedAt = "2026.08.05 22:04";
-const dataUpdatedAt = "2026-08-05";
+const boardUpdatedAt = "2026.08.06 21:27";
+const dataUpdatedAt = "2026-08-06";
 const dataUpdatedLabel = dataUpdatedAt.replace(/-/g, ".");
 const retiredRecommendationTitles = new Set([
   "《큐비스트: 시각의 혁신가들》",
