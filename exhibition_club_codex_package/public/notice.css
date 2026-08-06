@@ -444,8 +444,8 @@ h1 {
 
 .tag-movie,
 .db-movie {
-  background: #ede9fe;
-  color: #5b21b6;
+  background: #fae8ff;
+  color: #86198f;
 }
 
 .card h3 {
@@ -513,8 +513,9 @@ h1 {
 .lchip.movie,
 .chip.movie,
 .ttag.movie {
-  background: #ede9fe;
-  color: #5b21b6;
+  border-color: #f0abfc;
+  background: #fae8ff;
+  color: #86198f;
 }
 
 .lchip.official,
@@ -522,6 +523,13 @@ h1 {
   border-color: #a5b4fc;
   background: #e0e7ff;
   color: #3730a3;
+}
+
+/* 공식 정기관람 표시는 유지하되, 영화가 함께 붙은 날짜는 영화 범주를 먼저 인식하게 한다. */
+.chip.official.movie {
+  border-color: #f0abfc;
+  background: #fae8ff;
+  color: #86198f;
 }
 
 .calendar-fold summary {
