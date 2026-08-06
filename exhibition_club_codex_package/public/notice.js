@@ -1,28 +1,28 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260803-5";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260806-1";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
     "schema_version": 1,
     "bot_name": "주간 정리봇",
-    "period_label": "7월 27일 ~ 8월 2일",
-    "updated_label": "2026. 8. 3. 23:13 기준",
-    "message_count": 300,
-    "summary": "최근 7일 대화와 운영진 확인사항에서 확정 일정, 투표 중인 영화 모임과 공연 참여 현황을 선별했습니다.",
+    "period_label": "7월 30일 ~ 8월 6일",
+    "updated_label": "2026. 8. 6. 19:56 기준",
+    "message_count": 243,
+    "summary": "최근 7일 대화와 운영진 확인사항에서 오디세이 영화관람 확정, 클래식 참석 마감과 8월 모임 일정을 정리했습니다.",
     "highlights": [
       {
         "severity": "planning",
-        "label": "투표 진행",
-        "title": "영화 《오디세이》 정기관람",
-        "text": "8월 9일 16:20 연남 CGV 2D와 8월 16일 14:00·17:30 영등포 타임스퀘어 IMAX가 후보입니다. 투표 종료 후 최종 날짜와 상영 시간을 확정해야 합니다."
+        "label": "일정 확정",
+        "title": "8월 16일 영화 《오디세이》 정기관람",
+        "text": "오후 5시 영등포 타임스퀘어 IMAX 집결, 오후 5시 30분부터 오후 8시 32분까지 관람으로 확정됐습니다. 관람비는 2만원이며 이후 저녁식사·티타임 예정입니다."
       },
       {
         "severity": "planning",
-        "label": "일정·참여 확정",
+        "label": "참여 마감",
         "title": "8월 15일 무료 클래식 공연",
-        "text": "오후 2시 세종문화회관 체임버홀 공연 일정과 참여자 2명이 확정됐습니다. 추가 참여 및 주차 관련 사항은 톡방 공지를 확인해야 합니다."
+        "text": "오후 2시 세종문화회관 체임버홀 공연은 참여자 2명으로 확정됐으며 추가 모집은 종료됐습니다."
       },
       {
         "severity": "planning",
@@ -38,10 +38,10 @@
       }
     ],
     "decisions": [
-      "8월 15일 무료 클래식 공연 일정과 참여자 2명이 확정됐습니다.",
+      "8월 15일 무료 클래식 공연은 참여자 2명으로 마감됐습니다.",
+      "영화 《오디세이》 관람을 8월 16일 오후 5시 영등포 타임스퀘어 IMAX 집결로 확정했습니다.",
       "8월 22일 오후 2시 50분 서울역사박물관 앞 집결로 확정했습니다.",
-      "가우디 서울전 관람일을 8월 29일로 확정했습니다.",
-      "영화 《오디세이》 관람일을 세 가지 후보로 투표하고 있습니다."
+      "가우디 서울전 관람일을 8월 29일로 확정했습니다."
     ]
   };
   var SEVERITY_ICONS = {
@@ -374,10 +374,23 @@
       time: "오후 2시",
       venue: "세종문화회관 체임버홀",
       description: "제한된 초청 좌석으로 진행되며 현재 참여자 2명이 확정된 클래식 공연입니다.",
-      note: "개인별 이름은 공개하지 않습니다. 추가 참여 및 주차 관련 사항은 톡방 공지를 확인해 주세요.",
+      note: "참여자 2명으로 확정됐으며 추가 모집은 종료되었습니다. 개인별 이름은 공개하지 않습니다.",
       infoUrl: "",
       infoLabel: "",
       mapUrl: "https://map.kakao.com/?q=%EC%84%B8%EC%A2%85%EB%AC%B8%ED%99%94%ED%9A%8C%EA%B4%80%20%EC%B2%B4%EC%9E%84%EB%B2%84%ED%99%80"
+    },
+    "odyssey-movie": {
+      status: "확정 · 영화",
+      tone: "conf",
+      title: "영화 《오디세이》 정기관람",
+      date: "2026. 8. 16. (일)",
+      time: "오후 5시 집결 · 오후 5시 30분~오후 8시 32분 관람",
+      venue: "영등포 타임스퀘어 IMAX · 영등포구 영중로 15",
+      description: "2026년 2차 정기관람 영화 모임으로 상영시간은 172분입니다.",
+      note: "관람비는 2만원이며 관람 후 저녁식사와 티타임을 진행할 예정입니다.",
+      infoUrl: "",
+      infoLabel: "",
+      mapUrl: "https://map.kakao.com/?q=%EC%98%81%EB%93%B1%ED%8F%AC%20%ED%83%80%EC%9E%84%EC%8A%A4%ED%80%98%EC%96%B4%20IMAX"
     },
     "history-museum": {
       status: "확정",

@@ -145,18 +145,29 @@ if (JSON.stringify(fallbackData) !== JSON.stringify(data)) {
 const confirmedStart = noticeHtml.indexOf("다가오는 확정 모임");
 const tentativeStart = noticeHtml.indexOf("조율 중 · 미정");
 const calendarStart = noticeHtml.indexOf("한눈에 보는 달력");
-if (!(confirmedStart >= 0 && confirmedStart < tentativeStart && tentativeStart < calendarStart)) {
-  fail("notice.html의 확정·미정·달력 영역 순서를 확인할 수 없습니다.");
+if (!(confirmedStart >= 0 && confirmedStart < calendarStart)) {
+  fail("notice.html의 확정 모임과 달력 영역 순서를 확인할 수 없습니다.");
+}
+if (tentativeStart >= 0 && !(confirmedStart < tentativeStart && tentativeStart < calendarStart)) {
+  fail("notice.html의 조율 중·미정 영역 순서를 확인할 수 없습니다.");
 }
 
-const confirmedSection = noticeHtml.slice(confirmedStart, tentativeStart);
-const tentativeSection = noticeHtml.slice(tentativeStart, calendarStart);
+const confirmedEnd = tentativeStart >= 0 ? tentativeStart : calendarStart;
+const confirmedSection = noticeHtml.slice(confirmedStart, confirmedEnd);
+const tentativeSection = tentativeStart >= 0
+  ? noticeHtml.slice(tentativeStart, calendarStart)
+  : "";
 // 요약에서는 확정인데 본문·달력에는 미정으로 남는 분류 회귀를 배포 전에 차단한다.
 const confirmedEvents = [
   {
     id: "classic-concert",
     titleToken: "8월 15일",
     digestTokens: ["오후 2시", "세종문화회관 체임버홀", "참여자 2명", "확정"]
+  },
+  {
+    id: "odyssey-movie",
+    titleToken: "8월 16일",
+    digestTokens: ["오후 5시", "영등포 타임스퀘어 IMAX", "오후 5시 30분", "오후 8시 32분", "2만원", "확정"]
   },
   {
     id: "history-museum",
@@ -203,8 +214,8 @@ for (const expected of confirmedEvents) {
   }
 }
 
-if (!tentativeSection.includes("《오디세이》") || confirmedSection.includes("《오디세이》")) {
-  fail("영화 《오디세이》 투표는 조율 중·미정 영역에만 있어야 합니다.");
+if (tentativeSection.includes("《오디세이》")) {
+  fail("확정된 영화 《오디세이》가 조율 중·미정 영역에 남아 있습니다.");
 }
 
 console.log("주간 정리봇 공개 데이터와 모임 일정 안내 정합성 검증 통과");
