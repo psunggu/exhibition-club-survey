@@ -55,8 +55,12 @@ jobs:
         uses: actions/deploy-pages@v4
         continue-on-error: true
 
-      # The action caps a single deployment wait at 10 minutes. A fresh request
-      # can leave an intermittent Pages queue without rebuilding or reuploading.
+      # Pages cancels a timed-out request asynchronously, so let that state
+      # settle before asking it to deploy the same uploaded artifact again.
+      - name: Wait for Pages deployment cancellation to settle
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 60
+
       - name: Retry GitHub Pages deployment after a queue timeout
         id: deployment_retry
         if: steps.deployment.outcome == 'failure'
