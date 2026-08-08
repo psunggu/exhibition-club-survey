@@ -19,7 +19,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment_retry.outputs.page_url || steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -53,3 +53,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      # Pages cancels a timed-out request asynchronously, so let that state
+      # settle before asking it to deploy the same uploaded artifact again.
+      - name: Wait for Pages deployment cancellation to settle
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 60
+
+      - name: Retry GitHub Pages deployment after a queue timeout
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+      - name: Fail when both GitHub Pages deployment attempts fail
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
+        run: exit 1

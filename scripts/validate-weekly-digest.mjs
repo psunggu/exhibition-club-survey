@@ -167,11 +167,13 @@ const confirmedEvents = [
   {
     id: "odyssey-movie",
     titleToken: "8월 16일",
+    official: true,
     digestTokens: ["오후 5시", "영등포 타임스퀘어 IMAX", "오후 5시 30분", "오후 8시 32분", "2만원", "확정"]
   },
   {
     id: "history-museum",
     titleToken: "8월 22일",
+    official: true,
     digestTokens: ["오후 2시 50분", "서울역사박물관 앞", "오후 3시", "오후 5시", "확정"]
   },
   {
@@ -195,18 +197,35 @@ for (const expected of confirmedEvents) {
   );
   if (!calendarButton) fail(`${expected.id} 달력 표시가 확정 상태가 아닙니다.`);
 
+  if (expected.official) {
+    const officialCard = new RegExp(
+      `<article[^>]*class="[^"]*\\bcard-official\\b[^"]*"[^>]*${eventMarker}`,
+      "u"
+    );
+    if (!officialCard.test(confirmedSection)) {
+      fail(`${expected.id} 카드에 공식 정기관람 표시가 없습니다.`);
+    }
+    if (!calendarButton[0].includes("official")) {
+      fail(`${expected.id} 달력에 공식 정기관람 색상이 없습니다.`);
+    }
+  }
+
   const detailsStart = noticeScript.indexOf(`"${expected.id}": {`);
   const detailsEnd = noticeScript.indexOf("\n    }", detailsStart);
   const detailsBlock = detailsStart >= 0 && detailsEnd > detailsStart
     ? noticeScript.slice(detailsStart, detailsEnd)
     : "";
-  if (!detailsBlock.includes('tone: "conf"')) {
-    fail(`${expected.id} 상세 팝업 상태가 확정이 아닙니다.`);
+  const expectedTone = expected.official ? "official" : "conf";
+  if (!detailsBlock.includes(`tone: "${expectedTone}"`)) {
+    fail(`${expected.id} 상세 팝업 상태가 ${expectedTone}이 아닙니다.`);
   }
 
   const digestItem = data.highlights.find((item) => item.title.includes(expected.titleToken));
   if (!digestItem) fail(`${expected.titleToken} 일정이 주간 정리봇에 없습니다.`);
   const digestText = `${digestItem.label} ${digestItem.title} ${digestItem.text}`;
+  if (expected.official && digestItem.label !== "공식 정기관람") {
+    fail(`${expected.titleToken} 일정이 주간 정리봇에서 공식 정기관람으로 표시되지 않습니다.`);
+  }
   for (const token of expected.digestTokens) {
     if (!digestText.includes(token)) {
       fail(`${expected.titleToken} 일정의 '${token}' 정보가 주간 정리봇과 일치하지 않습니다.`);
