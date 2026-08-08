@@ -25,7 +25,8 @@ const allowedRootKeys = new Set([
   "message_count",
   "summary",
   "highlights",
-  "decisions"
+  "decisions",
+  "open_questions"
 ]);
 const allowedHighlightKeys = new Set([
   "severity",
@@ -77,7 +78,7 @@ if (!data || Array.isArray(data) || typeof data !== "object") {
 }
 assertExactKeys(data, allowedRootKeys, "root");
 
-if (data.schema_version !== 1) fail("schema_version은 1이어야 합니다.");
+if (data.schema_version !== 2) fail("schema_version은 2여야 합니다.");
 if (data.bot_name !== "주간 정리봇") fail("bot_name은 '주간 정리봇'이어야 합니다.");
 if (!Number.isInteger(data.message_count) || data.message_count < 0) {
   fail("message_count는 0 이상의 정수여야 합니다.");
@@ -113,6 +114,13 @@ if (!Array.isArray(data.decisions) || data.decisions.length > 8) {
 }
 for (const [index, decision] of data.decisions.entries()) {
   assertPublicText(decision, `decisions[${index}]`, 180);
+}
+
+if (!Array.isArray(data.open_questions) || data.open_questions.length > 8) {
+  fail("open_questions는 최대 8개의 배열이어야 합니다.");
+}
+for (const [index, question] of data.open_questions.entries()) {
+  assertPublicText(question, `open_questions[${index}]`, 180);
 }
 
 const publicText = JSON.stringify(data);
@@ -168,7 +176,7 @@ const confirmedEvents = [
     id: "odyssey-movie",
     titleToken: "8월 16일",
     official: true,
-    digestTokens: ["오후 5시", "영등포 타임스퀘어 IMAX", "오후 5시 30분", "오후 8시 32분", "2만원", "확정"]
+    digestTokens: ["오후 5시", "영등포 타임스퀘어 IMAX", "오후 5시 30분 회차", "상영관 안내 종료 시각은 오후 8시 32분", "영화 러닝타임은 172분", "2만원", "확정"]
   },
   {
     id: "history-museum",

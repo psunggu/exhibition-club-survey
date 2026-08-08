@@ -339,6 +339,39 @@ h1 {
   margin-top: 5px;
 }
 
+.digest-open-questions {
+  margin-top: 14px;
+  border: 1px solid #e5c778;
+  border-radius: 12px;
+  background: #fff8e5;
+  padding: 13px 14px;
+}
+
+.digest-open-questions .digest-subtitle {
+  color: #714b00;
+}
+
+.digest-open-questions-intro {
+  margin: -3px 0 8px;
+  color: #765e2c;
+  font-size: 12px;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.digest-open-questions ul {
+  margin: 0;
+  padding-left: 19px;
+  color: #58491f;
+  font-size: 13px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.digest-open-questions li + li {
+  margin-top: 5px;
+}
+
 .digest-source {
   margin: 10px 0 0;
   color: #777086;
@@ -530,6 +563,13 @@ h1 {
   border-color: #f0abfc;
   background: #fae8ff;
   color: #86198f;
+}
+
+.lchip.official,
+.chip.official {
+  border-color: #a5b4fc;
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
 .calendar-fold summary {

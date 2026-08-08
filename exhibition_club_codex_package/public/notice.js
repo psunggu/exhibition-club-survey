@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260806-3";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260809-2";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
-    "schema_version": 1,
+    "schema_version": 2,
     "bot_name": "주간 정리봇",
     "period_label": "7월 30일 ~ 8월 6일",
     "updated_label": "2026. 8. 6. 19:56 기준",
@@ -16,7 +16,7 @@
         "severity": "planning",
         "label": "공식 정기관람",
         "title": "8월 16일 영화 《오디세이》 정기관람",
-        "text": "오후 5시 영등포 타임스퀘어 IMAX 집결, 오후 5시 30분부터 오후 8시 32분까지 관람으로 확정됐습니다. 관람비는 2만원이며 이후 저녁식사·티타임 예정입니다."
+        "text": "오후 5시 영등포 타임스퀘어 IMAX 집결, 오후 5시 30분 회차이며 상영관 안내 종료 시각은 오후 8시 32분으로 확정됐습니다. 영화 러닝타임은 172분이고, 관람비는 2만원이며 이후 저녁식사·티타임 예정입니다."
       },
       {
         "severity": "planning",
@@ -42,6 +42,12 @@
       "영화 《오디세이》 관람을 8월 16일 오후 5시 영등포 타임스퀘어 IMAX 집결로 확정했습니다.",
       "8월 22일 오후 2시 50분 서울역사박물관 앞 집결로 확정했습니다.",
       "가우디 서울전 관람일을 8월 29일로 확정했습니다."
+    ],
+    "open_questions": [
+      "8월 15일 무료 클래식 공연의 주차 가능 여부와 관련 사항을 확인 중입니다.",
+      "8월 16일 영화 관람 후 식사·티타임 장소와 참여 인원을 확인 중입니다.",
+      "8월 22일 서울역사박물관 관람의 세부 일정을 확인 중입니다.",
+      "8월 29일 가우디 서울전의 집결 시간과 최종 참석 인원을 확인 중입니다."
     ]
   };
   var SEVERITY_ICONS = {
@@ -113,7 +119,7 @@
   }
 
   function isSafeDigest(data) {
-    if (!data || data.schema_version !== 1) return false;
+    if (!data || data.schema_version !== 2) return false;
     if (!isNonEmptyString(data.bot_name) ||
         !isNonEmptyString(data.period_label) ||
         !isNonEmptyString(data.updated_label) ||
@@ -124,7 +130,9 @@
         data.highlights.length < 1 ||
         data.highlights.length > 8 ||
         !Array.isArray(data.decisions) ||
-        data.decisions.length > 8) return false;
+        data.decisions.length > 8 ||
+        !Array.isArray(data.open_questions) ||
+        data.open_questions.length > 8) return false;
 
     return data.highlights.every(function (item) {
       if (!item ||
@@ -137,7 +145,9 @@
       return item.severity === "done"
         ? hasCompletedDate && isoDateToDayNumber(item.completed_date) !== null
         : !hasCompletedDate;
-    }) && data.decisions.every(isNonEmptyString);
+    }) &&
+      data.decisions.every(isNonEmptyString) &&
+      data.open_questions.every(isNonEmptyString);
   }
 
   function renderDigest(data) {
@@ -193,13 +203,34 @@
     decisionPanel.appendChild(decisionTitle);
     decisionPanel.appendChild(decisionList);
 
+    var questionPanel = createElement("section", "digest-open-questions");
+    var questionTitle = createElement("h3", "digest-subtitle", "확인 중인 사항");
+    var questionIntro = createElement(
+      "p",
+      "digest-open-questions-intro",
+      "아직 정해지지 않았거나 추가 확인이 필요한 내용입니다."
+    );
+    var questionList = createElement("ul");
+    data.open_questions.forEach(function (question) {
+      questionList.appendChild(createElement("li", "", question));
+    });
+    questionPanel.appendChild(questionTitle);
+    questionPanel.appendChild(questionIntro);
+    questionPanel.appendChild(questionList);
+
     var source = createElement(
       "p",
       "digest-source",
       data.updated_label + " · 공개 가능한 일정 정보만 표시"
     );
 
-    content.replaceChildren(priorityTitle, highlightList, decisionPanel, source);
+    content.replaceChildren(
+      priorityTitle,
+      highlightList,
+      decisionPanel,
+      questionPanel,
+      source
+    );
   }
 
   function fetchDigest(retriesRemaining) {
@@ -384,9 +415,9 @@
       tone: "official",
       title: "영화 《오디세이》 정기관람",
       date: "2026. 8. 16. (일)",
-      time: "오후 5시 집결 · 오후 5시 30분~오후 8시 32분 관람",
+      time: "오후 5시 집결 · 오후 5시 30분 회차 · 상영관 안내 종료 오후 8시 32분",
       venue: "영등포 타임스퀘어 IMAX · 영등포구 영중로 15",
-      description: "2026년 2차 정기관람 영화 모임으로 상영시간은 172분입니다.",
+      description: "2026년 2차 정기관람 영화 모임으로 영화 러닝타임은 172분입니다.",
       note: "관람비는 2만원이며 관람 후 저녁식사와 티타임을 진행할 예정입니다.",
       infoUrl: "",
       infoLabel: "",
