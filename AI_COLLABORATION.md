@@ -22,6 +22,14 @@
 
 Claude는 기본적으로 읽기 전용이다. 사용자가 Claude에게 별도로 구현을 요청하지 않는 한 파일과 Git 상태를 변경하지 않는다.
 
+### 운영 문서 협업
+
+- 회의록·운영규정·설문·회원 안내의 현재 기준은 `exhibition_club_codex_package/docs/claude_code_club_context.md`에서 확인한다.
+- 사용자가 문안 작성을 요청하면 Claude는 비교·기획·초안·리뷰를 맡을 수 있다. 기존 Google 원본은 건드리지 않고 별도의 `[가안]` 문서로 작성한다.
+- Google Docs·Sheets·Forms의 생성·수정, 공유 권한 확인, 실제 응답 화면 확인처럼 외부 상태를 바꾸거나 검증하는 일은 사용자가 요청한 범위에서 Codex가 맡는다.
+- 운영 사실, 개인정보 공개 범위, 최종 문안 및 배포 여부는 사용자와 운영장이 승인한다. AI가 미확정 내용을 임의로 확정하지 않는다.
+- 작업 인계 형식은 `exhibition_club_codex_package/docs/ai_handoff_template.md`를 따른다.
+
 ## 2. 기본 작업 흐름
 
 1. 사용자가 목표와 배포 여부를 지정한다.

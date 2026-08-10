@@ -4,6 +4,10 @@
 
 @AGENTS.md
 
+동호회 운영 문서의 현재 기준과 확정·가안 구분은 아래 문서에서 확인한다.
+
+@exhibition_club_codex_package/docs/claude_code_club_context.md
+
 이 문서에는 Claude Code 세션에서만 필요한 운영 사항을 적는다. 프로젝트 규칙·구조·일정 현황은 `AGENTS.md`에서 관리하고 여기에 중복해 적지 않는다.
 
 ## 세션 시작 루틴
@@ -47,3 +51,10 @@ CI가 통과해도 아래는 사람이 확인해야 한다. 공개 페이지라 
 - **Claude** — 리뷰·검증·기획. 변경사항 코드 리뷰, 공지 문구 검토, 일정 정보 정합성 확인, 개선 제안.
 
 Claude는 **요청받지 않은 소스 수정을 하지 않는다.** 문제를 찾으면 고치지 말고 Codex가 그대로 쓸 수 있는 형태로 정리해 보고한다.
+
+## 동호회 운영 문서 작업
+
+- 회의록·운영규정·설문·회원 안내를 다루기 전에 `exhibition_club_codex_package/docs/claude_code_operations_workflow.md`를 읽는다.
+- Google 문서는 운영 정본 또는 참고 원본이다. 사용자가 특정 문서의 수정을 명시하지 않으면 기존 Google 문서를 변경하지 않는다.
+- 새 문안이 필요하면 정본을 덮어쓰지 말고 `[가안]`으로 분리한다. 확정 여부는 사용자와 운영장이 판단한다.
+- Claude와 Codex 사이의 작업 인계에는 `exhibition_club_codex_package/docs/ai_handoff_template.md`를 사용한다.
