@@ -1,5 +1,5 @@
 /**
- * 전시 및 공연 동호회 모바일 설문 시스템 생성 스크립트
+ * 41교구 전시·박물관 동아리 모바일 설문 시스템 생성 스크립트
  *
  * 사용 방법:
  * 1. https://script.google.com 접속
@@ -11,7 +11,7 @@
  */
 
 function setupClubSurveySystem() {
-  const clubName = '전시 및 공연 동호회';
+  const clubName = '41교구 전시·박물관 동아리';
   const monthLabel = '2026년 7월';
   const eventName = '퐁피두센터 한화 63빌딩 《큐비스트》';
 
@@ -35,7 +35,7 @@ function setupBaseSheets_(spreadsheet, eventName) {
   const dashboard = spreadsheet.getSheets()[0];
   dashboard.setName('대시보드');
   setRows_(dashboard, [
-    ['전시 및 공연 동호회 운영 대시보드', ''],
+    ['41교구 전시·박물관 동아리 운영 대시보드', ''],
     ['', ''],
     ['이번 달 정기 관람', eventName],
     ['주말 관람', '2026-07-11 16:00 / 28,000원'],
@@ -91,7 +91,7 @@ function createAttendanceForm_(clubName, monthLabel, eventName, spreadsheetId) {
   form.setDescription(
     `${monthLabel} 정기 관람 참석 가능 일정을 확인하기 위한 설문입니다.\n` +
     `이번 달 정기 관람은 ${eventName}입니다.\n` +
-    '응답은 동호회 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
+    '응답은 동아리 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
   );
   form.setCollectEmail(false);
   form.setLimitOneResponsePerUser(false);
@@ -134,7 +134,7 @@ function createAttendanceForm_(clubName, monthLabel, eventName, spreadsheetId) {
 
   form.addCheckboxItem()
     .setTitle('개인정보 수집 및 이용 동의')
-    .setChoiceValues(['동호회 운영을 위한 이름, 카카오톡 이름, 참석 가능 일정, 기타 의견 수집에 동의합니다.'])
+    .setChoiceValues(['동아리 운영을 위한 이름, 카카오톡 이름, 참석 가능 일정, 기타 의견 수집에 동의합니다.'])
     .setRequired(true);
 
   return form;
@@ -145,7 +145,7 @@ function createRecommendForm_(clubName, spreadsheetId) {
   form.setDescription(
     '함께 보고 싶은 전시, 공연, 박물관 일정을 자유롭게 추천해 주세요.\n' +
     '추천된 내용은 월별 후보 선정과 자율 관람 안내에 활용합니다.\n' +
-    '응답은 동호회 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
+    '응답은 동아리 운영 목적으로만 사용하며 전화번호는 수집하지 않습니다.'
   );
   form.setCollectEmail(false);
   form.setLimitOneResponsePerUser(false);
@@ -165,7 +165,7 @@ function createRecommendForm_(clubName, spreadsheetId) {
 
   form.addCheckboxItem()
     .setTitle('개인정보 수집 및 이용 동의')
-    .setChoiceValues(['동호회 운영을 위한 추천자 이름과 추천 내용을 수집·활용하는 것에 동의합니다.'])
+    .setChoiceValues(['동아리 운영을 위한 추천자 이름과 추천 내용을 수집·활용하는 것에 동의합니다.'])
     .setRequired(true);
 
   return form;
