@@ -424,7 +424,7 @@ const recommendedEvents = [
     mainUrl: "https://booking.naver.com/booking/5/bizes/1500781",
     mapUrl: "https://map.kakao.com/?q=%ED%82%B9%20%EC%98%A4%EB%B8%8C%20%ED%82%B9%EC%8A%A4%20%EC%A0%84%EC%8B%9C%20%EB%A1%AF%EB%8D%B0%EB%AA%B0%20%EA%B9%80%ED%8F%AC%EA%B3%B5%ED%95%AD%EC%A0%90",
     summary: "찰스 디킨스 원작과 애니메이션 《킹 오브 킹스》의 사랑 이야기를 대형 스크린, 공간음향, VFX와 개인화 인터랙션으로 체험하는 몰입형 전시입니다.",
-    recommendation: "교회 전시 동호회의 성격과 잘 맞고, 세대가 함께 사랑의 의미를 나누기 좋은 참여형 콘텐츠라 우선 추천합니다.",
+    recommendation: "41교구 전시·박물관 동아리의 성격과 잘 맞고, 세대가 함께 사랑의 의미를 나누기 좋은 참여형 콘텐츠라 우선 추천합니다.",
     notes: "전 연령 관람 가능하며 만 12세 이하는 보호자 동반이 필요합니다. 20명 이상 단체는 전시 콜센터에 별도 문의하세요.",
     ratingReason: "모임 주제 적합성, 체험성, 김포공항역 접근성, 전 연령 관람 가능성을 높게 평가.",
     sourceLabel: "킹 오브 킹스 전시 공식 홈페이지·네이버 공식 예약",
