@@ -5,9 +5,9 @@
 
 ## 프로젝트 개요
 
-41교구 박물관·갤러리 동호회(교회 전시 동호회) 지원 사이트. 구성 요소는 4개:
+전시.박물관 동아리(교회 전시 동호회) 지원 사이트. 구성 요소는 4개:
 
-1. **문화 콘텐츠 공유 보드** — `exhibition_club_codex_package/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 문화 모임에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
+1. **문화 콘텐츠 공유 보드** — `exhibition_club_codex_package/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 박물관 · 갤러리 동호회에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
 2. **모임 일정 공지 페이지** — `public/notice.html` + `notice.css` + `notice.js` (2026-07-21 신규 추가). 카카오톡 단체방 대화를 정리해 만든 8·9월 중심 모임 공지. 상단 `주간 정리봇`은 `public/weekly-digest.public.json`을 기준 데이터로 읽고, 요청 실패 시 `notice.js`의 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 달력의 "오늘" 마커는 notice.js가 접속 시점 날짜로 동적 표시(`data-year`, `data-month`, `.dnum` 매칭). 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
 3. **Google Form 설문 패키지** — `apps-script/Code.gs`(Form 2개+Sheet 1개 자동 생성), `docs/`, `sheets/` 샘플. 카톡 톡게시판 투표는 데이터 추출이 불가능해서, 참석 설문을 구글폼으로 대체하기 위한 것. **아직 미가동** (config.js에 Form URL 없음).
 4. **Telegram 업데이트 스크립트** — `scripts/send-telegram-update.js`. `app.js`의 recommendedEvents를 파싱해 텔레그램으로 주간 추천 목록 발송. `--dry-run` 지원.
