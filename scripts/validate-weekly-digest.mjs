@@ -123,17 +123,45 @@ for (const [index, question] of data.open_questions.entries()) {
   assertPublicText(question, `open_questions[${index}]`, 180);
 }
 
-const publicText = JSON.stringify(data);
+// 공개 페이지로 나가기 직전의 마지막 방어선이다.
+// 오탐(사람이 한 번 확인)이 미탐(그대로 공개)보다 항상 안전하므로 넉넉하게 잡는다.
 const sensitivePatterns = [
   { label: "이메일", pattern: /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/u },
   { label: "전화번호", pattern: /(?:01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}/u },
-  { label: "구역번호+이름", pattern: /(?:^|[^\d])\d{4}\s*[가-힣]{2,4}(?:$|[^가-힣])/u },
+  // 카카오톡 표시명은 "1011 김민준" 외에 "1041/이서연", "1021-박지훈" 처럼
+  // 구분자가 섞여 온다. \s* 로만 두면 슬래시·하이픈 형식을 통째로 놓친다.
+  // (실측 2026-08-17: 실제 방에서 쓰이는 8개 표시명 형식 중 4개만 잡혔다)
+  {
+    label: "소속번호+이름",
+    pattern: /(?:^|[^\d])\d{4}[\s/_.\-|]*[가-힣]{2,4}(?:$|[^가-힣])/u
+  },
+  // 새 플랫폼이 화면 표기로 정한 "구역 + 이름" 형식. 자릿수가 1~2라
+  // 위 4자리 패턴으로는 잡히지 않는다.
+  { label: "구역+이름", pattern: /\d{1,2}\s*구역\s*[가-힣]{2,4}/u },
   { label: "익명화 내부 식별자", pattern: /멤버\s*\d+/u },
   { label: "카카오 대화 원문 형식", pattern: /\[[^\]\r\n]+\]\s*\[[^\]\r\n]+\]/u }
 ];
 
-for (const { label, pattern } of sensitivePatterns) {
-  if (pattern.test(publicText)) fail(`${label}로 보이는 값이 포함되어 있습니다.`);
+// 게이트를 요약 JSON 한 곳에만 걸면, 사람이 자유 서술로 채우는 notice.html 본문이
+// 검사 밖에 남는다. 개인정보가 섞일 위험은 자동 생성물보다 손으로 쓰는 쪽이 크다.
+const noticeBodyText = noticeHtml
+  .replace(/<script[\s\S]*?<\/script>/gu, " ")
+  .replace(/<style[\s\S]*?<\/style>/gu, " ")
+  .replace(/<[^>]+>/gu, " ")
+  .replace(/\s+/gu, " ");
+
+const scanTargets = [
+  { name: "weekly-digest.public.json", text: JSON.stringify(data) },
+  { name: "notice.html 본문", text: noticeBodyText }
+];
+
+for (const { name, text } of scanTargets) {
+  for (const { label, pattern } of sensitivePatterns) {
+    const hit = text.match(pattern);
+    if (hit) {
+      fail(`${name}에 ${label}로 보이는 값이 있습니다: ${JSON.stringify(hit[0].trim())}`);
+    }
+  }
 }
 
 const fallbackMatch = noticeScript.match(/var FALLBACK_DIGEST = (\{[\s\S]*?\n  \});/u);
