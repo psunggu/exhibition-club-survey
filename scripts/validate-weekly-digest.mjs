@@ -193,19 +193,8 @@ const confirmedSection = noticeHtml.slice(confirmedStart, confirmedEnd);
 const tentativeSection = tentativeStart >= 0
   ? noticeHtml.slice(tentativeStart, calendarStart)
   : "";
-// 요약에서는 확정인데 본문·달력에는 미정으로 남는 분류 회귀를 배포 전에 차단한다.
+// 일정의 확정·완료 상태가 본문과 달력에서 엇갈리는 회귀를 배포 전에 차단한다.
 const confirmedEvents = [
-  {
-    id: "classic-concert",
-    titleToken: "8월 15일",
-    digestTokens: ["오후 2시", "세종문화회관 체임버홀", "참여자 2명", "확정"]
-  },
-  {
-    id: "odyssey-movie",
-    titleToken: "8월 16일",
-    official: true,
-    digestTokens: ["오후 5시", "영등포 타임스퀘어 IMAX", "오후 5시 30분 회차", "상영관 안내 종료 시각은 오후 8시 32분", "영화 러닝타임은 172분", "2만원", "확정"]
-  },
   {
     id: "history-museum",
     titleToken: "8월 22일",
@@ -266,6 +255,42 @@ for (const expected of confirmedEvents) {
     if (!digestText.includes(token)) {
       fail(`${expected.titleToken} 일정의 '${token}' 정보가 주간 정리봇과 일치하지 않습니다.`);
     }
+  }
+}
+
+const completedEvents = [
+  { id: "classic-concert", completedDate: "2026-08-15" },
+  { id: "odyssey-movie", completedDate: "2026-08-16" }
+];
+
+for (const expected of completedEvents) {
+  const eventMarker = `data-event-id="${expected.id}"`;
+  if (confirmedSection.includes(eventMarker)) {
+    fail(`${expected.id}가 완료됐는데 다가오는 확정 모임 영역에 남아 있습니다.`);
+  }
+  if (tentativeSection.includes(eventMarker)) {
+    fail(`${expected.id}가 완료됐는데 조율 중·미정 영역에 있습니다.`);
+  }
+
+  const completedRow = noticeHtml.match(
+    new RegExp(`<p[^>]*${eventMarker}[^>]*>`, "u")
+  );
+  if (!completedRow || !completedRow[0].includes(`data-completed-date="${expected.completedDate}"`)) {
+    fail(`${expected.id}가 완료된 모임 목록에 올바른 날짜로 없습니다.`);
+  }
+
+  const calendarButton = noticeHtml.match(
+    new RegExp(`<button[^>]*class="[^"]*\\bdone\\b[^"]*"[^>]*${eventMarker}[^>]*>`, "u")
+  );
+  if (!calendarButton) fail(`${expected.id} 달력 표시가 완료 상태가 아닙니다.`);
+
+  const detailsStart = noticeScript.indexOf(`"${expected.id}": {`);
+  const detailsEnd = noticeScript.indexOf("\n    }", detailsStart);
+  const detailsBlock = detailsStart >= 0 && detailsEnd > detailsStart
+    ? noticeScript.slice(detailsStart, detailsEnd)
+    : "";
+  if (!detailsBlock.includes('tone: "done"') || !detailsBlock.includes('status: "완료')) {
+    fail(`${expected.id} 상세 팝업 상태가 완료가 아닙니다.`);
   }
 }
 
