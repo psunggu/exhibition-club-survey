@@ -3,7 +3,7 @@ const path = require("path");
 const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
-const appPath = path.join(root, "exhibition_club_codex_package", "public", "app.js");
+const appPath = path.join(root, "app", "public", "app.js");
 const publicUrl = process.env.PUBLIC_URL || "https://psunggu.github.io/exhibition-club-survey/";
 const isDryRun = process.argv.includes("--dry-run");
 

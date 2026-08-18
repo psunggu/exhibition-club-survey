@@ -6,12 +6,12 @@ const root = process.cwd();
 const read = (relativePath) =>
   fs.readFileSync(path.join(root, relativePath), "utf8").replace(/\r\n/g, "\n");
 
-const schemaPath = "exhibition_club_codex_package/supabase/schema.sql";
+const schemaPath = "app/supabase/schema.sql";
 const migrationPath =
-  "exhibition_club_codex_package/supabase/migrations/202608050001_lock_down_public_events.sql";
-const appPath = "exhibition_club_codex_package/public/app.js";
-const htmlPath = "exhibition_club_codex_package/public/index.html";
-const configPath = "exhibition_club_codex_package/public/config.js";
+  "app/supabase/migrations/202608050001_lock_down_public_events.sql";
+const appPath = "app/public/app.js";
+const htmlPath = "app/public/index.html";
+const configPath = "app/public/config.js";
 
 const schema = read(schemaPath);
 const migration = read(migrationPath);

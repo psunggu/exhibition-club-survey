@@ -1,5 +1,12 @@
 # Codex 작업 지시서
 
+> **역사적 문서 — 그대로 두는 참고 자료다.**
+> 2026-08-17 이후 실행 담당이 Codex 에서 Claude Code 로 바뀌었고(AGENTS.md),
+> Phase 01 에서 `exhibition_club_codex_package/` 가 `app/` 으로 바뀌었다.
+> **본문의 경로와 역할 서술은 당시 기준이므로 고치지 않았다.**
+> 현재 규칙은 `AGENTS.md` 와 `exhibition-club-platform` 저장소의 `docs/requirements/` 를 본다.
+
+
 ## 목표
 
 전시 및 공연 동호회를 위한 모바일 안내 페이지와 Google 설문 운영 시스템을 완성한다.

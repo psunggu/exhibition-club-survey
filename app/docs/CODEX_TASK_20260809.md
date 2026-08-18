@@ -1,5 +1,12 @@
 # CODEX_TASK_20260809.md
 
+> **역사적 문서 — 그대로 두는 참고 자료다.**
+> 2026-08-17 이후 실행 담당이 Codex 에서 Claude Code 로 바뀌었고(AGENTS.md),
+> Phase 01 에서 `exhibition_club_codex_package/` 가 `app/` 으로 바뀌었다.
+> **본문의 경로와 역할 서술은 당시 기준이므로 고치지 않았다.**
+> 현재 규칙은 `AGENTS.md` 와 `exhibition-club-platform` 저장소의 `docs/requirements/` 를 본다.
+
+
 Claude 리뷰 세션(2026-08-09)에서 나온 지적 사항. `notice.html`·`weekly-digest.public.json`·`notice.js` FALLBACK·원본 digest·`AGENTS.md` 다섯 곳의 일정 정보를 대조한 결과다.
 
 작업 전 `AGENTS.md`의 "개발 규칙"을 읽을 것. 특히 CSP(인라인 스타일·스크립트 금지), 캐시 버스팅 `?v=`, 375px 모바일, `word-break: keep-all`.

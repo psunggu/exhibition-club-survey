@@ -6,9 +6,9 @@ const root = process.cwd();
 const read = (relativePath) =>
   fs.readFileSync(path.join(root, relativePath), "utf8").replace(/\r\n/g, "\n");
 
-const schemaPath = "exhibition_club_codex_package/supabase/schema.sql";
+const schemaPath = "app/supabase/schema.sql";
 const migrationPath =
-  "exhibition_club_codex_package/supabase/migrations/202608060001_harden_default_privileges_and_function.sql";
+  "app/supabase/migrations/202608060001_harden_default_privileges_and_function.sql";
 const rollbackPath = migrationPath.replace(/\.sql$/, ".rollback.sql");
 
 const schema = read(schemaPath);

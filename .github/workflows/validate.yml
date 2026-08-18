@@ -37,6 +37,6 @@ jobs:
 
       - name: Check public JavaScript syntax
         run: |
-          node --check exhibition_club_codex_package/public/app.js
-          node --check exhibition_club_codex_package/public/config.js
-          node --check exhibition_club_codex_package/public/notice.js
+          node --check app/public/app.js
+          node --check app/public/config.js
+          node --check app/public/notice.js

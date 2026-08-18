@@ -7,14 +7,14 @@
 
 41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 4개:
 
-1. **문화 콘텐츠 공유 보드** — `exhibition_club_codex_package/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 전시·박물관 동아리에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
+1. **문화 콘텐츠 공유 보드** — `app/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 전시·박물관 동아리에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
 2. **모임 일정 공지 페이지** — `public/notice.html` + `notice.css` + `notice.js` (2026-07-21 신규 추가). 카카오톡 단체방 대화를 정리해 만든 8·9월 중심 모임 공지. 상단 `주간 정리봇`은 `public/weekly-digest.public.json`을 기준 데이터로 읽고, 요청 실패 시 `notice.js`의 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 달력의 "오늘" 마커는 notice.js가 접속 시점 날짜로 동적 표시(`data-year`, `data-month`, `.dnum` 매칭). 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
 3. **Google Form 설문 패키지** — `apps-script/Code.gs`(Form 2개+Sheet 1개 자동 생성), `docs/`, `sheets/` 샘플. 카톡 톡게시판 투표는 데이터 추출이 불가능해서, 참석 설문을 구글폼으로 대체하기 위한 것. **아직 미가동** (config.js에 Form URL 없음).
 4. **Telegram 업데이트 스크립트** — `scripts/send-telegram-update.js`. `app.js`의 recommendedEvents를 파싱해 텔레그램으로 주간 추천 목록 발송. `--dry-run` 지원.
 
 ## 배포 파이프라인 (중요)
 
-- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`exhibition_club_codex_package/public/` 폴더를 GitHub Pages 루트로 배포**한다.
+- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`app/public/` 폴더를 GitHub Pages 루트로 배포**한다.
 - 일정·참여 인원·문구처럼 공개 콘텐츠만 바꾸는 소규모 수정은 검증 후 일반 Git으로 `main`에 직접 커밋·푸시한다.
 - 화면 구조나 기능 변경은 별도 브랜치와 PR을 권장한다. Supabase·개인정보·인증·보안 변경은 반드시 별도 브랜치와 PR로 검토한다.
 - GitHub CLI(`gh`)는 필수가 아니다. PR 또는 Actions를 터미널에서 관리할 때만 선택적으로 사용하며, 기본 배포는 Git Credential Manager와 일반 Git을 사용한다.
@@ -29,7 +29,32 @@
 - **캐시 버스팅**: CSS/JS 링크에 `?v=YYYYMMDD-n` 쿼리를 붙이고, 내용 수정 시 버전을 올린다. (예: `notice.css?v=20260721-1`)
 - **모바일 우선**: 회원 대부분이 카톡 링크로 휴대폰에서 열람. 375px 폭에서 가로 스크롤 없어야 함.
 - **한국어 텍스트 줄바꿈**: `word-break: keep-all` 사용 (음절 단위 줄바꿈 방지).
-- **개인정보 최소화**: 이름 외 연락처·생년월일 등 수집·게시 금지. 결제·로그인 기능 없음 (docs/CODEX_TASK.md의 운영 원칙 계승).
+- **개인정보 최소 수집**: 회원에게 받는 것은 **이름 · 소속 구역** 둘뿐이다.
+  - **연락처 컬럼을 어떤 앱 테이블에도 만들지 않는다** (`email`·`phone` 모두).
+  - 주소·생년월일·계좌번호·주민등록번호는 어떤 경우에도 만들지 않는다.
+  - 항목을 늘리려면 개인정보 처리방침 갱신과 **재동의**까지 함께 계획한다.
+- **이메일은 읽는 경로 자체를 만들지 않는다**: 로그인 수단으로 Supabase Auth(`auth.users`)에
+  남는 것이 전부다. `profiles`에 복사하지 않고, 운영진 화면·명부·내보내기 어디에도 띄우지 않는다.
+  단체 메일 발송 기능은 **만들지 않는다**(R-07-03) — 카톡 오픈방이 그 자리를 대신한다.
+  `auth.users`를 읽는 기능을 새로 만들자는 제안이 나오면 그 자체를 되묻는다.
+- **결제 기능 없음**: 관람료·회비는 **기록만** 한다. 송금은 시스템 밖이다.
+  계좌번호는 어떤 형태로도 저장하지 않는다 (D-21).
+- **회원 식별**: DB 기본키는 `auth.users.id`(UUID)다. 교회 교적부 규칙(동명이인 등록 순 A/B)은
+  **PK가 아니라 유니크 제약**으로 둔다 — `unique (full_name, name_letter)`.
+  교적부가 정정되면 그 컬럼만 고치면 되고 참조는 깨지지 않는다.
+- **이름 표시**: 화면·게시물은 `구역 + 이름`(3구역 홍길동),
+  집계·대조는 `이름 + 문자`(홍길동A). 같은 구역에 동명이인이 있으면 화면에도 문자를 붙이되,
+  판단은 코드가 한다.
+- **인증**: 카카오 OAuth + 이메일 매직링크. **비밀번호는 만들지 않는다.**
+  가입은 운영진 승인제(`status = pending` → `approved`)이고,
+  승인 시 운영진이 교적부와 대조해 구분 문자를 지정한다.
+- **실제 회원 데이터**: 저장소·테스트 픽스처·문서·외부 도구에 넣지 않는다.
+  예시가 필요하면 `docs/fixtures/sample-members.md`를 쓴다.
+- **번들은 공개다**: 로그인 뒤 화면이라도 코드는 누구나 내려받는다.
+  회원 이름, 구역 목록, 운영진 명단, 내부 URL을 소스에 하드코딩하지 않는다.
+  화면에 보일 모든 데이터는 RLS를 통과한 API 응답으로만 온다.
+- **신규 DB 객체는 `club` 스키마에**: 기존 `public` 테이블(`events` 등)은 건드리지 않는다.
+  마이그레이션 원본은 `exhibition-club-platform` 저장소의 `supabase/migrations/`에 있다.
 - **주간 정리 공개 데이터**: GitHub Pages는 운영진 전용이 아니라 공개 페이지다. 원본 `digest-*.json`을 복사하지 말고, 원문·실명·닉네임·구역번호+이름·개인별 평가를 뺀 `weekly-digest.public.json`과 `notice.js`의 `FALLBACK_DIGEST`만 함께 갱신한다. 배포 전 `node scripts/validate-weekly-digest.mjs`를 실행해 두 값의 일치 여부까지 확인한다.
 - 커밋 작성자: `psunggu <psunggu@users.noreply.github.com>`, 커밋 메시지는 영어 또는 한국어 명령형 한 줄.
 
@@ -59,9 +84,9 @@
 
 ## 참고 문서
 
-- `exhibition_club_codex_package/README.md` — 배포·설문 세팅 절차 (일부 구버전 설명 포함: config.js 키 구성이 현재와 다름. 현재 config.js는 sheetUrl/supabase 키 사용)
-- `exhibition_club_codex_package/docs/CODEX_TASK.md` — v0.1 최초 작업 지시서 (역사적 문서)
-- `exhibition_club_codex_package/docs/kakao_notice.md` — 단톡방 공유문 템플릿
+- `app/README.md` — 배포·설문 세팅 절차 (일부 구버전 설명 포함: config.js 키 구성이 현재와 다름. 현재 config.js는 sheetUrl/supabase 키 사용)
+- `app/docs/CODEX_TASK.md` — v0.1 최초 작업 지시서 (역사적 문서)
+- `app/docs/kakao_notice.md` — 단톡방 공유문 템플릿
 
 ## 로컬 환경 (참고)
 
@@ -69,11 +94,13 @@
 - Node.js 스크립트는 `node scripts/send-telegram-update.js --dry-run`으로 검증
 - 정적 사이트라 빌드 과정 없음. 로컬 확인은 `public/index.html`·`notice.html`을 브라우저로 직접 열면 됨
 
-## Codex·Claude 협업 역할
+## AI 에이전트 역할 (2026-08-17 변경)
 
-- 공통 협업 절차와 산출물 형식은 저장소 루트의 `AI_COLLABORATION.md`를 따른다.
-- **Codex는 실행 담당**이다: 실제 코드·콘텐츠 수정, 공식 출처 확인, 검증 실행, 변경 범위 검토, Git 커밋·PR·배포를 담당한다.
-- **Claude는 리뷰 담당**이다: 변경사항 리뷰, 한국어 문구 검토, 일정 정보의 내부 정합성 확인, 개선 제안을 담당한다.
-- Claude는 사용자의 별도 지시가 없는 한 파일 수정, `git add`, 커밋, 브랜치 변경, stash, reset, push, PR 병합 및 배포를 하지 않는다.
-- 공식 행사 정보와 배포 여부의 최종 판단은 Codex가 현재 공식 출처와 저장소 상태를 다시 확인한 뒤 수행한다.
-- 같은 작업 폴더에서 리뷰할 때 Codex는 리뷰 대상 diff를 고정하고, Claude의 리뷰가 끝날 때까지 해당 파일을 추가 수정하지 않는다.
+**역할이 뒤바뀌었다.** 이전에는 Codex가 실행, Claude가 리뷰였다.
+
+- **Claude Code가 구현과 배포를 담당한다.** 코드·콘텐츠 수정, 공식 출처 확인,
+  검증 실행, Git 커밋·PR·배포까지.
+- **Codex는 선택적 2차 검토**로만 쓴다. 필요할 때 사용자가 직접 호출한다.
+- 협업 절차와 산출물 형식은 `AI_COLLABORATION.md`를 따르되, **역할이 뒤바뀐 것에 유의**한다.
+- 공식 행사 정보와 배포 여부의 최종 판단은 공식 출처와 저장소 상태를 **다시 확인한 뒤** 수행한다.
+  이 원칙은 담당이 바뀌어도 그대로다.

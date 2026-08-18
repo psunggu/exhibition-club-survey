@@ -40,7 +40,7 @@ jobs:
         run: node scripts/validate-supabase-p1.mjs
 
       - name: Check public JavaScript syntax
-        run: node --check exhibition_club_codex_package/public/app.js
+        run: node --check app/public/app.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -48,7 +48,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: exhibition_club_codex_package/public
+          path: app/public
 
       - name: Deploy to GitHub Pages
         id: deployment

@@ -75,13 +75,13 @@ window.CLUB_CONFIG = {
 6. 배포 후 아래 형태의 URL을 엽니다.
 
 ```text
-https://<GitHub아이디>.github.io/<저장소명>/exhibition_club_codex_package/public/
+https://<GitHub아이디>.github.io/<저장소명>/app/public/
 ```
 
 현재 저장소 기준 예상 URL은 다음과 같습니다.
 
 ```text
-https://psunggu.github.io/exhibition-club-survey/exhibition_club_codex_package/public/
+https://psunggu.github.io/exhibition-club-survey/app/public/
 ```
 
 GitHub Pages는 `public` 폴더를 사이트 루트로 직접 지정할 수 없습니다. 더 짧은 URL이 필요하면 `public/index.html`, `public/styles.css`, `public/config.js`를 저장소 루트나 `docs` 폴더로 옮긴 뒤 Pages 설정을 맞춰 주세요.
@@ -91,7 +91,7 @@ GitHub Pages는 `public` 폴더를 사이트 루트로 직접 지정할 수 없�
 1. [Vercel](https://vercel.com/)에 로그인합니다.
 2. `Add New` > `Project`를 선택합니다.
 3. GitHub 저장소를 연결합니다.
-4. 프로젝트 설정에서 Root Directory를 `exhibition_club_codex_package/public`으로 지정합니다.
+4. 프로젝트 설정에서 Root Directory를 `app/public`으로 지정합니다.
 5. Framework Preset은 `Other` 또는 정적 사이트 기본값을 사용합니다.
 6. Build Command는 비워 두고, Output Directory도 비워 둡니다.
 7. Deploy를 누른 뒤 생성된 URL을 모바일에서 확인합니다.
