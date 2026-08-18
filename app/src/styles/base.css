@@ -1,0 +1,65 @@
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  /* 회원 화면은 16px 이다. iOS 는 입력칸이 16px 미만이면 탭할 때 화면을 확대하고,
+     한 번 확대되면 되돌아오지 않는다 (R-01-06). */
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  background: var(--ground);       /* 비우면 뷰어 배경이 비친다 */
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  /* 한글은 이 둘을 짝으로 쓴다. keep-all 만 두면 긴 URL 이 칸을 뚫는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.02em;
+  line-height: 1.25; text-wrap: balance; }
+h1 { font-size: clamp(1.5rem, 5vw, 2rem); }
+h2 { font-size: 1.15rem; }
+p  { margin: 0; }
+
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px;
+}
+
+.shell {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: var(--s6) var(--s4) var(--s12);
+  display: flex; flex-direction: column; gap: var(--s6);
+}
+
+.mast { display: flex; flex-direction: column; gap: var(--s2);
+  padding-bottom: var(--s4); border-bottom: 2px solid var(--ink); }
+.eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em;
+  color: var(--accent); font-weight: 600; }
+
+/* 누를 수 있는 것은 44px 이다. 링크라도 문장 밖에 홀로 서면 목표다. */
+.nav { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.nav a {
+  display: flex; align-items: center;
+  min-height: var(--tap); padding: 0 var(--s4);
+  border: 1px solid var(--rule); background: var(--surface);
+  text-decoration: none; font-weight: 600;
+}
+.nav a[aria-current='page'] {
+  border-color: var(--accent); background: var(--accent-soft);
+}
+
+.panel { background: var(--surface); border: 1px solid var(--rule);
+  padding: var(--s4); }
+
+.foot { border-top: 1px solid var(--rule); padding-top: var(--s3); }
+.tiny { font-size: 0.85rem; color: var(--ink-3); }
+
+/* 넓은 것은 자기 상자 안에서만 스크롤한다. 본문이 가로로 밀리면 안 된다. */
+.scroll-x { overflow-x: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

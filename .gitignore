@@ -16,3 +16,5 @@ backups/
 local-backups/
 events-*.json
 events-*.json.sha256
+dist/
+node_modules/

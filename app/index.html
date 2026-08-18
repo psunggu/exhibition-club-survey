@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Language" content="ko-KR" />
+  <!--
+    CSP는 지금 라이브 페이지와 같은 수준으로 유지한다 (R-01-07).
+    인라인 <script>·<style>·style= 을 하나도 허용하지 않는다.
+    빌드가 인라인을 뿜지 않는지는 `npm run check:csp` 가 확인한다.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>문화 콘텐츠 공유 보드</title>
+  <meta name="description" content="100주년 기념교회 41교구 전시·박물관 동아리에서 서울·경기·인천의 전시·음악공연·영화 정보를 함께 나누는 문화 콘텐츠 공유 보드" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
