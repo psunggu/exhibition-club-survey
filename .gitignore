@@ -1,20 +1,73 @@
-# Dependencies and local runtime files
-node_modules/
-*.log
+# ── 개인정보가 들어갈 수 있는 것 ─────────────────────────────
+# 카카오톡 대화 내보내기에는 실명·구역·개인별 평가가 그대로 들어 있다.
+# 원본은 저장소에 들어오지 않는다. 걷어낸 공개본만 커밋한다
+# (weekly-digest.public.json — scripts/validate-weekly-digest.mjs 가 경계를 지킨다).
+카카오톡*.txt
+KakaoTalk*.txt
+KakaoTalk*.csv
+Talk_*.txt
+*_회원명부*
+*멤버목록*
+digest-*.json
+*_digest.json
+outputs/
 
-# Local credentials
+# 회원 명부가 될 수 있는 표
+*.xlsx
+*.xls
+
+# ── 자격증명 ────────────────────────────────────────────────
+# service_role 키는 RLS 를 통째로 우회한다. 어떤 형태로도 커밋하지 않는다.
 .env
 .env.*
 !.env.example
 *.pem
 *.p12
 *.pfx
+*.key
+service_role*
+*service-role*
+config.local.json
+secrets.json
 
-# Generated and private operational artifacts
-outputs/
+# ── DB 덤프 · 백업 ──────────────────────────────────────────
+# 덤프는 그 자체로 회원 명부다. 압축에 암호를 걸고 동기화 폴더 바깥에 둔다.
 backups/
 local-backups/
 events-*.json
 events-*.json.sha256
-dist/
+*.dump
+*.sql.gz
+*.backup
+supabase/.temp/
+supabase/.branches/
+
+# ── 빌드 산출물 ─────────────────────────────────────────────
 node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# ── 편집기 · OS ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
+
+# ── 이 파일이 못 하는 것 ────────────────────────────────────
+# .gitignore 는 실수를 줄일 뿐 막지는 못한다.
+#   · `git add -f` 는 무시 규칙을 건너뛴다
+#   · 한 번 커밋된 것은 여기 적어도 히스토리에서 사라지지 않는다
+#
+# 그래서 CI 에서 scripts/validate-repository-hygiene.mjs 가
+# **추적 중인 파일의 내용을** 직접 훑는다 — service_role JWT 가 있으면 실패하고,
+# anon 키는 app/public/config.js 한 곳에만 허용한다.
+# 실제로 이 검사가 config.js 복사본을 잡아냈다.
+#
+# app/public/config.js 의 anon 키는 **일부러 커밋한다.**
+# 브라우저 번들에 실려 나가는 공개 값이고 GitHub Pages 배포에 필요하다.
+# 여기에 넣으면 사이트가 뜨지 않는다.
+# 데이터를 지키는 것은 키를 숨기는 것이 아니라 RLS 다 — anon 은 읽기만 되고
+# 쓰기는 42501(permission denied)로 막혀 있는 것을 확인했다.

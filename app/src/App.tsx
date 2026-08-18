@@ -1,5 +1,6 @@
 import { useRoute } from './lib/router'
 import { Board } from './Board'
+import { Calendar } from './Calendar'
 
 /**
  * 뼈대만 있는 상태다. 화면 이식은 R-01-04(콘텐츠 보드) · R-01-05(달력)에서 한다.
@@ -23,7 +24,7 @@ export function App() {
 
       <section className="panel">
         {route.name === 'board' && <Board />}
-        {route.name === 'calendar' && <p>월별 일정 달력 — R-01-05 에서 이식한다.</p>}
+        {route.name === 'calendar' && <Calendar />}
         {route.name === 'notFound' && (
           <p>
             그런 화면은 없다. <a href="#/">보드로 돌아가기</a>

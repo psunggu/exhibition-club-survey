@@ -74,10 +74,67 @@ for (const c of CASES) {
       + `address=${JSON.stringify(c.address)} → 원본 ${a} · 이식 ${b}`);
 }
 
+const passed = [`지역 판정 ${CASES.length}가지`];
+
+// ── 달력 (R-01-05) ─────────────────────────────────────────
+// notice.js 의 isoDateToDayNumber · isRecentCompletedDate 를 소스에서 꺼내
+// 이식본과 같은 입력으로 돌린다.
+const NOTICE = path.join(ROOT, 'app/public/notice.js');
+const CAL = path.join(ROOT, 'app/src/lib/calendar.ts');
+if (fs.existsSync(NOTICE) && fs.existsSync(CAL)) {
+  const njs = fs.readFileSync(NOTICE, 'utf8');
+  const nfn = (name) => {
+    const m = njs.match(new RegExp('function ' + name + '\\([\\s\\S]*?\\n  \\}'));
+    if (!m) throw new Error(`notice.js 에서 ${name} 을 찾지 못했다`);
+    return m[0];
+  };
+  const visible = Number((njs.match(/COMPLETED_VISIBLE_DAYS = (\d+)/) ?? [, '3'])[1]);
+  const legacyCal = {};
+  eval(`var DAY_IN_MILLISECONDS = 24*60*60*1000;
+        var COMPLETED_VISIBLE_DAYS = ${visible};
+        ${nfn('isoDateToDayNumber')}
+        ${nfn('koreanTodayDayNumber')}
+        ${nfn('isRecentCompletedDate')}
+        legacyCal.isoToDay = isoDateToDayNumber;
+        legacyCal.isRecent = isRecentCompletedDate;`);
+
+  // 이식본에서 타입 표기를 걷어내고 같은 함수를 만든다
+  const src = fs.readFileSync(CAL, 'utf8');
+  const strip = (name) => {
+    const m = src.match(new RegExp('export function ' + name + '[\\s\\S]*?\\n\\}'));
+    if (!m) throw new Error(`calendar.ts 에서 ${name} 을 찾지 못했다`);
+    return m[0]
+      .replace('export function', 'function')
+      .replace(/\)\s*:\s*[A-Za-z|\s\[\]]+\{/, ') {')     // 반환 타입
+      .replace(/(\w+)\s*:\s*(string|number|boolean)/g, '$1'); // 매개변수 타입
+  };
+  const ported = {};
+  // calendar.ts 가 모듈 상단에 둔 상수도 함께 가져온다
+  const DAY_MS_LINE = src.match(/const DAY_MS = [^\n]+/)[0];
+  eval(`${DAY_MS_LINE}\n${strip('isoToDayNumber')}\n${strip('isRecentlyCompleted')}
+        ported.isoToDay = isoToDayNumber; ported.isRecent = isRecentlyCompleted;`);
+
+  const DATES = ['2026-08-19', '2026-08-18', '2026-08-17', '2026-08-16', '2026-08-15',
+                 '2026-07-31', '2027-01-01', '2026-13-40', '잘못된값', ''];
+  const TODAY = '2026-08-19';
+  for (const d of DATES) {
+    const a = legacyCal.isoToDay(d);
+    const b = ported.isoToDay(d);
+    if (a !== b) problems.push(`isoToDayNumber(${JSON.stringify(d)}) → 원본 ${a} · 이식 ${b}`);
+
+    const ra = legacyCal.isRecent(d, legacyCal.isoToDay(TODAY));
+    const rb = ported.isRecent(d, TODAY, visible);
+    if (ra !== rb) problems.push(`완료 표시 ${JSON.stringify(d)} → 원본 ${ra} · 이식 ${rb}`);
+  }
+  passed.push(`날짜 ${DATES.length}가지 · 완료 표시 ${visible}일 규칙`);
+}
+
+// ── 보고. 두 검사를 다 돌린 뒤에 판정한다 —
+//    앞에서 통과했다고 먼저 끝내면 뒤의 실패가 exit 0 으로 묻힌다.
 if (problems.length) {
-  console.error('보드 이식 대조 실패 — 지역 판정이 원본과 다르다\n');
+  console.error('이식 대조 실패 — 원본과 결과가 다르다\n');
   problems.forEach((p) => console.error(`  · ${p}`));
   console.error('');
   process.exit(1);
 }
-console.log(`보드 이식 대조 통과 — 지역 판정 ${CASES.length}가지가 원본과 일치`);
+console.log(`이식 대조 통과 — ${passed.join(' · ')}`);
