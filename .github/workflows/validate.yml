@@ -49,6 +49,9 @@ jobs:
       - name: Validate sample member fixtures
         run: node scripts/validate-fixtures.mjs
 
+      - name: Validate board port parity
+        run: node scripts/validate-board-parity.mjs
+
       - name: Validate Supabase read-only boundary
         run: node scripts/validate-supabase-readonly.mjs
 

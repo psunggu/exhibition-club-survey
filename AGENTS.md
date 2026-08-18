@@ -53,7 +53,12 @@
 - **번들은 공개다**: 로그인 뒤 화면이라도 코드는 누구나 내려받는다.
   회원 이름, 구역 목록, 운영진 명단, 내부 URL을 소스에 하드코딩하지 않는다.
   화면에 보일 모든 데이터는 RLS를 통과한 API 응답으로만 온다.
-- **신규 DB 객체는 `club` 스키마에**: 기존 `public` 테이블(`events` 등)은 건드리지 않는다.
+- **신규 DB 객체는 `club` 스키마에**: 회원·모임·설문 등 **새로 만드는 것은 전부** `club` 스키마다.
+  `public` 스키마에 새 테이블을 만들지 않는다.
+  - **예외 하나 — `public.events`**: 이 보드의 콘텐츠 테이블이고 회원 개인정보가 아니다.
+    큐레이션 필드를 여기에 **nullable 컬럼으로** 더한다 (D-24). 한 전시의 정보를 두 테이블로
+    나누면 "두 곳에 데이터가 있으면 반드시 어긋난다"가 형태만 바꿔 돌아온다.
+  - 기존 컬럼의 타입·이름을 바꾸거나 지우지 않는다. **더하기만 한다.**
   마이그레이션 원본은 `exhibition-club-platform` 저장소의 `supabase/migrations/`에 있다.
 - **주간 정리 공개 데이터**: GitHub Pages는 운영진 전용이 아니라 공개 페이지다. 원본 `digest-*.json`을 복사하지 말고, 원문·실명·닉네임·구역번호+이름·개인별 평가를 뺀 `weekly-digest.public.json`과 `notice.js`의 `FALLBACK_DIGEST`만 함께 갱신한다. 배포 전 `node scripts/validate-weekly-digest.mjs`를 실행해 두 값의 일치 여부까지 확인한다.
 - 커밋 작성자: `psunggu <psunggu@users.noreply.github.com>`, 커밋 메시지는 영어 또는 한국어 명령형 한 줄.

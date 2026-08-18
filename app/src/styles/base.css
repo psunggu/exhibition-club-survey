@@ -63,3 +63,49 @@ a:focus-visible, button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ── 보드 ─────────────────────────────────────────── */
+.filters { display: flex; flex-direction: column; gap: var(--s3); }
+.tabs { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.tab {
+  min-height: var(--tap); padding: 0 var(--s4);
+  font: inherit; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--surface); color: var(--ink);
+}
+.tab.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+
+.search { display: flex; flex-direction: column; gap: var(--s1); }
+.search input {
+  /* 16px 미만이면 iOS 가 탭할 때 화면을 확대하고 되돌아오지 않는다 */
+  font: inherit; font-size: 16px;
+  min-height: var(--field); padding: 0 var(--s3);
+  border: 1px solid var(--rule); background: var(--surface); color: var(--ink);
+}
+
+.cards { list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--s4); }
+.card { background: var(--surface); border: 1px solid var(--rule);
+  padding: var(--s4); display: flex; flex-direction: column; gap: var(--s2); }
+.card-head { display: flex; gap: var(--s2); align-items: baseline; flex-wrap: wrap; }
+.card h2 { font-size: 1.05rem; }
+.meta { color: var(--ink-2); font-size: 0.92rem; }
+
+.badge { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem; border: 1px solid currentColor; white-space: nowrap; }
+.badge.good { color: var(--good); background: var(--good-soft); }
+
+.facts { margin: 0; display: flex; flex-direction: column; gap: var(--s1); font-size: 0.92rem; }
+.facts > div { display: flex; gap: var(--s2); }
+.facts dt { color: var(--ink-3); min-width: 4rem; }
+.facts dd { margin: 0; }
+
+.rec { font-size: 0.95rem; }
+.links { display: flex; gap: var(--s2); flex-wrap: wrap; }
+/* 문장 밖에 홀로 선 링크는 목표다. 44px 로 만든다. */
+.links a { display: flex; align-items: center; min-height: var(--tap);
+  padding: 0 var(--s3); border: 1px solid var(--rule); text-decoration: none; }
+
+.note { background: var(--surface); border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent); padding: var(--s4);
+  display: flex; flex-direction: column; gap: var(--s2); }
+.note.warn { border-left-color: var(--warn); background: var(--warn-soft); }

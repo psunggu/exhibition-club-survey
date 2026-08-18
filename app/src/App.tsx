@@ -1,4 +1,5 @@
 import { useRoute } from './lib/router'
+import { Board } from './Board'
 
 /**
  * 뼈대만 있는 상태다. 화면 이식은 R-01-04(콘텐츠 보드) · R-01-05(달력)에서 한다.
@@ -21,7 +22,7 @@ export function App() {
       </nav>
 
       <section className="panel">
-        {route.name === 'board' && <p>콘텐츠 보드 — R-01-04 에서 이식한다.</p>}
+        {route.name === 'board' && <Board />}
         {route.name === 'calendar' && <p>월별 일정 달력 — R-01-05 에서 이식한다.</p>}
         {route.name === 'notFound' && (
           <p>
