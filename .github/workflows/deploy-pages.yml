@@ -68,10 +68,22 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      # ── 여기가 라이브다 (R-01-02) ──────────────────────────────
+      # 2026-08-19 에 app/public → dist 로 바꿨다. 이 줄이 실제 사이트를 정한다.
+      #
+      # dist 에 들어가는 것
+      #   index.html                 SPA 진입점 (보드 · 달력)
+      #   notice.html                옛 주소용 리다이렉트 → #/calendar
+      #   config.js                  app/public 에서 그대로 가져온다 (키는 한 곳에만)
+      #   weekly-digest.public.json  위와 같다
+      #   assets/                    해시 붙은 번들
+      #
+      # app/public 의 옛 페이지는 저장소에 남아 있지만 **더 이상 배포되지 않는다.**
+      # 검증 스크립트 셋이 아직 그 파일을 읽고 있어 같은 커밋에서 지우지 않았다.
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: app/public
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment

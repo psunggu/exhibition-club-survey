@@ -30,9 +30,35 @@ function copyLiveAssets(): Plugin {
         if (!fs.existsSync(p)) throw new Error(`정적 파일이 없다: ${p}`)
         this.emitFile({ type: 'asset', fileName: f, source: fs.readFileSync(p) })
       }
+      this.emitFile({ type: 'asset', fileName: 'notice.html', source: NOTICE_REDIRECT })
     },
   }
 }
+
+/**
+ * `/notice.html` 은 **이미 단톡방에 공유된 주소다.**
+ * 배포를 dist 로 옮기면 그 링크가 404 가 된다 — 회원이 옛 메시지를 눌렀을 때 빈 화면을 본다.
+ *
+ * 스크립트가 아니라 `meta refresh` 로 넘긴다. CSP 가 `script-src 'self'` 라
+ * 인라인 스크립트는 못 쓰지만 meta 는 막히지 않는다.
+ * 자동 이동이 안 되는 환경을 위해 링크도 함께 둔다.
+ */
+const NOTICE_REDIRECT = `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'none'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests" />
+  <meta http-equiv="refresh" content="0; url=./#/calendar" />
+  <title>모임 일정 안내 — 옮겨졌습니다</title>
+  <link rel="canonical" href="./#/calendar" />
+</head>
+<body>
+  <p>모임 일정 안내가 <a href="./#/calendar">새 주소</a>로 옮겨졌습니다.</p>
+  <p>자동으로 넘어가지 않으면 위 링크를 눌러 주세요.</p>
+</body>
+</html>
+`
 
 // dev 서버에서도 같은 파일을 내준다
 function serveLiveAssets(): Plugin {
