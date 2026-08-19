@@ -1,12 +1,17 @@
-/* 옛 화면의 스타일을 **그대로** 들여왔다 (app/public/styles.css).
+/* 이 파일은 생성된 것이다. 손으로 고치지 말 것.
  *
- * 회원이 3년 가까이 봐 온 화면이다. 새로 그리면 이질감이 생긴다 —
- * 실제로 "옛 디자인이 더 좋다"는 말을 듣고 되돌린 것이다.
+ *   원본     app/public/styles.css   (한 글자도 바꾸지 않는다)
+ *   생성기   scripts/scope-legacy-css.mjs
+ *   범위     body.board-page
  *
- * **손대지 않는다.** 고칠 일이 있으면 여기가 아니라 새 규칙을 옆에 더한다.
- * 라이트 모드 전용인 것도 그대로다 — 옛 화면이 그랬고, 회원에게는 그게 익숙하다.
+ * 옛 사이트는 두 장의 별개 페이지라 각 CSS 가 :root · body · 맨 h1 같은
+ * 페이지 전역 선택자를 마음껏 썼다. SPA 로 합치면 뒤에 온 쪽이 이긴다 —
+ * 실제로 보드 화면에 notice.css 의 body 배경과 h1 27px 이 걸려 있었다.
+ *
+ * 그래서 **값은 그대로 두고 적용 범위만** 라우트 클래스로 가른다.
+ * 클래스 선택자는 건드리지 않는다.
  */
-:root {
+body:where(.board-page) {
   --bg: #f5f7f8;
   --panel: #ffffff;
   --panel-soft: #eef6f1;
@@ -28,7 +33,7 @@
   --shadow: 0 18px 48px rgba(31, 41, 55, 0.08);
 }
 
-* {
+:where(body.board-page) * {
   box-sizing: border-box;
 }
 
@@ -36,7 +41,7 @@ html {
   min-width: 320px;
 }
 
-body {
+body:where(.board-page) {
   margin: 0;
   background:
     linear-gradient(180deg, rgba(20, 108, 67, 0.12), rgba(245, 247, 248, 0) 260px),
@@ -46,18 +51,15 @@ body {
   line-height: 1.5;
 }
 
-button,
-input,
-select,
-textarea {
+:where(body.board-page) button, :where(body.board-page) input, :where(body.board-page) select, :where(body.board-page) textarea {
   font: inherit;
 }
 
-button {
+:where(body.board-page) button {
   cursor: pointer;
 }
 
-a {
+:where(body.board-page) a {
   color: inherit;
 }
 
@@ -278,28 +280,25 @@ a {
   font-weight: 800;
 }
 
-h1,
-h2,
-h3,
-p {
+:where(body.board-page) h1, :where(body.board-page) h2, :where(body.board-page) h3, :where(body.board-page) p {
   margin-top: 0;
 }
 
-h1 {
+:where(body.board-page) h1 {
   margin-bottom: 0;
   font-size: 34px;
   line-height: 1.12;
   letter-spacing: 0;
 }
 
-h2 {
+:where(body.board-page) h2 {
   margin-bottom: 0;
   font-size: 22px;
   line-height: 1.25;
   letter-spacing: 0;
 }
 
-h3 {
+:where(body.board-page) h3 {
   margin-bottom: 8px;
   font-size: 15px;
   letter-spacing: 0;
@@ -313,8 +312,7 @@ h3 {
   margin-top: 8px;
 }
 
-.board-updated,
-.update-schedule {
+.board-updated, .update-schedule {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
@@ -351,17 +349,14 @@ h3 {
   outline-offset: 3px;
 }
 
-.top-actions,
-.dialog-actions {
+.top-actions, .dialog-actions {
   display: flex;
   gap: 10px;
   align-items: center;
   justify-content: flex-end;
 }
 
-.button,
-.ghost-link,
-.icon-button {
+.button, .ghost-link, .icon-button {
   min-height: 40px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -381,8 +376,7 @@ h3 {
   color: #ffffff;
 }
 
-.button.tertiary,
-.ghost-link {
+.button.tertiary, .ghost-link {
   border-color: var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -434,12 +428,7 @@ h3 {
   line-height: 1;
 }
 
-.toolbar,
-.share-panel,
-.exhibition-page,
-.verification-panel,
-.guide-panel,
-.event-area {
+.toolbar, .share-panel, .exhibition-page, .verification-panel, .guide-panel, .event-area {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -472,8 +461,7 @@ h3 {
   font-weight: 700;
 }
 
-.recommendation-sections,
-.recommendation-group {
+.recommendation-sections, .recommendation-group {
   display: grid;
   gap: 18px;
 }
@@ -538,8 +526,7 @@ h3 {
   background: var(--purple);
 }
 
-.performance-card .exhibition-venue,
-.performance-card .exhibition-reason {
+.performance-card .exhibition-venue, .performance-card .exhibition-reason {
   color: #55317f;
 }
 
@@ -567,8 +554,7 @@ h3 {
   margin-bottom: 5px;
 }
 
-.movie-status-badge,
-.movie-ranking-badge {
+.movie-status-badge, .movie-ranking-badge {
   display: inline-flex;
   align-items: center;
   min-height: 26px;
@@ -684,8 +670,7 @@ h3 {
   overflow-wrap: anywhere;
 }
 
-.exhibition-summary,
-.exhibition-reason {
+.exhibition-summary, .exhibition-reason {
   margin: 10px 0 0;
   color: var(--ink);
   font-size: 14px;
@@ -856,20 +841,18 @@ h3 {
   padding: 14px;
 }
 
-label {
+:where(body.board-page) label {
   display: grid;
   gap: 6px;
 }
 
-label span {
+:where(body.board-page) label span {
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
 }
 
-input,
-select,
-textarea {
+:where(body.board-page) input, :where(body.board-page) select, :where(body.board-page) textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -877,23 +860,18 @@ textarea {
   color: var(--ink);
 }
 
-input,
-select {
+:where(body.board-page) input, :where(body.board-page) select {
   height: 40px;
   padding: 0 11px;
 }
 
-textarea {
+:where(body.board-page) textarea {
   min-height: 80px;
   padding: 10px 11px;
   resize: vertical;
 }
 
-input:focus,
-select:focus,
-textarea:focus,
-button:focus-visible,
-a:focus-visible {
+:where(body.board-page) input:focus, :where(body.board-page) select:focus, :where(body.board-page) textarea:focus, :where(body.board-page) button:focus-visible, :where(body.board-page) a:focus-visible {
   outline: 3px solid rgba(33, 90, 155, 0.25);
   outline-offset: 2px;
 }
@@ -905,8 +883,7 @@ a:focus-visible {
   align-items: start;
 }
 
-.guide-panel,
-.event-area {
+.guide-panel, .event-area {
   padding: 18px;
 }
 
@@ -968,7 +945,7 @@ a:focus-visible {
   border-radius: 8px;
 }
 
-table {
+:where(body.board-page) table {
   width: 100%;
   min-width: 1060px;
   border-collapse: collapse;
@@ -980,20 +957,19 @@ thead {
   color: #ffffff;
 }
 
-th,
-td {
+:where(body.board-page) th, :where(body.board-page) td {
   border-bottom: 1px solid var(--line-soft);
   padding: 11px 12px;
   text-align: left;
   vertical-align: top;
 }
 
-th {
+:where(body.board-page) th {
   font-size: 12px;
   font-weight: 900;
 }
 
-td {
+:where(body.board-page) td {
   font-size: 14px;
 }
 
@@ -1068,8 +1044,7 @@ tbody tr:hover {
   gap: 8px;
 }
 
-.row-actions button,
-.row-actions a {
+.row-actions button, .row-actions a {
   min-height: 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1135,7 +1110,7 @@ tbody tr:hover {
   font-weight: 800;
 }
 
-dialog {
+:where(body.board-page) dialog {
   width: min(920px, calc(100% - 24px));
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1143,7 +1118,7 @@ dialog {
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
 }
 
-dialog::backdrop {
+:where(body.board-page) dialog::backdrop {
   background: rgba(15, 23, 42, 0.45);
 }
 
@@ -1212,7 +1187,7 @@ dialog::backdrop {
     justify-self: start;
   }
 
-  h1 {
+  :where(body.board-page) h1 {
     font-size: 28px;
   }
 

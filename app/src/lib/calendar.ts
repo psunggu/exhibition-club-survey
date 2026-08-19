@@ -84,6 +84,11 @@ export function monthGrid(year: number, month: number): Cell[] {
   for (let i = 0; i < lead; i++) cells.push({ filler: true, day: 0, date: '' })
   for (let d = 1; d <= days; d++)
     cells.push({ filler: false, day: d, date: `${year}-${p(month)}-${p(d)}` })
+
+  // 마지막 주도 7칸을 채운다. 안 채우면 격자 오른쪽 아래가 뚫려
+  // 회색 바닥이 드러난다 — 옛 마크업은 8월 42칸 · 7월 35칸으로
+  // 언제나 7의 배수를 손으로 채워 두었다.
+  while (cells.length % 7 !== 0) cells.push({ filler: true, day: 0, date: '' })
   return cells
 }
 

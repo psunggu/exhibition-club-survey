@@ -63,6 +63,46 @@ function Detail({ label, value }: { label: string; value: string | null }) {
   return <div><dt>{label}</dt><dd>{value || '-'}</dd></div>
 }
 
+/**
+ * 옛 `renderInlineRecommendationInfo`(app.js:1702) 그대로다.
+ * **유형마다 다른 마크업을 낸다** — 전시는 바로 가는 버튼 하나,
+ * 공연은 접이식 상세 안에 정보와 예매 링크를 담았다.
+ * 이식할 때 이 갈래를 놓쳐 둘 다 같은 링크로 만들었고,
+ * 그래서 공연 카드의 접이식 '공연 정보'가 통째로 사라져 있었다.
+ */
+function InlineInfo({ e }: { e: Event }) {
+  const href = e.infoUrl ?? e.mainUrl
+  if (!href) return null
+
+  if (e.type === '전시') {
+    return (
+      <a className="button tertiary" href={href} target="_blank" rel="noopener noreferrer">
+        전시 정보·예약
+      </a>
+    )
+  }
+
+  return (
+    <details className="recommendation-inline-details">
+      <summary className="button tertiary">공연 정보</summary>
+      <div className="recommendation-inline-body">
+        <p>{e.summary ?? e.recommendation ?? ''}</p>
+        <dl>
+          <Detail label="관람일정" value={dateRange(e)} />
+          <Detail label="운영시간" value={e.time ?? '확인 필요'} />
+          <Detail label="관람료" value={price(e)} />
+          <Detail label="할인" value={e.discount ?? '확인 필요'} />
+          <Detail label="공연 해설·도슨트" value={docentTime(e)} />
+          <Detail label="정보 기준일" value={e.updatedAt ?? '확인 필요'} />
+        </dl>
+        <a className="official-info-link" href={href} target="_blank" rel="noopener noreferrer">
+          공식 예매 페이지
+        </a>
+      </div>
+    </details>
+  )
+}
+
 function EventCard({ e, index }: { e: Event; index: number }) {
   return (
     <article className={`exhibition-card${e.type === '공연' ? ' performance-card' : ''}`}>
@@ -76,7 +116,7 @@ function EventCard({ e, index }: { e: Event; index: number }) {
             <h3>{e.title}</h3>
           </div>
           <div className="rating-box">
-            <div className="stars" aria-label={`추천 별점 ${e.rating ?? '-'}점`}>{stars(e.rating)}</div>
+            <div className="stars" role="img" aria-label={`추천 별점 ${e.rating ?? '-'}점`}>{stars(e.rating)}</div>
             <div className="rating-source">{ratingSource(e)}</div>
           </div>
         </div>
@@ -99,12 +139,7 @@ function EventCard({ e, index }: { e: Event; index: number }) {
           <a className="button primary" href={kakaoMapUrl(e)} target="_blank" rel="noopener noreferrer">
             카카오맵
           </a>
-          {(e.infoUrl ?? e.mainUrl) && (
-            <a className="official-info-link" href={(e.infoUrl ?? e.mainUrl) as string}
-              target="_blank" rel="noopener noreferrer">
-              공식 정보 보기 <span aria-hidden="true">→</span>
-            </a>
-          )}
+          <InlineInfo e={e} />
         </div>
       </div>
     </article>
@@ -154,6 +189,34 @@ const TAB_ICON: Record<ContentType, string> = {
 }
 const TAB_LABEL: Record<ContentType, string> = {
   전체: '전체', 전시: '전시', 공연: '음악공연', 영화: '영화',
+}
+
+
+/**
+ * 탭 묶음에서 화살표 키로 이동한다 — 옛 `setupTabKeyboard`(app.js:1430) 복원.
+ *
+ * `role="tablist"` 를 선언해 놓고 키보드 이동이 없으면, 스크린리더는 회원에게
+ * 화살표를 쓰라고 안내하는데 눌러도 아무 일이 없다. 안내와 동작이 어긋나는 것이
+ * 아예 role 이 없는 것보다 나쁘다.
+ *
+ * 옛 동작 그대로 **초점을 옮기며 곧바로 선택**한다(자동 활성).
+ * roving tabindex 는 넣지 않았다 — Tab 키 순서가 옛 화면과 달라진다.
+ */
+function tabKeys<T>(items: readonly T[], current: T, set: (v: T) => void) {
+  return (e: React.KeyboardEvent<HTMLElement>) => {
+    const i = items.indexOf(current)
+    let n = i
+    if (e.key === 'ArrowLeft') n = (i - 1 + items.length) % items.length
+    else if (e.key === 'ArrowRight') n = (i + 1) % items.length
+    else if (e.key === 'Home') n = 0
+    else if (e.key === 'End') n = items.length - 1
+    else return
+    e.preventDefault()
+    const next = items[n]
+    if (next === undefined) return
+    set(next)
+    ;(e.currentTarget.children[n] as HTMLElement | undefined)?.focus()
+  }
 }
 
 export function Board() {
@@ -214,7 +277,13 @@ export function Board() {
 
   return (
     <>
-      <nav className="area-tabs" role="tablist" aria-label="추천 지역 선택">
+      {/* 화면에는 안 보이고 스크린리더에만 읽힌다.
+          조기 return 과 달리 **사라지지 않아야** 라이브 영역으로 동작한다. */}
+      <p className="visually-hidden" role="status" aria-live="polite">
+        {`${TAB_LABEL[type]} · ${area} · ${groups.reduce((n, g) => n + g.nodes.length, 0)}건`}
+      </p>
+      <nav className="area-tabs" role="tablist" aria-label="추천 지역 선택"
+        onKeyDown={tabKeys(AREAS, area, setArea)}>
         {AREAS.map((a) => (
           <button key={a} type="button" role="tab" data-area={a}
             className={a === area ? 'area-tab is-active' : 'area-tab'}
@@ -222,10 +291,12 @@ export function Board() {
         ))}
       </nav>
 
-      <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택">
+      <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택"
+        onKeyDown={tabKeys(CONTENT_TYPES, type, setType)}>
         {CONTENT_TYPES.map((t) => (
           <button key={t} type="button" role="tab" data-content-type={t}
             className={t === type ? 'content-type-tab is-active' : 'content-type-tab'}
+            id={`tab-${t}`} aria-controls="recommendationPanel"
             aria-selected={t === type} onClick={() => setType(t)}>
             <span className={`content-type-tab-icon ${TAB_ICON[t]}`} aria-hidden="true" />
             <span className="content-type-tab-label">{TAB_LABEL[t]}</span>
@@ -241,7 +312,8 @@ export function Board() {
         </label>
       </div>
 
-      <div className="exhibition-page" id="recommendationPanel">
+      <div className="exhibition-page" id="recommendationPanel"
+        role="tabpanel" aria-labelledby={`tab-${type}`}>
         {groups.length === 0 ? (
           <div className="empty-state">
             <strong>조건에 맞는 정보가 없습니다.</strong>
@@ -251,7 +323,7 @@ export function Board() {
           <section key={g.key} className="recommendation-group" aria-label={g.title}>
             <div className="recommendation-group-head">
               <div>
-                <h3>{g.title}</h3>
+                <h3 role="heading" aria-level={2}>{g.title}</h3>
                 {g.subtitle && <p>{g.subtitle}</p>}
               </div>
               <span>{g.nodes.length}건</span>

@@ -1,20 +1,25 @@
-/* 옛 화면의 스타일을 **그대로** 들여왔다 (app/public/notice.css).
+/* 이 파일은 생성된 것이다. 손으로 고치지 말 것.
  *
- * 회원이 3년 가까이 봐 온 화면이다. 새로 그리면 이질감이 생긴다 —
- * 실제로 "옛 디자인이 더 좋다"는 말을 듣고 되돌린 것이다.
+ *   원본     app/public/notice.css   (한 글자도 바꾸지 않는다)
+ *   생성기   scripts/scope-legacy-css.mjs
+ *   범위     body.calendar-page
  *
- * **손대지 않는다.** 고칠 일이 있으면 여기가 아니라 새 규칙을 옆에 더한다.
- * 라이트 모드 전용인 것도 그대로다 — 옛 화면이 그랬고, 회원에게는 그게 익숙하다.
+ * 옛 사이트는 두 장의 별개 페이지라 각 CSS 가 :root · body · 맨 h1 같은
+ * 페이지 전역 선택자를 마음껏 썼다. SPA 로 합치면 뒤에 온 쪽이 이긴다 —
+ * 실제로 보드 화면에 notice.css 의 body 배경과 h1 27px 이 걸려 있었다.
+ *
+ * 그래서 **값은 그대로 두고 적용 범위만** 라우트 클래스로 가른다.
+ * 클래스 선택자는 건드리지 않는다.
  */
-:root {
+body:where(.calendar-page) {
   color-scheme: light;
 }
 
-* {
+:where(body.calendar-page) * {
   box-sizing: border-box;
 }
 
-body {
+body:where(.calendar-page) {
   margin: 0;
   background: #f6f4ef;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', sans-serif;
@@ -37,7 +42,7 @@ body {
   margin: 0;
 }
 
-h1 {
+:where(body.calendar-page) h1 {
   font-size: 27px;
   font-weight: 800;
   margin: 8px 0 14px;
@@ -221,8 +226,7 @@ h1 {
   word-break: keep-all;
 }
 
-.digest-loading,
-.digest-error {
+.digest-loading, .digest-error {
   margin: 0;
   border-radius: 10px;
   background: #fff;
@@ -483,8 +487,7 @@ h1 {
   color: #854f0b;
 }
 
-.tag-movie,
-.db-movie {
+.tag-movie, .db-movie {
   background: #fae8ff;
   color: #86198f;
 }
@@ -551,16 +554,13 @@ h1 {
   overflow: hidden;
 }
 
-.lchip.movie,
-.chip.movie,
-.ttag.movie {
+.lchip.movie, .chip.movie, .ttag.movie {
   border-color: #f0abfc;
   background: #fae8ff;
   color: #86198f;
 }
 
-.lchip.official,
-.chip.official {
+.lchip.official, .chip.official {
   border-color: #a5b4fc;
   background: #e0e7ff;
   color: #3730a3;
@@ -573,8 +573,7 @@ h1 {
   color: #86198f;
 }
 
-.lchip.official,
-.chip.official {
+.lchip.official, .chip.official {
   border-color: #a5b4fc;
   background: #e0e7ff;
   color: #3730a3;
@@ -923,9 +922,7 @@ h1 {
   background: #e8e5de;
 }
 
-.event-dialog-close:focus-visible,
-.event-dialog-dismiss:focus-visible,
-.event-dialog-link:focus-visible {
+.event-dialog-close:focus-visible, .event-dialog-dismiss:focus-visible, .event-dialog-link:focus-visible {
   outline: 3px solid rgba(15, 110, 86, 0.3);
   outline-offset: 3px;
 }
@@ -958,8 +955,7 @@ h1 {
   word-break: keep-all;
 }
 
-.event-dialog-description,
-.event-dialog-note {
+.event-dialog-description, .event-dialog-note {
   margin: 14px 0 0;
   font-size: 14px;
   line-height: 1.75;
@@ -980,8 +976,7 @@ h1 {
   margin-top: 18px;
 }
 
-.event-dialog-link,
-.event-dialog-dismiss {
+.event-dialog-link, .event-dialog-dismiss {
   border: 0;
   border-radius: 9px;
   padding: 10px 12px;
@@ -1025,7 +1020,7 @@ h1 {
 .foot p { margin: 0 0 10px; }
 
 @media (min-width: 480px) {
-  h1 { font-size: 30px; }
+  :where(body.calendar-page) h1 { font-size: 30px; }
   .digest { padding: 22px; }
   .cell { min-height: 54px; }
   .chip { font-size: 12.5px; }
