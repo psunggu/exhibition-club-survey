@@ -68,8 +68,14 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      # ── 여기가 라이브다 (R-01-02) ──────────────────────────────
-      # 2026-08-19 에 app/public → dist 로 바꿨다. 이 줄이 실제 사이트를 정한다.
+      # ── 여기가 라이브다 ───────────────────────────────────────
+      # 2026-08-20 에 dist → app/public 으로 **되돌렸다.**
+      # 이식본을 띄워 봤더니 옛 화면이 낫다는 판단이 나왔다 —
+      # 색·배치·구성이 완성돼 있고 이식본은 그만큼이 아니었다.
+      #
+      # 이식 작업은 버리지 않았다. fix/restore-legacy-design 브랜치와
+      # PR #29 에 그대로 있고, 옛 화면과 계산된 스타일이 일치하는 것까지는
+      # 맞춰 두었다(scripts/compare-with-legacy.mjs). 다시 올릴 때 이어서 한다.
       #
       # dist 에 들어가는 것
       #   index.html                 SPA 진입점 (보드 · 달력)
@@ -83,7 +89,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: app/public
 
       - name: Deploy to GitHub Pages
         id: deployment
