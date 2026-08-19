@@ -5,7 +5,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 20243
+    "h": 21391
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -36,7 +36,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 20243
+    "h": 21391
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -67,7 +67,7 @@
    "count": 1,
    "box": {
     "w": 347,
-    "h": 187
+    "h": 211
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -498,7 +498,7 @@
    }
   },
   ".exhibition-venue": {
-   "count": 20,
+   "count": 15,
    "box": {
     "w": 275,
     "h": 39
@@ -591,7 +591,7 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 130,
+   "count": 135,
    "box": {
     "w": 275,
     "h": 18
@@ -622,7 +622,7 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 130,
+   "count": 135,
    "box": {
     "w": 275,
     "h": 21
@@ -653,7 +653,7 @@
    }
   },
   ".exhibition-reason": {
-   "count": 15,
+   "count": 20,
    "box": {
     "w": 275,
     "h": 63
@@ -684,7 +684,7 @@
    }
   },
   ".button.primary": {
-   "count": 20,
+   "count": 15,
    "box": {
     "w": 275,
     "h": 44
@@ -715,7 +715,7 @@
    }
   },
   ".official-info-link": {
-   "count": 10,
+   "count": 5,
    "box": {
     "w": 91,
     "h": 20
@@ -777,7 +777,7 @@
    }
   },
   ".rating-source": {
-   "count": 16,
+   "count": 15,
    "box": {
     "w": 275,
     "h": 30
@@ -824,7 +824,7 @@
   ".chip": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 10630,
+   "textLength": 11094,
    "cardCount": 20,
    "chipCount": 0
   }
@@ -834,7 +834,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10586
+    "h": 10720
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -865,7 +865,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10586
+    "h": 10720
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -1327,7 +1327,7 @@
    }
   },
   ".exhibition-venue": {
-   "count": 20,
+   "count": 15,
    "box": {
     "w": 470,
     "h": 20
@@ -1420,7 +1420,7 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 130,
+   "count": 135,
    "box": {
     "w": 549,
     "h": 18
@@ -1451,7 +1451,7 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 130,
+   "count": 135,
    "box": {
     "w": 549,
     "h": 21
@@ -1482,7 +1482,7 @@
    }
   },
   ".exhibition-reason": {
-   "count": 15,
+   "count": 20,
    "box": {
     "w": 1110,
     "h": 21
@@ -1513,7 +1513,7 @@
    }
   },
   ".button.primary": {
-   "count": 20,
+   "count": 15,
    "box": {
     "w": 89,
     "h": 44
@@ -1544,7 +1544,7 @@
    }
   },
   ".official-info-link": {
-   "count": 10,
+   "count": 5,
    "box": {
     "w": 91,
     "h": 20
@@ -1606,7 +1606,7 @@
    }
   },
   ".rating-source": {
-   "count": 16,
+   "count": 15,
    "box": {
     "w": 260,
     "h": 30
@@ -1653,7 +1653,7 @@
   ".chip": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 10630,
+   "textLength": 11094,
    "cardCount": 20,
    "chipCount": 0
   }
