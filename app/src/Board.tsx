@@ -3,14 +3,158 @@ import {
   AREAS, CONTENT_TYPES, EventsUnavailable, fetchEvents, filterEvents,
   type Area, type ContentType, type Event,
 } from './lib/events'
+import {
+  MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_SOURCE_URL, MOVIE_RANKING_UPDATED_AT,
+  type Movie,
+} from './data/movies'
+
+/**
+ * 옛 화면의 마크업을 **그대로** 쓴다 — `.exhibition-card` · `.area-tab` 계열.
+ *
+ * 회원이 3년 가까이 봐 온 화면이라, 새로 그리면 이질감이 생긴다.
+ * 그래서 `styles/legacy-board.css`(옛 styles.css 원본)를 손대지 않고 들여오고,
+ * 여기서 같은 클래스 이름과 같은 구조를 낸다.
+ *
+ * 값을 만드는 함수들도 옛 app.js 와 같은 규칙이다 —
+ * formatStars · formatDateRange · formatSharePrice · formatDocentTime ·
+ * formatParkingInfo · formatRatingSource.
+ */
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-const won = (e: Event) =>
-  e.price === 0 ? '무료' : e.price ? `${e.price.toLocaleString('ko-KR')}원` : (e.priceType ?? '확인 필요')
+const stars = (rating: string | null) => {
+  const v = Math.max(0, Math.min(5, Number(rating ?? 0)))
+  return v ? '★'.repeat(v) + '☆'.repeat(5 - v) : '-'
+}
 
-const period = (e: Event) =>
-  [e.startDate, e.endDate].filter(Boolean).join(' ~ ').replace(/-/g, '.') || '기간 확인 필요'
+const dateRange = (e: Event) => {
+  const s = e.startDate ?? ''
+  const t = e.endDate ?? ''
+  if (!s && !t) return '-'
+  if (s === t || !t) return s
+  return `${s} ~ ${t}`
+}
+
+const price = (e: Event) => {
+  if (e.priceType === '확인 필요') return '확인 필요'
+  const n = Number(e.price ?? 0)
+  const base = n === 0 ? '무료' : `${n.toLocaleString('ko-KR')}원`
+  if (e.priceType && e.priceType !== '무료' && base === '무료') return e.priceType
+  return base
+}
+
+const docentTime = (e: Event) => {
+  if (e.docentTime) return e.docentTime
+  if (e.type === '공연') return '해당 없음'
+  if (e.docent) return `${e.docent} / 시간은 공식 페이지 확인`
+  return '공식 페이지 확인'
+}
+
+const parkingInfo = (e: Event) =>
+  e.parkingFee ? `${e.parking ?? '확인 필요'} · ${e.parkingFee}` : (e.parking ?? '확인 필요')
+
+const ratingSource = (e: Event) =>
+  `별점 출처: ${e.sourceLabel ?? '공식 정보'} · 기준: ${e.ratingReason ?? '모임 추천 기준'}`
+
+const kakaoMapUrl = (e: Event) =>
+  e.mapUrl ?? `https://map.kakao.com/?q=${encodeURIComponent(e.venue ?? e.title)}`
+
+function Detail({ label, value }: { label: string; value: string | null }) {
+  return <div><dt>{label}</dt><dd>{value || '-'}</dd></div>
+}
+
+function EventCard({ e, index }: { e: Event; index: number }) {
+  return (
+    <article className={`exhibition-card${e.type === '공연' ? ' performance-card' : ''}`}>
+      <div className="exhibition-rank">{index + 1}</div>
+      <div className="exhibition-body">
+        <div className="exhibition-head">
+          <div>
+            <p className="exhibition-venue">
+              {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
+            </p>
+            <h3>{e.title}</h3>
+          </div>
+          <div className="rating-box">
+            <div className="stars" aria-label={`추천 별점 ${e.rating ?? '-'}점`}>{stars(e.rating)}</div>
+            <div className="rating-source">{ratingSource(e)}</div>
+          </div>
+        </div>
+
+        <p className="exhibition-summary">{e.summary ?? e.recommendation ?? ''}</p>
+
+        <dl className="exhibition-details">
+          <Detail label="관람일정" value={dateRange(e)} />
+          <Detail label="운영시간" value={e.time ?? '확인 필요'} />
+          <Detail label="관람료" value={price(e)} />
+          <Detail label="카드·통신사 할인" value={e.discount ?? '확인 필요'} />
+          <Detail label="위치" value={[e.venue, e.address].filter(Boolean).join(' · ') || '확인 필요'} />
+          <Detail label={e.type === '공연' ? '공연 해설·도슨트' : '도슨트 운영시간'} value={docentTime(e)} />
+          <Detail label="주차/주차료" value={parkingInfo(e)} />
+        </dl>
+
+        {e.recommendation && <p className="exhibition-reason">{e.recommendation}</p>}
+
+        <div className="exhibition-actions">
+          <a className="button primary" href={kakaoMapUrl(e)} target="_blank" rel="noopener noreferrer">
+            카카오맵
+          </a>
+          {(e.infoUrl ?? e.mainUrl) && (
+            <a className="official-info-link" href={(e.infoUrl ?? e.mainUrl) as string}
+              target="_blank" rel="noopener noreferrer">
+              공식 정보 보기 <span aria-hidden="true">→</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function MovieCard({ m }: { m: Movie }) {
+  return (
+    <article className="exhibition-card movie-card">
+      <div className="exhibition-rank">{m.bookingRank}</div>
+      <div className="exhibition-body">
+        <div className="exhibition-head">
+          <div>
+            <p className="exhibition-venue movie-status-line">
+              <span className="movie-status-badge">{m.releaseStatus}</span>
+              <span className="movie-ranking-badge">예매율 {m.bookingRate}%</span>
+            </p>
+            <h3>{m.title}</h3>
+          </div>
+        </div>
+
+        <p className="exhibition-summary">{m.summary}</p>
+
+        <dl className="exhibition-details">
+          <Detail label="개봉일" value={m.releaseDate} />
+          <Detail label="상영시간" value={`${m.runtime}분`} />
+          <Detail label="장르" value={m.genre} />
+          <Detail label="관람등급" value={m.ageRating} />
+          <Detail label="감독" value={m.director} />
+        </dl>
+
+        <div className="exhibition-actions">
+          <a className="button primary" href={MOVIE_BOOKING_URL} target="_blank" rel="noopener noreferrer">
+            예매 확인
+          </a>
+          <a className="official-info-link" href={m.infoUrl} target="_blank" rel="noopener noreferrer">
+            영화 정보 보기 <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+const TAB_ICON: Record<ContentType, string> = {
+  전체: 'tab-icon-all', 전시: 'tab-icon-exhibition', 공연: 'tab-icon-music', 영화: 'tab-icon-movie',
+}
+const TAB_LABEL: Record<ContentType, string> = {
+  전체: '전체', 전시: '전시', 공연: '음악공연', 영화: '영화',
+}
 
 export function Board() {
   const [events, setEvents] = useState<Event[] | null>(null)
@@ -35,84 +179,93 @@ export function Board() {
     [events, area, type, search],
   )
 
+  const groups = useMemo(() => {
+    const out: { key: string; title: string; subtitle: string; nodes: React.ReactNode[] }[] = []
+    const add = (key: string, title: string, subtitle: string, nodes: React.ReactNode[]) => {
+      if (nodes.length) out.push({ key, title, subtitle, nodes })
+    }
+    if (type === '전체' || type === '전시')
+      add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} 전시`,
+        list.filter((e) => e.type === '전시').slice(0, 10)
+          .map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+    if (type === '전체' || type === '공연')
+      add('공연', '추천 음악공연', `공식 공연장 일정 페이지에서 고르는 ${area} 공연 후보`,
+        list.filter((e) => e.type === '공연').slice(0, 10)
+          .map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+    if ((type === '전체' || type === '영화') && !search)
+      add('영화', '실시간 영화 예매 순위',
+        `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
+        MOVIES.slice(0, type === '영화' ? 10 : 5).map((m) => <MovieCard key={m.id} m={m} />))
+    const rest = list.filter((e) => e.type !== '전시' && e.type !== '공연')
+    if (type === '전체' && rest.length)
+      add('기타', '그 밖에', '', rest.map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+    return out
+  }, [list, type, area, search])
+
   if (error) {
     return (
-      <div className="note warn" role="alert">
-        <p><strong>정보를 불러오지 못했습니다.</strong> 잠시 뒤 새로고침해 주세요.</p>
-        <p className="tiny">{error}</p>
+      <div className="empty-state" role="alert">
+        <strong>정보를 불러오지 못했습니다.</strong> 잠시 뒤 새로고침해 주세요.
+        <br /><span className="rating-source">{error}</span>
       </div>
     )
   }
-  if (!events) return <p aria-live="polite">불러오는 중…</p>
+  if (!events) return <p className="empty-state" aria-live="polite">불러오는 중…</p>
 
   return (
     <>
-      <div className="filters">
-        <div className="tabs" role="tablist" aria-label="지역">
-          {AREAS.map((a) => (
-            <button key={a} type="button" role="tab" aria-selected={a === area}
-              className={a === area ? 'tab on' : 'tab'} onClick={() => setArea(a)}>
-              {a}
-            </button>
-          ))}
-        </div>
-        <div className="tabs" role="tablist" aria-label="유형">
-          {CONTENT_TYPES.map((t) => (
-            <button key={t} type="button" role="tab" aria-selected={t === type}
-              className={t === type ? 'tab on' : 'tab'} onClick={() => setType(t)}>
-              {t}
-            </button>
-          ))}
-        </div>
-        <label className="search">
-          <span className="tiny">검색</span>
-          <input type="search" value={search} placeholder="제목 · 장소 · 장르"
+      <nav className="area-tabs" role="tablist" aria-label="추천 지역 선택">
+        {AREAS.map((a) => (
+          <button key={a} type="button" role="tab" data-area={a}
+            className={a === area ? 'area-tab is-active' : 'area-tab'}
+            aria-selected={a === area} onClick={() => setArea(a)}>{a}</button>
+        ))}
+      </nav>
+
+      <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택">
+        {CONTENT_TYPES.map((t) => (
+          <button key={t} type="button" role="tab" data-content-type={t}
+            className={t === type ? 'content-type-tab is-active' : 'content-type-tab'}
+            aria-selected={t === type} onClick={() => setType(t)}>
+            <span className={`content-type-tab-icon ${TAB_ICON[t]}`} aria-hidden="true" />
+            <span className="content-type-tab-label">{TAB_LABEL[t]}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="search-row">
+        <label className="search-field">
+          <span className="visually-hidden">검색</span>
+          <input type="search" value={search} placeholder="제목 · 장소 · 장르 검색"
             onChange={(e) => setSearch(e.target.value)} />
         </label>
       </div>
 
-      <p className="tiny" aria-live="polite">{list.length}건</p>
-
-      {list.length === 0 ? (
-        <div className="note">
-          <p><strong>조건에 맞는 정보가 없습니다.</strong></p>
-          <p className="tiny">지역이나 유형을 바꿔 보시거나, 검색어를 지워 보세요.</p>
-        </div>
-      ) : (
-        <ul className="cards">
-          {list.map((e) => (
-            <li key={e.id} className="card">
-              <div className="card-head">
-                <h2>{e.title}</h2>
-                {e.verified && <span className="badge good">확인됨</span>}
+      <div className="exhibition-page" id="recommendationPanel">
+        {groups.length === 0 ? (
+          <div className="empty-state">
+            <strong>조건에 맞는 정보가 없습니다.</strong>
+            <br />지역이나 유형을 바꿔 보시거나, 검색어를 지워 보세요.
+          </div>
+        ) : groups.map((g) => (
+          <section key={g.key} className="recommendation-group" aria-label={g.title}>
+            <div className="recommendation-group-head">
+              <div>
+                <h3>{g.title}</h3>
+                {g.subtitle && <p>{g.subtitle}</p>}
               </div>
-              <p className="meta">
-                {[e.type, e.genre, e.venue].filter(Boolean).join(' · ')}
-              </p>
-              <dl className="facts">
-                <div><dt>기간</dt><dd>{period(e)}</dd></div>
-                <div><dt>관람료</dt><dd>{won(e)}{e.discount ? ` · ${e.discount}` : ''}</dd></div>
-                {e.docent && <div><dt>도슨트</dt><dd>{e.docent}{e.docentTime ? ` · ${e.docentTime}` : ''}</dd></div>}
-                {(e.parking ?? e.parkingFee) && (
-                  <div><dt>주차</dt><dd>{[e.parking, e.parkingFee].filter(Boolean).join(' · ')}</dd></div>
-                )}
-              </dl>
-              {e.summary && <p>{e.summary}</p>}
-              {e.recommendation && <p className="rec"><strong>추천</strong> — {e.recommendation}</p>}
-              {e.notes && <p className="tiny">{e.notes}</p>}
-              <p className="links">
-                {e.infoUrl && <a href={e.infoUrl} rel="noreferrer noopener">공식 정보</a>}
-                {e.mainUrl && <a href={e.mainUrl} rel="noreferrer noopener">기관 페이지</a>}
-                {e.mapUrl && <a href={e.mapUrl} rel="noreferrer noopener">지도</a>}
-              </p>
-              {e.sourceLabel && (
-                <p className="tiny">출처 — {e.sourceLabel}
-                  {e.updatedAt ? ` · ${e.updatedAt.replace(/-/g, '.')} 확인` : ''}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+              <span>{g.nodes.length}건</span>
+            </div>
+            <div className="exhibition-grid">{g.nodes}</div>
+          </section>
+        ))}
+        {groups.some((g) => g.key === '영화') && (
+          <p className="rating-source">
+            순위 출처 —{' '}
+            <a href={MOVIE_RANKING_SOURCE_URL} target="_blank" rel="noopener noreferrer">KOBIS 실시간 예매율</a>
+          </p>
+        )}
+      </div>
     </>
   )
 }

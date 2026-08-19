@@ -1,0 +1,35 @@
+/* 옛 CSS 에 없던 것만 여기에 더한다. legacy-*.css 는 손대지 않는다.
+   옛 화면은 정적 HTML 이라 필요 없던 것들이다 — 검색칸, 접근성 숨김. */
+
+.search-row { margin: 0 0 12px; }
+.search-field { display: block; }
+.search-field input {
+  /* 16px 미만이면 iOS 가 탭할 때 확대하고 되돌아오지 않는다 */
+  font: inherit; font-size: 16px;
+  width: 100%; min-height: 48px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--panel); color: var(--ink);
+}
+.search-field input:focus-visible {
+  outline: 2px solid var(--blue); outline-offset: 2px; border-color: var(--blue);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* 달력 칸의 오늘 표시. 옛 notice.js 가 뒤에서 붙이던 것을 이제 마크업이 낸다. */
+.cell .tlab { margin-left: 4px; }
+
+/* 달력 머리글. 옛 notice.html 은 8·9월을 손으로 써서 제목이 없었다. */
+.cal-caption { font-size: 0.95rem; font-weight: 700; margin: 14px 0 6px; color: var(--ink); }
+
+/* 상세는 옛 화면에서 <dialog> 였다. React 로 옮기며 배경을 직접 깐다. */
+.event-dialog-backdrop {
+  position: fixed; inset: 0; background: rgba(23, 32, 42, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20;
+}
+.event-dialog-backdrop .event-dialog {
+  position: static; max-width: 32rem; width: 100%; max-height: 85vh; overflow-y: auto;
+}

@@ -3,38 +3,38 @@ import { Board } from './Board'
 import { Calendar } from './Calendar'
 
 /**
- * 뼈대만 있는 상태다. 화면 이식은 R-01-04(콘텐츠 보드) · R-01-05(달력)에서 한다.
- * 지금 라이브 사이트는 여전히 app/public 이 나가고 있고, 배포 경로는
- * 이식이 끝난 뒤에 바꾼다 — 이 단계에서 이용자에게 보이는 것은 달라지지 않는다.
+ * 셸도 옛 화면 그대로다 — `.app-shell` · `.topbar` · `.eyebrow`.
+ *
+ * 옛 사이트는 보드와 일정이 **두 장의 페이지**였고 우상단 링크로 오갔다.
+ * 지금은 한 앱 안의 두 화면이지만, 그 링크의 자리와 문구를 유지한다.
+ * 회원이 누르던 자리가 그대로여야 이질감이 없다.
  */
 export function App() {
   const route = useRoute()
+  const onCalendar = route.name === 'calendar'
 
   return (
-    <main className="shell">
-      <header className="mast">
-        <p className="eyebrow">100주년 기념교회 41교구 전시 · 박물관 동아리</p>
-        <h1>문화 콘텐츠 공유 보드</h1>
+    <main className="app-shell">
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">100주년 기념교회 41교구 전시·박물관 동아리</p>
+          <h1>{onCalendar ? '모임 일정 안내' : '문화 콘텐츠 공유 보드'}</h1>
+          <div className="board-meta-line">
+            <span className="update-schedule">매주 수요일·토요일 22시 업데이트</span>
+          </div>
+        </div>
+        <a className="topbar-notice-link" href={onCalendar ? '#/' : '#/calendar'}>
+          {onCalendar ? '콘텐츠 보드 보기' : '모임 일정 보기'} <span aria-hidden="true">→</span>
+        </a>
       </header>
 
-      <nav className="nav" aria-label="주요 화면">
-        <a href="#/" aria-current={route.name === 'board' ? 'page' : undefined}>보드</a>
-        <a href="#/calendar" aria-current={route.name === 'calendar' ? 'page' : undefined}>일정</a>
-      </nav>
-
-      <section className="panel">
-        {route.name === 'board' && <Board />}
-        {route.name === 'calendar' && <Calendar />}
-        {route.name === 'notFound' && (
-          <p>
-            그런 화면은 없다. <a href="#/">보드로 돌아가기</a>
-          </p>
-        )}
-      </section>
-
-      <footer className="foot">
-        <p className="tiny">Phase 01 뼈대 · 화면은 아직 이식 전이다</p>
-      </footer>
+      {route.name === 'board' && <Board />}
+      {onCalendar && <Calendar />}
+      {route.name === 'notFound' && (
+        <div className="empty-state">
+          그런 화면은 없습니다. <a href="#/">보드로 돌아가기</a>
+        </div>
+      )}
     </main>
   )
 }
