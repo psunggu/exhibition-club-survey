@@ -23,11 +23,34 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 빌드는 배포 경로가 아직 app/public 이라 나가지 않는다.
+      # 그래도 돌려서 타입·번들이 깨진 채 쌓이지 않게 한다 (Phase 01).
+      - name: Build (tsc + vite)
+        run: npm run build
+
+      - name: Validate CSP of build output
+        run: node scripts/validate-csp-build.mjs
+
       - name: Check repository hygiene
         run: node scripts/validate-repository-hygiene.mjs
 
       - name: Validate public weekly digest
         run: node scripts/validate-weekly-digest.mjs
+
+      - name: Validate sample member fixtures
+        run: node scripts/validate-fixtures.mjs
+
+      - name: Validate board port parity
+        run: node scripts/validate-board-parity.mjs
 
       - name: Validate Supabase read-only boundary
         run: node scripts/validate-supabase-readonly.mjs
@@ -37,6 +60,6 @@ jobs:
 
       - name: Check public JavaScript syntax
         run: |
-          node --check exhibition_club_codex_package/public/app.js
-          node --check exhibition_club_codex_package/public/config.js
-          node --check exhibition_club_codex_package/public/notice.js
+          node --check app/public/app.js
+          node --check app/public/config.js
+          node --check app/public/notice.js

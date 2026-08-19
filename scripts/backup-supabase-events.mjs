@@ -45,7 +45,7 @@ async function loadConfigSource() {
     configPath ??
       path.join(
         repositoryRoot,
-        "exhibition_club_codex_package",
+        "app",
         "public",
         "config.js",
       ),

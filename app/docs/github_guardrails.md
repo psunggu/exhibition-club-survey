@@ -23,7 +23,7 @@ node scripts/validate-supabase-p1.mjs
 ```
 
 The public Supabase `anon` JWT is allowed only in
-`exhibition_club_codex_package/public/config.js`. It is a browser credential,
+`app/public/config.js`. It is a browser credential,
 not an authorization boundary. Database grants, forced RLS, and the public
 SELECT policy remain the authorization boundary. A `service_role` JWT is never
 allowed in tracked files.

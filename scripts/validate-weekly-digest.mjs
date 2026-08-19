@@ -2,17 +2,17 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const digestPath = resolve(
-  "exhibition_club_codex_package",
+  "app",
   "public",
   "weekly-digest.public.json"
 );
 const noticeScriptPath = resolve(
-  "exhibition_club_codex_package",
+  "app",
   "public",
   "notice.js"
 );
 const noticeHtmlPath = resolve(
-  "exhibition_club_codex_package",
+  "app",
   "public",
   "notice.html"
 );

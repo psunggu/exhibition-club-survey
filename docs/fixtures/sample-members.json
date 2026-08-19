@@ -1,0 +1,16 @@
+{
+  "_": "예시 데이터다. 실제 회원이 아니다. 규칙은 sample-members.md 를 본다.",
+  "_규칙": "name_letter 는 동명이인이 없으면 빈 문자열이다. null 이 아니다 — NULL 은 유니크 제약에서 서로 다른 값으로 취급된다.",
+  "members": [
+    { "full_name": "김하늘", "name_letter": "",  "district": 1, "status": "approved", "role": "member" },
+    { "full_name": "박서준", "name_letter": "A", "district": 2, "status": "approved", "role": "member" },
+    { "full_name": "박서준", "name_letter": "B", "district": 5, "status": "approved", "role": "member" },
+    { "full_name": "이가온", "name_letter": "",  "district": 2, "status": "approved", "role": "staff"  },
+    { "full_name": "최윤슬", "name_letter": "",  "district": 3, "status": "approved", "role": "admin"  },
+    { "full_name": "정다인", "name_letter": "",  "district": 3, "status": "approved", "role": "member" },
+    { "full_name": "한도윤", "name_letter": "",  "district": 4, "status": "pending",  "role": "member" },
+    { "full_name": "오시우", "name_letter": "",  "district": 6, "status": "approved", "role": "member" },
+    { "full_name": "임세아", "name_letter": "A", "district": 7, "status": "approved", "role": "member" },
+    { "full_name": "임세아", "name_letter": "B", "district": 7, "status": "approved", "role": "member" }
+  ]
+}

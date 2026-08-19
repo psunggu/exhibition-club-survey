@@ -92,8 +92,8 @@ Claude는 기본적으로 읽기 전용이다. 사용자가 Claude에게 별도�
 변경 범위에 맞춰 필요한 검증을 선택하되, 공개 일정과 추천 데이터 변경 시 기본적으로 다음을 확인한다.
 
 ```powershell
-node --check exhibition_club_codex_package/public/app.js
-node --check exhibition_club_codex_package/public/notice.js
+node --check app/public/app.js
+node --check app/public/notice.js
 node scripts/validate-weekly-digest.mjs
 node scripts/send-telegram-update.js --dry-run
 git diff --check

@@ -8,7 +8,7 @@ const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
   .filter(Boolean);
 
 const failures = [];
-const publicAnonConfig = "exhibition_club_codex_package/public/config.js";
+const publicAnonConfig = "app/public/config.js";
 
 function normalized(file) {
   return file.replaceAll("\\", "/");

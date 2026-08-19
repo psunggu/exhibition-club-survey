@@ -1,0 +1,30 @@
+{
+  "name": "exhibition-club-survey",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "41교구 전시·박물관 동아리 — 문화 콘텐츠 보드와 회원 기능",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check:csp": "node scripts/validate-csp-build.mjs",
+    "check:fixtures": "node scripts/validate-fixtures.mjs",
+    "check": "npm run build && node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-fixtures.mjs && node scripts/validate-board-parity.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && npm run check:csp"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
