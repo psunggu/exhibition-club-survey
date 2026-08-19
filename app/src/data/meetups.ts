@@ -183,11 +183,11 @@ export const MEETUPS: Meetup[] = [
   {
     id: 'odyssey-movie',
     date: '2026-08-16',
-    chip: '공식 · 영화 완료',
+    chip: '영화 완료',
     kind: 'done',
     official: false,
     movie: true,
-    status: '완료 · 공식 정기관람 · 영화',
+    status: '완료 · 영화 모임',
     tone: 'done',
     title: '영화 《오디세이》 정기관람',
     dateLabel: '2026. 8. 16. (일)',

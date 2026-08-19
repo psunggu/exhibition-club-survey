@@ -128,8 +128,10 @@ for (const [index, question] of data.open_questions.entries()) {
 const sensitivePatterns = [
   { label: "이메일", pattern: /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/u },
   { label: "전화번호", pattern: /(?:01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}/u },
-  // 카카오톡 표시명은 "1011 김민준" 외에 "1041/이서연", "1021-박지훈" 처럼
+  // 카카오톡 표시명은 "1011 김하늘" 외에 "1041/박서준", "1021-이가온" 처럼
   // 구분자가 섞여 온다. \s* 로만 두면 슬래시·하이픈 형식을 통째로 놓친다.
+  // 예시 이름은 docs/fixtures/sample-members.json 의 가상 회원만 쓴다 —
+  // validate-repository-hygiene.mjs 가 그 명부에 없는 이름을 잡아낸다.
   // (실측 2026-08-17: 실제 방에서 쓰이는 8개 표시명 형식 중 4개만 잡혔다)
   {
     label: "소속번호+이름",
