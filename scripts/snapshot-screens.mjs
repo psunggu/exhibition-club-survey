@@ -131,8 +131,9 @@ const points = (o) => Object.values(o).reduce((a, s) => a + Object.values(s).fil
 
 if (mode === 'save') {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  fs.writeFileSync(OUT, JSON.stringify(now, null, 1));
-  console.log(`기준 저장 — 화면 ${SCREENS.length}개 · 측정점 ${points(now)}개`);
+  // 어느 환경에서 쟀는지 함께 남긴다 — 상자 크기는 설치된 글꼴에 따라 달라진다
+  fs.writeFileSync(OUT, JSON.stringify({ _platform: process.platform, ...now }, null, 1));
+  console.log(`기준 저장 — 화면 ${SCREENS.length}개 · 측정점 ${points(now)}개 · ${process.platform}`);
   console.log(`  ${path.relative(ROOT, OUT).replace(/\\/g, '/')}`);
   process.exit(0);
 }
@@ -141,7 +142,24 @@ if (!fs.existsSync(OUT)) {
   console.error('기준이 없다. 먼저 `node scripts/snapshot-screens.mjs save`.');
   process.exit(1);
 }
-const base = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+const saved = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+const { _platform: basePlatform, ...base } = saved;
+
+/**
+ * **상자 크기는 환경을 넘지 못한다.** 설치된 한글 글꼴이 다르면 같은 글이
+ * 다른 폭으로 그려지고, 그래서 리눅스 CI 에서 상자만 수십 곳 어긋난다.
+ * 색 · 글자크기 · 여백 같은 계산된 값은 글꼴과 무관하므로 어디서든 비교된다.
+ *
+ * 기준을 찍은 환경과 같을 때만 상자를 본다. 다르면 그 사실을 밝히고 건너뛴다 —
+ * 조용히 넘어가면 "통과했으니 레이아웃도 같다"고 오해하게 된다.
+ */
+const sameEnv = !basePlatform || basePlatform === process.platform;
+if (!sameEnv) {
+  console.log(`기준은 ${basePlatform} 에서 찍혔고 지금은 ${process.platform} 이다.`);
+  console.log('글꼴이 달라 글자 폭이 달라지므로 **상자 크기는 비교하지 않는다.**');
+  console.log('색 · 글자 · 여백 등 계산된 값만 본다.\n');
+}
+
 const diffs = [];
 for (const screen of Object.keys(base)) {
   const b = base[screen], c = now[screen];
@@ -151,12 +169,14 @@ for (const screen of Object.keys(base)) {
     if (!bv && !cv) continue;
     if (!bv || !cv) { diffs.push(`${screen} ${sel}: ${bv ? '사라졌다' : '새로 생겼다'}`); continue; }
     if (sel === '#문서') {
-      for (const k of Object.keys(bv))
+      for (const k of Object.keys(bv)) {
+        if (k === 'scrollWidth' && !sameEnv) continue;   // 레이아웃 값이라 글꼴을 탄다
         if (bv[k] !== cv[k]) diffs.push(`${screen} ${sel}.${k}: ${bv[k]} → ${cv[k]}`);
+      }
       continue;
     }
     if (bv.count !== cv.count) diffs.push(`${screen} ${sel}: 개수 ${bv.count} → ${cv.count}`);
-    if (bv.box.w !== cv.box.w || bv.box.h !== cv.box.h)
+    if (sameEnv && (bv.box.w !== cv.box.w || bv.box.h !== cv.box.h))
       diffs.push(`${screen} ${sel}: 상자 ${bv.box.w}×${bv.box.h} → ${cv.box.w}×${cv.box.h}`);
     for (const p of Object.keys(bv.style))
       if (bv.style[p] !== cv.style[p])
