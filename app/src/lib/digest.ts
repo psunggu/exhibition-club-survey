@@ -1,3 +1,5 @@
+import { isRecentlyCompleted, seoulToday } from './calendar'
+
 /**
  * 주간 정리봇 요약 (R-01-05).
  *
@@ -7,7 +9,27 @@
  * 평가가 들어 있고, 그것을 걷어낸 공개본만 저장소에 둔다 (AGENTS.md).
  * `scripts/validate-weekly-digest.mjs` 가 CI 에서 그 경계를 지킨다 —
  * 여기서 필드를 늘리려면 그 검사기부터 본다.
+ *
+ * ── 고쳤던 것 ──────────────────────────────────────────────
+ * `highlights` 를 문자열 배열로 잘못 읽어 **언제나 빈 배열**이었다.
+ * 실제로는 `{severity,label,title,text,completed_date}` 객체 배열이고,
+ * 옛 화면에서는 이것이 정리봇 본문 그 자체였다 — 심각도별 카드 5장.
+ * 파서가 조용히 버리고 있었고 JSON 도 검사기도 정상이라 화면에서만 사라졌다.
  */
+
+export const SEVERITY_ICON = {
+  urgent: '!', check: '?', planning: '→', done: '✓',
+} as const
+
+export type Severity = keyof typeof SEVERITY_ICON
+
+export type Highlight = {
+  severity: Severity
+  label: string
+  title: string
+  text: string
+  completedDate?: string
+}
 
 export type Digest = {
   botName: string
@@ -15,30 +37,56 @@ export type Digest = {
   updatedLabel: string
   messageCount: number
   summary: string
-  highlights: string[]
+  highlights: Highlight[]
   decisions: string[]
   openQuestions: string[]
 }
 
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
+
 const strArray = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : []
 
+const isSeverity = (v: unknown): v is Severity =>
+  typeof v === 'string' && v in SEVERITY_ICON
+
 /**
- * 모양이 어긋나면 받지 않는다. 옛 `isSafeDigest` 와 같은 취지다 —
- * 화면에 반쯤 깨진 요약을 띄우느니 안 띄우는 편이 낫다.
+ * 옛 `isSafeDigest` 와 같은 검사다 — 모양이 어긋난 항목은 통째로 버린다.
+ * `done` 은 완료일이 있어야 하고, 오래된 것은 목록에서 내린다(옛 화면과 같은 3일 규칙).
  */
-export function parseDigest(raw: unknown): Digest | null {
+function parseHighlights(v: unknown, today: string): Highlight[] {
+  if (!Array.isArray(v)) return []
+  const out: Highlight[] = []
+  for (const raw of v) {
+    if (!raw || typeof raw !== 'object') continue
+    const h = raw as Record<string, unknown>
+    if (!isSeverity(h.severity)) continue
+    const label = str(h.label)
+    const title = str(h.title)
+    const text = str(h.text)
+    if (!label || !title || !text) continue
+    const completedDate = str(h.completed_date)
+    if (h.severity === 'done') {
+      if (!completedDate) continue
+      if (!isRecentlyCompleted(completedDate, today, 3)) continue
+    }
+    out.push({ severity: h.severity, label, title, text, ...(completedDate ? { completedDate } : {}) })
+  }
+  return out
+}
+
+export function parseDigest(raw: unknown, today = seoulToday()): Digest | null {
   if (!raw || typeof raw !== 'object') return null
   const d = raw as Record<string, unknown>
-  const summary = typeof d.summary === 'string' ? d.summary.trim() : ''
+  const summary = str(d.summary)
   if (!summary) return null
   return {
-    botName: typeof d.bot_name === 'string' ? d.bot_name : '주간 정리봇',
-    periodLabel: typeof d.period_label === 'string' ? d.period_label : '',
-    updatedLabel: typeof d.updated_label === 'string' ? d.updated_label : '',
+    botName: str(d.bot_name) || '주간 정리봇',
+    periodLabel: str(d.period_label),
+    updatedLabel: str(d.updated_label),
     messageCount: typeof d.message_count === 'number' ? d.message_count : 0,
     summary,
-    highlights: strArray(d.highlights),
+    highlights: parseHighlights(d.highlights, today),
     decisions: strArray(d.decisions),
     openQuestions: strArray(d.open_questions),
   }

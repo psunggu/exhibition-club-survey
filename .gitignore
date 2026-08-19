@@ -71,3 +71,7 @@ Thumbs.db
 # 여기에 넣으면 사이트가 뜨지 않는다.
 # 데이터를 지키는 것은 키를 숨기는 것이 아니라 RLS 다 — anon 은 읽기만 되고
 # 쓰기는 42501(permission denied)로 막혀 있는 것을 확인했다.
+
+# 에이전트가 만드는 임시 스캔 파일
+.deadcss-scan.mjs
+.*-scan.mjs
