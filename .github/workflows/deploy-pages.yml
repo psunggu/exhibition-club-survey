@@ -44,6 +44,12 @@ jobs:
       - name: Validate CSP of build output
         run: node scripts/validate-csp-build.mjs
 
+      # 화면이 그대로인지 숫자로 대조한다. playwright 가 없으면 스스로 건너뛴다.
+      - name: 화면 대조 (디자인 불변)
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/snapshot-screens.mjs check
+
       - name: Check repository hygiene
         run: node scripts/validate-repository-hygiene.mjs
 
