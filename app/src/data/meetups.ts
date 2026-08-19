@@ -234,7 +234,7 @@ export const MEETUPS: Meetup[] = [
     time: '시간 확인 중',
     venue: '신사하우스 · 신사동',
     description: '가우디 서거 100주기를 맞아 원본 작품과 유물, 공식 공인 레플리카로 그의 창작 세계를 살펴보는 전시입니다.',
-    note: '관람일은 8월 29일로 확정되었습니다. 집결 시간과 최종 참석자는 톡방 공지를 확인해 주세요.',
+    note: '얼리버드 기간 내 티켓 구매를 권장합니다. 집결 시간과 최종 참석자는 톡방 공지를 확인해 주세요.',
     infoUrl: 'https://feverup.com/m/665616',
     infoLabel: '전시·예매 정보 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EC%8B%A0%EC%82%AC%ED%95%98%EC%9A%B0%EC%8A%A4',

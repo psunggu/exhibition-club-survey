@@ -22,6 +22,20 @@ import {
 
 const today = () => new Date().toISOString().slice(0, 10)
 
+/**
+ * `8~9월` — 이번 달과 다음 달.
+ *
+ * 옛 부제는 이 두 글자를 손으로 박아 두었다. 그 뜻은 전시의 기간이 아니라
+ * **모임을 갈 만한 시기**였다 — 전시는 몇 달씩 이어지므로 시작일에서 뽑으면
+ * `4~10월` 같은 엉뚱한 폭이 나온다(실제로 그렇게 나왔다).
+ * 이번 달과 다음 달로 두면 오늘 화면은 옛것과 같고, 달이 바뀌어도 손댈 것이 없다.
+ */
+const season = (now: Date = new Date()) => {
+  const m = Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', month: 'numeric' })
+    .format(now))
+  return `${m}~${(m % 12) + 1}월`
+}
+
 const stars = (rating: string | null) => {
   const v = Math.max(0, Math.min(5, Number(rating ?? 0)))
   return v ? '★'.repeat(v) + '☆'.repeat(5 - v) : '-'
@@ -296,14 +310,14 @@ export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
     const add = (key: string, title: string, subtitle: string, nodes: React.ReactNode[]) => {
       if (nodes.length) out.push({ key, title, subtitle, nodes })
     }
+    const shows = list.filter((e) => e.type === '전시')
+    const gigs = list.filter((e) => e.type === '공연')
     if (type === '전체' || type === '전시')
-      add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} 전시`,
-        list.filter((e) => e.type === '전시').slice(0, 10)
-          .map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+      add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
+        shows.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
     if (type === '전체' || type === '공연')
-      add('공연', '추천 음악공연', `공식 공연장 일정 페이지에서 고르는 ${area} 공연 후보`,
-        list.filter((e) => e.type === '공연').slice(0, 10)
-          .map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+      add('공연', '추천 음악공연', `공식 공연장 일정 페이지에서 고르는 ${area} ${season()} 공연 후보`,
+        gigs.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
@@ -363,6 +377,22 @@ export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
 
       <div className="exhibition-page" id="recommendationPanel"
         role="tabpanel" aria-labelledby={`tab-${type}`}>
+        {/* 목록 머리글. 지금 무엇을 보고 있는지 한 줄로 말해 주는 자리다 —
+            이식하면서 통째로 빠뜨렸고, 화면이 필터 바로 아래 카드부터 시작해
+            "덜 만들어진" 느낌을 냈다. scripts/compare-visible-text.mjs 가 이걸 잡는다. */}
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">공유용 목록</p>
+            <h2 id="exhibitionPageTitle">
+              {type === '영화' ? `${area}에서 볼 영화 예매 순위` : `${area} ${type} 추천`}
+            </h2>
+          </div>
+          <p className="result-count" id="recommendationHint">
+            {type === '영화'
+              ? '전국 예매 순위 · 선택 지역의 영화관 회차 확인'
+              : '지역과 유형을 차례로 선택하세요'}
+          </p>
+        </div>
         {groups.length === 0 ? (
           <div className="empty-state">
             <strong>조건에 맞는 정보가 없습니다.</strong>
@@ -381,6 +411,18 @@ export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
           </section>
         ))}
       </div>
+
+      {/* 무엇을 근거로 실은 정보인지 밝히는 자리. 회원이 "이건 어디서 온 거냐"고
+          물을 때 답이 되는 문단이고, 옛 화면에서 목록 끝을 맺던 블록이다. */}
+      <section className="verification-panel" aria-labelledby="verificationTitle">
+        <p className="eyebrow">검증 기준</p>
+        <h2 id="verificationTitle">공식 한국어 페이지와 KOBIS 자료로 확인한 정보만 노출</h2>
+        <p>
+          전시·공연은 공식 상세 페이지의 일정, 관람료, 해설, 주차 정보를 확인합니다.
+          영화는 영화진흥위원회 실시간 예매율의 전국 순위를 사용하며, 예매율과 지역별 상영
+          회차는 수시로 바뀌므로 영화관 공식 예매 화면에서 다시 확인하세요.
+        </p>
+      </section>
     </>
   )
 }

@@ -10,11 +10,12 @@
     "preview": "vite preview",
     "check:csp": "node scripts/validate-csp-build.mjs",
     "check:fixtures": "node scripts/validate-fixtures.mjs",
-    "check": "npm run build && node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-fixtures.mjs && node scripts/validate-board-parity.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && npm run check:csp && npm run screens:check && npm run screens:legacy",
+    "check": "npm run build && node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-fixtures.mjs && node scripts/validate-board-parity.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && npm run check:csp && npm run screens:check && npm run screens:legacy && npm run screens:text",
     "screens:save": "node scripts/snapshot-screens.mjs save",
     "screens:check": "node scripts/snapshot-screens.mjs check",
     "css:scope": "node scripts/scope-legacy-css.mjs",
-    "screens:legacy": "node scripts/compare-with-legacy.mjs"
+    "screens:legacy": "node scripts/compare-with-legacy.mjs",
+    "screens:text": "node scripts/compare-visible-text.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

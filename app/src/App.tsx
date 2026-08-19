@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { useRoute } from './lib/router'
 import { Board } from './Board'
 import { Calendar } from './Calendar'
+import { MONTHS } from './data/meetups'
+
+/** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
+const monthsLabel = () =>
+  MONTHS.length ? `${MONTHS.map((m) => m.month).join(' · ')}월` : ''
 
 /**
  * 셸도 옛 화면 그대로다 — `.app-shell` · `.topbar` · `.eyebrow`.
@@ -36,10 +41,10 @@ export function App() {
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
-        <h1>모임 일정 안내</h1>
-        <a className="topbar-notice-link" href="#/">
-          콘텐츠 보드 보기 <span aria-hidden="true">→</span>
-        </a>
+        {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
+            틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
+        <h1>{monthsLabel()} 모임 일정 안내</h1>
+        {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
       </main>
     )

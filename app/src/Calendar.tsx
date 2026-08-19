@@ -127,6 +127,26 @@ export function Calendar() {
 
   return (
     <>
+      {/* 언제까지의 내용인지 밝히는 줄. 옛 화면은 h1 바로 아래 이 자리에 뒀고,
+          날짜를 손으로 적었다. 여기서는 정리봇이 실제로 읽어들인 시점을 쓴다. */}
+      {/* updatedLabel 은 이미 `… 기준` 으로 끝난다. 뒤에 또 붙이면 "기준 기준" 이 된다. */}
+      {digest?.updatedLabel && <span className="upd">업데이트 {digest.updatedLabel}</span>}
+
+      {/* 보드로 건너가는 안내 카드. 옛 화면에서는 이것이 두 페이지를 잇는 유일한 길이었다.
+          이식본은 작은 링크 하나로 줄여 놓았었는데, 그러면 일정만 보러 온 회원이
+          보드가 있다는 걸 알 방법이 없다. 옛 카드를 그대로 되살린다. */}
+      <section className="board-jump" aria-labelledby="boardJumpTitle">
+        <div>
+          <p className="board-jump-kicker">전시·공연·영화 더 찾아보기</p>
+          <h2 id="boardJumpTitle">문화 콘텐츠 공유 보드</h2>
+          <p>서울·경기·인천의 최신 전시와 음악공연, 영화 정보를 한곳에서 확인하세요.</p>
+        </div>
+        {/* 옛 사이트는 별개 파일이라 `./` 였다. 한 앱이 된 지금은 해시 경로다. */}
+        <a className="board-jump-link" href="#/">
+          문화 콘텐츠 공유 보드 보러가기 <span aria-hidden="true">→</span>
+        </a>
+      </section>
+
       <details className="digest">
         <summary className="digest-head">
           <span className="digest-title-group">
@@ -134,10 +154,11 @@ export function Calendar() {
             <span className="digest-title" role="heading" aria-level={2}>주간 정리봇</span>
           </span>
           <span className="digest-summary-meta">
+            {/* 기간만 넣는다. 갱신 시각은 위 `.upd` 가 맡는다 —
+                둘을 한 알약에 넣었더니 알약이 넓어져 옆의 '주간 정리봇' 이
+                글자당 한 줄씩 세로로 접혔다. 옛 화면도 여기는 기간만 뒀다. */}
             <span className="digest-period">
-              {digestError ? '불러오지 못함'
-                : digest ? [digest.periodLabel, digest.updatedLabel].filter(Boolean).join(' · ')
-                : '불러오는 중'}
+              {digestError ? '불러오지 못함' : digest ? digest.periodLabel : '불러오는 중'}
             </span>
             <span className="digest-toggle" aria-hidden="true">
               <span className="digest-toggle-open">펼치기</span>
@@ -221,12 +242,22 @@ export function Calendar() {
       <p className="legend">
         {LEGEND.map((l) => <span key={l.cls} className={`lchip ${l.cls}`}>{l.label}</span>)}
       </p>
-      {MONTHS.map(({ year, month }) => (
-        <div key={`${year}-${month}`}>
-          <h3 className="mon">{year}년 {month}월</h3>
-          {renderCal(year, month)}
-        </div>
-      ))}
+      {MONTHS.map(({ year, month }) => {
+        // 빈 달을 말없이 비워 두면 "아직 안 만든 화면"으로 보인다.
+        // 옛 화면은 9월에 이 문장을 박아 뒀다 — 여기서는 모임이 없을 때만 뜬다.
+        const has = MEETUPS.some((m) => m.date.startsWith(`${year}-${String(month).padStart(2, '0')}`))
+        return (
+          <div key={`${year}-${month}`}>
+            <h3 className="mon">{year}년 {month}월</h3>
+            {!has && (
+              <p className="month-empty">
+                현재 확인된 {month}월 확정 일정이 없습니다. 새로운 공지가 나오면 달력에 반영합니다.
+              </p>
+            )}
+            {renderCal(year, month)}
+          </div>
+        )
+      })}
 
       {/* 옛 화면은 최근 3일 안에 끝난 것이 하나도 없으면 이 절 전체를 감췄다
           (notice.js 의 setupCompletedMeetings — list.hidden · title.hidden).
@@ -307,6 +338,17 @@ export function Calendar() {
           </div>
         </div>
       )}
+
+      {/* 꼬리말. 이 화면이 무엇을 근거로 만들어졌고 어디를 봐야 하는지 맺는 자리다.
+          빠져 있으면 페이지가 달력에서 툭 끊긴다. */}
+      <footer className="foot">
+        <p>
+          {digest?.updatedLabel
+            ? `${digest.updatedLabel}까지의 대화 내역과 운영진 확인사항을 기준으로 정리했습니다.`
+            : '톡방 대화 내역과 운영진 확인사항을 기준으로 정리했습니다.'}
+          <br />일정 변경 시 톡방 공지를 확인해 주세요.
+        </p>
+      </footer>
     </>
   )
 }

@@ -5,7 +5,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21391
+    "h": 21712
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -36,7 +36,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21391
+    "h": 21712
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -126,7 +126,7 @@
    }
   },
   ".eyebrow": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 347,
     "h": 20
@@ -407,7 +407,7 @@
   ".recommendation-group-head h3": {
    "count": 4,
    "box": {
-    "w": 198,
+    "w": 237,
     "h": 23
    },
    "style": {
@@ -824,7 +824,7 @@
   ".chip": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 11094,
+   "textLength": 11306,
    "cardCount": 20,
    "chipCount": 0
   }
@@ -834,7 +834,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10720
+    "h": 10927
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -865,7 +865,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10720
+    "h": 10927
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -955,7 +955,7 @@
    }
   },
   ".eyebrow": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 1081,
     "h": 20
@@ -1236,7 +1236,7 @@
   ".recommendation-group-head h3": {
    "count": 4,
    "box": {
-    "w": 198,
+    "w": 237,
     "h": 23
    },
    "style": {
@@ -1653,7 +1653,7 @@
   ".chip": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 11094,
+   "textLength": 11306,
    "cardCount": 20,
    "chipCount": 0
   }
@@ -1663,7 +1663,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 2145
+    "h": 2526
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1694,37 +1694,7 @@
   ".topbar": null,
   ".topbar h1": null,
   ".eyebrow": null,
-  ".topbar-notice-link": {
-   "count": 1,
-   "box": {
-    "w": 142,
-    "h": 44
-   },
-   "style": {
-    "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(31, 30, 27)",
-    "borderTopWidth": "0px",
-    "borderRadius": "8px",
-    "fontSize": "14px",
-    "fontWeight": "800",
-    "lineHeight": "21px",
-    "letterSpacing": "normal",
-    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
-    "paddingTop": "10px",
-    "paddingRight": "15px",
-    "paddingBottom": "10px",
-    "paddingLeft": "15px",
-    "marginTop": "0px",
-    "marginBottom": "0px",
-    "display": "inline-flex",
-    "flexDirection": "row",
-    "gap": "8px",
-    "textAlign": "start",
-    "boxShadow": "none",
-    "opacity": "1"
-   }
-  },
+  ".topbar-notice-link": null,
   ".area-tabs": null,
   ".area-tab": null,
   ".area-tab.is-active": null,
@@ -2212,7 +2182,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 851,
+   "textLength": 1067,
    "cardCount": 0,
    "chipCount": 10
   }
@@ -2222,7 +2192,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 1978
+    "h": 2297
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2253,37 +2223,7 @@
   ".topbar": null,
   ".topbar h1": null,
   ".eyebrow": null,
-  ".topbar-notice-link": {
-   "count": 1,
-   "box": {
-    "w": 142,
-    "h": 44
-   },
-   "style": {
-    "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(31, 30, 27)",
-    "borderTopWidth": "0px",
-    "borderRadius": "8px",
-    "fontSize": "14px",
-    "fontWeight": "800",
-    "lineHeight": "21px",
-    "letterSpacing": "normal",
-    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
-    "paddingTop": "10px",
-    "paddingRight": "15px",
-    "paddingBottom": "10px",
-    "paddingLeft": "15px",
-    "marginTop": "0px",
-    "marginBottom": "0px",
-    "display": "inline-flex",
-    "flexDirection": "row",
-    "gap": "8px",
-    "textAlign": "start",
-    "boxShadow": "none",
-    "opacity": "1"
-   }
-  },
+  ".topbar-notice-link": null,
   ".area-tabs": null,
   ".area-tab": null,
   ".area-tab.is-active": null,
@@ -2771,7 +2711,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 851,
+   "textLength": 1067,
    "cardCount": 0,
    "chipCount": 10
   }
