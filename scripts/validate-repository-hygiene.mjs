@@ -35,6 +35,20 @@ function decodeJwtRole(token) {
   }
 }
 
+/**
+ * 저장소가 스스로 들고 있는 **가상 회원 명부.** 예시로 쓰인 이름은 여기 있는 것뿐이고,
+ * 여기 없는 이름이 대화 형식과 함께 나오면 진짜 사람일 가능성이 높다.
+ */
+const fictionalNames = (() => {
+  try {
+    const raw = readFileSync("docs/fixtures/sample-members.json", "utf8");
+    const found = raw.match(/[가-힣]{2,4}/gu) ?? [];
+    return new Set([...found, "홍길동", "김철수", "이영희", "아무개", "길동"]);
+  } catch {
+    return new Set(["홍길동", "김철수", "이영희", "아무개", "길동"]);
+  }
+})();
+
 for (const file of trackedFiles) {
   if (isBlockedPath(file)) {
     failures.push(`${file}: local credential, key, or backup artifact is tracked`);
@@ -52,6 +66,26 @@ for (const file of trackedFiles) {
   if (bytes.length > 2_000_000 || bytes.includes(0)) continue;
   const text = bytes.toString("utf8");
   const checks = [
+    /**
+     * 단톡방 대화가 저장소로 새어 들어왔는지 본다.
+     *
+     * 실제로 샜다. 파서를 만들면서 **주석에 실제 회원 이름을 예시로 적었다.**
+     * 원본 txt 는 .gitignore 가 막고 있었지만, 사람이 손으로 옮겨 적은 것은
+     * 아무것도 막지 않았다.
+     *
+     * 이름을 여기 적어 두면 그 자체가 유출이므로 **모양으로 잡는다** —
+     * 오픈채팅 프로필 규칙(구역번호+성명)과 내보내기 파일의 줄 형식.
+     *
+     * 예시가 필요하면 `docs/fixtures/sample-members.json` 의 가상 회원을 쓴다.
+     * 그 명부를 여기서 읽어 통과시키므로, 이름을 이 파일에 또 적을 필요가 없다
+     * (적으면 그것대로 관리할 것이 하나 늘고, 진짜 이름과 섞일 위험이 생긴다).
+     */
+    // 줄 맨 앞에 고정하지 않는다. 옮겨 적힌 대화는 주석이나 따옴표 안에 들어와
+    // 앞에 `// ` 나 `"` 가 붙는다 — 고정해 두었더니 그런 것을 통째로 놓쳤다.
+    ["단톡방 프로필(구역번호+성명)",
+      /(?<![\d/])\d{3,4}\s*\/\s*[가-힣]{2,4}(?![\d/가-힣])/gu],
+    ["대화 내보내기 발화 줄", /\[[^\]\n]{1,30}\]\s*\[(?:오전|오후)\s*\d{1,2}:\d{2}\]/gu],
+    ["대화 내보내기 날짜 구분선", /-{5,}\s*\d{4}년\s*\d{1,2}월\s*\d{1,2}일\s*[월화수목금토일]요일/gu],
     ["private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/u],
     ["Supabase secret key", /\bsb_secret_[A-Za-z0-9_-]{12,}\b/u],
     ["GitHub token", /\b(?:github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,})\b/u],
@@ -60,7 +94,19 @@ for (const file of trackedFiles) {
   ];
 
   for (const [label, pattern] of checks) {
-    if (pattern.test(text)) failures.push(`${file}: possible ${label} detected`);
+    /**
+     * **일치하는 것을 전부 본다.** 처음에는 첫 일치만 보고 넘어갔는데,
+     * 파일 앞쪽에 가상 이름 예시(`4133/홍길동`)가 있으면 거기서 통과 처리되어
+     * 뒤에 있는 진짜 이름을 영영 못 봤다. 결함을 넣어 시험하다 드러났다.
+     */
+    const hits = pattern.global ? [...text.matchAll(pattern)] : [pattern.exec(text)].filter(Boolean);
+    for (const hit of hits) {
+      // 가상 회원 명부에 있는 이름만 나온 자리는 예시다 — 통과시킨다
+      const names = hit[0].match(/[가-힣]{2,4}/gu) ?? [];
+      if (names.length && names.every((x) => fictionalNames.has(x))) continue;
+      failures.push(`${file}: possible ${label} detected — ${JSON.stringify(hit[0].slice(0, 40))}`);
+      break;   // 한 파일에서 같은 종류는 한 번만 알린다
+    }
   }
 
   const jwtPattern = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/gu;
