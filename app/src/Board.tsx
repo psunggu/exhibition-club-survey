@@ -4,7 +4,7 @@ import {
   type Area, type ContentType, type Event,
 } from './lib/events'
 import {
-  MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_SOURCE_URL, MOVIE_RANKING_UPDATED_AT,
+  MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
 } from './data/movies'
 
@@ -55,6 +55,36 @@ const parkingInfo = (e: Event) =>
 
 const ratingSource = (e: Event) =>
   `별점 출처: ${e.sourceLabel ?? '공식 정보'} · 기준: ${e.ratingReason ?? '모임 추천 기준'}`
+
+/** 옛 `formatKoreanDate`(app.js:1647) 그대로 — "2026. 7. 29." */
+const koDate = (v: string | null) => {
+  if (!v) return '확인 필요'
+  const [y, m, d] = v.split('-')
+  if (!y || !m || !d) return v
+  return `${y}. ${Number(m)}. ${Number(d)}.`
+}
+
+/**
+ * DB 의 updated_at 은 `2026-08-18T18:04:07.516177+00:00` 꼴이다.
+ * 옛 화면은 `2026.08.17 21:54` 로 보여 줬으므로 서울 기준으로 같은 모양을 만든다.
+ * 날짜만 들어오면(예전 데이터) 시각 없이 날짜만 낸다.
+ */
+const koTimestamp = (v: string) => {
+  if (/^d{4}-d{2}-d{2}$/.test(v)) return v.replace(/-/g, ".")
+  const d = new Date(v)
+  if (Number.isNaN(d.getTime())) return v.slice(0, 10).replace(/-/g, ".")
+  const p2 = (n: number) => String(n).padStart(2, "0")
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(d)
+  const g = (t: string) => parts.find((x) => x.type === t)?.value ?? ""
+  return `${g("year")}.${g("month")}.${g("day")} ${p2(Number(g("hour")))}:${g("minute")}`
+}
+
+/** 옛 `movieTheaterMapUrl`(app.js:1654) 그대로 */
+const theaterMapUrl = (area: string) =>
+  `https://map.kakao.com/?q=${encodeURIComponent(`${area} 영화관`)}`
 
 const kakaoMapUrl = (e: Event) =>
   e.mapUrl ?? `https://map.kakao.com/?q=${encodeURIComponent(e.venue ?? e.title)}`
@@ -146,38 +176,51 @@ function EventCard({ e, index }: { e: Event; index: number }) {
   )
 }
 
-function MovieCard({ m }: { m: Movie }) {
+/** 옛 `renderMovieCard`(app.js:1604) 그대로다. 이식하며 예매율 박스와
+ *  버튼 셋을 잃고 문구도 달라져 있었다. */
+function MovieCard({ m, area }: { m: Movie; area: string }) {
   return (
     <article className="exhibition-card movie-card">
       <div className="exhibition-rank">{m.bookingRank}</div>
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
-            <p className="exhibition-venue movie-status-line">
-              <span className="movie-status-badge">{m.releaseStatus}</span>
-              <span className="movie-ranking-badge">예매율 {m.bookingRate}%</span>
-            </p>
+            <div className="movie-status-line">
+              <span className={`movie-status-badge${m.releaseStatus === '개봉 예정' ? ' upcoming' : ''}`}>
+                {m.releaseStatus}
+              </span>
+              <span className="movie-ranking-badge">전국 예매 {m.bookingRank}위</span>
+            </div>
             <h3>{m.title}</h3>
+          </div>
+          <div className="movie-booking-box" aria-label={`KOBIS 예매율 ${m.bookingRate}퍼센트`}>
+            <strong>{m.bookingRate}%</strong>
+            <span>KOBIS 실시간 예매율</span>
           </div>
         </div>
 
         <p className="exhibition-summary">{m.summary}</p>
 
         <dl className="exhibition-details">
-          <Detail label="개봉일" value={m.releaseDate} />
-          <Detail label="상영시간" value={`${m.runtime}분`} />
+          <Detail label="개봉일" value={koDate(m.releaseDate)} />
+          <Detail label="러닝타임" value={`${m.runtime}분`} />
           <Detail label="장르" value={m.genre} />
           <Detail label="관람등급" value={m.ageRating} />
           <Detail label="감독" value={m.director} />
+          <Detail label="상영관" value={`${area} 지역 영화관별 회차 확인`} />
         </dl>
 
+        <p className="exhibition-reason">
+          전국 실시간 예매 {m.bookingRank}위입니다. 예매율은 조회 시점에 따라 수시로 바뀝니다.
+        </p>
+
         <div className="exhibition-actions">
-          <a className="button primary" href={MOVIE_BOOKING_URL} target="_blank" rel="noopener noreferrer">
-            예매 확인
-          </a>
-          <a className="official-info-link" href={m.infoUrl} target="_blank" rel="noopener noreferrer">
-            영화 정보 보기 <span aria-hidden="true">→</span>
-          </a>
+          <a className="button movie-booking-button" href={MOVIE_BOOKING_URL}
+            target="_blank" rel="noopener noreferrer">영화관 예매</a>
+          <a className="button tertiary" href={m.infoUrl}
+            target="_blank" rel="noopener noreferrer">KOBIS 영화정보</a>
+          <a className="button tertiary" href={theaterMapUrl(area)}
+            target="_blank" rel="noopener noreferrer">주변 영화관</a>
         </div>
       </div>
     </article>
@@ -219,7 +262,7 @@ function tabKeys<T>(items: readonly T[], current: T, set: (v: T) => void) {
   }
 }
 
-export function Board() {
+export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
   const [events, setEvents] = useState<Event[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [area, setArea] = useState<Area>('서울')
@@ -229,13 +272,19 @@ export function Board() {
   useEffect(() => {
     const ac = new AbortController()
     fetchEvents(ac.signal)
-      .then(setEvents)
+      .then((rows) => {
+        setEvents(rows)
+        // 가장 최근 확인일을 셸의 "최종 업데이트" 줄로 올려 보낸다
+        const dates = rows.map((r) => r.updatedAt).filter((v): v is string => !!v).sort()
+        const newest = dates[dates.length - 1]
+        if (newest) onUpdatedAt?.(koTimestamp(newest))
+      })
       .catch((e: unknown) => {
         if (ac.signal.aborted) return
         setError(e instanceof EventsUnavailable ? e.reason : String(e))
       })
     return () => ac.abort()
-  }, [])
+  }, [onUpdatedAt])
 
   const list = useMemo(
     () => (events ? filterEvents(events, { area, type, search, today: today() }) : []),
@@ -258,7 +307,7 @@ export function Board() {
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
-        MOVIES.slice(0, type === '영화' ? 10 : 5).map((m) => <MovieCard key={m.id} m={m} />))
+        MOVIES.slice(0, type === '영화' ? 10 : 5).map((m) => <MovieCard key={m.id} m={m} area={area} />))
     const rest = list.filter((e) => e.type !== '전시' && e.type !== '공연')
     if (type === '전체' && rest.length)
       add('기타', '그 밖에', '', rest.map((e, i) => <EventCard key={e.id} e={e} index={i} />))
@@ -331,12 +380,6 @@ export function Board() {
             <div className="exhibition-grid">{g.nodes}</div>
           </section>
         ))}
-        {groups.some((g) => g.key === '영화') && (
-          <p className="rating-source">
-            순위 출처 —{' '}
-            <a href={MOVIE_RANKING_SOURCE_URL} target="_blank" rel="noopener noreferrer">KOBIS 실시간 예매율</a>
-          </p>
-        )}
       </div>
     </>
   )
