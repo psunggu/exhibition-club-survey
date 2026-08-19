@@ -75,3 +75,6 @@ Thumbs.db
 # 에이전트가 만드는 임시 스캔 파일
 .deadcss-scan.mjs
 .*-scan.mjs
+
+# 만들어 낸 공지 이미지 — 필요할 때 다시 만들면 된다
+out/
