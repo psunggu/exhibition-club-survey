@@ -357,6 +357,20 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
 export const adminDelete = (pw: string, id: string, signal?: AbortSignal) =>
   rpc<null>('survey_admin_delete', { p_password: pw, p_survey: id }, signal)
 
+/**
+ * 운영진이 참고하는 분석 메모. **잠긴 표라 함수로만 닿는다** —
+ * 톡방 이야기나 사람 이름이 섞일 수 있어 공개 표에 두지 않았다.
+ */
+export const adminNote = async (pw: string, id: string, signal?: AbortSignal): Promise<string> => {
+  const v = await rpc<string | null>('survey_admin_note',
+    { p_password: pw, p_survey: id }, signal)
+  return typeof v === 'string' ? v : ''
+}
+
+export const adminNoteSave = (pw: string, id: string, body: string, signal?: AbortSignal) =>
+  rpc<null>('survey_admin_note_save',
+    { p_password: pw, p_survey: id, p_body: body }, signal)
+
 /** 고칠 설문을 편집용 모양으로 바꾼다 */
 export const toDraft = (s: Survey): Draft => ({
   id: s.id,

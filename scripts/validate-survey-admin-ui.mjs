@@ -50,6 +50,7 @@ await new Promise((r) => server.listen(8265, r));
 const PW = '맞는암호';
 let saved = null;       // 마지막으로 저장된 payload
 let deleted = [];
+let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '박지현', multi_choice: true, results_visible: 'always', show_names: 'none',
@@ -136,12 +137,22 @@ await ctx.route('**/rest/v1/**', async (route) => {
       { option_id: 'o3', option_position: 3, option_title: '이대원', votes: 1, voters: ['4121 이가온'] },
     ]);
   }
+  /**
+   * **참여 인원은 응답자 목록이 아니라 이 함수가 준다.**
+   * 옮겨 온 설문은 응답자 행이 없어서 목록은 비어 있는데 참여는 13명이다.
+   * 가짜 서버가 이걸 안 답하면 화면이 0 명으로 보이고, 그 어긋남을 못 잡는다.
+   */
+  if (name === 'survey_response_count') return json(13);
+  if (name === 'survey_admin_note') return json(noteBody);
+  if (name === 'survey_admin_note_save') {
+    noteBody = String(body.p_body ?? '').trim();
+    // 진짜와 같이 아무것도 안 돌려준다
+    return noContent();
+  }
   if (name === 'survey_admin_respondents') {
-    return json([
-      { who: '4133 김하늘', answered_at: new Date(Date.now() - 7200e3).toISOString(), picks: 1 },
-      { who: '4112 박서준', answered_at: new Date(Date.now() - 3600e3).toISOString(), picks: 1 },
-      { who: '4121 이가온', answered_at: new Date(Date.now() - 600e3).toISOString(), picks: 1 },
-    ]);
+    // **일부러 비운다.** 톡방에서 옮겨 온 설문이 이렇다 —
+    // 숫자는 13명인데 누가 골랐는지는 없다(사람을 지어내지 않았으므로).
+    return json([]);
   }
   return json([]);
 });
@@ -204,9 +215,17 @@ ok('누가 골랐는지 이름이 보인다', voters.length === 3, voters.join('
 ok('이름에 구역번호가 붙는다', voters.every((v) => /^\d{3,4} /.test(v)));
 ok('표가 0인 후보는 그렇게 말한다',
   (await page.$eval('.admin-results', (e) => e.textContent)).includes('아직 고른 사람이 없습니다'));
-ok('참여자 수가 보인다',
-  (await page.$eval('.admin-results-sum', (e) => e.textContent.trim())).includes('3명'));
-ok('참여자 목록이 있다', (await page.$$('.admin-person')).length === 3);
+/**
+ * **응답자 목록이 비어도 참여 인원은 제대로 나와야 한다.**
+ * 처음에는 목록 길이로 셌더니, 옮겨 온 설문에서 목록 카드는 "응답 13건" 인데
+ * 결과는 "참여 0명" 으로 어긋났다. 스크린샷을 보고 알았다.
+ */
+ok('참여 인원이 옳다',
+  (await page.$eval('.admin-results-sum', (e) => e.textContent.trim())).includes('13명'),
+  await page.$eval('.admin-results-sum', (e) => e.textContent.trim()));
+ok('이름 목록은 비어 있다', (await page.$$('.admin-person')).length === 0);
+ok('왜 비었는지 밝힌다',
+  (await page.$eval('.admin-results', (e) => e.textContent)).includes('지어내지 않았습니다'));
 
 /**
  * **막대가 실제로 그려지는지 잰다.**
@@ -274,6 +293,45 @@ ok('회원 화면과 다르다는 안내가 있다',
 await (await cardBtn(0, '결과 닫기')).click();
 await page.waitForTimeout(400);
 ok('다시 누르면 접힌다', (await page.$$('.admin-results')).length === 0);
+
+/* ── 1-4. 분석 메모 접기 탭 ────────────────────────────── */
+
+console.log('\n── 분석 메모');
+await (await cardBtn(0, '결과 보기')).click();
+await page.waitForSelector('.note', { timeout: 8000 });
+await page.waitForTimeout(400);
+
+ok('접혀 있다', !(await page.$eval('.note', (e) => e.open)));
+ok('비었다고 알려 준다',
+  (await page.$eval('.note-state', (e) => e.textContent.trim())) === '아직 없음');
+
+await page.click('.note-head');
+await page.waitForTimeout(300);
+ok('열린다', await page.$eval('.note', (e) => e.open));
+
+// 적기 → 저장
+const noteBtns = await page.$$('.note-body .admin-mini');
+await noteBtns[0].click();
+await page.waitForSelector('.note-body textarea', { timeout: 5000 });
+await page.fill('.note-body textarea', '사발 8표로 1위.\n상위 3곳이 80%.');
+await page.click('.note-body .survey-submit');
+await page.waitForTimeout(800);
+
+ok('저장했다고 알려 준다',
+  (await page.$eval('.note-body .survey-status.done', (e) => e.textContent.trim()).catch(() => ''))
+    .includes('저장'));
+const noteText = await page.$eval('.note-text', (e) => e.textContent).catch(() => '');
+ok('적은 글이 보인다', noteText.includes('사발 8표'), noteText.slice(0, 20));
+// 줄바꿈을 그대로 살린다 — 붙여 넣은 글이 한 줄로 뭉치면 못 읽는다
+ok('줄바꿈이 살아 있다',
+  (await page.$eval('.note-text', (e) => getComputedStyle(e).whiteSpace)) === 'pre-wrap');
+ok('있음으로 바뀐다',
+  (await page.$eval('.note-state', (e) => e.textContent.trim())) === '있음');
+ok('회원에게 안 보인다고 밝힌다',
+  (await page.$eval('.note-body', (e) => e.textContent)).includes('운영자 화면에서만'));
+
+await (await cardBtn(0, '결과 닫기')).click();
+await page.waitForTimeout(300);
 
 /* ── 2. 새 설문 ─────────────────────────────────────────── */
 
