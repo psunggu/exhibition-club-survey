@@ -497,15 +497,180 @@ select.admin-input { cursor: pointer; }
 .admin-person:last-child { border-bottom: 0; }
 .admin-person-meta { font-size: 12px; color: #55534b; flex-shrink: 0; }
 
-/**
- * 결과의 막대.
- *
- * `.survey-bar` 는 회원 화면에서 flex 안에 놓여 `flex-grow: 1` 로 폭을 얻는다.
- * 여기서는 flex 가 아니라 그냥 블록 안이라 **inline 인 채로 0×0 이 됐다** —
- * 채움(i)만 318px 로 그려지고 통은 안 보였다. 눈으로는 "막대가 없네" 로만 보인다.
- * 그래서 이 자리에서는 블록으로 두고 폭을 명시한다.
- */
-.admin-result .survey-bar {
-  display: block;
-  width: 100%;
+
+/* ── 결과 차트 ────────────────────────────────────────────
+   색은 손으로 고르지 않았다. dataviz 검증기를 돌려 통과한 다섯 가지다 —
+   사이트의 달력 범례 색을 그대로 쓰려다 빨강↔주황이 구분되지 않아 버렸다
+   (정상 시야에서도 ΔE 9.9). 자세한 것은 SurveyChart.tsx 머리말에 적었다. */
+
+.chart {
+  border-top: 1px solid #f1efe8;
+  margin-top: 10px;
+  padding-top: 12px;
+}
+
+.chart-caption {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #55534b;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.chart-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* 도넛 — 하나만 고르는 설문 */
+
+.chart-donut-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.chart-donut { width: 128px; height: 128px; flex-shrink: 0; }
+.chart-donut-num { font-size: 26px; font-weight: 800; fill: #1f1e1b; }
+.chart-donut-cap { font-size: 11px; font-weight: 600; fill: #55534b; }
+
+.chart-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: #1f1e1b;
+}
+
+.chart-legend-name {
+  flex-grow: 1;
+  line-height: 1.4;
+  word-break: keep-all;
+  min-width: 0;
+}
+
+.chart-legend-val { color: #55534b; font-weight: 700; flex-shrink: 0; }
+
+/* 가로 막대 — 여러 개 고르는 설문 */
+
+.chart-bars { display: flex; flex-direction: column; gap: 11px; }
+
+.chart-bar-head {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.chart-bar-name {
+  flex-grow: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f1e1b;
+  line-height: 1.4;
+  word-break: keep-all;
+  min-width: 0;
+}
+
+.chart-bar-val { font-size: 12px; color: #55534b; font-weight: 700; flex-shrink: 0; }
+
+.chart-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #ece9e1;
+  overflow: hidden;
+}
+
+/* 데이터 끝만 둥글게, 바닥은 축에 붙인다 */
+.chart-fill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  min-width: 0;
+}
+
+/* ── 작품 특징으로 보기 ───────────────────────────────────── */
+
+.analysis {
+  border-top: 1px solid #e8e5de;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.analysis-table { margin-top: 8px; }
+
+.analysis-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto 28px;
+  gap: 8px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid #f1efe8;
+  font-size: 12.5px;
+  color: #1f1e1b;
+}
+
+.analysis-row:last-child { border-bottom: 0; }
+
+.analysis-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #55534b;
+  padding-bottom: 5px;
+}
+
+.analysis-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.4;
+  word-break: keep-all;
+  min-width: 0;
+}
+
+.analysis-flag {
+  background: #fff3da;
+  color: #764300;
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.analysis-days { color: #55534b; font-size: 11.5px; }
+.analysis-votes { text-align: right; font-weight: 700; color: #0a5b45; }
+
+.analysis-lines {
+  margin: 12px 0 0;
+  padding-left: 17px;
+  font-size: 12.5px;
+  color: #1f1e1b;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.analysis-soon {
+  margin: 11px 0 0;
+  border-radius: 8px;
+  background: #fff3da;
+  color: #764300;
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.6;
+  word-break: keep-all;
 }
