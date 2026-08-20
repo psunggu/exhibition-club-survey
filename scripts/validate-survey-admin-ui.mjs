@@ -241,8 +241,25 @@ ok('왜 비었는지 밝힌다',
 ok('여러 개 고르는 설문은 막대다', (await page.$$('.chart-bars')).length === 1);
 ok('여러 개 고르는 설문에 도넛이 없다', (await page.$('.chart-donut')) === null);
 const caption = await page.$eval('.chart-caption', (e) => e.textContent.trim());
-ok('캡션이 분모를 숫자로 말한다', /합이 \d+명을 넘습니다/.test(caption), caption.slice(0, 46));
+/**
+ * **캡션이 사실을 말하는지 데이터에서 계산해 잰다.**
+ * 예전엔 `합이 N명을 넘습니다` 가 늘 있어야 한다고 기대했는데,
+ * 이 가짜 설문은 13명에 3표라 **넘지 않는다.** 검사가 거짓말을 기대하고 있었다.
+ * 저녁식사 설문(13명·25표)에서만 참이라 여태 안 드러났다.
+ */
+const MOCK_VOTES = 2 + 0 + 1;   // survey_admin_results 가 답하는 표
+const MOCK_PEOPLE = 13;         // survey_response_count 가 답하는 참여자
+const saysExceeds = /합이 \d+명을 넘습니다/.test(caption);
+ok('캡션이 합계와 참여자 관계를 옳게 말한다',
+  saysExceeds === (MOCK_VOTES > MOCK_PEOPLE),
+  `표 ${MOCK_VOTES} · 참여 ${MOCK_PEOPLE} → ${caption.slice(0, 40)}`);
 ok('캡션이 비율의 기준을 알려 준다', caption.includes('가운데 몇 명인지'), caption.slice(-24));
+
+/** 0표 줄은 눈으로도 귀로도 같은 말이어야 한다 — 보이는 글자만 고치면 반쪽이다. */
+const zeroLabel = await page.$$eval('.chart-track', (es) => es.map((e) => e.getAttribute('aria-label')));
+ok('0표 줄을 읽어 줄 때 「N명 중 0명」이라 하지 않는다',
+  zeroLabel.every((l) => !/중 0명/.test(l ?? '')),
+  zeroLabel.join(' | ').slice(0, 70));
 
 const barBoxes = await page.$$eval('.chart-track', (es) => es.map((e) => {
   const r = e.getBoundingClientRect();

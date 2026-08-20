@@ -30,6 +30,15 @@ const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'] as const
 const ONE_HUE = '#2a78d6'
 
 /**
+ * **응답이 이만큼은 돼야 경향을 말한다.**
+ * 아래 두 블록(숫자로 보기 · 작품 특징으로 보기)이 같은 값을 봐야 한다.
+ * 처음엔 분석 쪽에만 있어서, 응답 2건일 때 한 화면이 서로 반대되는 말을 했다 —
+ * 위에서는 "1위 득표율 100% · 참여자 과반이 골랐습니다",
+ * 바로 아래에서는 "응답이 2명이라 경향을 말하기는 이릅니다".
+ */
+const ENOUGH = 3
+
+/**
  * **색을 돌려쓰지 않는다.**
  *
  * 후보가 다섯을 넘으면 색이 모자란다. 처음에 그냥 돌려썼더니
@@ -115,8 +124,11 @@ function Bars({ rows, total }: { rows: AdminResult[]; total: number }) {
                   : <>{r.votes}명<span className="chart-bar-pct">{Math.round(pct)}%</span></>}
               </span>
             </div>
+            {/* 눈에 보이는 글자와 **같은 말**을 읽어 준다. 위에서 0표를 `없음` 으로
+                줄여 놓고 여기로는 `2명 중 0명` 을 내보내면, 피하려던 그 표현이
+                화면 읽어 주는 사람에게만 그대로 간다. 0표 줄이 여럿이면 되풀이까지 된다. */}
             <div className="chart-track" role="img"
-              aria-label={`${r.title}: ${total}명 중 ${r.votes}명`}>
+              aria-label={r.votes === 0 ? `${r.title}: 표 없음` : `${r.title}: ${total}명 중 ${r.votes}명`}>
               <div className="chart-fill" style={{ width: `${pct}%`, background: hue(i, rows.length) }}>
                 <title>{r.title} — {r.votes}명 ({Math.round(pct)}%)</title>
               </div>
@@ -136,11 +148,20 @@ export function ResultChart({ rows, total, multiChoice }: {
   if (!anyVote) {
     return <p className="admin-hint" style={{ margin: '4px 0 0' }}>아직 아무도 고르지 않았습니다.</p>
   }
+  /**
+   * **`합이 N명을 넘습니다` 는 정말 넘을 때만 말한다.**
+   * 여러 개 고르는 설문이라도 다들 하나씩만 골랐으면 합계가 참여자 수와 같다.
+   * 저녁식사 설문은 13명·25표라 늘 참이어서 안 드러났는데, 응답이 적으면 흔히 어긋난다.
+   * 화면이 사실이 아닌 말을 하면 나머지 숫자도 못 믿게 된다.
+   */
+  const sum = rows.reduce((n, r) => n + r.votes, 0)
   return (
     <div className="chart">
       <p className="chart-caption">
         {multiChoice
-          ? `여러 개 고르는 설문이라 합이 ${total}명을 넘습니다. 아래 비율은 ${total}명 가운데 몇 명인지입니다.`
+          ? (sum > total
+            ? `여러 개 고르는 설문이라 합이 ${total}명을 넘습니다. 아래 비율은 ${total}명 가운데 몇 명인지입니다.`
+            : `여러 개 고를 수 있는 설문입니다. 아래 비율은 ${total}명 가운데 몇 명인지입니다.`)
           : rows.length > 5
             ? `하나만 고르는 설문입니다. 후보가 많아 막대로 보여 줍니다 (${total}명 가운데).`
             : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
@@ -173,13 +194,21 @@ export function ResultChart({ rows, total, multiChoice }: {
  * 한글로 끝나지 않는 이름(영문·숫자)은 발음을 알 수 없으므로
  * **괄호 형태로 남긴다** — 틀리게 쓰는 것보다 낫다.
  */
+/**
+ * 조사를 고를 때 **닫는 문장부호는 건너뛴다.**
+ * 전시 이름은 거의 다 `《…》` 로 끝나서, 마지막 글자만 보면 늘 `》` 라 판단을 못 하고
+ * `은(는)` 같은 반쪽 표기가 나왔다. 9월 설문은 후보 넷이 모두 그랬다.
+ * 사람은 괄호를 소리 내지 않으니 `《서도호》` 는 `호` 로 읽어 `를` 이 맞다.
+ */
+const CLOSERS = /[\s》〉」』”’"')\]）】.]+$/;
+
 export function josa(word: string, withFinal: string, withoutFinal: string): string {
-  const last = word.trim().slice(-1)
-  const code = last.charCodeAt(0)
+  const last = word.replace(CLOSERS, '').slice(-1);
+  const code = last.charCodeAt(0);
   if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) {
-    return `${withFinal}(${withoutFinal})`
+    return `${withFinal}(${withoutFinal})`;
   }
-  return (code - 0xac00) % 28 === 0 ? withoutFinal : withFinal
+  return (code - 0xac00) % 28 === 0 ? withoutFinal : withFinal;
 }
 
 export function summarize(rows: AdminResult[], total: number) {
@@ -219,28 +248,45 @@ export function Metrics({ rows, total, multiChoice }: {
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   const names = (rs: AdminResult[]) => rs.map((r) => r.title).join(' · ');
 
+  /** 아래 분석과 같은 문턱을 쓴다. 한 화면이 서로 반대되는 말을 하면 안 된다. */
+  const enough = total >= ENOUGH;
+
   const lines: string[] = [];
 
-  if (m.leaders.length === 1) {
+  if (!enough) {
+    lines.push(`참여가 ${total}명이라 한 명만 달라져도 순위가 뒤집힙니다. `
+      + '아래 숫자는 있는 그대로일 뿐, 회원들의 뜻으로 읽기는 이릅니다.');
+  }
+
+  if (enough && m.leaders.length === 1) {
     const win = m.leaders[0]!.title;
     lines.push(`${win}${josa(win, '이', '가')} ${total}명 가운데 ${m.top}명(${pct(m.topShare)})으로 가장 많습니다.`
       + (m.runnerUp
         ? ` 다음은 ${m.runnerUp.title} ${m.runnerUp.votes}명으로 ${m.top - m.runnerUp.votes}명 차이입니다.`
         : ''));
-  } else if (m.leaders.length > 1) {
+  } else if (enough && m.leaders.length > 1) {
     lines.push(`${names(m.leaders)} — 각 ${m.top}명으로 공동 1위입니다. 하나로 좁혀지지 않았습니다.`);
   }
 
-  if (m.majority.length === 1) {
+  // 참여가 2명이면 두 명만 같은 것을 골라도 '과반' 이 선다. 그건 뜻이 없는 과반이다.
+  if (enough && m.majority.length === 1) {
     const maj = m.majority[0]!.title;
     lines.push(`${maj}${josa(maj, '은', '는')} 참여자 과반이 골랐습니다.`);
-  } else if (m.majority.length === 0 && m.votes > 0) {
+  } else if (enough && m.majority.length === 0 && m.votes > 0) {
     lines.push('과반을 넘긴 후보는 없습니다.');
   }
 
+  /**
+   * **표를 받은 후보가 셋 이하면 '위 3개' 이야기를 꺼내지 않는다.**
+   * 응답 2건짜리 설문에서 "2개가 표를 받았고, 위 3개가 전체 표의 100%" 라고 나왔다.
+   * 위 3개 안에 0표짜리가 끼어 있는 데다, 100% 는 계산할 것도 없는 당연한 말이다.
+   * 쏠렸는지 흩어졌는지를 말해 주려는 문장이니 후보가 넉넉할 때만 뜻이 있다.
+   */
   if (rows.length > 3) {
-    lines.push(`${rows.length}개 가운데 ${m.chosen.length}개가 표를 받았고, `
-      + `위 3개가 전체 표의 ${pct(m.top3Share)}를 가져갔습니다.`);
+    const spread = m.chosen.length > 3
+      ? ` 위 3개가 전체 표의 ${pct(m.top3Share)}를 가져갔습니다.`
+      : '';
+    lines.push(`${rows.length}개 가운데 ${m.chosen.length}개가 표를 받았습니다.${spread}`);
   }
 
   if (multiChoice && total > 0) {
@@ -255,8 +301,12 @@ export function Metrics({ rows, total, multiChoice }: {
         <Stat label="고른 항목" value={`${m.votes}개`}
           sub={multiChoice ? `1인당 ${m.perPerson.toFixed(1)}` : undefined} />
         <Stat label="표를 받은 후보" value={`${m.chosen.length}/${rows.length}`} />
-        <Stat label="1위 득표율" value={pct(m.topShare)}
-          sub={m.leaders.length > 1 ? `공동 ${m.leaders.length}곳` : m.leaders[0]?.title} />
+        {/* 참여 2명에 '1위 득표율 100%' 는 큰 숫자로 잘못 읽힌다.
+            셀 수 있는 것(참여·고른 항목·표를 받은 후보)만 남기고 비율은 접는다. */}
+        {enough && (
+          <Stat label="1위 득표율" value={pct(m.topShare)}
+            sub={m.leaders.length > 1 ? `공동 ${m.leaders.length}곳` : m.leaders[0]?.title} />
+        )}
       </div>
       {lines.length > 0 && (
         <ul className="analysis-lines">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
@@ -344,7 +394,6 @@ export function Analysis({ rows, options, total }: {
    * 1~2명으로 "회원들은 싼 전시를 선호합니다" 같은 문장을 만들면
    * 그건 분석이 아니라 지어낸 이야기다. 사실만 늘어놓고 그렇게 밝힌다.
    */
-  const ENOUGH = 3
   const enough = total >= ENOUGH
 
   const lines: string[] = []

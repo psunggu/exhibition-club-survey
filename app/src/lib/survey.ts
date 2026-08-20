@@ -298,6 +298,12 @@ export type Draft = {
   intro: string
   multiChoice: boolean
   days: number
+  /**
+   * 열 때 이미 마감돼 있었나. **화면에 알려 주려고만 쓴다 — 서버로 보내지 않는다.**
+   * 서버는 마감을 늘 `지금 + days` 로 다시 계산하므로, 마감된 설문을 열어
+   * 아무것도 안 바꾸고 저장만 눌러도 **다시 열린다.** 그걸 알고 누르게 한다.
+   */
+  wasClosed: boolean
   createdBy: string
   resultsVisible: 'always' | 'after_close' | 'admin'
   showNames: 'none' | 'participants'
@@ -309,6 +315,7 @@ export const emptyOption = (): DraftOption =>
 
 export const emptyDraft = (): Draft => ({
   id: null, title: '', intro: '', multiChoice: true, days: 3, createdBy: '',
+  wasClosed: false,
   resultsVisible: 'after_close', showNames: 'none', options: [emptyOption()],
 })
 
@@ -379,6 +386,7 @@ export const toDraft = (s: Survey): Draft => ({
   multiChoice: s.multiChoice,
   // 남은 날짜로 되돌린다 (서버는 "지금부터 며칠" 로 다시 센다)
   days: Math.max(1, Math.ceil((Date.parse(s.closesAt) - Date.now()) / 86_400_000)),
+  wasClosed: Date.parse(s.closesAt) <= Date.now(),
   createdBy: s.createdBy,
   resultsVisible: s.resultsVisible,
   showNames: s.showNames,

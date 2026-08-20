@@ -58,8 +58,22 @@ const surveys = await get('surveys?select=*,survey_options(*)&deleted_at=is.null
 ok('설문을 읽을 수 있다', surveys.status === 200 && Array.isArray(surveys.body),
   `${surveys.status} · ${Array.isArray(surveys.body) ? surveys.body.length : '?'}건`);
 
-const s0 = Array.isArray(surveys.body) ? surveys.body[0] : null;
-if (!s0) { console.error('\n설문이 하나도 없다 — c 파일을 실행했는지 확인한다'); process.exit(1); }
+/**
+ * **어느 설문을 보는지 이름으로 집는다.**
+ * 처음엔 `surveys.body[0]` 이었는데, 설문이 둘이 되자 순서가 정해져 있지 않아
+ * 저녁식사 설문을 집어 왔다. 그 설문은 톡방에서 옮겨 온 것이라 여기서 응답을 받지 않으므로,
+ * 아래 거절 검사들이 **엉뚱한 이유로 통과**했다 —
+ * "아무것도 안 고르면 거절한다" 가 사실은 "옮겨 온 설문이라 거절한다" 였다.
+ * 통과 표시만 보고 넘어갔으면 못 잡았을 자리다.
+ */
+const list = Array.isArray(surveys.body) ? surveys.body : [];
+const s0 = list.find((s) => s.category === 'exhibition');
+if (!s0) {
+  console.error(`\n전시 설문을 못 찾았다 — c 파일을 실행했는지 확인한다`
+    + `\n읽힌 설문: ${list.map((s) => `${s.category}/${s.title}`).join(' · ') || '없음'}`);
+  process.exit(1);
+}
+console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
 
 ok('후보가 딸려 온다', Array.isArray(s0.survey_options) && s0.survey_options.length === 4,
   `${s0.survey_options?.length ?? 0}개`);
@@ -67,8 +81,20 @@ const links = (s0.survey_options ?? []).flatMap((o) => o.links ?? []);
 ok('참고 링크가 들어 있다', links.length === 4, links.map((l) => l.kind).join(', '));
 ok('서도호 영상 링크가 있다',
   links.some((l) => l.kind === 'video' && l.url.includes('8IvgzYaKexE')));
-ok('마감이 8/21 17시다', String(s0.closes_at).startsWith('2026-08-21T08:00'),
-  `${s0.closes_at} (UTC 표기)`);
+/**
+ * **마감 시각을 못박지 않는다.** 여기서 두 번 데였다 —
+ * 08시에서 17시로 옮겼을 때 한 번, 예정보다 일찍 마감했을 때 또 한 번.
+ * 그때마다 이 줄이 옛 값을 붙들고 실패했는데 정작 사이트는 멀쩡했다.
+ *
+ * 지켜야 할 것은 "몇 시냐" 가 아니라 **읽을 수 있는 시각이냐** 와 **연 시각보다 뒤냐** 다.
+ * 마감은 운영자가 언제든 옮기는 값이다. 지금 몇 시인지는 알려만 주고 판정하지 않는다.
+ */
+const closes = new Date(s0.closes_at);
+const opens = new Date(s0.opens_at);
+const kst = (d) => d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+ok('마감 시각을 읽을 수 있다', !Number.isNaN(closes.getTime()), String(s0.closes_at));
+ok('마감이 여는 시각보다 뒤다', closes > opens, `${kst(opens)} → ${kst(closes)}`);
+console.log(`     지금: ${closes <= new Date() ? '마감됨' : '진행 중'} · 마감 ${kst(closes)} (KST)`);
 
 /* ── 2. 읽히면 안 되는 것 ───────────────────────────────── */
 
@@ -95,16 +121,35 @@ const noName = await rpc('survey_submit',
 ok('빈 이름을 거절한다', noName.status >= 400,
   noName.body?.message?.slice(0, 30) ?? String(noName.status));
 
+/**
+ * **마감된 설문에서는 이 둘을 확인할 수 없다.**
+ * 마감 검사가 먼저 걸려서 후보 검사까지 가지도 못하고 `마감된 설문입니다` 로 돌아온다.
+ * 거절되긴 하니 `status >= 400` 만 보면 통과로 찍히는데, 정작 확인하려던 것은 확인이 안 됐다.
+ * 확인 못 한 것을 통과라고 적지 않는다 — 건너뛴다고 밝힌다.
+ */
+const CLOSED_MSG = '마감된 설문입니다';
+const rejected = (r, want) => r.status >= 400 && !String(r.body?.message ?? '').includes(CLOSED_MSG)
+  && (!want || String(r.body?.message ?? '').includes(want));
+const skip = (label, why) => console.log(`  – ${label} — 건너뜀 (${why})`);
+
 const noPick = await rpc('survey_submit',
   { p_survey: s0.id, p_zone: '9999', p_name: '검사용', p_options: [] });
-ok('아무것도 안 고르면 거절한다', noPick.status >= 400,
-  noPick.body?.message?.slice(0, 30) ?? String(noPick.status));
+if (String(noPick.body?.message ?? '').includes(CLOSED_MSG)) {
+  skip('아무것도 안 고르면 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
+} else {
+  ok('아무것도 안 고르면 거절한다', rejected(noPick),
+    noPick.body?.message?.slice(0, 30) ?? String(noPick.status));
+}
 
 const alien = await rpc('survey_submit',
   { p_survey: s0.id, p_zone: '9999', p_name: '검사용',
     p_options: ['00000000-0000-4000-8000-000000000000'] });
-ok('남의 후보 uuid 를 거절한다', alien.status >= 400,
-  alien.body?.message?.slice(0, 34) ?? String(alien.status));
+if (String(alien.body?.message ?? '').includes(CLOSED_MSG)) {
+  skip('남의 후보 uuid 를 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
+} else {
+  ok('남의 후보 uuid 를 거절한다', rejected(alien),
+    alien.body?.message?.slice(0, 34) ?? String(alien.status));
+}
 
 const ghost = await rpc('survey_submit',
   { p_survey: '00000000-0000-4000-8000-000000000000',
@@ -127,7 +172,23 @@ console.log(`\n  지금까지 응답 ${count.body}건`);
 
 /* ── 4. 실제로 써 본다 (--write 일 때만) ────────────────── */
 
-if (WRITE) {
+/**
+ * **마감된 설문에는 응답이 안 들어간다.** 서버가 막는 것이 옳은 동작이므로,
+ * 여기서 억지로 넣어 보고 실패로 적으면 멀쩡한 것을 고장이라 부르는 셈이 된다.
+ * 그렇다고 조용히 넘기지도 않는다 — 무엇을 못 봤는지 밝히고 넘어간다.
+ *
+ * 대신 마감이 정말 먹히는지는 확인한다. 그게 지금 확인할 수 있는 것이다.
+ */
+if (WRITE && closes <= new Date()) {
+  console.log('\n── 실제 응답 넣기');
+  const blocked = await rpc('survey_submit',
+    { p_survey: s0.id, p_zone: '0000', p_name: '검사용응답', p_options: [optIds[0]] });
+  ok('마감된 설문은 응답을 거절한다', blocked.status >= 400
+    && String(blocked.body?.message ?? '').includes('마감'),
+    blocked.body?.message?.slice(0, 30) ?? String(blocked.status));
+  console.log('  – 넣고·읽고·다시 넣기 왕복 검사 — 건너뜀 (마감된 설문이라 넣을 수 없다)');
+  console.log('    열려 있는 설문이 있을 때 --write 로 다시 돌린다.');
+} else if (WRITE) {
   console.log('\n── 실제 응답 넣기 (검사용 한 건)');
   const ZONE = '0000'; const NAME = '검사용응답';
   const pick = [optIds[0], optIds[2]];

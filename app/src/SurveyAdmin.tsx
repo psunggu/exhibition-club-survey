@@ -417,6 +417,17 @@ export function SurveyAdmin() {
           {draft.id && ' 고칠 때도 지금부터 다시 셉니다.'}
         </p>
 
+        {/* 마감된 설문을 열면 남은 날이 1일로 되돌아온다. 아무것도 안 바꾸고 저장만 눌러도
+            설문이 **다시 열린다.** 화면에 그 말이 없으면 모르고 누른다. */}
+        {draft.wasClosed && (
+          <p className="admin-warn">
+            <b>이 설문은 이미 마감됐습니다.</b> 여기서 저장하면 <b>다시 열립니다</b> —
+            오늘부터 {draft.days}일 뒤가 새 마감이 됩니다.
+            마감을 유지하려면 저장하지 말고 나가세요.
+            이 화면으로는 마감을 지난 시각으로 되돌릴 수 없습니다.
+          </p>
+        )}
+
         <div className="admin-row">
           <label className="survey-field" style={{ flexGrow: 1 }}>
             <span>고르는 방식</span>
