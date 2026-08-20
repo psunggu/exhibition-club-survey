@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRoute } from './lib/router'
 import { Board } from './Board'
 import { Calendar } from './Calendar'
+import { Survey } from './Survey'
 import { MONTHS } from './data/meetups'
 
 /** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
@@ -18,18 +19,34 @@ const monthsLabel = () =>
 export function App() {
   const route = useRoute()
   const onCalendar = route.name === 'calendar'
+  const onSurvey = route.name === 'survey'
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   /**
    * 옛 CSS 두 장이 각자 `body` · `h1` · `:root` 를 정의한다.
    * 한 문서에 같이 넣으면 뒤가 이기므로, 어느 쪽을 적용할지 body 클래스로 가른다.
    * (scripts/scope-legacy-css.mjs 가 그 클래스 아래로 범위를 옮겨 뒀다.)
+   *
+   * 설문은 일정과 같은 좁은 감싸개를 쓴다 — 폼이라 넓으면 읽기 나쁘다.
    */
   useEffect(() => {
-    const cls = onCalendar ? 'calendar-page' : 'board-page'
+    const cls = onCalendar || onSurvey ? 'calendar-page' : 'board-page'
     document.body.classList.add(cls)
     return () => document.body.classList.remove(cls)
-  }, [onCalendar])
+  }, [onCalendar, onSurvey])
+
+  if (onSurvey) {
+    return (
+      <main className="wrap">
+        <p className="ov">41교구 전시·박물관 동아리</p>
+        <h1>설문</h1>
+        <a className="board-jump-link" href="#/calendar" style={{ marginBottom: 18 }}>
+          모임 일정 보기 <span aria-hidden="true">→</span>
+        </a>
+        <Survey />
+      </main>
+    )
+  }
 
   /**
    * 감싸개가 화면마다 다르다 — 옛 사이트가 그랬다.
@@ -44,6 +61,10 @@ export function App() {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1>{monthsLabel()} 모임 일정 안내</h1>
+        {/* 설문으로 가는 길. 일정만 보러 온 회원도 설문이 있다는 걸 알아야 한다. */}
+        <a className="board-jump-link" href="#/survey" style={{ marginBottom: 14 }}>
+          설문 참여하기 <span aria-hidden="true">→</span>
+        </a>
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
       </main>
@@ -63,9 +84,14 @@ export function App() {
             <span className="update-schedule">· 매주 수요일·토요일 22시 업데이트</span>
           </div>
         </div>
-        <a className="topbar-notice-link" href="#/calendar">
-          모임 일정 보기 <span aria-hidden="true">→</span>
-        </a>
+        <div className="topbar-links">
+          <a className="topbar-notice-link" href="#/survey">
+            설문 참여하기 <span aria-hidden="true">→</span>
+          </a>
+          <a className="topbar-notice-link" href="#/calendar">
+            모임 일정 보기 <span aria-hidden="true">→</span>
+          </a>
+        </div>
       </header>
 
       {route.name === 'board' && <Board onUpdatedAt={setUpdatedAt} />}

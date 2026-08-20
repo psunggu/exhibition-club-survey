@@ -1,0 +1,294 @@
+/**
+ * 설문 화면.
+ *
+ * 옛 화면에는 없던 자리라 새로 쓰지만, **값은 전부 일정 화면에서 가져왔다** —
+ * 색·모서리·글자 크기·간격을 새로 정하지 않는다. 회원이 보던 화면과
+ * 같은 손맛이어야 새 화면이 붙어 있는 것처럼 보인다.
+ *
+ *   바탕 #f6f4ef · 카드 #fff · 테두리 #e8e5de · 모서리 14px
+ *   초록 #0f6e56 · 글자 #1f1e1b · 보조 글자 #55534b
+ *
+ * 대비와 누르는 크기는 scripts/validate-accessibility.mjs 가 지킨다 —
+ * 여기 값을 바꾸면 그 검사부터 돌린다.
+ */
+
+.survey-empty {
+  margin: 18px 0 0;
+  border-radius: 12px;
+  background: #eef1f8;
+  color: #4b6283;
+  padding: 14px 15px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+/* ── 머리 ─────────────────────────────────────────────── */
+
+.survey-head {
+  background: #fff;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.survey-head h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 6px 0 6px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.survey-intro {
+  font-size: 13.5px;
+  color: #55534b;
+  line-height: 1.75;
+  margin: 0;
+  word-break: keep-all;
+}
+
+.survey-deadline {
+  display: inline-block;
+  background: #f1efe8;
+  color: #55534b;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.survey-deadline.closed {
+  background: #fcebeb;
+  color: #a32d2d;
+}
+
+/* ── 이름 적기 ────────────────────────────────────────── */
+
+.survey-who {
+  background: #fff;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.survey-who-fields {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.survey-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.survey-field.zone { width: 96px; flex-shrink: 0; }
+.survey-field.name { flex-grow: 1; }
+
+.survey-field span {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #55534b;
+}
+
+.survey-field input {
+  font-family: inherit;
+  font-size: 15px;
+  color: #1f1e1b;
+  background: #fff;
+  border: 1px solid #d9d5ca;
+  border-radius: 9px;
+  padding: 9px 11px;
+  min-height: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.survey-field input:focus-visible {
+  outline: 2px solid #0f6e56;
+  outline-offset: 1px;
+}
+
+.survey-who-note {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: #55534b;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+/* ── 후보 ─────────────────────────────────────────────── */
+
+/**
+ * 줄 전체가 누르는 자리다. 네모만 누르게 하면 24px 짜리 과녁을 겨눠야 하고,
+ * 휴대폰에서 자꾸 빗나간다. label 로 감싸 카드 전체를 과녁으로 만든다.
+ */
+.survey-option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 14px 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.survey-option:focus-within {
+  outline: 2px solid #0f6e56;
+  outline-offset: 1px;
+}
+
+.survey-option.picked {
+  border-color: #0f6e56;
+  background: #f6fbf9;
+}
+
+.survey-option.locked { cursor: default; }
+
+.survey-option input {
+  width: 24px;
+  height: 24px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+  accent-color: #0f6e56;
+}
+
+.survey-option-body { flex-grow: 1; min-width: 0; }
+
+.survey-option-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #1f1e1b;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.survey-facts {
+  margin: 7px 0 0;
+  font-size: 13px;
+  color: #55534b;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.survey-facts b { color: #1f1e1b; font-weight: 700; }
+
+.survey-note {
+  margin: 9px 0 0;
+  border-radius: 8px;
+  background: #fff3da;
+  color: #764300;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+/* ── 참고 링크 ────────────────────────────────────────── */
+
+.survey-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.survey-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid #cfd8e6;
+  background: #f4f7fc;
+  color: #2d4a72;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.survey-link.video {
+  border-color: #f0c2c2;
+  background: #fdf4f4;
+  color: #8f2d2d;
+}
+
+.survey-link svg { flex-shrink: 0; }
+
+/* ── 제출 ─────────────────────────────────────────────── */
+
+.survey-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.survey-submit {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: #0f6e56;
+  border: 0;
+  border-radius: 11px;
+  padding: 12px 20px;
+  min-height: 24px;
+  cursor: pointer;
+}
+
+.survey-submit:disabled {
+  background: #b6b2a6;
+  cursor: default;
+}
+
+.survey-status {
+  font-size: 13px;
+  color: #55534b;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.survey-status.error { color: #a32d2d; font-weight: 700; }
+.survey-status.done { color: #0a5b45; font-weight: 700; }
+
+/* ── 집계 ─────────────────────────────────────────────── */
+
+.survey-tally {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 9px;
+}
+
+.survey-bar {
+  flex-grow: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #ece9e1;
+  overflow: hidden;
+}
+
+.survey-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #0f6e56;
+}
+
+.survey-votes {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0a5b45;
+  min-width: 44px;
+  text-align: right;
+}

@@ -42,3 +42,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 보드 우상단에 링크가 둘이 되었다 — 설문과 일정 */
+.topbar-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
