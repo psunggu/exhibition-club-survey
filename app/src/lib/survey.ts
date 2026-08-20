@@ -357,3 +357,61 @@ export const toDraft = (s: Survey): Draft => ({
     links: o.links.map((l) => ({ kind: l.kind, label: l.label, url: l.url })),
   })),
 })
+
+/**
+ * 운영자가 보는 결과. **이름이 나오는 유일한 자리다.**
+ * 회원용 survey_tally 는 지금도 숫자만 준다 — 이건 암호 뒤에 있다.
+ */
+export type AdminResult = {
+  optionId: string
+  position: number
+  title: string
+  votes: number
+  voters: string[]        // '4133 홍길동'
+}
+
+export type AdminRespondent = {
+  who: string
+  answeredAt: string
+  picks: number
+}
+
+export const adminResults = async (
+  pw: string, surveyId: string, signal?: AbortSignal,
+): Promise<AdminResult[]> => {
+  const rows = await rpc<Record<string, unknown>[]>('survey_admin_results',
+    { p_password: pw, p_survey: surveyId }, signal)
+  if (!Array.isArray(rows)) return []
+  return rows.map((r) => ({
+    optionId: String(r.option_id ?? ''),
+    position: Number(r.option_position) || 0,
+    title: str(r.option_title) ?? '',
+    votes: Number(r.votes) || 0,
+    voters: Array.isArray(r.voters) ? r.voters.filter((v): v is string => typeof v === 'string') : [],
+  })).sort((a, b) => a.position - b.position)
+}
+
+export const adminRespondents = async (
+  pw: string, surveyId: string, signal?: AbortSignal,
+): Promise<AdminRespondent[]> => {
+  const rows = await rpc<Record<string, unknown>[]>('survey_admin_respondents',
+    { p_password: pw, p_survey: surveyId }, signal)
+  if (!Array.isArray(rows)) return []
+  return rows.map((r) => ({
+    who: str(r.who) ?? '',
+    answeredAt: str(r.answered_at) ?? '',
+    picks: Number(r.picks) || 0,
+  }))
+}
+
+/** `8. 20. 22:14` — 결과 표에 넣을 짧은 시각 */
+export function koShort(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const p = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(d)
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
+  return `${g('month')}. ${g('day')}. ${g('hour')}:${g('minute')}`
+}

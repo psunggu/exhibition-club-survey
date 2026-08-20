@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  adminDelete, adminList, adminNames, adminSave, emptyDraft, emptyOption,
-  fetchSurveys, koDeadline, SurveyUnavailable, toDraft,
-  type AdminSurvey, type Draft, type DraftOption, type SurveyLinkKind,
+  adminDelete, adminList, adminNames, adminRespondents, adminResults, adminSave,
+  emptyDraft, emptyOption, fetchSurveys, koDeadline, koShort, SurveyUnavailable, toDraft,
+  type AdminResult, type AdminRespondent, type AdminSurvey,
+  type Draft, type DraftOption, type SurveyLinkKind,
 } from './lib/survey'
 
 /**
@@ -23,6 +24,76 @@ const KINDS: { v: SurveyLinkKind; label: string }[] = [
   { v: 'article', label: '기사' },
   { v: 'map', label: '지도' },
 ]
+
+/**
+ * 결과 — 후보별 표 수와 **누가 골랐는지**.
+ *
+ * 이름이 나오는 유일한 자리다. 암호 뒤에 있고, 회원 화면에는 지금도 숫자만 나온다.
+ * 운영진이 모임을 꾸리려면 누가 오는지 알아야 해서 여는 것이다.
+ */
+function Results({ pw, surveyId, onError }: {
+  pw: string; surveyId: string; onError: (e: unknown) => void
+}) {
+  const [rows, setRows] = useState<AdminResult[] | null>(null)
+  const [people, setPeople] = useState<AdminRespondent[]>([])
+
+  useEffect(() => {
+    const ac = new AbortController()
+    Promise.all([adminResults(pw, surveyId, ac.signal), adminRespondents(pw, surveyId, ac.signal)])
+      .then(([r, p]) => { setRows(r); setPeople(p) })
+      .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
+    return () => ac.abort()
+  }, [pw, surveyId, onError])
+
+  if (!rows) return <p className="admin-hint" aria-live="polite">결과를 불러오는 중…</p>
+
+  // 막대는 가장 많이 받은 후보를 기준으로 그린다
+  const top = Math.max(1, ...rows.map((r) => r.votes))
+
+  return (
+    <div className="admin-results">
+      <p className="admin-results-sum">
+        참여 <b>{people.length}명</b>
+        {people.length > 0 && <> · 고른 항목 <b>{rows.reduce((n, r) => n + r.votes, 0)}개</b></>}
+      </p>
+
+      {rows.map((r) => (
+        <div className="admin-result" key={r.optionId}>
+          <div className="admin-result-head">
+            <span className="admin-result-title">{r.position}. {r.title}</span>
+            <span className="admin-result-votes">{r.votes}표</span>
+          </div>
+          <span className="survey-bar" aria-hidden="true">
+            <i style={{ width: `${Math.round((r.votes / top) * 100)}%` }} />
+          </span>
+          {r.voters.length > 0
+            ? (
+              <p className="admin-voters">
+                {r.voters.map((v) => <span className="admin-voter" key={v}>{v}</span>)}
+              </p>
+            )
+            : <p className="admin-hint" style={{ margin: '6px 0 0' }}>아직 고른 사람이 없습니다.</p>}
+        </div>
+      ))}
+
+      {people.length > 0 && (
+        <div className="admin-people">
+          <span className="admin-links-title">참여한 사람 ({people.length}명)</span>
+          {people.map((p) => (
+            <div className="admin-person" key={p.who}>
+              <span>{p.who}</span>
+              <span className="admin-person-meta">{p.picks}개 · {koShort(p.answeredAt)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="admin-hint" style={{ marginTop: 12, marginBottom: 0 }}>
+        이 이름들은 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 숫자만 나옵니다.
+      </p>
+    </div>
+  )
+}
 
 function Field({ label, value, onChange, placeholder, area = false }: {
   label: string; value: string; onChange: (v: string) => void
@@ -103,6 +174,7 @@ export function SurveyAdmin() {
   const [names, setNames] = useState<string[]>([])
   const [list, setList] = useState<AdminSurvey[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
+  const [open, setOpen] = useState<string | null>(null)   // 결과를 펼친 설문
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'error' | 'done'; text: string } | null>(null)
 
@@ -315,11 +387,22 @@ export function SurveyAdmin() {
             <b>올린 사람</b> {s.createdBy}
           </p>
           <div className="survey-actions" style={{ marginTop: 10 }}>
+            {/* 결과는 눌러서 편다. 설문이 여러 개일 때 전부 펼쳐 두면
+                긴 이름 목록에 묻혀 목록 자체를 못 본다. */}
+            <button type="button" className="admin-mini"
+              aria-expanded={open === s.id}
+              onClick={() => setOpen(open === s.id ? null : s.id)}>
+              {open === s.id ? '결과 닫기' : '결과 보기'}
+            </button>
             <button type="button" className="admin-mini" disabled={busy}
               onClick={() => { void startEdit(s.id) }}>고치기</button>
             <button type="button" className="admin-mini danger" disabled={busy}
               onClick={() => { void remove(s) }}>지우기</button>
           </div>
+          {open === s.id && (
+            <Results pw={pw} surveyId={s.id}
+              onError={(e) => say(e, '결과를 불러오지 못했습니다.')} />
+          )}
         </div>
       ))}
     </div>

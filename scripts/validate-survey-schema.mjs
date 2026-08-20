@@ -35,7 +35,10 @@ const tables = read('202608200001a_survey_tables.sql');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
-const admin = read('202608200002a_survey_admin_functions.sql');
+const admin = [
+  read('202608200002a_survey_admin_functions.sql'),
+  read('202608200003a_survey_admin_results.sql'),
+].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
 
@@ -80,6 +83,7 @@ const CALLABLE = [
   'survey_response_count', 'survey_participants', 'survey_admin_ok',
   'survey_admin_save', 'survey_admin_delete', 'survey_admin_list',
   'survey_admin_tally', 'survey_admin_names',
+  'survey_admin_results', 'survey_admin_respondents',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
@@ -120,6 +124,41 @@ for (const block of allFuncs.split(/create\s+or\s+replace\s+function/i).slice(1)
 // 열쇠 만드는 함수는 밖에서 못 부르게 막아 둔다
 if (!/revoke\s+execute\s+on\s+function\s+public\.survey_respondent_key/i.test(allFuncs)) {
   fail('public.survey_respondent_key 를 anon 에게서 회수하지 않았다');
+}
+
+/* ── 2-2. returns table 에 예약어를 쓰지 않았는가 ────────── */
+
+/**
+ * **`position` 같은 이름은 `returns table` 에서 못 쓴다.**
+ * 컬럼 이름으로는 되므로(survey_options.position 은 멀쩡하다) 눈으로는 멀쩡해 보이는데,
+ * returns table 의 이름 자리는 함수 인자처럼 파싱되어
+ * `position(… in …)` 함수로 읽힌다 — 42601 syntax error 가 난다.
+ *
+ * 실제로 그렇게 실패했다. 나는 이 SQL 을 실행해 볼 수 없어서(운영자 권한이 없다)
+ * 사람이 붙여넣고 나서야 알았다. 그래서 글로 미리 잡는다.
+ *
+ * PostgreSQL 의 col_name_keyword 가운데 이런 자리에서 걸리는 것들이다.
+ */
+const RESERVED = new Set([
+  'position', 'between', 'coalesce', 'exists', 'extract', 'greatest', 'least',
+  'nullif', 'overlay', 'substring', 'treat', 'trim', 'values', 'xmlattributes',
+  'xmlconcat', 'xmlelement', 'xmlexists', 'xmlforest', 'xmlparse', 'xmlpi',
+  'xmlroot', 'xmlserialize', 'row', 'setof', 'out', 'in', 'inout', 'default',
+]);
+/** 앞쪽에서 **가장 가까운** 함수 선언을 찾는다. 처음 것을 집으면 엉뚱한 파일로 안내한다. */
+const heads = [...allFuncs.matchAll(/create\s+or\s+replace\s+function\s+public\.(\w+)/gi)]
+  .map((h) => ({ at: h.index, name: h[1] }));
+const ownerOf = (at) => heads.filter((h) => h.at < at).at(-1)?.name ?? '?';
+
+for (const m of allFuncs.matchAll(/returns\s+table\s*\(([\s\S]*?)\)\s*\n/gi)) {
+  const fnName = ownerOf(m.index);
+  for (const col of m[1].split(',')) {
+    const name = (/^\s*(\w+)/.exec(col) ?? [])[1];
+    if (name && RESERVED.has(name.toLowerCase())) {
+      fail(`public.${fnName} 의 returns table 에 예약어 '${name}' 를 썼다 `
+        + '— 42601 syntax error 가 난다. 이름을 바꾼다 (예: option_position)');
+    }
+  }
 }
 
 /* ── 3. 집계 함수가 이름을 흘리지 않는가 ─────────────────── */
