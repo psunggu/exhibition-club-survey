@@ -161,6 +161,75 @@ for (const m of allFuncs.matchAll(/returns\s+table\s*\(([\s\S]*?)\)\s*\n/gi)) {
   }
 }
 
+/* ── 2-3. 반환 모양을 바꿀 때 drop 을 했는가 ─────────────── */
+
+/**
+ * **`create or replace function` 은 반환 모양을 바꾸지 못한다.**
+ *
+ * 컬럼을 더하거나 이름을 바꾸면
+ * `42P13 cannot change return type of existing function` 이 난다.
+ * 먼저 `drop function` 을 해야 하고, 지우면 **실행 권한도 함께 사라지므로**
+ * 다시 줘야 한다.
+ *
+ * 실제로 그렇게 실패했다 — survey_admin_list 에 컬럼 둘을 더하면서 놓쳤다.
+ * 나는 이 SQL 을 돌려볼 수 없으므로(운영자 권한이 없다) 글로 잡는다.
+ *
+ * 마이그레이션을 순서대로 읽어 같은 함수의 반환 모양이 달라지는 자리를 찾고,
+ * 그 파일에 drop 과 재부여가 함께 있는지 본다.
+ */
+{
+  const order = [
+    ['b', funcs],
+    ['2a', read('202608200002a_survey_admin_functions.sql')],
+    ['3a', read('202608200003a_survey_admin_results.sql')],
+    ['21a', read('202608210001a_survey_category.sql')],
+  ];
+
+  /**
+   * **조각으로 갈라 하나씩 본다.**
+   * 처음에는 정규식 하나로 `function … ) returns …` 를 잡았는데,
+   * 괄호와 returns 사이에 **주석 줄**이 있으면 \s* 가 못 넘어가고
+   * 뒤 함수의 returns 를 끌어와 엉뚱하게 "바뀌었다" 고 했다 (survey_admin_results).
+   * 조각마다 첫 returns 만 보면 그런 일이 없다.
+   */
+  /** 주석을 걷어낸다. 주석 안의 `returns table` 이 먼저 잡혀 엉뚱한 모양을 읽었다. */
+  const strip = (text) => text
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')     // /* … */
+    .replace(/^\s*--.*$/gm, '');             // -- 한 줄
+
+  const shapesOf = (text) => {
+    const out = [];
+    for (const chunk of strip(text).split(/create\s+or\s+replace\s+function/i).slice(1)) {
+      const name = (/^\s*public\.(\w+)/.exec(chunk) ?? [])[1];
+      if (!name) continue;
+      const m = /\breturns\s+([\s\S]*?)\s*\blanguage\s/i.exec(chunk);
+      if (!m) continue;
+      out.push([name, m[1].replace(/\s+/g, ' ').trim()]);
+    }
+    return out;
+  };
+
+  const seen = new Map();
+  for (const [tag, text] of order) {
+    if (!text) continue;
+    for (const [name, ret] of shapesOf(text)) {
+      const before = seen.get(name);
+      if (before && before.ret !== ret) {
+        const hasDrop = new RegExp(`drop\\s+function\\s+if\\s+exists\\s+public\\.${name}\\b`, 'i').test(text);
+        const hasGrant = new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${name}\\b[^;]*anon`, 'i').test(text);
+        if (!hasDrop) {
+          fail(`public.${name} 의 반환 모양이 ${before.where} → ${tag} 에서 바뀌는데 `
+            + 'drop function 이 없다 — 42P13 이 난다');
+        } else if (!hasGrant) {
+          fail(`public.${name} 을 drop 했는데 실행 권한을 다시 주지 않았다 `
+            + '— 지우면 권한도 함께 사라진다');
+        }
+      }
+      seen.set(name, { ret, where: tag });
+    }
+  }
+}
+
 /* ── 3. 집계 함수가 이름을 흘리지 않는가 ─────────────────── */
 
 const tally = /create\s+or\s+replace\s+function\s+public\.survey_tally[\s\S]*?\$\$;/i.exec(funcs);

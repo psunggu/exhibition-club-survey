@@ -230,7 +230,15 @@ begin
 end;
 $$;
 
--- 목록에 갈래와 출처를 함께 준다
+/* ── 목록에 갈래와 출처를 함께 준다 ────────────────────────
+   **먼저 지운다.** `create or replace` 는 반환 모양을 바꾸지 못한다 —
+   컬럼을 둘(category · source_note) 더했으므로 그대로 두면
+   42P13 cannot change return type of existing function 이 난다.
+
+   지우면 권한도 함께 사라지므로 아래에서 다시 준다.
+   (반환 모양이 그대로인 함수들은 지울 필요가 없다 — 확인하고 이것만 지운다.) */
+drop function if exists public.survey_admin_list(text);
+
 create or replace function public.survey_admin_list(p_password text)
 returns table (
   id uuid, title text, closes_at timestamptz, created_by text,
@@ -416,10 +424,16 @@ end;
 $$;
 
 grant execute on function public.survey_admin_save(text, jsonb) to anon, authenticated;
+-- survey_admin_list 는 위에서 지웠다 가 다시 만들었으므로 권한을 다시 준다
+grant execute on function public.survey_admin_list(text)          to anon, authenticated;
 
--- 확인 (기대: 새 컬럼 4)
-select count(*) as 새_컬럼
-from information_schema.columns
-where table_schema = 'public'
-  and ((table_name = 'surveys' and column_name in ('category', 'source_note', 'imported_respondents'))
-    or (table_name = 'survey_options' and column_name = 'imported_votes'));
+-- 확인 (기대: 새 컬럼 4 · anon 이 부르는 함수 13)
+select
+  (select count(*) from information_schema.columns
+    where table_schema = 'public'
+      and ((table_name = 'surveys' and column_name in ('category', 'source_note', 'imported_respondents'))
+        or (table_name = 'survey_options' and column_name = 'imported_votes'))) as 새_컬럼,
+  (select count(*) from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname like 'survey%'
+      and has_function_privilege('anon', p.oid, 'EXECUTE')) as 부를_수_있는_함수;
