@@ -173,13 +173,21 @@ export function ResultChart({ rows, total, multiChoice }: {
  * 한글로 끝나지 않는 이름(영문·숫자)은 발음을 알 수 없으므로
  * **괄호 형태로 남긴다** — 틀리게 쓰는 것보다 낫다.
  */
+/**
+ * 조사를 고를 때 **닫는 문장부호는 건너뛴다.**
+ * 전시 이름은 거의 다 `《…》` 로 끝나서, 마지막 글자만 보면 늘 `》` 라 판단을 못 하고
+ * `은(는)` 같은 반쪽 표기가 나왔다. 9월 설문은 후보 넷이 모두 그랬다.
+ * 사람은 괄호를 소리 내지 않으니 `《서도호》` 는 `호` 로 읽어 `를` 이 맞다.
+ */
+const CLOSERS = /[\s》〉」』”’"')\]）】.]+$/;
+
 export function josa(word: string, withFinal: string, withoutFinal: string): string {
-  const last = word.trim().slice(-1)
-  const code = last.charCodeAt(0)
+  const last = word.replace(CLOSERS, '').slice(-1);
+  const code = last.charCodeAt(0);
   if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) {
-    return `${withFinal}(${withoutFinal})`
+    return `${withFinal}(${withoutFinal})`;
   }
-  return (code - 0xac00) % 28 === 0 ? withoutFinal : withFinal
+  return (code - 0xac00) % 28 === 0 ? withoutFinal : withFinal;
 }
 
 export function summarize(rows: AdminResult[], total: number) {
@@ -238,9 +246,17 @@ export function Metrics({ rows, total, multiChoice }: {
     lines.push('과반을 넘긴 후보는 없습니다.');
   }
 
+  /**
+   * **표를 받은 후보가 셋 이하면 '위 3개' 이야기를 꺼내지 않는다.**
+   * 응답 2건짜리 설문에서 "2개가 표를 받았고, 위 3개가 전체 표의 100%" 라고 나왔다.
+   * 위 3개 안에 0표짜리가 끼어 있는 데다, 100% 는 계산할 것도 없는 당연한 말이다.
+   * 쏠렸는지 흩어졌는지를 말해 주려는 문장이니 후보가 넉넉할 때만 뜻이 있다.
+   */
   if (rows.length > 3) {
-    lines.push(`${rows.length}개 가운데 ${m.chosen.length}개가 표를 받았고, `
-      + `위 3개가 전체 표의 ${pct(m.top3Share)}를 가져갔습니다.`);
+    const spread = m.chosen.length > 3
+      ? ` 위 3개가 전체 표의 ${pct(m.top3Share)}를 가져갔습니다.`
+      : '';
+    lines.push(`${rows.length}개 가운데 ${m.chosen.length}개가 표를 받았습니다.${spread}`);
   }
 
   if (multiChoice && total > 0) {
