@@ -172,7 +172,23 @@ console.log(`\n  지금까지 응답 ${count.body}건`);
 
 /* ── 4. 실제로 써 본다 (--write 일 때만) ────────────────── */
 
-if (WRITE) {
+/**
+ * **마감된 설문에는 응답이 안 들어간다.** 서버가 막는 것이 옳은 동작이므로,
+ * 여기서 억지로 넣어 보고 실패로 적으면 멀쩡한 것을 고장이라 부르는 셈이 된다.
+ * 그렇다고 조용히 넘기지도 않는다 — 무엇을 못 봤는지 밝히고 넘어간다.
+ *
+ * 대신 마감이 정말 먹히는지는 확인한다. 그게 지금 확인할 수 있는 것이다.
+ */
+if (WRITE && closes <= new Date()) {
+  console.log('\n── 실제 응답 넣기');
+  const blocked = await rpc('survey_submit',
+    { p_survey: s0.id, p_zone: '0000', p_name: '검사용응답', p_options: [optIds[0]] });
+  ok('마감된 설문은 응답을 거절한다', blocked.status >= 400
+    && String(blocked.body?.message ?? '').includes('마감'),
+    blocked.body?.message?.slice(0, 30) ?? String(blocked.status));
+  console.log('  – 넣고·읽고·다시 넣기 왕복 검사 — 건너뜀 (마감된 설문이라 넣을 수 없다)');
+  console.log('    열려 있는 설문이 있을 때 --write 로 다시 돌린다.');
+} else if (WRITE) {
   console.log('\n── 실제 응답 넣기 (검사용 한 건)');
   const ZONE = '0000'; const NAME = '검사용응답';
   const pick = [optIds[0], optIds[2]];
