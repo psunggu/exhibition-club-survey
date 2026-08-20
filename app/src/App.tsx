@@ -3,6 +3,7 @@ import { useRoute } from './lib/router'
 import { Board } from './Board'
 import { Calendar } from './Calendar'
 import { Survey } from './Survey'
+import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 
 /** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
@@ -19,7 +20,7 @@ const monthsLabel = () =>
 export function App() {
   const route = useRoute()
   const onCalendar = route.name === 'calendar'
-  const onSurvey = route.name === 'survey'
+  const onSurvey = route.name === 'survey' || route.name === 'surveyAdmin'
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   /**
@@ -36,14 +37,23 @@ export function App() {
   }, [onCalendar, onSurvey])
 
   if (onSurvey) {
+    const admin = route.name === 'surveyAdmin'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
-        <h1>설문</h1>
-        <a className="board-jump-link" href="#/calendar" style={{ marginBottom: 18 }}>
-          모임 일정 보기 <span aria-hidden="true">→</span>
+        <h1>{admin ? '설문 관리' : '설문'}</h1>
+        <a className="board-jump-link" href={admin ? '#/survey' : '#/calendar'}
+          style={{ marginBottom: 18 }}>
+          {admin ? '설문 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
         </a>
-        <Survey />
+        {admin ? <SurveyAdmin /> : <Survey />}
+        {/* 운영자 자리는 눈에 띄게 두지 않는다. 주소를 아는 사람이 들어오고,
+            들어와도 암호가 없으면 아무것도 못 한다 — 진짜 자물쇠는 DB 함수 안에 있다. */}
+        {!admin && (
+          <p className="admin-hint" style={{ marginTop: 22, textAlign: 'right' }}>
+            <a className="admin-entry" href="#/survey/admin">운영자</a>
+          </p>
+        )}
       </main>
     )
   }
