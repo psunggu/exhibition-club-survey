@@ -72,9 +72,17 @@ await ctx.route('**/rest/v1/**', async (route) => {
       multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
       closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '박지현',
       results_visible: 'always', show_names: 'none', hide_after_days: null,
-      survey_options: [{ id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~',
-        venue: '국립현대미술관', hours: null, price: '8,000원', note: null,
-        links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] }] }]);
+      survey_options: [
+        { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
+          venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
+          note: '얼리버드 예매 8/17~8/26',
+          links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] },
+        { id: 'o2', position: 2, title: '에스 데블린', period: '2026. 8. 20. ~ 2027. 1. 17.',
+          venue: '푸투라서울', hours: null, price: '22,000원', note: null, links: [] },
+        { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
+          venue: '국립현대미술관 덕수궁관', hours: null,
+          price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
+      ] }]);
   }
 
   if (!url.includes('/rpc/')) return route.continue();
@@ -206,9 +214,19 @@ ok('참여자 목록이 있다', (await page.$$('.admin-person')).length === 3);
  * 여기서는 블록 안이라 inline 인 채 0×0 이 됐다 — 화면에는 그냥 막대가 없었다.
  * 있는지 없는지를 눈으로만 보면 놓친다.
  */
-const barBoxes = await page.$$eval('.admin-result .survey-bar', (es) => es.map((e) => {
+/**
+ * **여러 개 고르는 설문에는 파이/도넛을 그리면 안 된다.**
+ * 조각을 더하면 100%가 넘는데 그림은 전체를 나눈 것처럼 보인다.
+ * 이 설문(srv-1)은 multi_choice 라 가로 막대여야 한다.
+ */
+ok('여러 개 고르는 설문은 막대다', (await page.$$('.chart-bars')).length === 1);
+ok('여러 개 고르는 설문에 도넛이 없다', (await page.$('.chart-donut')) === null);
+ok('분모가 응답자 수임을 밝힌다',
+  (await page.$eval('.chart-caption', (e) => e.textContent.trim())).includes('응답자 수를 넘습니다'));
+
+const barBoxes = await page.$$eval('.chart-track', (es) => es.map((e) => {
   const r = e.getBoundingClientRect();
-  const i = e.querySelector('i');
+  const i = e.querySelector('.chart-fill');
   return { w: Math.round(r.width), h: Math.round(r.height),
     fill: i ? Math.round(i.getBoundingClientRect().width) : 0 };
 }));
@@ -217,6 +235,37 @@ ok('막대에 크기가 있다', barBoxes.length === 3 && barBoxes.every((b) => 
 ok('표가 많은 쪽이 더 길다',
   barBoxes[0].fill > barBoxes[2].fill && barBoxes[2].fill > barBoxes[1].fill,
   barBoxes.map((b) => b.fill).join(' · '));
+
+// 색만으로 알아보게 하지 않는다 — 마크 옆에 이름이 붙어 있어야 한다
+const barNames = await page.$$eval('.chart-bar-name', (es) => es.map((e) => e.textContent.trim()));
+ok('막대마다 이름이 붙어 있다', barNames.length === 3, barNames.join(' · '));
+
+// 같은 데이터를 두 번 그리지 않는다
+ok('아래 목록에 막대를 또 그리지 않는다',
+  (await page.$$('.admin-result .survey-bar')).length === 0);
+
+/* ── 1-3. 분석 ─────────────────────────────────────────── */
+
+console.log('\n── 작품 특징 분석');
+ok('특징 표가 있다', (await page.$$('.analysis-row')).length === 4, '머리줄 + 후보 3');
+
+const analysisText = await page.$eval('.analysis', (e) => e.textContent);
+ok('관람료를 읽어 냈다', analysisText.includes('8,000원') && analysisText.includes('22,000원'),
+  '8,000 / 22,000');
+// `2,000원 + 덕수궁 입장료 1,000원` → 함께 내야 하는 돈이라 더한다
+ok('같이 내는 관람료를 더한다', analysisText.includes('3,000원'));
+// `2026. 8. 6. ~ 11. 8.` — 끝에 해가 없으면 시작 해를 쓴다
+ok('해가 생략된 기간을 읽어 낸다', analysisText.includes('2026. 11. 8.'));
+ok('얼리버드를 표시한다', (await page.$$('.analysis-flag')).length === 1);
+
+/**
+ * 응답 3명이면 기준(ENOUGH=3)을 채우므로 경향 문장이 나오고 경고는 안 나온다.
+ * 그 반대쪽(1~2명이면 경향을 말하지 않는 것)은 화면을 다시 그려야 해서
+ * 여기서 재지 않는다 — 대신 기준을 넘겼을 때 실제로 문장이 나오는지를 본다.
+ */
+ok('기준을 넘기면 경향을 말한다', (await page.$$('.analysis-lines li')).length > 0,
+  `${(await page.$$('.analysis-lines li')).length}줄`);
+ok('기준을 넘기면 "이릅니다" 경고가 없다', !analysisText.includes('경향을 말하기는 이릅니다'));
 ok('회원 화면과 다르다는 안내가 있다',
   (await page.$eval('.admin-results', (e) => e.textContent)).includes('운영자 화면에서만'));
 
@@ -299,7 +348,8 @@ await page.waitForSelector('.admin-form', { timeout: 8000 });
 await page.waitForTimeout(500);
 const editTitle = await page.$eval('.admin-form .admin-input', (e) => e.value);
 ok('고칠 설문 내용이 채워져 있다', editTitle.includes('9월'), editTitle);
-ok('기존 후보가 실려 있다', (await page.$$('.admin-option')).length === 1);
+const editOptions = (await page.$$('.admin-option')).length;
+ok('기존 후보가 그대로 실려 있다', editOptions === 3, `${editOptions}개`);
 ok('제목이 「설문 고치기」다',
   (await page.$eval('.admin-title', (e) => e.textContent.trim())) === '설문 고치기');
 

@@ -4,7 +4,9 @@ import {
   emptyDraft, emptyOption, fetchSurveys, koDeadline, koShort, SurveyUnavailable, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
   type Draft, type DraftOption, type SurveyLinkKind,
+  type SurveyOption,
 } from './lib/survey'
+import { Analysis, ResultChart } from './SurveyChart'
 
 /**
  * 운영자 화면 — 설문 올리기 · 고치기 · 지우기.
@@ -31,24 +33,31 @@ const KINDS: { v: SurveyLinkKind; label: string }[] = [
  * 이름이 나오는 유일한 자리다. 암호 뒤에 있고, 회원 화면에는 지금도 숫자만 나온다.
  * 운영진이 모임을 꾸리려면 누가 오는지 알아야 해서 여는 것이다.
  */
-function Results({ pw, surveyId, onError }: {
-  pw: string; surveyId: string; onError: (e: unknown) => void
+function Results({ pw, surveyId, multiChoice, onError }: {
+  pw: string; surveyId: string; multiChoice: boolean; onError: (e: unknown) => void
 }) {
   const [rows, setRows] = useState<AdminResult[] | null>(null)
   const [people, setPeople] = useState<AdminRespondent[]>([])
+  // 분석에는 후보의 관람료·장소·기간이 필요하다. 그건 공개 표라 그냥 읽는다 —
+  // 이것 때문에 함수를 새로 만들 이유가 없다.
+  const [options, setOptions] = useState<SurveyOption[]>([])
 
   useEffect(() => {
     const ac = new AbortController()
-    Promise.all([adminResults(pw, surveyId, ac.signal), adminRespondents(pw, surveyId, ac.signal)])
-      .then(([r, p]) => { setRows(r); setPeople(p) })
+    Promise.all([
+      adminResults(pw, surveyId, ac.signal),
+      adminRespondents(pw, surveyId, ac.signal),
+      fetchSurveys(ac.signal),
+    ])
+      .then(([r, p, all]) => {
+        setRows(r); setPeople(p)
+        setOptions(all.find((s) => s.id === surveyId)?.options ?? [])
+      })
       .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
     return () => ac.abort()
   }, [pw, surveyId, onError])
 
   if (!rows) return <p className="admin-hint" aria-live="polite">결과를 불러오는 중…</p>
-
-  // 막대는 가장 많이 받은 후보를 기준으로 그린다
-  const top = Math.max(1, ...rows.map((r) => r.votes))
 
   return (
     <div className="admin-results">
@@ -57,15 +66,17 @@ function Results({ pw, surveyId, onError }: {
         {people.length > 0 && <> · 고른 항목 <b>{rows.reduce((n, r) => n + r.votes, 0)}개</b></>}
       </p>
 
+      <ResultChart rows={rows} total={people.length} multiChoice={multiChoice} />
+
+      {/* 위 차트가 크기를 보여 주므로 여기서는 **막대를 다시 그리지 않는다.**
+          같은 데이터를 두 번 그리면 어느 쪽을 봐야 할지 헷갈린다.
+          이 목록이 맡는 것은 차트가 못 보여 주는 것 — 누가 골랐는지다. */}
       {rows.map((r) => (
         <div className="admin-result" key={r.optionId}>
           <div className="admin-result-head">
             <span className="admin-result-title">{r.position}. {r.title}</span>
             <span className="admin-result-votes">{r.votes}표</span>
           </div>
-          <span className="survey-bar" aria-hidden="true">
-            <i style={{ width: `${Math.round((r.votes / top) * 100)}%` }} />
-          </span>
           {r.voters.length > 0
             ? (
               <p className="admin-voters">
@@ -86,6 +97,10 @@ function Results({ pw, surveyId, onError }: {
             </div>
           ))}
         </div>
+      )}
+
+      {options.length > 0 && (
+        <Analysis rows={rows} options={options} total={people.length} />
       )}
 
       <p className="admin-hint" style={{ marginTop: 12, marginBottom: 0 }}>
@@ -400,7 +415,7 @@ export function SurveyAdmin() {
               onClick={() => { void remove(s) }}>지우기</button>
           </div>
           {open === s.id && (
-            <Results pw={pw} surveyId={s.id}
+            <Results pw={pw} surveyId={s.id} multiChoice={s.multiChoice}
               onError={(e) => say(e, '결과를 불러오지 못했습니다.')} />
           )}
         </div>
