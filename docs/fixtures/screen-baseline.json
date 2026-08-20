@@ -718,7 +718,7 @@
    "count": 5,
    "box": {
     "w": 91,
-    "h": 20
+    "h": 24
    },
    "style": {
     "color": "rgb(15, 81, 50)",
@@ -1547,7 +1547,7 @@
    "count": 5,
    "box": {
     "w": 91,
-    "h": 20
+    "h": 24
    },
    "style": {
     "color": "rgb(15, 81, 50)",
@@ -2156,9 +2156,9 @@
     "h": 36
    },
    "style": {
-    "color": "rgb(138, 135, 125)",
+    "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(138, 135, 125)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "11.5px",
@@ -2685,9 +2685,9 @@
     "h": 28
    },
    "style": {
-    "color": "rgb(138, 135, 125)",
+    "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(138, 135, 125)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "12.5px",

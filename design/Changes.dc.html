@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body {
+      margin: 0;
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+        "Noto Sans KR", "Malgun Gothic", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #0f6e56; }
+    a:hover { color: #0a5b45; }
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+  </style>
+</helmet>
+
+<div style="width: 660px; background: #f6f4ef; padding: 28px; box-sizing: border-box; color: #1f1e1b;">
+
+  <p style="font-size: 13px; letter-spacing: 0.12em; color: #737068; font-weight: 600; margin: 0;">측정해서 찾은 것</p>
+  <h1 style="font-size: 26px; font-weight: 800; margin: 8px 0 6px; letter-spacing: -0.02em;">네 곳을 고친다</h1>
+  <p style="font-size: 14px; color: #55534b; line-height: 1.7; margin: 0 0 22px; word-break: keep-all;">
+    라이브 화면을 재어 본 결과다. 글자 색 대비가 기준에 못 미치는 곳 네 종류,
+    손가락으로 누르기에 작은 것 한 종류. 색조는 그대로 두고 밝기만 낮췄으므로
+    화면 인상은 달라지지 않는다.
+  </p>
+
+  <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+    <div style="background: #fff; border: 1px solid #e8e5de; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; display: flex; gap: 18px; align-items: flex-start;">
+
+      <div style="min-width: 26px; height: 26px; border-radius: 999px; background: {{r.dot}}; color: #fff; font-size: 13px; font-weight: 800; line-height: 26px; text-align: center;">{{r.n}}</div>
+
+      <div style="flex-grow: 1;">
+        <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 3px;">{{r.what}}</h3>
+        <p style="font-size: 13px; color: #55534b; line-height: 1.65; margin: 0 0 12px; word-break: keep-all;">{{r.why}}</p>
+
+        <div style="display: flex; gap: 10px; align-items: stretch;">
+          <div style="flex-grow: 1; border: 1px solid #e8e5de; border-radius: 9px; padding: 10px 12px; background: #fbfaf7;">
+            <p style="font-size: 11px; font-weight: 700; color: #a32d2d; margin: 0 0 7px; letter-spacing: 0.06em;">지금</p>
+            <div style="background: {{r.beforeBg}}; border-radius: 6px; padding: {{r.beforePad}}; display: inline-block;">
+              <span style="font-size: 12.5px; font-weight: 600; color: {{r.beforeFg}};">{{r.sample}}</span>
+            </div>
+            <p class="num" style="font-size: 12px; color: #55534b; margin: 8px 0 0;">{{r.beforeVal}}</p>
+          </div>
+
+          <div style="align-self: center; color: #96938a; font-size: 16px;">→</div>
+
+          <div style="flex-grow: 1; border: 1px solid #cfe4da; border-radius: 9px; padding: 10px 12px; background: #f4faf7;">
+            <p style="font-size: 11px; font-weight: 700; color: #0a5b45; margin: 0 0 7px; letter-spacing: 0.06em;">고친 뒤</p>
+            <div style="background: {{r.afterBg}}; border-radius: 6px; padding: {{r.afterPad}}; display: inline-block;">
+              <span style="font-size: 12.5px; font-weight: 600; color: {{r.afterFg}};">{{r.sample}}</span>
+            </div>
+            <p class="num" style="font-size: 12px; color: #0a5b45; margin: 8px 0 0;">{{r.afterVal}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="border-top: 1px solid #e0ddd4; margin-top: 18px; padding-top: 14px;">
+    <p style="font-size: 12.5px; color: #727069; line-height: 1.7; margin: 0; word-break: keep-all;">
+      기준은 WCAG 2.1 — 작은 글자는 배경과 4.5:1, 손가락으로 누르는 것은 24px입니다.
+      카드·날짜블록·태그·주의문구는 이미 기준을 넘어서 손대지 않았습니다.
+    </p>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      rows: [
+        {
+          n: '1', dot: '#0f6e56',
+          what: '동아리 이름 줄',
+          why: '제목 위 작은 글씨. 배경과 너무 비슷해 밝은 곳에서 흐려 보인다.',
+          sample: '41교구 전시·박물관 동아리',
+          beforeBg: '#f6f4ef', beforeFg: '#8a877d', beforePad: '4px 8px', beforeVal: '#8a877d · 3.27 : 1',
+          afterBg: '#f6f4ef', afterFg: '#737068', afterPad: '4px 8px', afterVal: '#737068 · 4.50 : 1',
+        },
+        {
+          n: '2', dot: '#0f6e56',
+          what: '범례의 ‘완료’ 칩',
+          why: '여섯 칩 가운데 이것만 기준에 못 미친다. 나머지 다섯은 그대로 둔다.',
+          sample: '완료',
+          beforeBg: '#f1efe8', beforeFg: '#8a877d', beforePad: '4px 10px', beforeVal: '#8a877d · 3.12 : 1',
+          afterBg: '#f1efe8', afterFg: '#6e6c64', afterPad: '4px 10px', afterVal: '#6e6c64 · 4.57 : 1',
+        },
+        {
+          n: '3', dot: '#0f6e56',
+          what: '달력 칸의 칩 — 누르는 크기',
+          why: '이 칩은 눌러서 상세를 여는 버튼이다. 높이가 21px이라 휴대폰에서 빗나가기 쉽다.',
+          sample: '공식 · 집결 14:50',
+          beforeBg: '#e0e7ff', beforeFg: '#3730a3', beforePad: '3px 4px', beforeVal: '높이 21px (기준 24px)',
+          afterBg: '#e0e7ff', afterFg: '#3730a3', afterPad: '5px 6px', afterVal: '높이 25px · 통과',
+        },
+        {
+          n: '4', dot: '#0f6e56',
+          what: '맨 아래 꼬리말',
+          why: '가장 낮은 2.79:1. 언제 기준인지 알려 주는 줄이라 읽혀야 한다.',
+          sample: '일정 변경 시 톡방 공지를 확인해 주세요',
+          beforeBg: '#f6f4ef', beforeFg: '#96938a', beforePad: '4px 8px', beforeVal: '#96938a · 2.79 : 1',
+          afterBg: '#f6f4ef', afterFg: '#727069', afterPad: '4px 8px', afterVal: '#727069 · 4.52 : 1',
+        },
+        {
+          n: '5', dot: '#854f0b',
+          what: '보드 화면 — 공식 예매 페이지 링크',
+          why: '높이 20px. 전시·공연 카드 안에 있어 자주 눌리는 링크다.',
+          sample: '공식 예매 페이지',
+          beforeBg: '#fff', beforeFg: '#0f6e56', beforePad: '1px 4px', beforeVal: '높이 20px (기준 24px)',
+          afterBg: '#fff', afterFg: '#0f6e56', afterPad: '5px 8px', afterVal: '높이 28px · 통과',
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
