@@ -24,7 +24,9 @@ body {
 .ov {
   font-size: 13px;
   letter-spacing: 0.12em;
-  color: #8a877d;
+  /* 배경 #f6f4ef 와 3.27:1 이라 밝은 곳에서 흐렸다. 색조는 그대로 두고 밝기만 낮춘다.
+     4.50:1 은 기준에 정확히 걸쳐 반올림에 따라 미달로 읽혔다 — 여유를 두고 4.70:1 로 잡는다. */
+  color: #706d65;
   font-weight: 600;
   margin: 0;
 }
@@ -614,7 +616,8 @@ h1 {
 }
 
 .calendar-fold-hint {
-  color: #88847b;
+  /* 흰 바탕에 3.73:1 이었다. 앞의 넷과 같은 손질 — 색조는 두고 밝기만 낮춘다. */
+  color: #78746c;
   font-size: 12px;
   font-weight: 650;
 }
@@ -728,7 +731,8 @@ h1 {
   outline-offset: 1px;
 }
 
-.done { background: #f1efe8; color: #8a877d; }
+/* 완료 칩만 3.12:1 로 미달이었다. 나머지 다섯은 이미 넘어서 손대지 않는다. */
+.done { background: #f1efe8; color: #6e6c64; }
 .conf { background: #e1f5ee; color: #0a5b45; }
 .tent { background: #faeeda; color: #854f0b; }
 .dead { background: #fcebeb; color: #a32d2d; }
@@ -1010,7 +1014,8 @@ h1 {
   border-top: 1px solid #e0ddd4;
   padding-top: 14px;
   font-size: 12.5px;
-  color: #96938a;
+  /* 2.79:1 로 가장 낮았다. 언제 기준인지 알려 주는 줄이라 읽혀야 한다. */
+  color: #727069;
   line-height: 1.7;
 }
 

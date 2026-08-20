@@ -785,6 +785,10 @@ h3 {
 
 .official-info-link {
   display: inline-flex;
+  /* 손가락으로 누르는 링크인데 높이가 20px 이라 WCAG 최소 24px 에 못 미쳤다.
+     밑줄 위치가 달라지지 않도록 좌우 여백은 두지 않고 세로만 늘린다. */
+  align-items: center;
+  min-height: 24px;
   margin-top: 12px;
   color: var(--green-dark);
   font-size: 13px;

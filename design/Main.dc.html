@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body {
+      margin: 0;
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+        "Noto Sans KR", "Malgun Gothic", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #0f6e56; }
+    a:hover { color: #0a5b45; }
+    .flag {
+      position: absolute; right: -9px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; border-radius: 999px;
+      background: #b91c1c; color: #fff;
+      font-size: 11px; font-weight: 800; line-height: 18px; text-align: center;
+    }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #f6f4ef; padding: 22px 18px 26px; box-sizing: border-box; color: #1f1e1b;">
+
+  <p style="font-size: 13px; letter-spacing: 0.12em; color: #8a877d; font-weight: 600; margin: 0; position: relative; display: inline-block;">
+    41교구 전시·박물관 동아리<span class="flag">1</span>
+  </p>
+
+  <h1 style="font-size: 27px; font-weight: 800; margin: 8px 0 14px; letter-spacing: -0.02em;">8 · 9월 모임 일정 안내</h1>
+
+  <span style="display: inline-block; background: #1f1e1b; color: #fff; border-radius: 999px; padding: 7px 15px; font-size: 13px; font-weight: 600;">업데이트 2026. 8. 20. 02:40 기준</span>
+
+  <h2 style="font-size: 18px; font-weight: 700; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px;">
+    <span style="width: 9px; height: 9px; border-radius: 999px; background: #0f6e56; display: inline-block;"></span>다가오는 확정 모임
+  </h2>
+
+  <div style="background: #fcfcff; border: 1px solid #b9c3f5; border-radius: 14px; padding: 16px; display: flex; gap: 14px; margin-bottom: 10px; align-items: flex-start; box-shadow: inset 4px 0 0 #4f46e5;">
+    <div style="min-width: 68px; text-align: center; background: #4338ca; color: #fff; border-radius: 10px; padding: 9px 4px 8px;">
+      <div style="font-size: 12px; opacity: 0.85; font-weight: 600;">8월</div>
+      <div style="font-size: 25px; font-weight: 800; line-height: 1.15;">22</div>
+      <div style="font-size: 12px; font-weight: 600; opacity: 0.9;">토요일</div>
+    </div>
+    <div style="flex-grow: 1;">
+      <span style="display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; margin-bottom: 6px;">공식 정기관람</span>
+      <h3 style="font-size: 16.5px; font-weight: 700; margin: 0 0 4px; line-height: 1.4;">8월 정기관람 · 서울역사박물관</h3>
+      <p style="font-size: 14px; color: #55534b; line-height: 1.75; word-break: keep-all; margin: 0;">
+        <b style="color: #1f1e1b; font-weight: 700;">오후 2시 50분 집결 · 오후 3시~5시 30분 일정</b> · 종로구 새문안로 55
+      </p>
+      <p style="margin: 10px 0 0; border-radius: 8px; background: #fff3da; color: #764300; padding: 8px 10px; font-size: 12px; line-height: 1.55; word-break: keep-all;">
+        <b>운영진 확인:</b> 오후 5시 30분 이후 귀가 및 저녁식사는 자율입니다.
+      </p>
+    </div>
+  </div>
+
+  <h2 style="font-size: 18px; font-weight: 700; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px;">
+    <span style="width: 9px; height: 9px; border-radius: 999px; background: #1f1e1b; display: inline-block;"></span>한눈에 보는 달력
+  </h2>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 6px; background: #fff; border: 1px solid #eceae2; border-radius: 11px; padding: 10px 12px; margin: 0 0 10px; position: relative;">
+    <sc-for list="{{legend}}" as="l" hint-placeholder-count="6">
+      <span style="display: inline-block; font-size: 12.5px; font-weight: 600; border-radius: 6px; padding: 4px 10px; border: 1px solid rgba(0,0,0,0.06); background: {{l.bg}}; color: {{l.fg}};">{{l.label}}</span>
+    </sc-for>
+    <span class="flag" style="top: 18px;">2</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: #e4e1d8; border: 1px solid #e4e1d8; border-radius: 12px; overflow: hidden; position: relative;">
+    <sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+      <div style="background: #fff; min-height: 48px; padding: 4px;">
+        <span style="font-size: 13px; color: #6b6960;">{{d.n}}</span>
+        <sc-if value="{{d.chip}}" hint-placeholder-val="{{true}}">
+          <div style="display: block; width: 100%; font-size: 11.5px; font-weight: 600; text-align: left; line-height: 1.3; padding: 3px 4px; border-radius: 5px; margin-top: 4px; word-break: keep-all; box-sizing: border-box; background: {{d.bg}}; color: {{d.fg}};">{{d.chip}}</div>
+        </sc-if>
+      </div>
+    </sc-for>
+    <span class="flag" style="top: 26px;">3</span>
+  </div>
+
+  <p style="margin-top: 30px; border-top: 1px solid #e0ddd4; padding-top: 14px; font-size: 12.5px; color: #96938a; line-height: 1.7; position: relative;">
+    2026. 8. 20. 02:40 기준까지의 대화 내역과 운영진 확인사항을 기준으로 정리했습니다.<br>일정 변경 시 톡방 공지를 확인해 주세요.
+    <span class="flag" style="top: 24px;">4</span>
+  </p>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      legend: [
+        { label: '완료',          bg: '#f1efe8', fg: '#8a877d' },
+        { label: '확정',          bg: '#e1f5ee', fg: '#0a5b45' },
+        { label: '공식 정기관람',  bg: '#e0e7ff', fg: '#3730a3' },
+        { label: '모집중 · 미정',  bg: '#faeeda', fg: '#854f0b' },
+        { label: '예매 마감',      bg: '#fcebeb', fg: '#a32d2d' },
+        { label: '영화 모임',      bg: '#fae8ff', fg: '#86198f' },
+      ],
+      week: [
+        { n: '16', chip: '영화 완료',      bg: '#fae8ff', fg: '#86198f' },
+        { n: '17', chip: null },
+        { n: '18', chip: null },
+        { n: '19', chip: null },
+        { n: '20', chip: null },
+        { n: '21', chip: null },
+        { n: '22', chip: '공식 · 집결 14:50', bg: '#e0e7ff', fg: '#3730a3' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
