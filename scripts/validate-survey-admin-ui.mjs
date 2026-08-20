@@ -221,8 +221,9 @@ ok('참여자 목록이 있다', (await page.$$('.admin-person')).length === 3);
  */
 ok('여러 개 고르는 설문은 막대다', (await page.$$('.chart-bars')).length === 1);
 ok('여러 개 고르는 설문에 도넛이 없다', (await page.$('.chart-donut')) === null);
-ok('분모가 응답자 수임을 밝힌다',
-  (await page.$eval('.chart-caption', (e) => e.textContent.trim())).includes('응답자 수를 넘습니다'));
+const caption = await page.$eval('.chart-caption', (e) => e.textContent.trim());
+ok('캡션이 분모를 숫자로 말한다', /합이 \d+명을 넘습니다/.test(caption), caption.slice(0, 46));
+ok('캡션이 비율의 기준을 알려 준다', caption.includes('가운데 몇 명인지'), caption.slice(-24));
 
 const barBoxes = await page.$$eval('.chart-track', (es) => es.map((e) => {
   const r = e.getBoundingClientRect();

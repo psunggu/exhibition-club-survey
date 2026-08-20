@@ -90,10 +90,16 @@ const MANY_SURVEY = {
   multi_choice: true,
   opens_at: iso(now - 48 * HOUR), closes_at: iso(now - 2 * HOUR),
   created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
-  survey_options: Array.from({ length: 8 }, (_, i) => ({
-    id: `many-${i}`, position: i + 1, title: `후보 ${i + 1}`,
-    period: null, venue: null, hours: null, price: null, note: null, links: [],
-  })),
+  /**
+   * 이름을 **한글로 끝나게** 둔다. `후보 1` 처럼 숫자로 끝나면
+   * 조사를 고를 수 없어 괄호 형태로 떨어지고, 그러면 조사 검사가
+   * 실제 경로를 재지 못한다 (진짜 후보 이름은 사발·우슴처럼 한글이다).
+   */
+  survey_options: ['사발', '우슴', '탄백', '난포', '미진', '국밥', '해장', '회관']
+    .map((name, i) => ({
+      id: `many-${i}`, position: i + 1, title: name,
+      period: null, venue: null, hours: null, price: null, note: null, links: [],
+    })),
 };
 const MANY_VOTES = [6, 1, 3, 0, 0, 8, 6, 1];
 
@@ -317,7 +323,7 @@ ok('옮겨 온 설문에 이름 칸이 없다', (await page.$$('.survey-who')).l
  * 그때는 전부 한 색으로 가야 하고, 이름은 옆 글자가 맡는다.
  */
 const results = await page.$$('.survey-result');
-const swatchesOf = async (n) => (await results[n].$$eval('.chart-swatch',
+const swatchesOf = async (n) => (await results[n].$$eval('.chart .chart-swatch',
   (es) => es.map((e) => getComputedStyle(e).backgroundColor)));
 
 // 후보 3개 — 자리마다 제 색을 쓴다
@@ -329,6 +335,46 @@ ok('후보가 적으면 자리마다 다른 색', few.length === 3 && new Set(fe
 const many = await swatchesOf(1);
 ok('후보가 많으면 색을 돌려쓰지 않는다', many.length === 8 && new Set(many).size === 1,
   `후보 ${many.length}개 · 색 ${new Set(many).size}가지`);
+
+/* ── 마감 설문의 지표와 읽을 거리 ──────────────────────── */
+
+console.log('\n── 마감 설문의 지표');
+
+/**
+ * 후보 8개짜리 마감 설문(표 6·1·3·0·0·8·6·1 · 참여 13명)에서
+ * 지표가 실제로 계산되는지 본다. 눈으로 "있네" 가 아니라 값을 맞춰 본다.
+ */
+const stats = await results[1].$$eval('.stat', (es) => es.map((e) => ({
+  label: e.querySelector('.stat-label').textContent.trim(),
+  value: e.querySelector('.stat-value').textContent.trim(),
+})));
+const val = (l) => stats.find((x) => x.label === l)?.value ?? '';
+ok('참여 인원', val('참여') === '13명', val('참여'));
+ok('고른 항목 합계', val('고른 항목') === '25개', val('고른 항목'));
+ok('표를 받은 후보', val('표를 받은 후보') === '6/8', val('표를 받은 후보'));
+ok('1위 득표율', val('1위 득표율') === '62%', val('1위 득표율'));
+
+const insight = await results[1].$$eval('.metrics .analysis-lines li',
+  (es) => es.map((e) => e.textContent.trim()));
+ok('읽을 거리가 나온다', insight.length >= 3, `${insight.length}줄`);
+
+// **조사를 괄호로 두지 않는다** — `사발이(가)` 는 읽기가 걸린다
+ok('괄호 조사가 없다', !insight.some((l) => /이\(가\)|은\(는\)/.test(l)),
+  insight.find((l) => /이\(가\)|은\(는\)/.test(l)) ?? '없음');
+
+/**
+ * **`13명 중 0명` 을 줄마다 되풀이하지 않는다.**
+ * 0표가 여럿이면 같은 글자가 반복돼 눈에 걸린다. 분모는 캡션이 한 번만 말한다.
+ */
+const vals = await results[1].$$eval('.chart-bar-val', (es) => es.map((e) => e.textContent.trim()));
+ok('0표는 짧게 적는다', vals.filter((v) => v === '없음').length === 2,
+  vals.join(' · '));
+ok('분모를 줄마다 되풀이하지 않는다', !vals.some((v) => v.includes('중')),
+  vals.find((v) => v.includes('중')) ?? '없음');
+
+// 이름만 있는 후보에는 작품 특징 표를 그리지 않는다 (확인 필요만 늘어선다)
+ok('특징 없는 설문에는 특징 표가 없다',
+  (await results[1].$$('.analysis')).length === 0);
 const badges = await page.$$eval('.survey-deadline', (es) => es.map((e) => e.textContent.trim()));
 ok('마감 표시가 있다', badges.some((b) => b.includes('마감됨')), badges.join(' | '));
 const whoForms = await page.$$('.survey-who');

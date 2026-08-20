@@ -6,7 +6,7 @@ import {
   type Draft, type DraftOption, type SurveyLinkKind,
   type SurveyOption,
 } from './lib/survey'
-import { Analysis, ResultChart } from './SurveyChart'
+import { Analysis, Metrics, ResultChart } from './SurveyChart'
 
 /**
  * 운영자 화면 — 설문 올리기 · 고치기 · 지우기.
@@ -98,6 +98,8 @@ function Results({ pw, surveyId, multiChoice, onError }: {
           ))}
         </div>
       )}
+
+      <Metrics rows={rows} total={people.length} multiChoice={multiChoice} />
 
       {options.length > 0 && (
         <Analysis rows={rows} options={options} total={people.length} />

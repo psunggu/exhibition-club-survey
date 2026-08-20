@@ -82,8 +82,10 @@ function Donut({ rows, total }: { rows: AdminResult[]; total: number }) {
           <li key={r.optionId}>
             <span className="chart-swatch" style={{ background: hue(i, rows.length) }} aria-hidden="true" />
             <span className="chart-legend-name">{r.title}</span>
-            <span className="chart-legend-val">
-              {r.votes}표{total > 0 && ` · ${Math.round((r.votes / total) * 100)}%`}
+            <span className={`chart-legend-val${r.votes === 0 ? ' zero' : ''}`}>
+              {r.votes === 0
+                ? '없음'
+                : `${r.votes}표${total > 0 ? ` · ${Math.round((r.votes / total) * 100)}%` : ''}`}
             </span>
           </li>
         ))}
@@ -105,8 +107,12 @@ function Bars({ rows, total }: { rows: AdminResult[]; total: number }) {
               {/* 이름을 마크 옆에 직접 둔다 — 색만으로 알아보게 하지 않는다 */}
               <span className="chart-swatch" style={{ background: hue(i, rows.length) }} aria-hidden="true" />
               <span className="chart-bar-name">{r.title}</span>
-              <span className="chart-bar-val">
-                {total > 0 ? `${total}명 중 ${r.votes}명` : `${r.votes}명`}
+              {/* 분모는 위 캡션이 한 번만 말한다. 줄마다 `13명 중` 을 되풀이하면
+                  0표 줄이 여럿일 때 특히 시끄럽다. */}
+              <span className={`chart-bar-val${r.votes === 0 ? ' zero' : ''}`}>
+                {r.votes === 0
+                  ? '없음'
+                  : <>{r.votes}명<span className="chart-bar-pct">{Math.round(pct)}%</span></>}
               </span>
             </div>
             <div className="chart-track" role="img"
@@ -134,9 +140,9 @@ export function ResultChart({ rows, total, multiChoice }: {
     <div className="chart">
       <p className="chart-caption">
         {multiChoice
-          ? '여러 개 고르는 설문이라 합이 응답자 수를 넘습니다. 분모는 응답한 사람 수입니다.'
+          ? `여러 개 고르는 설문이라 합이 ${total}명을 넘습니다. 아래 비율은 ${total}명 가운데 몇 명인지입니다.`
           : rows.length > 5
-            ? '하나만 고르는 설문입니다. 후보가 많아 막대로 보여 줍니다.'
+            ? `하나만 고르는 설문입니다. 후보가 많아 막대로 보여 줍니다 (${total}명 가운데).`
             : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
       </p>
       {/* 도넛은 조각 색이 곧 이름이라 후보가 많으면 읽을 수 없다. 그때는 막대로 간다. */}
@@ -145,6 +151,118 @@ export function ResultChart({ rows, total, multiChoice }: {
         : <Donut rows={rows} total={total} />}
     </div>
   )
+}
+
+/* ── 표에서 바로 나오는 지표 ──────────────────────────────── */
+
+/**
+ * **표만 가지고 말할 수 있는 것.**
+ *
+ * 작품 특징(관람료·기간·장소)은 전시 설문에만 있다 — 식사 설문의 후보는
+ * 가게 이름뿐이라 그 표를 그리면 "확인 필요" 만 늘어선다.
+ * 그래서 어느 설문에서든 나오는 지표를 따로 둔다.
+ *
+ * 여기 있는 것은 전부 **센 값**이다. 추측이 아니라 표를 나눈 결과다.
+ */
+/**
+ * 받침을 보고 조사를 고른다.
+ *
+ * "사발이(가)" 처럼 괄호로 두면 읽기가 걸린다. 한글 음절은
+ * (코드 - 0xAC00) % 28 이 0 이 아니면 받침이 있으므로 그것으로 가른다.
+ *
+ * 한글로 끝나지 않는 이름(영문·숫자)은 발음을 알 수 없으므로
+ * **괄호 형태로 남긴다** — 틀리게 쓰는 것보다 낫다.
+ */
+export function josa(word: string, withFinal: string, withoutFinal: string): string {
+  const last = word.trim().slice(-1)
+  const code = last.charCodeAt(0)
+  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) {
+    return `${withFinal}(${withoutFinal})`
+  }
+  return (code - 0xac00) % 28 === 0 ? withoutFinal : withFinal
+}
+
+export function summarize(rows: AdminResult[], total: number) {
+  const votes = rows.reduce((n, r) => n + r.votes, 0);
+  const sorted = [...rows].sort((a, b) => b.votes - a.votes);
+  const top = sorted[0]?.votes ?? 0;
+  // 동점이면 여럿이 1위다. 하나만 고르면 거짓말이 된다.
+  const leaders = sorted.filter((r) => r.votes === top && top > 0);
+  const runnerUp = sorted.find((r) => r.votes < top && r.votes > 0) ?? null;
+  const chosen = rows.filter((r) => r.votes > 0);
+  const top3 = sorted.slice(0, 3).reduce((n, r) => n + r.votes, 0);
+  const majority = rows.filter((r) => total > 0 && r.votes / total > 0.5);
+  return {
+    votes, sorted, top, leaders, runnerUp, chosen, top3, majority,
+    perPerson: total > 0 ? votes / total : 0,
+    topShare: total > 0 ? top / total : 0,
+    top3Share: votes > 0 ? top3 / votes : 0,
+  };
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="stat">
+      <span className="stat-label">{label}</span>
+      <strong className="stat-value">{value}</strong>
+      {sub && <span className="stat-sub">{sub}</span>}
+    </div>
+  );
+}
+
+export function Metrics({ rows, total, multiChoice }: {
+  rows: AdminResult[]; total: number; multiChoice: boolean
+}) {
+  const m = summarize(rows, total);
+  if (!m.votes) return null;
+
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const names = (rs: AdminResult[]) => rs.map((r) => r.title).join(' · ');
+
+  const lines: string[] = [];
+
+  if (m.leaders.length === 1) {
+    const win = m.leaders[0]!.title;
+    lines.push(`${win}${josa(win, '이', '가')} ${total}명 가운데 ${m.top}명(${pct(m.topShare)})으로 가장 많습니다.`
+      + (m.runnerUp
+        ? ` 다음은 ${m.runnerUp.title} ${m.runnerUp.votes}명으로 ${m.top - m.runnerUp.votes}명 차이입니다.`
+        : ''));
+  } else if (m.leaders.length > 1) {
+    lines.push(`${names(m.leaders)} — 각 ${m.top}명으로 공동 1위입니다. 하나로 좁혀지지 않았습니다.`);
+  }
+
+  if (m.majority.length === 1) {
+    const maj = m.majority[0]!.title;
+    lines.push(`${maj}${josa(maj, '은', '는')} 참여자 과반이 골랐습니다.`);
+  } else if (m.majority.length === 0 && m.votes > 0) {
+    lines.push('과반을 넘긴 후보는 없습니다.');
+  }
+
+  if (rows.length > 3) {
+    lines.push(`${rows.length}개 가운데 ${m.chosen.length}개가 표를 받았고, `
+      + `위 3개가 전체 표의 ${pct(m.top3Share)}를 가져갔습니다.`);
+  }
+
+  if (multiChoice && total > 0) {
+    lines.push(`한 사람이 평균 ${m.perPerson.toFixed(1)}개를 골랐습니다.`);
+  }
+
+  return (
+    <div className="metrics">
+      <span className="admin-links-title">숫자로 보기</span>
+      <div className="stats">
+        <Stat label="참여" value={`${total}명`} />
+        <Stat label="고른 항목" value={`${m.votes}개`}
+          sub={multiChoice ? `1인당 ${m.perPerson.toFixed(1)}` : undefined} />
+        <Stat label="표를 받은 후보" value={`${m.chosen.length}/${rows.length}`} />
+        <Stat label="1위 득표율" value={pct(m.topShare)}
+          sub={m.leaders.length > 1 ? `공동 ${m.leaders.length}곳` : m.leaders[0]?.title} />
+      </div>
+      {lines.length > 0 && (
+        <ul className="analysis-lines">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
+      )}
+    </div>
+  );
 }
 
 /* ── 작품 특징으로 보는 분석 ──────────────────────────────── */
@@ -215,6 +333,8 @@ export function Analysis({ rows, options, total }: {
     }
   })
 
+  // 채워진 특징이 하나도 없으면(가게 이름만 있는 설문) 이 표는 뜻이 없다
+  const hasFacts = facts.some((f) => f.price !== null || f.venue || f.end)
   const picked = facts.filter((f) => f.r.votes > 0)
   const priced = facts.filter((f) => f.price !== null)
   const avg = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null)
@@ -274,6 +394,8 @@ export function Analysis({ rows, options, total }: {
     .filter((f) => f.daysLeft !== null && f.daysLeft > 0 && f.daysLeft <= 60)
     .sort((a, b) => (a.daysLeft as number) - (b.daysLeft as number))
 
+  if (!hasFacts) return null
+
   return (
     <div className="analysis">
       <span className="admin-links-title">작품 특징으로 보기</span>
@@ -321,7 +443,7 @@ export function Analysis({ rows, options, total }: {
 
       {soon[0] && (
         <p className="analysis-soon">
-          <b>챙길 것</b> {soon[0].r.title}은(는) {soon[0].daysLeft}일 뒤에 끝납니다.
+          <b>챙길 것</b> {soon[0].r.title}{josa(soon[0].r.title, '은', '는')} {soon[0].daysLeft}일 뒤에 끝납니다.
           {soon[0].early && ' 얼리버드가 있으니 예매 기간을 먼저 확인하세요.'}
         </p>
       )}
