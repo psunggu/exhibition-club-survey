@@ -68,7 +68,8 @@ for (let m; (m = RE.exec(src)) !== null;) {
   const grab = (k) => (new RegExp(`${k}:\\s*'([^']*)'`).exec(chunk) ?? [, ''])[1];
   meetups.push({ id: m[1], date: m[2], chip: m[3], kind: m[4],
     official: m[5] === 'true', movie: m[6] === 'true', status: m[7],
-    title: grab('title'), completedRow: grab('completedRow') });
+    title: grab('title'), completedRow: grab('completedRow'),
+    description: grab('description') });
 }
 if (!meetups.length) fail('meetups.ts 에서 모임을 하나도 읽지 못했다');
 
@@ -107,11 +108,18 @@ for (const m of meetups) {
  */
 const RULE_FROM = '2026-08-22';
 const SAYS_REGULAR = /정기관람/;
-const NUMBERED = /정기관람\s*[①-⑳\d]/;   // `정기관람 ②` · `정기관람 2`
+
+/**
+ * 번호는 **앞뒤 양쪽**을 본다.
+ * 처음엔 뒤에 오는 것만 봤더니(`정기관람 ②`) 앞에 붙은 `2026년 2차 정기관람` 을 놓쳤다.
+ * 우리가 쓰는 두 꼴을 다 막아야 같은 일이 안 생긴다.
+ */
+const NUMBERED = /(?:[①-⑳]|\d+\s*차)\s*정기관람|정기관람\s*[①-⑳\d]/;
 
 for (const m of meetups.filter((x) => x.date >= RULE_FROM)) {
-  const fields = [['chip', m.chip], ['status', m.status],
-    ['title', m.title], ['completedRow', m.completedRow]];
+  // 설명문도 본다 — 짝 없는 회차가 거기 숨어 있었다
+  const fields = [['chip', m.chip], ['status', m.status], ['title', m.title],
+    ['completedRow', m.completedRow], ['description', m.description]];
 
   for (const [name, text] of fields) {
     if (!text) continue;

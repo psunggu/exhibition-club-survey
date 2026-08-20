@@ -67,7 +67,7 @@ const links = (s0.survey_options ?? []).flatMap((o) => o.links ?? []);
 ok('참고 링크가 들어 있다', links.length === 4, links.map((l) => l.kind).join(', '));
 ok('서도호 영상 링크가 있다',
   links.some((l) => l.kind === 'video' && l.url.includes('8IvgzYaKexE')));
-ok('마감이 8/21 08시다', String(s0.closes_at).startsWith('2026-08-20T23:00'),
+ok('마감이 8/21 17시다', String(s0.closes_at).startsWith('2026-08-21T08:00'),
   `${s0.closes_at} (UTC 표기)`);
 
 /* ── 2. 읽히면 안 되는 것 ───────────────────────────────── */
