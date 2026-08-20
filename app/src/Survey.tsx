@@ -4,7 +4,7 @@ import {
   isOpen, isVisible, koDeadline, submitResponse, SurveyUnavailable,
   type Survey as SurveyT, type SurveyCategory, type SurveyLink, type SurveyOption,
 } from './lib/survey'
-import { ResultChart } from './SurveyChart'
+import { Analysis, Metrics, ResultChart } from './SurveyChart'
 
 /**
  * 설문 화면.
@@ -180,6 +180,11 @@ function OneSurvey({ s }: { s: SurveyT }) {
                 <b>{total}명</b>이 참여했습니다.
               </p>
               <ResultChart rows={rows} total={total} multiChoice={s.multiChoice} />
+              {/* 마감된 설문에는 지표와 읽을 거리를 함께 둔다.
+                  작품 특징 표는 채워진 것이 있을 때만 뜬다 —
+                  가게 이름뿐인 설문에서는 "확인 필요" 만 늘어서기 때문이다. */}
+              <Metrics rows={rows} total={total} multiChoice={s.multiChoice} />
+              <Analysis rows={rows} options={s.options} total={total} />
             </div>
           )
           : (

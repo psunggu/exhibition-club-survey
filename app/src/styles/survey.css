@@ -744,3 +744,54 @@ select.admin-input { cursor: pointer; }
   line-height: 1.65;
   word-break: keep-all;
 }
+
+/* ── 숫자로 보기 ──────────────────────────────────────────
+   작품 특징(관람료·기간)은 전시 설문에만 있다. 식사 설문처럼 이름뿐인 후보에도
+   말할 수 있는 것이 있어야 해서, 표에서 바로 나오는 지표를 따로 둔다. */
+
+.metrics {
+  border-top: 1px solid #e8e5de;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.stat {
+  background: #fbfaf7;
+  border: 1px solid #ece9e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b; }
+.stat-value { font-size: 19px; font-weight: 800; color: #1f1e1b; line-height: 1.2; }
+
+.stat-sub {
+  font-size: 11.5px;
+  color: #55534b;
+  line-height: 1.4;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 0표는 값을 크게 쓰지 않는다. `13명 중 0명` 이 줄마다 반복되면 시끄럽다.
+   흐리게 두려다 #8a877d 로 했더니 흰 바탕에서 3.59:1 이라 기준에 못 미쳤다 —
+   검사기가 잡았다. 색조는 그대로 두고 밝기만 낮춰 4.60:1 로 올린다. */
+.chart-bar-val.zero,
+.chart-legend-val.zero { color: #78756d; font-weight: 600; }
+
+.chart-bar-pct {
+  margin-left: 5px;
+  font-weight: 600;
+  color: #55534b;
+}
