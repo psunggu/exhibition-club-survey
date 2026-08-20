@@ -674,3 +674,73 @@ select.admin-input { cursor: pointer; }
   line-height: 1.6;
   word-break: keep-all;
 }
+
+/* ── 설문 갈래 ────────────────────────────────────────────
+   전시 관람은 사이트의 초록(#0f6e56), 식사·티타임은 주황(#a54f1f).
+   둘 다 흰 글자로 4.5:1 을 넘고(6.20 · 5.62) 서로 충분히 멀다.
+   **색만으로 가르지 않는다** — 버튼과 탭에 갈래 이름이 그대로 적혀 있다. */
+
+.survey-go {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.survey-go.exhibition { background: #0f6e56; }
+.survey-go.meal { background: #a54f1f; }
+
+.survey-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+
+.survey-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.survey-tab.exhibition { background: #e1f5ee; color: #0a5b45; }
+.survey-tab.meal { background: #fdf0e6; color: #8f4419; }
+
+/* 지금 보고 있는 갈래는 테두리로도 표시한다 — 색만으로 알리지 않는다 */
+.survey-tab.exhibition.on { border-color: #0f6e56; }
+.survey-tab.meal.on { border-color: #a54f1f; }
+.survey-tab:not(.on) { opacity: 0.75; }
+
+/* ── 회원이 보는 결과 화면 (마감된 설문) ─────────────────── */
+
+.survey-result {
+  background: #fff;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.survey-result-sum {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #55534b;
+}
+
+.survey-result-sum b { color: #1f1e1b; font-weight: 700; }
+
+/* 톡방에서 진행 중인 투표를 옮겨 보여 줄 때의 안내.
+   여기서 고를 수 있다고 오해하면 표가 사라지는 것으로 이어지므로 눈에 띄게 둔다. */
+.survey-mirror-note {
+  margin: 10px 0 0;
+  border-radius: 9px;
+  background: #fdf0e6;
+  color: #8f4419;
+  padding: 9px 11px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  word-break: keep-all;
+}

@@ -31,6 +31,14 @@ export type SurveyOption = {
   links: SurveyLink[]
 }
 
+export type SurveyCategory = 'exhibition' | 'meal'
+
+/** 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다. */
+export const CATEGORY = {
+  exhibition: { label: '전시 관람 설문', short: '전시 관람', route: '#/survey' },
+  meal:       { label: '식사 및 Tea Time 설문', short: '식사·티타임', route: '#/survey/meal' },
+} as const
+
 export type Survey = {
   id: string
   title: string
@@ -42,6 +50,13 @@ export type Survey = {
   resultsVisible: 'always' | 'after_close' | 'admin'
   showNames: 'none' | 'participants'
   hideAfterDays: number | null
+  category: SurveyCategory
+  /**
+   * 밖(톡방)에서 진행된 투표를 옮겨 온 설문인가.
+   * 그렇다면 여기서는 **응답을 받지 않고 결과만 보여 준다** —
+   * 옮겨 온 숫자가 집계를 덮어써서, 여기서 받은 표는 나타나지 않기 때문이다.
+   */
+  mirrored: boolean
   options: SurveyOption[]
 }
 
@@ -129,6 +144,8 @@ function toSurvey(r: SurveyRow): Survey {
     resultsVisible: rv === 'always' || rv === 'admin' ? rv : 'after_close',
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
+    category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
+    mirrored: r.imported_respondents !== null && r.imported_respondents !== undefined,
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }
 }

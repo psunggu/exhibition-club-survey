@@ -81,6 +81,41 @@ const CLOSED_SURVEY = {
   survey_options: OPEN_SURVEY.survey_options.map((o) => ({ ...o, id: `${o.id}-c` })),
 };
 
+/**
+ * 후보가 다섯을 넘는 마감 설문. **색을 돌려쓰지 않는지 여기서 잰다** —
+ * 식사 설문(13곳)에서 6번째부터 앞의 색이 다시 나왔던 것을 막기 위해서다.
+ */
+const MANY_SURVEY = {
+  id: 'srv-many', title: '저녁식사 장소 투표', intro: null,
+  multi_choice: true,
+  opens_at: iso(now - 48 * HOUR), closes_at: iso(now - 2 * HOUR),
+  created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  survey_options: Array.from({ length: 8 }, (_, i) => ({
+    id: `many-${i}`, position: i + 1, title: `후보 ${i + 1}`,
+    period: null, venue: null, hours: null, price: null, note: null, links: [],
+  })),
+};
+const MANY_VOTES = [6, 1, 3, 0, 0, 8, 6, 1];
+
+/**
+ * 톡방에서 진행 중인 투표를 옮겨 온 설문. **마감이 아직 안 지났다.**
+ * 그래도 여기서는 응답을 받으면 안 된다 — 옮겨 온 숫자가 집계를 덮어써서
+ * 여기서 받은 표는 어디에도 나타나지 않기 때문이다(표가 조용히 사라진다).
+ */
+const MIRROR_SURVEY = {
+  id: 'srv-mirror', title: '저녁식사 장소 투표', intro: null,
+  multi_choice: true,
+  opens_at: iso(now - 24 * HOUR), closes_at: iso(now + 7 * HOUR),
+  created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  // 갈래는 이 검사와 무관하다. 같은 화면에서 보려고 전시로 둔다.
+  category: 'exhibition',
+  imported_respondents: 13,
+  survey_options: Array.from({ length: 3 }, (_, i) => ({
+    id: `mir-${i}`, position: i + 1, title: `가게 ${i + 1}`,
+    period: null, venue: null, hours: null, price: null, note: null, links: [],
+  })),
+};
+
 /* ── 브라우저 ────────────────────────────────────────────── */
 
 const browser = await chromium.launch();
@@ -97,7 +132,9 @@ await ctx.route('**/rest/v1/**', async (route) => {
   const json = (body) => route.fulfill({ status: 200,
     contentType: 'application/json', body: JSON.stringify(body) });
 
-  if (url.includes('/rest/v1/surveys')) return json([OPEN_SURVEY, CLOSED_SURVEY]);
+  if (url.includes('/rest/v1/surveys')) {
+    return json([OPEN_SURVEY, CLOSED_SURVEY, MANY_SURVEY, MIRROR_SURVEY]);
+  }
 
   if (url.includes('/rpc/')) {
     const name = url.split('/rpc/')[1].split('?')[0];
@@ -118,10 +155,27 @@ await ctx.route('**/rest/v1/**', async (route) => {
       return route.fulfill({ status: 204, body: '' });
     }
     if (name === 'survey_tally') {
+      if (body.p_survey === 'srv-many') {
+        return json(MANY_SURVEY.survey_options.map((o, i) => ({
+          option_id: o.id, votes: MANY_VOTES[i] })));
+      }
+      if (body.p_survey === 'srv-closed') {
+        return json(CLOSED_SURVEY.survey_options.map((o, i) => ({
+          option_id: o.id, votes: [4, 2, 1][i] })));
+      }
+      if (body.p_survey === 'srv-mirror') {
+        return json(MIRROR_SURVEY.survey_options.map((o, i) => ({
+          option_id: o.id, votes: [6, 8, 1][i] })));
+      }
       return json(OPEN_SURVEY.survey_options.map((o, i) => ({
         option_id: o.id, votes: stored.includes(o.id) ? 3 + i : i })));
     }
-    if (name === 'survey_response_count') return json(stored.length ? 1 : 0);
+    if (name === 'survey_response_count') {
+      if (body.p_survey === 'srv-many') return json(13);
+      if (body.p_survey === 'srv-closed') return json(5);
+      if (body.p_survey === 'srv-mirror') return json(13);
+      return json(stored.length ? 1 : 0);
+    }
     return json([]);
   }
   return route.continue();
@@ -144,14 +198,18 @@ console.log('\n── 화면');
 await go();
 
 const heads = await page.$$eval('.survey-head h3', (es) => es.map((e) => e.textContent.trim()));
-ok('설문 두 건이 보인다', heads.length === 2, heads.join(' · '));
+ok('설문 네 건이 보인다', heads.length === 4, heads.join(' · '));
 
+/**
+ * 마감된 설문은 **결과 화면**이라 체크박스가 없다. 그래서 후보 칸은 진행 중인 3개뿐이다.
+ * (잠긴 체크박스를 늘어놓으면 "왜 안 눌리지" 를 먼저 겪게 되므로 갈랐다.)
+ */
 const opts = await page.$$('.survey-option');
-ok('후보가 모두 보인다', opts.length === 6, `${opts.length}개 (진행 3 + 마감 3)`);
+ok('진행 중 설문의 후보만 체크 칸이 있다', opts.length === 3, `${opts.length}개`);
 
 const links = await page.$$eval('.survey-link',
   (es) => es.map((e) => ({ t: e.textContent.trim(), h: e.getAttribute('href') })));
-ok('쓸 수 있는 링크만 남았다', links.length === 4,
+ok('쓸 수 있는 링크만 남았다', links.length === 2,
   `${links.length}개 — ${links.map((l) => l.t).join(', ')}`);
 ok('javascript: 주소가 걸러졌다', !links.some((l) => /^javascript:/i.test(l.h ?? '')));
 ok('링크는 새 창으로 연다',
@@ -232,12 +290,49 @@ ok('버튼이 「다시 제출」로 바뀐다', again.includes('다시 제출')
 /* ── 6. 마감된 설문 ─────────────────────────────────────── */
 
 console.log('\n── 마감');
-const closedBoxes = await page.$$eval('.survey-option.locked input', (es) => es.length);
-ok('마감 설문은 체크가 잠겨 있다', closedBoxes === 3, `${closedBoxes}개`);
+// 마감 설문에는 체크 칸 자체가 없고 결과만 있다
+ok('마감 설문에 체크 칸이 없다', (await page.$$('.survey-option.locked')).length === 0);
+ok('결과만 보여 주는 설문이 셋', (await page.$$('.survey-result')).length === 3,
+  `${(await page.$$('.survey-result')).length}개`);
+
+/**
+ * **마감 전인데도 고를 수 없어야 한다.**
+ * 옮겨 온 설문에서 응답을 받으면 그 표는 집계에 안 나타난다 —
+ * 저장은 되는데 보이지 않으니 회원은 자기 표가 반영된 줄 안다. 그게 제일 나쁘다.
+ */
+const mirrorNote = await page.$$eval('.survey-mirror-note', (es) => es.map((e) => e.textContent));
+ok('톡방에서 한다고 알려 준다', mirrorNote.length === 1
+  && mirrorNote[0].includes('톡방에서 진행'), `${mirrorNote.length}개`);
+const mirrorTag = await page.$$eval('.survey-head .tag', (es) => es.map((e) => e.textContent.trim()));
+ok('진행 중이라고 표시한다', mirrorTag.includes('톡방에서 진행 중'), mirrorTag.join(' · '));
+ok('옮겨 온 설문에 이름 칸이 없다', (await page.$$('.survey-who')).length === 1,
+  `${(await page.$$('.survey-who')).length}개`);
+
+/**
+ * **색을 돌려쓰지 않는지 본다.**
+ *
+ * 후보가 다섯을 넘으면 색이 모자란다. 처음에는 그냥 돌려썼고,
+ * 식사 설문(후보 13곳)에서 6번째부터 앞의 색이 다시 나왔다 —
+ * 같은 색이 다른 곳을 가리키니 색이 이름 노릇을 못 한다.
+ * 그때는 전부 한 색으로 가야 하고, 이름은 옆 글자가 맡는다.
+ */
+const results = await page.$$('.survey-result');
+const swatchesOf = async (n) => (await results[n].$$eval('.chart-swatch',
+  (es) => es.map((e) => getComputedStyle(e).backgroundColor)));
+
+// 후보 3개 — 자리마다 제 색을 쓴다
+const few = await swatchesOf(0);
+ok('후보가 적으면 자리마다 다른 색', few.length === 3 && new Set(few).size === 3,
+  `후보 ${few.length}개 · 색 ${new Set(few).size}가지`);
+
+// 후보 8개 — 색이 모자라므로 돌려쓰지 않고 한 색으로 간다
+const many = await swatchesOf(1);
+ok('후보가 많으면 색을 돌려쓰지 않는다', many.length === 8 && new Set(many).size === 1,
+  `후보 ${many.length}개 · 색 ${new Set(many).size}가지`);
 const badges = await page.$$eval('.survey-deadline', (es) => es.map((e) => e.textContent.trim()));
 ok('마감 표시가 있다', badges.some((b) => b.includes('마감됨')), badges.join(' | '));
 const whoForms = await page.$$('.survey-who');
-ok('마감 설문에는 이름 칸이 없다', whoForms.length === 1, `${whoForms.length}개`);
+ok('받는 설문에만 이름 칸이 있다', whoForms.length === 1, `${whoForms.length}개`);
 
 /* ── 7. 누르는 크기와 오류 ──────────────────────────────── */
 
