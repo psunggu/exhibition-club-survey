@@ -189,16 +189,16 @@ export const MEETUPS: Meetup[] = [
     movie: true,
     status: '완료 · 영화 모임',
     tone: 'done',
-    title: '영화 《오디세이》 정기관람',
+    title: '영화 《오디세이》 관람',
     dateLabel: '2026. 8. 16. (일)',
     time: '오후 5시 집결 · 오후 5시 30분 회차 · 상영관 안내 종료 오후 8시 32분',
-    venue: '영등포 타임스퀘어 IMAX · 영등포구 영중로 15',
+    venue: '영등포타임스퀘어 IMAX · 영등포구 영중로 15',
     description: '2026년 2차 정기관람 영화 모임으로 영화 러닝타임은 172분입니다.',
     note: '관람비는 2만원이며 관람 후 저녁식사와 티타임까지 완료했습니다.',
     infoUrl: '',
     infoLabel: '',
-    mapUrl: 'https://map.kakao.com/?q=%EC%98%81%EB%93%B1%ED%8F%AC%20%ED%83%80%EC%9E%84%EC%8A%A4%ED%80%98%EC%96%B4%20IMAX',
-    completedRow: '8/16 (일) 17:00 8월 정기관람 ② 영화 《오디세이》 · 영등포 타임스퀘어 IMAX'
+    mapUrl: 'https://map.kakao.com/?q=%EC%98%81%EB%93%B1%ED%8F%AC%ED%83%80%EC%9E%84%EC%8A%A4%ED%80%98%EC%96%B4%20IMAX',
+    completedRow: '8/16 (일) 17:00 영화 《오디세이》 관람 · 영등포타임스퀘어 IMAX'
   },
   {
     id: 'history-museum',
