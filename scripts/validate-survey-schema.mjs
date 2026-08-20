@@ -35,6 +35,9 @@ const tables = read('202608200001a_survey_tables.sql');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
+const admin = read('202608200002a_survey_admin_functions.sql');
+/** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
+const allFuncs = `${funcs}\n${admin}`;
 
 /* ── 1. 응답 표는 잠겨 있어야 한다 ───────────────────────── */
 
@@ -75,18 +78,33 @@ for (const t of OPEN) {
 const CALLABLE = [
   'survey_submit', 'survey_my_choices', 'survey_tally',
   'survey_response_count', 'survey_participants', 'survey_admin_ok',
+  'survey_admin_save', 'survey_admin_delete', 'survey_admin_list',
+  'survey_admin_tally', 'survey_admin_names',
 ];
 for (const f of CALLABLE) {
-  if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(funcs)) {
+  if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
     fail(`public.${f} 함수가 없다`);
   }
-  if (!new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${f}\\b[^;]*\\banon\\b`, 'i').test(funcs)) {
+  if (!new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${f}\\b[^;]*\\banon\\b`, 'i').test(allFuncs)) {
     fail(`public.${f} 에 anon 실행 권한을 주지 않았다 — 앱에서 부를 수 없다`);
   }
 }
 
+/**
+ * **운영자 함수는 첫머리에서 암호를 봐야 한다.**
+ * security definer 라 안 보면 누구나 설문을 지울 수 있다.
+ * 함수가 늘어날 때 이 한 줄을 빠뜨리는 것이 가장 그럴듯한 사고다.
+ */
+for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
+  const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
+  if (!name) continue;
+  if (!/survey_admin_ok\s*\(\s*p_password\s*\)/.test(block)) {
+    fail(`public.${name} 이 암호를 확인하지 않는다 — 누구나 부를 수 있다`);
+  }
+}
+
 // 응답에 닿는 함수는 definer 여야 하고, search_path 를 고정해야 한다
-for (const block of funcs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
+for (const block of allFuncs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
   const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
   if (!name || !name.startsWith('survey')) continue;
   if (name === 'survey_respondent_key') continue;   // 값만 다듬는다. 표를 안 본다.
@@ -100,7 +118,7 @@ for (const block of funcs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
 }
 
 // 열쇠 만드는 함수는 밖에서 못 부르게 막아 둔다
-if (!/revoke\s+execute\s+on\s+function\s+public\.survey_respondent_key/i.test(funcs)) {
+if (!/revoke\s+execute\s+on\s+function\s+public\.survey_respondent_key/i.test(allFuncs)) {
   fail('public.survey_respondent_key 를 anon 에게서 회수하지 않았다');
 }
 
@@ -122,7 +140,7 @@ if (tmpl) {
   }
   if (!calls.length) fail('암호 틀에서 crypt() 를 찾지 못했다');
 }
-for (const [name, text] of [['a', tables], ['b', funcs], ['c', seed]]) {
+for (const [name, text] of [['a', tables], ['b', funcs], ['c', seed], ['2a', admin]]) {
   if (/gen_salt\s*\(/i.test(text)) {
     fail(`${name} 파일에서 gen_salt 를 쓴다 — 암호는 틀 파일에서만 다룬다`);
   }

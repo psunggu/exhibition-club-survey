@@ -246,3 +246,114 @@ export function koDeadline(iso: string): string {
   const min = g('minute') === '00' ? '' : ` ${Number(g('minute'))}분`
   return `${g('month')} ${g('day')}일 (${g('weekday')}) ${g('dayPeriod')} ${g('hour')}시${min}`
 }
+
+/* ── 운영자 ────────────────────────────────────────────────
+   암호는 **어디에도 저장하지 않는다.** 화면이 들고 있다가 부를 때마다 보낸다.
+   sessionStorage 에 두면 같은 기기를 쓰는 다른 사람이 꺼낼 수 있다. */
+
+export type AdminSurvey = {
+  id: string
+  title: string
+  closesAt: string
+  createdBy: string
+  multiChoice: boolean
+  resultsVisible: string
+  showNames: string
+  optionCount: number
+  responseCount: number
+}
+
+export type DraftLink = { kind: SurveyLinkKind; label: string; url: string }
+
+export type DraftOption = {
+  title: string
+  period: string
+  venue: string
+  hours: string
+  price: string
+  note: string
+  links: DraftLink[]
+}
+
+export type Draft = {
+  id: string | null
+  title: string
+  intro: string
+  multiChoice: boolean
+  days: number
+  createdBy: string
+  resultsVisible: 'always' | 'after_close' | 'admin'
+  showNames: 'none' | 'participants'
+  options: DraftOption[]
+}
+
+export const emptyOption = (): DraftOption =>
+  ({ title: '', period: '', venue: '', hours: '', price: '', note: '', links: [] })
+
+export const emptyDraft = (): Draft => ({
+  id: null, title: '', intro: '', multiChoice: true, days: 3, createdBy: '',
+  resultsVisible: 'after_close', showNames: 'none', options: [emptyOption()],
+})
+
+export const adminNames = async (pw: string, signal?: AbortSignal): Promise<string[]> => {
+  const rows = await rpc<{ name: string }[]>('survey_admin_names', { p_password: pw }, signal)
+  return Array.isArray(rows) ? rows.map((r) => r.name) : []
+}
+
+export const adminList = async (pw: string, signal?: AbortSignal): Promise<AdminSurvey[]> => {
+  const rows = await rpc<Record<string, unknown>[]>('survey_admin_list', { p_password: pw }, signal)
+  if (!Array.isArray(rows)) return []
+  return rows.map((r) => ({
+    id: String(r.id ?? ''),
+    title: str(r.title) ?? '',
+    closesAt: str(r.closes_at) ?? '',
+    createdBy: str(r.created_by) ?? '',
+    multiChoice: r.multi_choice !== false,
+    resultsVisible: str(r.results_visible) ?? '',
+    showNames: str(r.show_names) ?? '',
+    optionCount: Number(r.option_count) || 0,
+    responseCount: Number(r.response_count) || 0,
+  }))
+}
+
+export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
+  rpc<string>('survey_admin_save', {
+    p_password: pw,
+    p_payload: {
+      id: d.id,
+      title: d.title,
+      intro: d.intro,
+      multi_choice: d.multiChoice,
+      days: d.days,
+      created_by: d.createdBy,
+      results_visible: d.resultsVisible,
+      show_names: d.showNames,
+      options: d.options.map((o) => ({
+        title: o.title, period: o.period, venue: o.venue,
+        hours: o.hours, price: o.price, note: o.note,
+        // 빈 줄은 보내지 않는다 — 서버가 https 를 요구하므로 빈 것은 거절당한다
+        links: o.links.filter((l) => l.url.trim() && l.label.trim()),
+      })),
+    },
+  }, signal)
+
+export const adminDelete = (pw: string, id: string, signal?: AbortSignal) =>
+  rpc<null>('survey_admin_delete', { p_password: pw, p_survey: id }, signal)
+
+/** 고칠 설문을 편집용 모양으로 바꾼다 */
+export const toDraft = (s: Survey): Draft => ({
+  id: s.id,
+  title: s.title,
+  intro: s.intro ?? '',
+  multiChoice: s.multiChoice,
+  // 남은 날짜로 되돌린다 (서버는 "지금부터 며칠" 로 다시 센다)
+  days: Math.max(1, Math.ceil((Date.parse(s.closesAt) - Date.now()) / 86_400_000)),
+  createdBy: s.createdBy,
+  resultsVisible: s.resultsVisible,
+  showNames: s.showNames,
+  options: s.options.map((o) => ({
+    title: o.title, period: o.period ?? '', venue: o.venue ?? '',
+    hours: o.hours ?? '', price: o.price ?? '', note: o.note ?? '',
+    links: o.links.map((l) => ({ kind: l.kind, label: l.label, url: l.url })),
+  })),
+})

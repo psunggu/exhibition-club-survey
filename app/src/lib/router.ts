@@ -16,6 +16,7 @@ export type Route =
   | { name: 'board' }
   | { name: 'calendar' }
   | { name: 'survey' }
+  | { name: 'surveyAdmin' }
   | { name: 'notFound'; path: string }
 
 export function parseHash(hash: string): Route {
@@ -28,6 +29,8 @@ export function parseHash(hash: string): Route {
       return { name: 'calendar' }
     case '/survey':
       return { name: 'survey' }
+    case '/survey/admin':
+      return { name: 'surveyAdmin' }
     default:
       return { name: 'notFound', path }
   }
