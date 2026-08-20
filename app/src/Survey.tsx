@@ -150,7 +150,7 @@ function OneSurvey({ s }: { s: SurveyT }) {
    * 잠긴 체크박스를 늘어놓으면 "왜 눌리지 않지" 를 먼저 겪게 된다.
    * 받는 화면과 결과 화면을 가르는 것이 이 조각이다.
    */
-  if (!open) {
+  if (!open || s.mirrored) {
     const rows = s.options.map((o) => ({
       optionId: o.id, position: o.position, title: o.title,
       votes: tally?.get(o.id) ?? 0, voters: [] as string[],
@@ -159,10 +159,18 @@ function OneSurvey({ s }: { s: SurveyT }) {
     return (
       <section aria-labelledby={`survey-${s.id}`}>
         <div className="survey-head">
-          <span className="tag">마감</span>
+          <span className="tag">{s.mirrored && open ? '톡방에서 진행 중' : '마감'}</span>
           <h3 id={`survey-${s.id}`}>{s.title}</h3>
           {s.intro && <p className="survey-intro">{s.intro}</p>}
-          <span className="survey-deadline closed">{koDeadline(s.closesAt)} 마감됨</span>
+          <span className={`survey-deadline${open ? '' : ' closed'}`}>
+            {open ? `${koDeadline(s.closesAt)}까지` : `${koDeadline(s.closesAt)} 마감됨`}
+          </span>
+          {s.mirrored && (
+            <p className="survey-mirror-note">
+              이 투표는 <b>톡방에서 진행합니다.</b> 이 화면은 결과를 옮겨 보여 드리는 곳이라
+              여기서는 고르실 수 없습니다.
+            </p>
+          )}
         </div>
 
         {anyTally

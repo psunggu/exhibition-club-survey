@@ -51,6 +51,12 @@ export type Survey = {
   showNames: 'none' | 'participants'
   hideAfterDays: number | null
   category: SurveyCategory
+  /**
+   * 밖(톡방)에서 진행된 투표를 옮겨 온 설문인가.
+   * 그렇다면 여기서는 **응답을 받지 않고 결과만 보여 준다** —
+   * 옮겨 온 숫자가 집계를 덮어써서, 여기서 받은 표는 나타나지 않기 때문이다.
+   */
+  mirrored: boolean
   options: SurveyOption[]
 }
 
@@ -139,6 +145,7 @@ function toSurvey(r: SurveyRow): Survey {
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
     category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
+    mirrored: r.imported_respondents !== null && r.imported_respondents !== undefined,
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }
 }

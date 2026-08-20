@@ -731,3 +731,16 @@ select.admin-input { cursor: pointer; }
 }
 
 .survey-result-sum b { color: #1f1e1b; font-weight: 700; }
+
+/* 톡방에서 진행 중인 투표를 옮겨 보여 줄 때의 안내.
+   여기서 고를 수 있다고 오해하면 표가 사라지는 것으로 이어지므로 눈에 띄게 둔다. */
+.survey-mirror-note {
+  margin: 10px 0 0;
+  border-radius: 9px;
+  background: #fdf0e6;
+  color: #8f4419;
+  padding: 9px 11px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  word-break: keep-all;
+}

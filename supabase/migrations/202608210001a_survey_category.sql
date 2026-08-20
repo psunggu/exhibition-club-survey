@@ -43,7 +43,104 @@ alter table public.survey_options
     check (imported_votes is null or imported_votes >= 0);
 
 comment on column public.survey_options.imported_votes
-  is '톡방 등 밖에서 이미 끝난 투표의 표 수. 있으면 집계가 이 값을 쓴다.';
+  is '톡방 등 밖에서 진행된 투표의 표 수. 있으면 집계가 이 값을 쓴다.';
+
+/**
+ * **옮겨 온 설문에는 여기서 응답을 받지 않는다.**
+ *
+ * imported_votes 가 집계를 덮어쓰기 때문에, 누가 이 화면에서 응답하면
+ * 그 표는 저장은 되지만 집계에 나타나지 않는다 — **표가 조용히 사라진다.**
+ * 마감이 아직 안 지났어도 그렇다.
+ *
+ * 투표는 톡방에서 하고 이 화면은 결과를 비춰 보여 줄 뿐이므로,
+ * 서버에서 아예 막는다. 화면도 막지만 진짜 자물쇠는 여기다.
+ */
+create or replace function public.survey_submit(
+  p_survey  uuid,
+  p_zone    text,
+  p_name    text,
+  p_options uuid[]
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_survey  public.surveys%rowtype;
+  v_key     text;
+  v_zone    text := btrim(coalesce(p_zone, ''));
+  v_name    text := btrim(coalesce(p_name, ''));
+  v_opts    uuid[];
+  v_bad     integer;
+begin
+  if v_zone = '' or v_name = '' then
+    raise exception '구역번호와 이름을 모두 적어 주세요.' using errcode = '22023';
+  end if;
+  if length(v_zone) > 12 or length(v_name) > 30 then
+    raise exception '구역번호나 이름이 너무 깁니다.' using errcode = '22023';
+  end if;
+
+  select * into v_survey from public.surveys
+   where id = p_survey and deleted_at is null;
+  if not found then
+    raise exception '없는 설문입니다.' using errcode = 'P0002';
+  end if;
+
+  -- 밖에서 진행된 투표를 옮겨 온 설문이다. 여기서 받으면 표가 사라진다.
+  if v_survey.imported_respondents is not null then
+    raise exception '이 투표는 톡방에서 진행합니다. 이 화면은 결과만 보여 드립니다.'
+      using errcode = '22023';
+  end if;
+
+  if now() < v_survey.opens_at then
+    raise exception '아직 시작되지 않은 설문입니다.' using errcode = '22023';
+  end if;
+  if now() > v_survey.closes_at then
+    raise exception '마감된 설문입니다.' using errcode = '22023';
+  end if;
+
+  v_opts := (select coalesce(array_agg(distinct o), '{}'::uuid[])
+               from unnest(coalesce(p_options, '{}'::uuid[])) o);
+
+  if array_length(v_opts, 1) is null then
+    raise exception '적어도 하나는 골라 주세요.' using errcode = '22023';
+  end if;
+  if not v_survey.multi_choice and array_length(v_opts, 1) > 1 then
+    raise exception '이 설문은 하나만 고를 수 있습니다.' using errcode = '22023';
+  end if;
+
+  select count(*) into v_bad
+    from unnest(v_opts) o
+   where not exists (
+     select 1 from public.survey_options so
+      where so.id = o and so.survey_id = p_survey
+   );
+  if v_bad > 0 then
+    raise exception '이 설문의 후보가 아닌 항목이 섞여 있습니다.' using errcode = '22023';
+  end if;
+
+  v_key := public.survey_respondent_key(v_zone, v_name);
+
+  insert into public.survey_responses (survey_id, respondent_key, zone, display_name)
+  values (p_survey, v_key, v_zone, v_name)
+  on conflict (survey_id, respondent_key)
+  do update set display_name = excluded.display_name,
+                zone         = excluded.zone,
+                updated_at   = now();
+
+  delete from public.survey_choices
+   where response_id = (select id from public.survey_responses
+                         where survey_id = p_survey and respondent_key = v_key);
+
+  insert into public.survey_choices (response_id, option_id)
+  select r.id, o
+    from public.survey_responses r, unnest(v_opts) o
+   where r.survey_id = p_survey and r.respondent_key = v_key;
+end;
+$$;
+
+grant execute on function public.survey_submit(uuid, text, text, uuid[]) to anon, authenticated;
 
 /* ── 집계가 옮겨 온 값을 쓰도록 고친다 ─────────────────────
    회원용이다. 여전히 **숫자만** 돌려준다 — 이름은 나오지 않는다. */
