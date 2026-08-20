@@ -172,7 +172,19 @@ async function rpc<T>(name: string, body: unknown, signal?: AbortSignal): Promis
     } catch { /* 본문이 JSON 이 아니면 상태 코드만 쓴다 */ }
     throw new SurveyUnavailable(message)
   }
-  return (await res.json()) as T
+
+  /**
+   * **본문이 없을 수 있다.** 아무것도 안 돌려주는 함수(survey_submit)에
+   * PostgREST 는 `204 No Content` 를 준다 — 본문 길이 0 이다.
+   * 거기에 대고 `res.json()` 을 부르면 던진다.
+   *
+   * 처음에 그걸 놓쳤다. 가짜 서버가 `null` 이라는 **본문 있는** 답을 주도록
+   * 흉내 냈던 탓에 검사는 통과했고, 라이브에서 제출이 실패했다.
+   * 그래서 검사기 쪽도 진짜와 같이 204 빈 본문을 주도록 고쳤다.
+   */
+  const text = await res.text()
+  if (!text) return null as T
+  return JSON.parse(text) as T
 }
 
 export const submitResponse = (
