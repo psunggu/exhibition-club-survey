@@ -31,20 +31,27 @@ const read = (name) => {
   return fs.readFileSync(p, 'utf8');
 };
 
-const tables = read('202608200001a_survey_tables.sql');
+const tables = [
+  read('202608200001a_survey_tables.sql'),
+  read('202608210002a_survey_notes.sql'),
+].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
+/** 운영자 함수는 여러 파일에 흩어져 있다. 규칙은 전부에 같이 걸린다. */
 const admin = [
   read('202608200002a_survey_admin_functions.sql'),
   read('202608200003a_survey_admin_results.sql'),
+  read('202608210001a_survey_category.sql'),
+  read('202608210002a_survey_notes.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
 
 /* ── 1. 응답 표는 잠겨 있어야 한다 ───────────────────────── */
 
-const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins'];
+// survey_notes 도 잠근다 — 톡방 이야기나 사람 이름이 섞일 수 있는 자리다
+const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes'];
 const OPEN = ['surveys', 'survey_options'];
 
 for (const t of [...LOCKED, ...OPEN]) {
@@ -84,6 +91,7 @@ const CALLABLE = [
   'survey_admin_save', 'survey_admin_delete', 'survey_admin_list',
   'survey_admin_tally', 'survey_admin_names',
   'survey_admin_results', 'survey_admin_respondents',
+  'survey_admin_note', 'survey_admin_note_save',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
@@ -102,6 +110,15 @@ for (const f of CALLABLE) {
 for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
   const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
   if (!name) continue;
+  /**
+   * **이름이 `survey_admin_` 으로 시작하는 것만** 본다.
+   * 이 파일들에는 회원용 함수(survey_submit · survey_tally 등)도 함께 들어 있고,
+   * 그것들은 암호를 요구하면 안 된다 — 회원이 부르는 것이니까.
+   * 처음에 그 구분 없이 걸었더니 회원용 셋을 잘못 잡았다.
+   */
+  if (!name.startsWith('survey_admin_')) continue;
+  // survey_admin_ok 는 검사하는 쪽이지 검사받는 쪽이 아니다
+  if (name === 'survey_admin_ok') continue;
   if (!/survey_admin_ok\s*\(\s*p_password\s*\)/.test(block)) {
     fail(`public.${name} 이 암호를 확인하지 않는다 — 누구나 부를 수 있다`);
   }

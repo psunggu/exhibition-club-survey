@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  adminDelete, adminList, adminNames, adminRespondents, adminResults, adminSave,
-  emptyDraft, emptyOption, fetchSurveys, koDeadline, koShort, SurveyUnavailable, toDraft,
+  adminDelete, adminList, adminNames, adminNote, adminNoteSave,
+  adminRespondents, adminResults, adminSave,
+  emptyDraft, emptyOption, fetchResponseCount, fetchSurveys,
+  koDeadline, koShort, SurveyUnavailable, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
   type Draft, type DraftOption, type SurveyLinkKind,
   type SurveyOption,
@@ -33,11 +35,100 @@ const KINDS: { v: SurveyLinkKind; label: string }[] = [
  * 이름이 나오는 유일한 자리다. 암호 뒤에 있고, 회원 화면에는 지금도 숫자만 나온다.
  * 운영진이 모임을 꾸리려면 누가 오는지 알아야 해서 여는 것이다.
  */
+/**
+ * 분석 메모 — 밖에서 정리한 내용을 붙여 두는 자리.
+ *
+ * 접어 둔다. 결과를 보러 온 사람이 긴 글을 먼저 만나면 정작 숫자를 못 본다.
+ * 열어서 고칠 수 있고, 비우면 지워진다.
+ */
+function Note({ pw, surveyId, onError }: {
+  pw: string; surveyId: string; onError: (e: unknown) => void
+}) {
+  const [body, setBody] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    const ac = new AbortController()
+    adminNote(pw, surveyId, ac.signal)
+      .then((v) => { setBody(v); setDraft(v) })
+      .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
+    return () => ac.abort()
+  }, [pw, surveyId, onError])
+
+  const save = async () => {
+    setBusy(true); setSaved(false)
+    try {
+      await adminNoteSave(pw, surveyId, draft)
+      setBody(draft.trim())
+      setEditing(false)
+      setSaved(true)
+    } catch (e) { onError(e) } finally { setBusy(false) }
+  }
+
+  if (body === null) return null
+
+  return (
+    <details className="note" open={editing || undefined}>
+      <summary className="note-head">
+        <span>운영진 참고 · 분석 메모</span>
+        <span className="note-state">{body ? '있음' : '아직 없음'}</span>
+      </summary>
+      <div className="note-body">
+        {editing
+          ? (
+            <>
+              <textarea className="admin-input" rows={12} value={draft}
+                placeholder="밖에서 정리한 분석을 붙여 넣으세요. 줄바꿈은 그대로 보입니다."
+                onChange={(e) => setDraft(e.target.value)} />
+              <div className="survey-actions" style={{ marginTop: 10 }}>
+                <button type="button" className="survey-submit" disabled={busy}
+                  onClick={() => { void save() }}>{busy ? '저장 중…' : '저장'}</button>
+                <button type="button" className="admin-mini"
+                  onClick={() => { setDraft(body); setEditing(false) }}>그만두기</button>
+              </div>
+            </>
+          )
+          : (
+            <>
+              {body
+                ? <p className="note-text">{body}</p>
+                : <p className="admin-hint" style={{ margin: 0 }}>
+                    아직 적어 둔 분석이 없습니다.
+                  </p>}
+              <div className="survey-actions" style={{ marginTop: 10 }}>
+                <button type="button" className="admin-mini"
+                  onClick={() => setEditing(true)}>{body ? '고치기' : '적기'}</button>
+                {saved && <span className="survey-status done">저장했습니다.</span>}
+              </div>
+            </>
+          )}
+
+        {/* 편집 중에만 띄웠더니 저장한 뒤 사라졌다 — 정작 글이 담긴 뒤에 안 보인다.
+            탭이 열려 있는 동안 늘 보이게 둔다. */}
+        <p className="admin-hint" style={{ marginTop: 10, marginBottom: 0 }}>
+          이 메모는 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 나오지 않습니다.
+        </p>
+      </div>
+    </details>
+  )
+}
+
 function Results({ pw, surveyId, multiChoice, onError }: {
   pw: string; surveyId: string; multiChoice: boolean; onError: (e: unknown) => void
 }) {
   const [rows, setRows] = useState<AdminResult[] | null>(null)
   const [people, setPeople] = useState<AdminRespondent[]>([])
+  /**
+   * **참여 인원을 응답자 목록 길이로 세면 안 된다.**
+   * 톡방에서 옮겨 온 설문은 응답자 행이 하나도 없다 — 사람을 지어내지 않았기 때문이다.
+   * 그래서 목록은 비어 있는데 실제 참여는 13명이다.
+   * 목록 카드는 survey_response_count 를 쓰는데 여기서는 안 써서,
+   * 카드는 "응답 13건" · 결과는 "참여 0명" 으로 어긋났다.
+   */
+  const [total, setTotal] = useState(0)
   // 분석에는 후보의 관람료·장소·기간이 필요하다. 그건 공개 표라 그냥 읽는다 —
   // 이것 때문에 함수를 새로 만들 이유가 없다.
   const [options, setOptions] = useState<SurveyOption[]>([])
@@ -48,9 +139,11 @@ function Results({ pw, surveyId, multiChoice, onError }: {
       adminResults(pw, surveyId, ac.signal),
       adminRespondents(pw, surveyId, ac.signal),
       fetchSurveys(ac.signal),
+      fetchResponseCount(surveyId, ac.signal),
     ])
-      .then(([r, p, all]) => {
+      .then(([r, p, all, n]) => {
         setRows(r); setPeople(p)
+        setTotal(Number(n) || 0)
         setOptions(all.find((s) => s.id === surveyId)?.options ?? [])
       })
       .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
@@ -62,11 +155,11 @@ function Results({ pw, surveyId, multiChoice, onError }: {
   return (
     <div className="admin-results">
       <p className="admin-results-sum">
-        참여 <b>{people.length}명</b>
-        {people.length > 0 && <> · 고른 항목 <b>{rows.reduce((n, r) => n + r.votes, 0)}개</b></>}
+        참여 <b>{total}명</b>
+        {total > 0 && <> · 고른 항목 <b>{rows.reduce((n, r) => n + r.votes, 0)}개</b></>}
       </p>
 
-      <ResultChart rows={rows} total={people.length} multiChoice={multiChoice} />
+      <ResultChart rows={rows} total={total} multiChoice={multiChoice} />
 
       {/* 위 차트가 크기를 보여 주므로 여기서는 **막대를 다시 그리지 않는다.**
           같은 데이터를 두 번 그리면 어느 쪽을 봐야 할지 헷갈린다.
@@ -87,6 +180,13 @@ function Results({ pw, surveyId, multiChoice, onError }: {
         </div>
       ))}
 
+      {people.length === 0 && total > 0 && (
+        <p className="admin-hint" style={{ marginTop: 12 }}>
+          이 설문은 밖(톡방)에서 진행된 것을 옮겨 왔습니다. 숫자만 있고
+          누가 골랐는지는 없습니다 — 없는 사람을 지어내지 않았습니다.
+        </p>
+      )}
+
       {people.length > 0 && (
         <div className="admin-people">
           <span className="admin-links-title">참여한 사람 ({people.length}명)</span>
@@ -99,11 +199,13 @@ function Results({ pw, surveyId, multiChoice, onError }: {
         </div>
       )}
 
-      <Metrics rows={rows} total={people.length} multiChoice={multiChoice} />
+      <Metrics rows={rows} total={total} multiChoice={multiChoice} />
 
       {options.length > 0 && (
-        <Analysis rows={rows} options={options} total={people.length} />
+        <Analysis rows={rows} options={options} total={total} />
       )}
+
+      <Note pw={pw} surveyId={surveyId} onError={onError} />
 
       <p className="admin-hint" style={{ marginTop: 12, marginBottom: 0 }}>
         이 이름들은 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 숫자만 나옵니다.
