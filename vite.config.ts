@@ -19,7 +19,14 @@ const HERE = path.dirname(fileURLToPath(import.meta.url))
  * index.html · notice.html 이 있어서다. 이식이 끝나면 정리한다 (R-01-02).
  */
 function copyLiveAssets(): Plugin {
-  const FILES = ['config.js', 'weekly-digest.public.json']
+  const FILES = [
+    'config.js',
+    'weekly-digest.public.json',
+    // 운영진이 만든 식당 검토 문서. 설문 화면에서 링크로 열린다.
+    // 인라인 <style> 을 걷어내고 표 수를 최종 집계로 고쳐 올린 판이다.
+    'meal-review.html',
+    'meal-review.css',
+  ]
   const from = (f: string) => path.resolve(HERE, 'app/public', f)
   return {
     name: 'copy-live-assets',

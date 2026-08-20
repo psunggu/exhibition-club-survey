@@ -65,8 +65,18 @@ for (const f of files.filter((f) => f.endsWith('.html'))) {
   for (const m of html.matchAll(/\son[a-z]+\s*=\s*["'][^"']*["']/gi))
     problems.push(`${rel(f)}: 인라인 이벤트 속성이 있다 — ${m[0].trim().slice(0, 40)}`);
 
-  // 외부 호스트를 부르면 default-src 'self' 에 걸린다
-  for (const m of html.matchAll(/(?:src|href)\s*=\s*["'](https?:\/\/[^"']+)["']/gi)) {
+  /**
+   * 외부 호스트를 **불러오면** default-src 'self' 에 걸린다.
+   *
+   * 다만 `<a href="https://…">` 는 불러오는 것이 아니라 **가는 것**이라 CSP 가 막지 않는다
+   * (그건 form-action · navigate-to 가 다루는 영역이다).
+   * 처음엔 href 를 통째로 막았는데, 그러면 정직한 바깥 링크 — 예매 페이지나 지도 —
+   * 를 붙일 수 없다. 식당 안내 문서를 올릴 때 네이버 지도 링크가 실제로 걸렸다.
+   *
+   * 그래서 **불러오는 자리**만 본다. `<a>` 와 `<area>` 의 href 는 넘긴다.
+   */
+  const FETCHES = /<(?!a[\s>]|area[\s>])[a-z-]+\b[^>]*?\b(?:src|href)\s*=\s*["'](https?:\/\/[^"']+)["']/gi;
+  for (const m of html.matchAll(FETCHES)) {
     const url = m[1] ?? '';
     if (!/^https:\/\/[^/]*\.supabase\.co\//.test(url))
       problems.push(`${rel(f)}: 외부 호스트를 부른다 — ${url}`);

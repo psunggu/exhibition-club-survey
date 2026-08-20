@@ -45,12 +45,55 @@ function LinkChip({ l }: { l: SurveyLink }) {
   )
 }
 
-function Facts({ o }: { o: SurveyOption }) {
+/**
+ * 마감된 설문에서 **후보의 안내를 잃지 않게** 접어서 남긴다.
+ *
+ * 마감되면 후보 칸이 통째로 사라지는데, 그때 예매 링크·참고 영상·운영시간·
+ * 「얼리버드 언제까지」 같은 note 까지 함께 사라졌다.
+ * 9월 설문은 얼리버드가 8/26 에 끝나고 전시는 8/27 에 여는데,
+ * 정작 그 안내가 마감과 동시에 화면에서 없어졌다 — 아직 필요한 정보다.
+ *
+ * 펼쳐 두지 않는 이유는 결과부터 보여 주려는 것이다. 접힌 채로 두면
+ * 결과 화면의 성격은 그대로 두면서 필요한 사람만 열어 볼 수 있다.
+ */
+function OptionDetails({ options, category }: {
+  options: SurveyOption[]; category: SurveyCategory
+}) {
+  const worth = options.filter((o) => o.links.length > 0 || o.note
+    || o.period || o.venue || o.hours || o.price)
+  if (!worth.length) return null
+  return (
+    <details className="survey-details">
+      <summary>후보 자세히 보기 ({worth.length}개)</summary>
+      <p className="survey-details-hint">
+        {category === 'meal'
+          ? '설문은 마감됐지만 가게 정보는 그대로 둡니다. 순서는 톡방 투표 항목 그대로입니다.'
+          : '설문은 마감됐지만 예매와 관람에 필요한 안내는 그대로 둡니다.'}
+      </p>
+      {worth.map((o) => (
+        <div className="survey-details-item" key={o.id}>
+          <div className="survey-option-title">{o.title}</div>
+          <Facts o={o} category={category} />
+          {o.note && <p className="survey-note">{o.note}</p>}
+          {o.links.length > 0 && (
+            <div className="survey-links">
+              {o.links.map((l) => <LinkChip key={l.url} l={l} />)}
+            </div>
+          )}
+        </div>
+      ))}
+    </details>
+  )
+}
+
+function Facts({ o, category }: { o: SurveyOption; category: SurveyCategory }) {
+  // 식당에 `관람료` 라고 쓰면 딴 얘기가 된다. 갈래에 따라 말이 달라져야 한다.
+  const meal = category === 'meal'
   const rows: [string, string][] = []
   if (o.period) rows.push(['기간', o.period])
   if (o.venue) rows.push(['장소', o.venue])
-  if (o.hours) rows.push(['시간', o.hours])
-  if (o.price) rows.push(['관람료', o.price])
+  if (o.hours) rows.push([meal ? '영업시간' : '시간', o.hours])
+  if (o.price) rows.push([meal ? '1인 예산' : '관람료', o.price])
   if (!rows.length) return null
   return (
     <p className="survey-facts">
@@ -171,6 +214,12 @@ function OneSurvey({ s }: { s: SurveyT }) {
               여기서는 고르실 수 없습니다.
             </p>
           )}
+          {/* 후보 하나에 붙일 수 없는 문서 — 열세 곳을 한꺼번에 다루는 검토 문서 같은 것 */}
+          {s.links.length > 0 && (
+            <div className="survey-links survey-doc-links">
+              {s.links.map((l) => <LinkChip key={l.url} l={l} />)}
+            </div>
+          )}
         </div>
 
         {anyTally
@@ -185,6 +234,7 @@ function OneSurvey({ s }: { s: SurveyT }) {
                   가게 이름뿐인 설문에서는 "확인 필요" 만 늘어서기 때문이다. */}
               <Metrics rows={rows} total={total} multiChoice={s.multiChoice} />
               <Analysis rows={rows} options={s.options} total={total} />
+              <OptionDetails options={s.options} category={s.category} />
             </div>
           )
           : (
@@ -268,7 +318,7 @@ function OneSurvey({ s }: { s: SurveyT }) {
               onChange={() => toggle(o.id)} />
             <div className="survey-option-body">
               <div className="survey-option-title">{o.title}</div>
-              <Facts o={o} />
+              <Facts o={o} category={s.category} />
               {o.note && <p className="survey-note">{o.note}</p>}
               {o.links.length > 0 && (
                 <div className="survey-links">
