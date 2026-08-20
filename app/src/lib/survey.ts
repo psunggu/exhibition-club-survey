@@ -384,8 +384,8 @@ export const adminResults = async (
   if (!Array.isArray(rows)) return []
   return rows.map((r) => ({
     optionId: String(r.option_id ?? ''),
-    position: Number(r.position) || 0,
-    title: str(r.title) ?? '',
+    position: Number(r.option_position) || 0,
+    title: str(r.option_title) ?? '',
     votes: Number(r.votes) || 0,
     voters: Array.isArray(r.voters) ? r.voters.filter((v): v is string => typeof v === 'string') : [],
   })).sort((a, b) => a.position - b.position)

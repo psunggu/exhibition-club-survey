@@ -122,10 +122,10 @@ await ctx.route('**/rest/v1/**', async (route) => {
   if (name === 'survey_admin_delete') { deleted.push(body.p_survey); return noContent(); }
   if (name === 'survey_admin_results') {
     return json([
-      { option_id: 'o1', position: 1, title: '서도호 개인전', votes: 2,
+      { option_id: 'o1', option_position: 1, option_title: '서도호 개인전', votes: 2,
         voters: ['4133 김하늘', '4112 박서준'] },
-      { option_id: 'o2', position: 2, title: '에스 데블린', votes: 0, voters: [] },
-      { option_id: 'o3', position: 3, title: '이대원', votes: 1, voters: ['4121 이가온'] },
+      { option_id: 'o2', option_position: 2, option_title: '에스 데블린', votes: 0, voters: [] },
+      { option_id: 'o3', option_position: 3, option_title: '이대원', votes: 1, voters: ['4121 이가온'] },
     ]);
   }
   if (name === 'survey_admin_respondents') {

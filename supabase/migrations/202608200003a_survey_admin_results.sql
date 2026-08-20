@@ -18,12 +18,17 @@ create or replace function public.survey_admin_results(
   p_password text,
   p_survey   uuid
 )
+-- **`position` 을 이름으로 쓸 수 없다.** 컬럼 이름으로는 되지만(그래서
+-- survey_options.position 은 멀쩡하다), returns table 의 이름 자리는
+-- 함수 인자처럼 파싱되어 `position(… in …)` 함수로 읽힌다 —
+-- 42601 syntax error at or near "position" 이 그것이다.
+-- title 도 o.title 과 헷갈리지 않게 이름을 달리 둔다.
 returns table (
-  option_id uuid,
-  position  integer,
-  title     text,
-  votes     bigint,
-  voters    text[]
+  option_id       uuid,
+  option_position integer,
+  option_title    text,
+  votes           bigint,
+  voters          text[]
 )
 language plpgsql
 security definer
