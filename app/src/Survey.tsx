@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  fetchMyChoices, fetchSurveys, fetchTally, isOpen, isVisible, koDeadline,
-  submitResponse, SurveyUnavailable,
-  type Survey as SurveyT, type SurveyLink, type SurveyOption,
+  CATEGORY, fetchMyChoices, fetchResponseCount, fetchSurveys, fetchTally,
+  isOpen, isVisible, koDeadline, submitResponse, SurveyUnavailable,
+  type Survey as SurveyT, type SurveyCategory, type SurveyLink, type SurveyOption,
 } from './lib/survey'
+import { ResultChart } from './SurveyChart'
 
 /**
  * 설문 화면.
@@ -73,15 +74,17 @@ function OneSurvey({ s }: { s: SurveyT }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'error' | 'done' | 'info'; text: string } | null>(null)
   const [tally, setTally] = useState<Map<string, number> | null>(null)
+  const [total, setTotal] = useState(0)
   const ac = useRef<AbortController | null>(null)
 
   useEffect(() => () => ac.current?.abort(), [])
 
   const loadTally = useCallback(async () => {
     try {
-      const t = await fetchTally(s.id)
+      const [t, n] = await Promise.all([fetchTally(s.id), fetchResponseCount(s.id)])
       // 아직 볼 때가 아니면 서버가 빈 결과를 준다 — 그때는 아무것도 안 보인다
       setTally(t.size ? t : null)
+      setTotal(Number(n) || 0)
     } catch { setTally(null) }
   }, [s.id])
 
@@ -136,20 +139,57 @@ function OneSurvey({ s }: { s: SurveyT }) {
     } finally { setBusy(false) }
   }
 
-  const total = useMemo(() => {
+  /** 응답 화면의 작은 막대를 그릴 기준 — 가장 많이 받은 후보 */
+  const topVotes = useMemo(() => {
     if (!tally) return 0
     return Math.max(...[...tally.values()], 0)
   }, [tally])
 
+  /**
+   * **끝난 설문은 결과만 보여 준다.**
+   * 잠긴 체크박스를 늘어놓으면 "왜 눌리지 않지" 를 먼저 겪게 된다.
+   * 받는 화면과 결과 화면을 가르는 것이 이 조각이다.
+   */
+  if (!open) {
+    const rows = s.options.map((o) => ({
+      optionId: o.id, position: o.position, title: o.title,
+      votes: tally?.get(o.id) ?? 0, voters: [] as string[],
+    }))
+    const anyTally = tally !== null
+    return (
+      <section aria-labelledby={`survey-${s.id}`}>
+        <div className="survey-head">
+          <span className="tag">마감</span>
+          <h3 id={`survey-${s.id}`}>{s.title}</h3>
+          {s.intro && <p className="survey-intro">{s.intro}</p>}
+          <span className="survey-deadline closed">{koDeadline(s.closesAt)} 마감됨</span>
+        </div>
+
+        {anyTally
+          ? (
+            <div className="survey-result">
+              <p className="survey-result-sum">
+                <b>{total}명</b>이 참여했습니다.
+              </p>
+              <ResultChart rows={rows} total={total} multiChoice={s.multiChoice} />
+            </div>
+          )
+          : (
+            <p className="survey-empty">
+              마감된 설문입니다. 결과는 운영진이 톡방에 알려 드립니다.
+            </p>
+          )}
+      </section>
+    )
+  }
+
   return (
     <section aria-labelledby={`survey-${s.id}`}>
       <div className="survey-head">
-        <span className={open ? 'tag' : 'tag'}>{open ? '진행 중' : '마감'}</span>
+        <span className="tag">진행 중</span>
         <h3 id={`survey-${s.id}`}>{s.title}</h3>
         {s.intro && <p className="survey-intro">{s.intro}</p>}
-        <span className={open ? 'survey-deadline' : 'survey-deadline closed'}>
-          {open ? `${koDeadline(s.closesAt)}까지` : `${koDeadline(s.closesAt)} 마감됨`}
-        </span>
+        <span className="survey-deadline">{koDeadline(s.closesAt)}까지</span>
       </div>
 
       {open && (
@@ -225,7 +265,7 @@ function OneSurvey({ s }: { s: SurveyT }) {
               {votes !== null && (
                 <div className="survey-tally">
                   <span className="survey-bar" aria-hidden="true">
-                    <i style={{ width: total ? `${Math.round((votes / total) * 100)}%` : '0%' }} />
+                    <i style={{ width: topVotes ? `${Math.round((votes / topVotes) * 100)}%` : '0%' }} />
                   </span>
                   <span className="survey-votes">{votes}표</span>
                 </div>
@@ -255,20 +295,20 @@ function OneSurvey({ s }: { s: SurveyT }) {
   )
 }
 
-export function Survey() {
+export function Survey({ category }: { category: SurveyCategory }) {
   const [surveys, setSurveys] = useState<SurveyT[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const ac = new AbortController()
     fetchSurveys(ac.signal)
-      .then((rows) => setSurveys(rows.filter((s) => isVisible(s))))
+      .then((rows) => setSurveys(rows.filter((s) => isVisible(s) && s.category === category)))
       .catch((e: unknown) => {
         if (ac.signal.aborted) return
         setError(e instanceof SurveyUnavailable ? e.reason : '불러오지 못했습니다.')
       })
     return () => ac.abort()
-  }, [])
+  }, [category])
 
   if (error) {
     return (
@@ -281,7 +321,7 @@ export function Survey() {
   if (!surveys.length) {
     return (
       <p className="survey-empty">
-        지금 받는 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
+        지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
       </p>
     )
   }

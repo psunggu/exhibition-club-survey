@@ -5,6 +5,7 @@ import { Calendar } from './Calendar'
 import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
+import { CATEGORY, type SurveyCategory } from './lib/survey'
 
 /** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
 const monthsLabel = () =>
@@ -20,7 +21,8 @@ const monthsLabel = () =>
 export function App() {
   const route = useRoute()
   const onCalendar = route.name === 'calendar'
-  const onSurvey = route.name === 'survey' || route.name === 'surveyAdmin'
+  const onSurvey = route.name === 'survey' || route.name === 'surveyMeal'
+    || route.name === 'surveyAdmin'
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   /**
@@ -38,15 +40,30 @@ export function App() {
 
   if (onSurvey) {
     const admin = route.name === 'surveyAdmin'
+    const category: SurveyCategory = route.name === 'surveyMeal' ? 'meal' : 'exhibition'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
-        <h1>{admin ? '설문 관리' : '설문'}</h1>
+        <h1>{admin ? '설문 관리' : CATEGORY[category].label}</h1>
+
+        {/* 갈래를 오갈 수 있게 둘 다 보인다. 지금 보는 쪽이 진하다. */}
+        {!admin && (
+          <nav className="survey-tabs" aria-label="설문 갈래">
+            {(['exhibition', 'meal'] as const).map((c) => (
+              <a key={c} href={CATEGORY[c].route}
+                className={`survey-tab ${c}${c === category ? ' on' : ''}`}
+                aria-current={c === category ? 'page' : undefined}>
+                {CATEGORY[c].label}
+              </a>
+            ))}
+          </nav>
+        )}
+
         <a className="board-jump-link" href={admin ? '#/survey' : '#/calendar'}
           style={{ marginBottom: 18 }}>
           {admin ? '설문 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
         </a>
-        {admin ? <SurveyAdmin /> : <Survey />}
+        {admin ? <SurveyAdmin /> : <Survey category={category} />}
         {/* 운영자 자리는 눈에 띄게 두지 않는다. 주소를 아는 사람이 들어오고,
             들어와도 암호가 없으면 아무것도 못 한다 — 진짜 자물쇠는 DB 함수 안에 있다. */}
         {!admin && (
@@ -71,9 +88,12 @@ export function App() {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1>{monthsLabel()} 모임 일정 안내</h1>
-        {/* 설문으로 가는 길. 일정만 보러 온 회원도 설문이 있다는 걸 알아야 한다. */}
-        <a className="board-jump-link" href="#/survey" style={{ marginBottom: 14 }}>
-          설문 참여하기 <span aria-hidden="true">→</span>
+        {/* 설문으로 가는 길. 갈래마다 색이 달라 한눈에 갈린다. */}
+        <a className="board-jump-link survey-go exhibition" href="#/survey">
+          전시 관람 설문 <span aria-hidden="true">→</span>
+        </a>
+        <a className="board-jump-link survey-go meal" href="#/survey/meal">
+          식사 및 Tea Time 설문 <span aria-hidden="true">→</span>
         </a>
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />

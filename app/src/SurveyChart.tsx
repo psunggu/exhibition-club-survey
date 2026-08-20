@@ -26,7 +26,21 @@ import type { SurveyOption } from './lib/survey'
 
 const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'] as const
 
-const hue = (i: number) => SERIES[i] ?? SERIES[SERIES.length - 1]
+/** 후보가 많을 때 쓰는 한 가지 색. 크기를 나타낼 뿐 이름 노릇을 하지 않는다. */
+const ONE_HUE = '#2a78d6'
+
+/**
+ * **색을 돌려쓰지 않는다.**
+ *
+ * 후보가 다섯을 넘으면 색이 모자란다. 처음에 그냥 돌려썼더니
+ * 식사 설문(후보 13곳)에서 6번째부터 앞의 색이 다시 나왔다 —
+ * 같은 색이 다른 곳을 가리키니 색이 이름 노릇을 못 한다.
+ *
+ * 다섯을 넘으면 **전부 한 색**으로 간다. 막대는 이름이 옆에 붙어 있어
+ * 색이 없어도 무엇인지 알 수 있고, 색은 크기만 나타내면 된다.
+ */
+const hue = (i: number, count: number) =>
+  (count > SERIES.length ? ONE_HUE : (SERIES[i] ?? ONE_HUE))
 
 /* ── 도넛 (하나만 고르기) ──────────────────────────────────── */
 
@@ -51,7 +65,7 @@ function Donut({ rows, total }: { rows: AdminResult[]; total: number }) {
         <circle cx="70" cy="70" r={R} fill="none" stroke="#ece9e1" strokeWidth={W} />
         {arcs.map(({ r, len, off }) => (
           <circle key={r.optionId} cx="70" cy="70" r={R} fill="none"
-            stroke={hue(rows.indexOf(r))} strokeWidth={W}
+            stroke={hue(rows.indexOf(r), rows.length)} strokeWidth={W}
             strokeDasharray={`${len} ${C - len}`}
             strokeDashoffset={-off}
             transform="rotate(-90 70 70)">
@@ -66,7 +80,7 @@ function Donut({ rows, total }: { rows: AdminResult[]; total: number }) {
       <ul className="chart-legend">
         {rows.map((r, i) => (
           <li key={r.optionId}>
-            <span className="chart-swatch" style={{ background: hue(i) }} aria-hidden="true" />
+            <span className="chart-swatch" style={{ background: hue(i, rows.length) }} aria-hidden="true" />
             <span className="chart-legend-name">{r.title}</span>
             <span className="chart-legend-val">
               {r.votes}표{total > 0 && ` · ${Math.round((r.votes / total) * 100)}%`}
@@ -89,7 +103,7 @@ function Bars({ rows, total }: { rows: AdminResult[]; total: number }) {
           <div className="chart-bar-row" key={r.optionId}>
             <div className="chart-bar-head">
               {/* 이름을 마크 옆에 직접 둔다 — 색만으로 알아보게 하지 않는다 */}
-              <span className="chart-swatch" style={{ background: hue(i) }} aria-hidden="true" />
+              <span className="chart-swatch" style={{ background: hue(i, rows.length) }} aria-hidden="true" />
               <span className="chart-bar-name">{r.title}</span>
               <span className="chart-bar-val">
                 {total > 0 ? `${total}명 중 ${r.votes}명` : `${r.votes}명`}
@@ -97,7 +111,7 @@ function Bars({ rows, total }: { rows: AdminResult[]; total: number }) {
             </div>
             <div className="chart-track" role="img"
               aria-label={`${r.title}: ${total}명 중 ${r.votes}명`}>
-              <div className="chart-fill" style={{ width: `${pct}%`, background: hue(i) }}>
+              <div className="chart-fill" style={{ width: `${pct}%`, background: hue(i, rows.length) }}>
                 <title>{r.title} — {r.votes}명 ({Math.round(pct)}%)</title>
               </div>
             </div>
@@ -121,9 +135,14 @@ export function ResultChart({ rows, total, multiChoice }: {
       <p className="chart-caption">
         {multiChoice
           ? '여러 개 고르는 설문이라 합이 응답자 수를 넘습니다. 분모는 응답한 사람 수입니다.'
-          : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
+          : rows.length > 5
+            ? '하나만 고르는 설문입니다. 후보가 많아 막대로 보여 줍니다.'
+            : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
       </p>
-      {multiChoice ? <Bars rows={rows} total={total} /> : <Donut rows={rows} total={total} />}
+      {/* 도넛은 조각 색이 곧 이름이라 후보가 많으면 읽을 수 없다. 그때는 막대로 간다. */}
+      {multiChoice || rows.length > 5
+        ? <Bars rows={rows} total={total} />
+        : <Donut rows={rows} total={total} />}
     </div>
   )
 }
@@ -269,7 +288,7 @@ export function Analysis({ rows, options, total }: {
         {facts.map((f, i) => (
           <div className="analysis-row" role="row" key={f.r.optionId}>
             <span role="cell" className="analysis-name">
-              <span className="chart-swatch" style={{ background: hue(i) }} aria-hidden="true" />
+              <span className="chart-swatch" style={{ background: hue(i, facts.length) }} aria-hidden="true" />
               {f.r.title}
               {f.early && <span className="analysis-flag">얼리버드</span>}
             </span>

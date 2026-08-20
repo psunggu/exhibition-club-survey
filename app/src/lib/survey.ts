@@ -31,6 +31,14 @@ export type SurveyOption = {
   links: SurveyLink[]
 }
 
+export type SurveyCategory = 'exhibition' | 'meal'
+
+/** 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다. */
+export const CATEGORY = {
+  exhibition: { label: '전시 관람 설문', short: '전시 관람', route: '#/survey' },
+  meal:       { label: '식사 및 Tea Time 설문', short: '식사·티타임', route: '#/survey/meal' },
+} as const
+
 export type Survey = {
   id: string
   title: string
@@ -42,6 +50,7 @@ export type Survey = {
   resultsVisible: 'always' | 'after_close' | 'admin'
   showNames: 'none' | 'participants'
   hideAfterDays: number | null
+  category: SurveyCategory
   options: SurveyOption[]
 }
 
@@ -129,6 +138,7 @@ function toSurvey(r: SurveyRow): Survey {
     resultsVisible: rv === 'always' || rv === 'admin' ? rv : 'after_close',
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
+    category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }
 }
