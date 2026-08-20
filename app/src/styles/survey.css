@@ -416,3 +416,96 @@ select.admin-input { cursor: pointer; }
   font-weight: 600;
   text-decoration: underline;
 }
+
+/* ── 운영자가 보는 결과 ───────────────────────────────────
+   이름이 나오는 유일한 자리다. 암호 뒤에 있고 회원 화면에는 숫자만 나온다. */
+
+.admin-results {
+  border-top: 1px solid #e8e5de;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.admin-results-sum {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  color: #55534b;
+}
+
+.admin-results-sum b { color: #1f1e1b; font-weight: 700; }
+
+.admin-result { margin-bottom: 13px; }
+
+.admin-result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.admin-result-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1f1e1b;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.admin-result-votes {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0a5b45;
+  flex-shrink: 0;
+}
+
+.admin-voters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0 0;
+}
+
+.admin-voter {
+  display: inline-block;
+  background: #eef4f1;
+  color: #2d5347;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.admin-people {
+  border-top: 1px solid #e8e5de;
+  margin-top: 14px;
+  padding-top: 11px;
+}
+
+.admin-person {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: #1f1e1b;
+  border-bottom: 1px solid #f1efe8;
+}
+
+.admin-person:last-child { border-bottom: 0; }
+.admin-person-meta { font-size: 12px; color: #55534b; flex-shrink: 0; }
+
+/**
+ * 결과의 막대.
+ *
+ * `.survey-bar` 는 회원 화면에서 flex 안에 놓여 `flex-grow: 1` 로 폭을 얻는다.
+ * 여기서는 flex 가 아니라 그냥 블록 안이라 **inline 인 채로 0×0 이 됐다** —
+ * 채움(i)만 318px 로 그려지고 통은 안 보였다. 눈으로는 "막대가 없네" 로만 보인다.
+ * 그래서 이 자리에서는 블록으로 두고 폭을 명시한다.
+ */
+.admin-result .survey-bar {
+  display: block;
+  width: 100%;
+}

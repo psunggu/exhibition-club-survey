@@ -120,6 +120,21 @@ await ctx.route('**/rest/v1/**', async (route) => {
     return json('srv-new');                       // uuid 를 돌려준다
   }
   if (name === 'survey_admin_delete') { deleted.push(body.p_survey); return noContent(); }
+  if (name === 'survey_admin_results') {
+    return json([
+      { option_id: 'o1', position: 1, title: '서도호 개인전', votes: 2,
+        voters: ['4133 김하늘', '4112 박서준'] },
+      { option_id: 'o2', position: 2, title: '에스 데블린', votes: 0, voters: [] },
+      { option_id: 'o3', position: 3, title: '이대원', votes: 1, voters: ['4121 이가온'] },
+    ]);
+  }
+  if (name === 'survey_admin_respondents') {
+    return json([
+      { who: '4133 김하늘', answered_at: new Date(Date.now() - 7200e3).toISOString(), picks: 1 },
+      { who: '4112 박서준', answered_at: new Date(Date.now() - 3600e3).toISOString(), picks: 1 },
+      { who: '4121 이가온', answered_at: new Date(Date.now() - 600e3).toISOString(), picks: 1 },
+    ]);
+  }
   return json([]);
 });
 
@@ -157,6 +172,58 @@ await page.waitForTimeout(800);
 ok('맞는 암호로 들어간다', (await page.$$('.admin-card')).length === 1);
 ok('응답 수가 보인다',
   (await page.$eval('.admin-card', (e) => e.textContent)).includes('3건'));
+
+/* ── 1-2. 결과 보기 ────────────────────────────────────── */
+
+console.log('\n── 결과 보기');
+/** 자리(index)로 찾으면 버튼이 하나 늘 때마다 어긋난다 — 실제로 그랬다. 글자로 찾는다. */
+const cardBtn = async (n, text) => {
+  const cards = await page.$$('.admin-card');
+  const btns = await cards[n].$$('.admin-mini');
+  for (const b of btns) {
+    if ((await b.textContent()).trim() === text) return b;
+  }
+  throw new Error(`카드 ${n} 에서 「${text}」 버튼을 못 찾았다`);
+};
+await (await cardBtn(0, '결과 보기')).click();
+await page.waitForSelector('.admin-results', { timeout: 8000 });
+await page.waitForTimeout(500);
+
+const bars = await page.$$eval('.admin-result-votes', (es) => es.map((e) => e.textContent.trim()));
+ok('후보별 표 수가 보인다', bars.length === 3, bars.join(' · '));
+const voters = await page.$$eval('.admin-voter', (es) => es.map((e) => e.textContent.trim()));
+ok('누가 골랐는지 이름이 보인다', voters.length === 3, voters.join(', '));
+ok('이름에 구역번호가 붙는다', voters.every((v) => /^\d{3,4} /.test(v)));
+ok('표가 0인 후보는 그렇게 말한다',
+  (await page.$eval('.admin-results', (e) => e.textContent)).includes('아직 고른 사람이 없습니다'));
+ok('참여자 수가 보인다',
+  (await page.$eval('.admin-results-sum', (e) => e.textContent.trim())).includes('3명'));
+ok('참여자 목록이 있다', (await page.$$('.admin-person')).length === 3);
+
+/**
+ * **막대가 실제로 그려지는지 잰다.**
+ * `.survey-bar` 는 회원 화면에서 flex 안에 놓여 `flex-grow` 로 폭을 얻는데,
+ * 여기서는 블록 안이라 inline 인 채 0×0 이 됐다 — 화면에는 그냥 막대가 없었다.
+ * 있는지 없는지를 눈으로만 보면 놓친다.
+ */
+const barBoxes = await page.$$eval('.admin-result .survey-bar', (es) => es.map((e) => {
+  const r = e.getBoundingClientRect();
+  const i = e.querySelector('i');
+  return { w: Math.round(r.width), h: Math.round(r.height),
+    fill: i ? Math.round(i.getBoundingClientRect().width) : 0 };
+}));
+ok('막대에 크기가 있다', barBoxes.length === 3 && barBoxes.every((b) => b.w > 40 && b.h >= 4),
+  barBoxes.map((b) => `${b.w}×${b.h}`).join(' · '));
+ok('표가 많은 쪽이 더 길다',
+  barBoxes[0].fill > barBoxes[2].fill && barBoxes[2].fill > barBoxes[1].fill,
+  barBoxes.map((b) => b.fill).join(' · '));
+ok('회원 화면과 다르다는 안내가 있다',
+  (await page.$eval('.admin-results', (e) => e.textContent)).includes('운영자 화면에서만'));
+
+// 다시 누르면 접힌다 — 설문이 여러 개일 때 목록이 이름에 묻히지 않게
+await (await cardBtn(0, '결과 닫기')).click();
+await page.waitForTimeout(400);
+ok('다시 누르면 접힌다', (await page.$$('.admin-results')).length === 0);
 
 /* ── 2. 새 설문 ─────────────────────────────────────────── */
 
@@ -227,8 +294,7 @@ await go();
 await page.fill('.admin-input', PW);
 await page.click('.survey-who .survey-submit');
 await page.waitForTimeout(800);
-const cards = await page.$$('.admin-card');
-await (await cards[0].$$('.admin-mini'))[0].click();     // 고치기
+await (await cardBtn(0, '고치기')).click();
 await page.waitForSelector('.admin-form', { timeout: 8000 });
 await page.waitForTimeout(500);
 const editTitle = await page.$eval('.admin-form .admin-input', (e) => e.value);

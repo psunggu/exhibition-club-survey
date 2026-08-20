@@ -35,7 +35,10 @@ const tables = read('202608200001a_survey_tables.sql');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
-const admin = read('202608200002a_survey_admin_functions.sql');
+const admin = [
+  read('202608200002a_survey_admin_functions.sql'),
+  read('202608200003a_survey_admin_results.sql'),
+].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
 
@@ -80,6 +83,7 @@ const CALLABLE = [
   'survey_response_count', 'survey_participants', 'survey_admin_ok',
   'survey_admin_save', 'survey_admin_delete', 'survey_admin_list',
   'survey_admin_tally', 'survey_admin_names',
+  'survey_admin_results', 'survey_admin_respondents',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
