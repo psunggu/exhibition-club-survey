@@ -106,7 +106,17 @@ await ctx.route('**/rest/v1/**', async (route) => {
     sent.push({ name, body });
 
     if (name === 'survey_my_choices') return json(stored.map((id) => ({ option_id: id })));
-    if (name === 'survey_submit') { stored = [...(body.p_options ?? [])]; return json(null); }
+    if (name === 'survey_submit') {
+      stored = [...(body.p_options ?? [])];
+      /**
+       * **진짜와 똑같이 204 에 빈 본문을 준다.**
+       * 처음에는 `null` 이라는 본문 있는 답을 주도록 흉내 냈는데,
+       * 그래서 `res.json()` 이 빈 본문에서 터지는 것을 못 잡았다 —
+       * 검사는 통과하고 라이브에서 제출이 실패했다.
+       * 가짜 서버가 진짜보다 친절하면 검사가 거짓말을 한다.
+       */
+      return route.fulfill({ status: 204, body: '' });
+    }
     if (name === 'survey_tally') {
       return json(OPEN_SURVEY.survey_options.map((o, i) => ({
         option_id: o.id, votes: stored.includes(o.id) ? 3 + i : i })));
