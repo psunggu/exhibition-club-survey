@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 export type Route =
   | { name: 'board' }
   | { name: 'calendar' }
+  | { name: 'survey' }
   | { name: 'notFound'; path: string }
 
 export function parseHash(hash: string): Route {
@@ -25,6 +26,8 @@ export function parseHash(hash: string): Route {
       return { name: 'board' }
     case '/calendar':
       return { name: 'calendar' }
+    case '/survey':
+      return { name: 'survey' }
     default:
       return { name: 'notFound', path }
   }
