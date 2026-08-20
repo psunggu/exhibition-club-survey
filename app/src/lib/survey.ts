@@ -56,6 +56,8 @@ export type Survey = {
    * 그렇다면 여기서는 **응답을 받지 않고 결과만 보여 준다** —
    * 옮겨 온 숫자가 집계를 덮어써서, 여기서 받은 표는 나타나지 않기 때문이다.
    */
+  /** 설문 전체에 걸리는 참고 문서 (후보 하나에 붙일 수 없는 것) */
+  links: SurveyLink[]
   mirrored: boolean
   options: SurveyOption[]
 }
@@ -145,6 +147,11 @@ function toSurvey(r: SurveyRow): Survey {
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
     category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
+    /**
+     * 설문 전체에 걸리는 참고 문서. 후보 하나에 붙일 수 없는 것이 여기 온다.
+     * 열이 없던 때의 응답도 읽어야 하므로 없으면 빈 배열이다.
+     */
+    links: parseLinks(r.links),
     mirrored: r.imported_respondents !== null && r.imported_respondents !== undefined,
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }

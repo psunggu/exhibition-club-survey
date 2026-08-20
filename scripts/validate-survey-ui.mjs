@@ -215,8 +215,23 @@ ok('진행 중 설문의 후보만 체크 칸이 있다', opts.length === 3, `${
 
 const links = await page.$$eval('.survey-link',
   (es) => es.map((e) => ({ t: e.textContent.trim(), h: e.getAttribute('href') })));
-ok('쓸 수 있는 링크만 남았다', links.length === 2,
+
+/**
+ * 링크가 뜨는 자리는 **둘**이다 — 진행 중 설문의 후보 칸과,
+ * 마감된 설문의 접힌 `후보 자세히 보기`.
+ * 뒤엣것을 만들기 전에는 앞엣것만 세면 됐는데, 이제 합쳐서 세면
+ * 어느 쪽이 늘고 줄었는지 알 수 없다. 자리를 갈라서 잰다.
+ */
+const openLinks = await page.$$('.survey-option .survey-link');
+const foldedLinks = await page.$$('.survey-details .survey-link');
+ok('진행 중 설문의 링크', openLinks.length === 2, `${openLinks.length}개`);
+ok('마감 설문의 링크가 접힌 채로 남아 있다', foldedLinks.length === 2, `${foldedLinks.length}개`);
+ok('링크는 이 두 자리에만 있다', links.length === openLinks.length + foldedLinks.length,
   `${links.length}개 — ${links.map((l) => l.t).join(', ')}`);
+
+/** 접기는 기본으로 닫혀 있어야 한다 — 결과부터 보여 주려는 것이다 */
+const folded = await page.$('.survey-details');
+if (folded) ok('후보 자세히 보기는 접힌 채로 뜬다', !(await folded.evaluate((e) => e.open)));
 ok('javascript: 주소가 걸러졌다', !links.some((l) => /^javascript:/i.test(l.h ?? '')));
 ok('링크는 새 창으로 연다',
   await page.$$eval('.survey-link', (es) => es.every((e) => e.target === '_blank'

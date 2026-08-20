@@ -874,3 +874,40 @@ select.admin-input { cursor: pointer; }
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+
+/* ── 마감 뒤에도 남기는 후보 안내 ─────────────────────────
+   결과부터 보여 주려고 접어 둔다. 예매 링크와 관람 안내는
+   설문이 끝난 뒤에도 한동안 쓸모가 있다. */
+.survey-details {
+  margin-top: 18px;
+  border-top: 1px solid #e8e5de;
+  padding-top: 14px;
+}
+.survey-details > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3f3d37;
+  padding: 8px 2px;          /* 누르는 자리를 24px 이상으로 */
+  min-height: 24px;
+  list-style-position: inside;
+}
+.survey-details > summary:hover { color: #1d1c19; }
+.survey-details-hint {
+  margin: 6px 0 12px;
+  font-size: 12.5px;
+  color: #55534b;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+.survey-details-item {
+  border: 1px solid #e8e5de;
+  border-radius: 12px;
+  background: #fbfaf7;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+/* 설문 전체에 걸리는 참고 문서. 마감 안내 바로 아래에 둔다 —
+   결과를 보다가 "더 자세히" 가 필요한 자리가 거기다. */
+.survey-doc-links { margin-top: 10px; }
