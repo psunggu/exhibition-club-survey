@@ -68,6 +68,28 @@ await ctx.route('**/rest/v1/**', async (route) => {
   const deny = (m) => route.fulfill({ status: 400, contentType: 'application/json',
     body: JSON.stringify({ message: m }) });
 
+  /**
+   * **가짜 보드.** 새 설문을 올릴 때 여기서 골라 후보로 넣을 수 있어야 한다.
+   * 이걸 안 두면 「보드에서 고르기」 가 늘 빈 채로 지나가고, 옮겨 담기가 맞는지 못 잰다.
+   */
+  if (url.includes('/rest/v1/events')) {
+    return json([
+      { id: 'ev-1', type: '전시', status: '공유완료', title: '《가짜 전시》',
+        start_date: '2026-09-01', end_date: '2026-12-31',
+        venue: '가짜미술관 2전시실', address: '서울 어딘가',
+        time: '화-일 10:00-18:00, 월 휴관', price: 0, price_type: '성인 9,000원',
+        info_url: 'https://example.com/book', main_url: 'https://example.com/detail',
+        map_url: 'https://map.kakao.com/?q=test',
+        notes: '사전예약제입니다.', discount: '얼리버드 7,000원' },
+      { id: 'ev-2', type: '공연', status: '공유완료', title: '가짜 오케스트라 정기연주회',
+        start_date: '2026-09-20', end_date: '2026-09-20',
+        venue: '가짜아트홀', time: '2026-09-20 19:30', price_type: '전석 3만원',
+        info_url: 'https://example.com/perf' },
+      // `기타` 는 고르는 목록에 나오면 안 된다 — 전시·공연·영화 셋으로만 나눈다
+      { id: 'ev-3', type: '기타', status: '공유완료', title: '가짜 워크숍' },
+    ]);
+  }
+
   if (url.includes('/rest/v1/surveys')) {
     return json([{ id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
       multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
@@ -396,6 +418,69 @@ ok('후보 1개를 보냈다', (saved?.options ?? []).length === 1, `${(saved?.o
 ok('링크가 함께 갔다', (saved?.options?.[0]?.links ?? []).length === 1);
 ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.days >= 1, String(saved?.days));
 ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 2);
+
+/* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
+/**
+ * 후보에 넣을 내용은 이미 보드에 있다. 손으로 다시 적는 자리가 틀리는 자리라
+ * **골라서 그대로 가져오는지**를 잰다 — 제목만이 아니라 기간·장소·관람료·링크까지.
+ *
+ * 앞의 흐름과 섞지 않으려고 설문을 새로 연다.
+ * 처음엔 같은 폼 안에서 이어 했더니, 골라 넣은 후보가 뒤따르는 검사의
+ * 후보 자리를 차지해 멀쩡하던 검사가 깨졌다.
+ */
+console.log('\n── 보드에서 고르기');
+await page.click('.survey-actions .survey-submit');
+await page.waitForSelector('.admin-form');
+await page.click('.admin-picker > summary');
+await page.waitForTimeout(700);
+
+const pickTitles = () => page.$$eval('.admin-pick-title', (es) => es.map((e) => e.textContent.trim()));
+
+ok('보드를 불러왔다', (await page.$$('.admin-pick')).length > 0,
+  `${(await page.$$('.admin-pick')).length}건`);
+ok('기타는 목록에 없다', !(await pickTitles()).some((t) => t.includes('워크숍')));
+ok('전시 갈래가 먼저 보인다', (await pickTitles()).some((t) => t.includes('가짜 전시')));
+
+await page.click('.admin-kinds .admin-kind:nth-child(2)');
+await page.waitForTimeout(250);
+ok('공연으로 바꾸면 공연만 보인다',
+  (await pickTitles()).some((t) => t.includes('오케스트라'))
+  && !(await pickTitles()).some((t) => t.includes('가짜 전시')));
+
+await page.click('.admin-kinds .admin-kind:nth-child(3)');
+await page.waitForTimeout(250);
+ok('영화 갈래도 목록이 있다', (await pickTitles()).length > 0, `${(await pickTitles()).length}건`);
+
+await page.click('.admin-kinds .admin-kind:nth-child(1)');
+await page.waitForTimeout(250);
+await page.click('.admin-pick input');
+await page.waitForTimeout(200);
+await page.click('.admin-picker .survey-submit');
+await page.waitForTimeout(600);
+
+const optVals = await page.$$eval('.admin-option .admin-input', (es) => es.map((e) => e.value ?? ''));
+ok('제목이 들어왔다', optVals.some((v) => v.includes('가짜 전시')), optVals[0]?.slice(0, 22));
+ok('기간이 함께 들어왔다', optVals.some((v) => v.includes('2026. 9. 1.')));
+ok('장소가 함께 들어왔다', optVals.some((v) => v.includes('가짜미술관')));
+ok('관람료가 함께 들어왔다', optVals.some((v) => v.includes('9,000원')));
+ok('안내와 할인이 함께 들어왔다',
+  optVals.some((v) => v.includes('사전예약제') && v.includes('얼리버드 7,000원')));
+
+const linkVals = await page.$$eval('.admin-link-row .admin-input', (es) => es.map((e) => e.value ?? ''));
+ok('링크도 함께 들어왔다', linkVals.some((v) => v.includes('example.com/book')),
+  `${linkVals.filter(Boolean).length}칸`);
+
+// 같은 것을 두 번 넣지 못한다
+ok('이미 넣은 것은 못 고른다',
+  await page.$eval('.admin-pick.used input', (e) => e.disabled).catch(() => false));
+
+// 손으로 넣는 길도 그대로 있어야 한다 — 보드에 없는 것은 이렇게 넣는다
+ok('손으로 넣는 버튼이 남아 있다',
+  (await page.$$eval('.admin-form .admin-mini', (es) => es.map((e) => e.textContent)))
+    .some((t) => t.includes('후보 넣기')));
+
+await page.click('.admin-form .admin-mini');   // 그만두기는 아래에서 누른다
+await page.waitForTimeout(200);
 
 /* ── 3. 후보 5개 제한 ───────────────────────────────────── */
 
