@@ -331,6 +331,59 @@ export const adminNames = async (pw: string, signal?: AbortSignal): Promise<stri
   return Array.isArray(rows) ? rows.map((r) => r.name) : []
 }
 
+/* ── 회원 명부 ──────────────────────────────────────────────
+ * 명단 전체를 읽는 길은 **운영자 암호를 아는 사람에게만** 열려 있다.
+ * 회원 화면은 `memberOk` 로 자기 한 쌍만 물어볼 수 있고, 명단은 못 받는다.
+ */
+
+export type Member = { id: string; zone: string; name: string; registeredAt: string }
+
+/** 이 구역번호와 이름이 명부에 있나. 명단은 안 돌려준다. */
+export const memberOk = (zone: string, name: string, signal?: AbortSignal) =>
+  rpc<boolean>('survey_member_ok', { p_zone: zone, p_name: name }, signal)
+
+/**
+ * 명부로 거르고 있나. **인원수는 안 준다.**
+ * 숫자를 주면 한 명씩 물어 명부를 캐내는 사람에게 언제 멈출지 알려 주는 셈이 된다.
+ */
+export const rosterOn = (signal?: AbortSignal) =>
+  rpc<boolean>('survey_roster_on', {}, signal)
+
+export const adminMembers = async (pw: string, signal?: AbortSignal): Promise<Member[]> => {
+  const rows = await rpc<Record<string, unknown>[]>('survey_admin_members', { p_password: pw }, signal)
+  if (!Array.isArray(rows)) return []
+  return rows.map((r) => ({
+    id: String(r.member_id ?? ''),
+    zone: str(r.member_zone) ?? '',
+    name: str(r.member_name) ?? '',
+    registeredAt: str(r.member_at) ?? '',
+  }))
+}
+
+export const adminMemberSave = (
+  pw: string, m: { id: string | null; zone: string; name: string; registeredAt: string },
+  signal?: AbortSignal,
+) => rpc<string>('survey_admin_member_save', {
+  p_password: pw, p_id: m.id, p_zone: m.zone, p_name: m.name, p_at: m.registeredAt || null,
+}, signal)
+
+export const adminMemberDelete = (pw: string, id: string, signal?: AbortSignal) =>
+  rpc<null>('survey_admin_member_delete', { p_password: pw, p_id: id }, signal)
+
+/** 날짜 칸(`type="date"`)에 넣을 꼴. 한국 시간 기준으로 자른다. */
+export const toDateInput = (iso: string): string => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const p = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(d)
+  return p                                    // en-CA 는 YYYY-MM-DD 로 준다
+}
+
+/** 날짜 칸이 준 `YYYY-MM-DD` 를 한국 시간 자정으로 되돌린다 */
+export const fromDateInput = (v: string): string =>
+  (/^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00+09:00` : '')
+
 export const adminList = async (pw: string, signal?: AbortSignal): Promise<AdminSurvey[]> => {
   const rows = await rpc<Record<string, unknown>[]>('survey_admin_list', { p_password: pw }, signal)
   if (!Array.isArray(rows)) return []

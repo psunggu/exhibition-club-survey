@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  adminDelete, adminList, adminNames, adminNote, adminNoteSave,
+  adminDelete, adminList, adminMemberDelete, adminMembers, adminMemberSave,
+  adminNames, adminNote, adminNoteSave,
   adminRespondents, adminResults, adminSave,
-  emptyDraft, emptyOption, fetchResponseCount, fetchSurveys,
-  koDeadline, koShort, SurveyUnavailable, toDraft,
+  emptyDraft, emptyOption, fetchResponseCount, fetchSurveys, fromDateInput,
+  koDeadline, koShort, SurveyUnavailable, toDateInput, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
-  type Draft, type DraftOption, type SurveyLinkKind,
+  type Draft, type DraftOption, type Member, type SurveyLinkKind,
   type SurveyOption,
 } from './lib/survey'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
@@ -211,6 +212,132 @@ function Results({ pw, surveyId, multiChoice, onError }: {
         이 이름들은 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 숫자만 나옵니다.
       </p>
     </div>
+  )
+}
+
+/**
+ * 회원 명부.
+ *
+ * **이 목록이 곧 교인 명부다.** 그래서 운영자 암호를 지나야만 보인다 —
+ * 표는 잠겨 있고(정책 없음), 이름을 통째로 돌려주는 함수는 이것 하나뿐이다.
+ * 회원 화면은 자기 한 쌍이 맞는지만 물어볼 수 있고 명단은 못 받는다.
+ *
+ * 접어 두는 이유는 설문 목록을 먼저 보여 주려는 것이고,
+ * 어깨너머로 스무 명의 이름이 그냥 펼쳐져 있지 않게 하려는 것이기도 하다.
+ */
+function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void }) {
+  const [rows, setRows] = useState<Member[] | null>(null)
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [edit, setEdit] = useState<Member | null>(null)   // 고치는 중인 회원
+  const [zone, setZone] = useState('')
+  const [name, setName] = useState('')
+  const [at, setAt] = useState(() => toDateInput(new Date().toISOString()))
+  const ac = useRef<AbortController | null>(null)
+
+  useEffect(() => () => ac.current?.abort(), [])
+
+  const load = useCallback(async () => {
+    ac.current?.abort(); ac.current = new AbortController()
+    try { setRows(await adminMembers(pw, ac.current.signal)) }
+    catch (e) { if (!(e instanceof DOMException && e.name === 'AbortError')) onError(e) }
+  }, [pw, onError])
+
+  useEffect(() => { if (open && rows === null) void load() }, [open, rows, load])
+
+  const clear = () => {
+    setEdit(null); setZone(''); setName('')
+    setAt(toDateInput(new Date().toISOString()))
+  }
+
+  const save = async () => {
+    setBusy(true)
+    try {
+      await adminMemberSave(pw, {
+        id: edit?.id ?? null, zone, name, registeredAt: fromDateInput(at),
+      })
+      clear()
+      setRows(null)          // 다시 읽는다
+      await load()
+    } catch (e) { onError(e) } finally { setBusy(false) }
+  }
+
+  const remove = async (m: Member) => {
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(`${m.zone} ${m.name} 님을 명부에서 지웁니다. 계속할까요?`)) return
+    setBusy(true)
+    try { await adminMemberDelete(pw, m.id); setRows(null); await load() }
+    catch (e) { onError(e) } finally { setBusy(false) }
+  }
+
+  /** 구역별로 묶어 보여 준다 — 스무 줄을 그냥 늘어놓으면 눈이 못 따라간다 */
+  const byZone = (rows ?? []).reduce<Record<string, Member[]>>((acc, m) => {
+    (acc[m.zone] ??= []).push(m); return acc
+  }, {})
+  const zones = Object.keys(byZone).sort()
+
+  return (
+    <details className="admin-members" open={open}
+      onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary>회원 명부{rows ? ` (${rows.length}명)` : ''}</summary>
+
+      <p className="admin-hint" style={{ marginTop: 10 }}>
+        명부에 있는 사람만 설문에 응답할 수 있습니다. 구역번호와 이름을
+        <b> 단톡방 프로필과 같게</b> 넣어 주세요 — 회원이 적는 것과 글자가 같아야 통과합니다.
+        명부가 비어 있는 동안에는 아무도 막지 않습니다.
+      </p>
+
+      <div className="admin-row">
+        <label className="survey-field" style={{ width: 110 }}>
+          <span>구역번호</span>
+          <input className="admin-input" value={zone} inputMode="numeric"
+            onChange={(e) => setZone(e.target.value)} placeholder="4133" />
+        </label>
+        <label className="survey-field" style={{ flexGrow: 1 }}>
+          <span>이름</span>
+          <input className="admin-input" value={name}
+            onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
+        </label>
+        <label className="survey-field" style={{ width: 150 }}>
+          <span>등록일자</span>
+          <input className="admin-input" type="date" value={at}
+            onChange={(e) => setAt(e.target.value)} />
+        </label>
+      </div>
+
+      <div className="survey-actions" style={{ marginTop: 4, marginBottom: 14 }}>
+        <button type="button" className="survey-submit" disabled={busy || !zone.trim() || !name.trim()}
+          onClick={() => { void save() }}>
+          {busy ? '저장 중…' : edit ? '고친 내용 저장' : '회원 넣기'}
+        </button>
+        {edit && (
+          <button type="button" className="admin-mini" onClick={clear}>그만두기</button>
+        )}
+      </div>
+
+      {rows === null && <p className="admin-hint">불러오는 중…</p>}
+      {rows !== null && !rows.length && (
+        <p className="survey-empty">아직 명부가 비어 있습니다. 지금은 누구나 응답할 수 있습니다.</p>
+      )}
+
+      {zones.map((z) => (
+        <div className="admin-zone" key={z}>
+          <span className="admin-links-title">{z} ({byZone[z]!.length}명)</span>
+          {byZone[z]!.map((m) => (
+            <div className="admin-member" key={m.id}>
+              <span className="admin-member-name">{m.name}</span>
+              <span className="admin-member-at">{koShort(m.registeredAt)} 등록</span>
+              <button type="button" className="admin-mini" disabled={busy}
+                onClick={() => {
+                  setEdit(m); setZone(m.zone); setName(m.name); setAt(toDateInput(m.registeredAt))
+                }}>고치기</button>
+              <button type="button" className="admin-mini danger" disabled={busy}
+                onClick={() => { void remove(m) }}>지우기</button>
+            </div>
+          ))}
+        </div>
+      ))}
+    </details>
   )
 }
 
@@ -505,6 +632,8 @@ export function SurveyAdmin() {
           role={msg.kind === 'error' ? 'alert' : 'status'}
           style={{ marginBottom: 12 }}>{msg.text}</p>
       )}
+
+      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
 
       {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
 

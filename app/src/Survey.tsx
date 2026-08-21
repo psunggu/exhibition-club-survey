@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CATEGORY, fetchMyChoices, fetchResponseCount, fetchSurveys, fetchTally,
-  isOpen, isVisible, koDeadline, submitResponse, SurveyUnavailable,
+  isOpen, isVisible, koDeadline, memberOk, rosterOn, submitResponse, SurveyUnavailable,
   type Survey as SurveyT, type SurveyCategory, type SurveyLink, type SurveyOption,
 } from './lib/survey'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
@@ -139,6 +139,21 @@ function OneSurvey({ s }: { s: SurveyT }) {
     if (!z || !n) { setMsg({ kind: 'error', text: '구역번호와 이름을 모두 적어 주세요.' }); return }
     setBusy(true); setMsg(null)
     try {
+      /**
+       * **명부에 있는 사람인지 여기서 먼저 알려 준다.**
+       * 서버도 제출할 때 막지만, 그때 알려 주면 다 고르고 나서 되돌아와야 한다.
+       * 이름을 확정하는 이 자리가 바로잡기 가장 쉬운 순간이다.
+       *
+       * 명부가 비어 있으면 이 함수가 false 를 주는데, 그때는 막지 않는다 —
+       * 서버도 같은 규칙이라 화면만 막으면 앞뒤가 안 맞는다.
+       */
+      const [ok, roster] = await Promise.all([memberOk(z, n), rosterOn()])
+      if (roster && !ok) {
+        // 서버가 제출할 때 내는 문장과 같게 둔다 — 두 문장이 다르면 그 차이가 곧 답이 된다
+        setMsg({ kind: 'error',
+          text: '이 설문에 응답할 수 없습니다. 구역번호와 이름을 단톡방 프로필과 같게 적어 주세요.' })
+        return
+      }
       const mine = await fetchMyChoices(s.id, z, n)
       setPicked(new Set(mine))
       setHad(mine.length > 0)

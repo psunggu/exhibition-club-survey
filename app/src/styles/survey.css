@@ -911,3 +911,35 @@ select.admin-input { cursor: pointer; }
 /* 설문 전체에 걸리는 참고 문서. 마감 안내 바로 아래에 둔다 —
    결과를 보다가 "더 자세히" 가 필요한 자리가 거기다. */
 .survey-doc-links { margin-top: 10px; }
+
+/* ── 회원 명부 (운영자 화면) ───────────────────────────────
+   여기 펼쳐지는 것이 곧 교인 명부라 접어 두고 연다.
+   구역으로 묶는 이유는 스무 줄을 그냥 늘어놓으면 눈이 못 따라가기 때문이다. */
+.admin-members {
+  border: 1px solid #e8e5de;
+  border-radius: 12px;
+  background: #fbfaf7;
+  padding: 4px 16px 14px;
+  margin: 0 0 16px;
+}
+.admin-members > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3f3d37;
+  padding: 12px 2px;
+  min-height: 24px;
+  list-style-position: inside;
+}
+.admin-zone { margin-top: 12px; }
+.admin-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 7px 0;
+  border-bottom: 1px solid #eeece6;
+}
+.admin-member:last-child { border-bottom: none; }
+.admin-member-name { font-size: 14px; font-weight: 600; color: #1d1c19; min-width: 62px; }
+.admin-member-at { font-size: 12px; color: #6b6961; flex-grow: 1; }
