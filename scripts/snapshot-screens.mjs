@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { FROZEN_AT, FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
@@ -133,6 +134,8 @@ async function measure(page, url, width) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
+// 날짜를 타는 화면이라 시계를 묶는다 — 안 묶으면 내일 이 검사가 거짓으로 실패한다
+await freezeClock(page);
 const SCREENS = [
   ['보드-375', `http://localhost:${PORT}${BASE}/#/`, 375],
   ['보드-1280', `http://localhost:${PORT}${BASE}/#/`, 1280],
@@ -149,8 +152,10 @@ const points = (o) => Object.values(o).reduce((a, s) => a + Object.values(s).fil
 if (mode === 'save') {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   // 어느 환경에서 쟀는지 함께 남긴다 — 상자 크기는 설치된 글꼴에 따라 달라진다
-  fs.writeFileSync(OUT, JSON.stringify({ _platform: process.platform, ...now }, null, 1));
-  console.log(`기준 저장 — 화면 ${SCREENS.length}개 · 측정점 ${points(now)}개 · ${process.platform}`);
+  fs.writeFileSync(OUT, JSON.stringify(
+    { _platform: process.platform, _frozenAt: FROZEN_AT, ...now }, null, 1));
+  console.log(`기준 저장 — 화면 ${SCREENS.length}개 · 측정점 ${points(now)}개`
+    + ` · ${process.platform} · 시계를 ${FROZEN_DAY} 에 묶고 쟀다`);
   console.log(`  ${path.relative(ROOT, OUT).replace(/\\/g, '/')}`);
   process.exit(0);
 }
@@ -160,7 +165,20 @@ if (!fs.existsSync(OUT)) {
   process.exit(1);
 }
 const saved = JSON.parse(fs.readFileSync(OUT, 'utf8'));
-const { _platform: basePlatform, ...base } = saved;
+const { _platform: basePlatform, _frozenAt: baseFrozen, ...base } = saved;
+
+/**
+ * **기준을 찍은 날과 지금 재는 날이 같아야 한다.**
+ * 화면이 날짜를 타므로, 묶어 둔 날이 다르면 비교 자체가 성립하지 않는다.
+ * 조용히 넘어가면 「디자인이 바뀌었다」 는 엉뚱한 보고가 쏟아진다.
+ */
+if (baseFrozen !== FROZEN_AT) {
+  console.error(baseFrozen
+    ? `기준은 ${baseFrozen} 로 묶고 찍혔는데 지금은 ${FROZEN_AT} 로 잰다.`
+    : '기준이 시계를 묶기 전에 찍혔다.');
+  console.error('같은 날로 맞춰야 비교가 된다 — `node scripts/snapshot-screens.mjs save` 로 다시 찍는다.');
+  process.exit(1);
+}
 
 /**
  * **상자 크기는 환경을 넘지 못한다.** 설치된 한글 글꼴이 다르면 같은 글이
@@ -208,4 +226,5 @@ if (diffs.length) {
   console.error('\n의도한 변경이면 `node scripts/snapshot-screens.mjs save` 로 기준을 갱신한다.\n');
   process.exit(1);
 }
-console.log(`화면 대조 통과 — 화면 4개 · 측정점 ${points(now)}개가 기준과 같다`);
+console.log(`화면 대조 통과 — 화면 4개 · 측정점 ${points(now)}개가 기준과 같다`
+  + ` (시계는 ${FROZEN_DAY} 에 묶고 쟀다)`);
