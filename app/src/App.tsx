@@ -88,13 +88,28 @@ export function App() {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1>{monthsLabel()} 모임 일정 안내</h1>
-        {/* 설문으로 가는 길. 갈래마다 색이 달라 한눈에 갈린다. */}
-        <a className="board-jump-link survey-go exhibition" href="#/survey">
-          전시 관람 설문 <span aria-hidden="true">→</span>
-        </a>
-        <a className="board-jump-link survey-go meal" href="#/survey/meal">
-          식사 및 Tea Time 설문 <span aria-hidden="true">→</span>
-        </a>
+        {/**
+          * 설문으로 가는 길.
+          *
+          * 처음엔 화면 너비를 꽉 채운 단추 둘을 위아래로 쌓았다. 두 줄을 차지하는 데다
+          * 「식사 및 Tea Time 설문」 이 길어서 화면이 어수선했다.
+          *
+          * 아래 **문화 콘텐츠 공유 보드 카드와 같은 결**로 감싼다 —
+          * 같은 테두리·모서리·그림자·글자 크기를 쓴다. 두 카드가 형제로 보여야
+          * 「여기서 나가는 길이 둘 있다」 로 읽힌다.
+          *
+          * 안쪽은 글자 크기에 맞춘 알약이다. 늘려서 자리를 채우지 않는다 —
+          * 칸을 채우려고 늘린 단추는 실제보다 중요해 보인다.
+          */}
+        <section className="survey-jump" aria-labelledby="surveyJumpTitle">
+          <p className="board-jump-kicker">모임 정하기</p>
+          <h2 id="surveyJumpTitle">설문 참여하기</h2>
+          <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다.</p>
+          <nav className="survey-jump-tabs" aria-label="설문 갈래">
+            <a className="survey-tab exhibition on" href="#/survey">전시 관람</a>
+            <a className="survey-tab meal on" href="#/survey/meal">식사·티타임</a>
+          </nav>
+        </section>
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
       </main>

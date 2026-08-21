@@ -1082,3 +1082,26 @@ select.admin-input { cursor: pointer; }
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color: #2d4a72;
 }
+
+/* ── 달력 화면의 설문 카드 ────────────────────────────────
+   아래 `.board-jump` 와 **같은 값**을 쓴다. 두 카드가 형제로 보여야
+   「여기서 나가는 길이 둘 있다」 로 읽힌다. 값을 바꿀 때는 둘 다 본다. */
+.survey-jump {
+  margin: 0 0 14px;
+  background: #fff;
+  border: 1px solid #dce8e3;
+  border-radius: 16px;
+  padding: 17px;
+  box-shadow: 0 7px 24px rgba(15, 110, 86, 0.08);
+}
+.survey-jump h2 { margin: 0; font-size: 18px; line-height: 1.4; }
+.survey-jump p:not(.board-jump-kicker) {
+  margin: 6px 0 13px;
+  color: #67645c;
+  font-size: 13.5px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+/* 알약은 글자 크기에 맞는다. 늘려서 칸을 채우지 않는다 —
+   자리를 채우려고 늘린 단추는 실제보다 중요해 보인다. */
+.survey-jump-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
