@@ -22,6 +22,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
+import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -53,6 +54,8 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 // 날짜를 타는 화면이라 시계를 묶는다 — 안 묶으면 내일 이 검사가 거짓으로 실패한다
 await freezeClock(page);
+// DB 응답도 떠 둔 것으로 고정한다 — 보드가 갱신되면 이 검사가 거짓으로 실패한다
+await serveFrozenData(page);
 await page.setViewportSize({ width: 375, height: 900 });
 
 const lines = async (url) => {
@@ -126,6 +129,7 @@ for (const [name, oldUrl, newUrl] of PAIRS) {
 
 await browser.close();
 sOld.close(); sNew.close();
+failOnFrozenMisses();
 
 if (missing) {
   console.log(`\n총 ${missing}줄이 빠졌다. 값이 달라진 것(날짜·건수)과 문구만 다듬어진 것은`);

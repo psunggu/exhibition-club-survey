@@ -21,6 +21,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { freezeClock } from './frozen-clock.mjs';
+import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -56,6 +58,10 @@ const contrast = (a, b) => {
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
+// 날짜와 DB 를 묶는다 — 안 묶으면 보드가 빈 채로 재져서 「통과」 가 헛돈다
+await freezeClock(page);
+// DB 응답도 떠 둔 것으로 고정한다 — 보드가 갱신되면 이 검사가 거짓으로 실패한다
+await serveFrozenData(page);
 
 const fails = [];
 const notes = [];
@@ -185,6 +191,7 @@ for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
 
 await browser.close();
 server.close();
+failOnFrozenMisses();
 
 if (fails.length) {
   console.log(`접근성 검사 실패 — ${fails.length}건\n`);
