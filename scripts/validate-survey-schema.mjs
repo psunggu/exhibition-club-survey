@@ -342,7 +342,16 @@ for (const [name, text] of [['a', tables], ['b', funcs], ['c', seed], ['2a', adm
 
 const KINDS = new Set(['official', 'video', 'article', 'map', 'booking']);
 let linkCount = 0;
-for (const m of seed.matchAll(/'(\[[\s\S]*?\])'::jsonb/g)) {
+/**
+ * **주석을 걷어내고 본다.** 실행되지 않는 글은 검사할 것이 아니다.
+ * 후보 하나를 빼면서 되살릴 값을 주석으로 남겼더니, 그 안의 JSON 조각이
+ * 줄마다 `--` 를 달고 있어 「올바른 JSON 이 아니다」로 잡혔다.
+ * 지운 값을 왜 지웠는지 적어 두는 것은 좋은 습관인데, 검사가 그걸 막으면 안 된다.
+ */
+const liveSeed = seed
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .replace(/^\s*--.*$/gm, '');
+for (const m of liveSeed.matchAll(/'(\[[\s\S]*?\])'::jsonb/g)) {
   let arr;
   try { arr = JSON.parse(m[1]); } catch { fail('후보의 links 가 올바른 JSON 이 아니다'); continue; }
   if (!Array.isArray(arr)) { fail('links 는 배열이어야 한다'); continue; }
