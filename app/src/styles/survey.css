@@ -1104,4 +1104,31 @@ select.admin-input { cursor: pointer; }
 }
 /* 알약은 글자 크기에 맞는다. 늘려서 칸을 채우지 않는다 —
    자리를 채우려고 늘린 단추는 실제보다 중요해 보인다. */
-.survey-jump-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.survey-jump-list { list-style: none; margin: 0; padding: 0; }
+.survey-jump-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+/* 갈래 이름 칸을 맞춰 둔다. 이름 길이가 달라도 현황이 같은 자리에서 시작한다. */
+.survey-jump-list .survey-tab { flex: 0 0 auto; min-width: 92px; justify-content: center; }
+/* 현황은 거들 뿐이다. 진행 중인 것만 진하게 — 색만으로 가르지 않고 「진행 중」 이라 적는다. */
+.survey-jump-state {
+  font-size: 12.5px;
+  color: #67645c;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.survey-jump-state.on { color: #1f1e1b; }
+.survey-jump-state b {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e4f2ec;
+  color: #0a5b45;
+  font-size: 11.5px;
+  font-weight: 800;
+}

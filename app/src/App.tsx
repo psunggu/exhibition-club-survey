@@ -5,11 +5,104 @@ import { Calendar } from './Calendar'
 import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
-import { CATEGORY, type SurveyCategory } from './lib/survey'
+import {
+  CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
+  type SurveyCategory,
+} from './lib/survey'
 
 /** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
 const monthsLabel = () =>
   MONTHS.length ? `${MONTHS.map((m) => m.month).join(' · ')}월` : ''
+
+/**
+ * 달력 화면의 설문 카드 — **지금 무엇이 열려 있는지 한 줄로 보여 준다.**
+ *
+ * 예전에는 갈래 이름 둘만 있어서, 눌러 보기 전에는 지금 참여할 것이 있는지 알 수 없었다.
+ * 회원이 달력을 보러 왔다가 「아, 지금 고를 게 있구나」 를 알아야 참여가 는다.
+ *
+ * ── 못 읽어도 화면이 죽지 않는다 ───────────────────────────
+ * 설문을 못 불러와도 갈래 이름과 링크는 그대로 남는다.
+ * 달력을 보러 온 사람이 설문 때문에 빈 화면을 보면 안 된다.
+ */
+function SurveyJump() {
+  const [rows, setRows] = useState<{
+    category: SurveyCategory; open: boolean; closesAt: string; people: number
+  }[] | null>(null)
+
+  useEffect(() => {
+    const ac = new AbortController()
+    fetchSurveys(ac.signal)
+      .then(async (all) => {
+        const seen = new Map<SurveyCategory, typeof all[number]>()
+        // 갈래마다 **가장 늦게 닫히는 것** 하나만 보여 준다. 지금 참여할 것이 그것이다.
+        for (const s of all) {
+          const cur = seen.get(s.category)
+          if (!cur || s.closesAt > cur.closesAt) seen.set(s.category, s)
+        }
+        const list = await Promise.all([...seen.values()].map(async (s) => ({
+          category: s.category,
+          open: isOpen(s),
+          closesAt: s.closesAt,
+          people: Number(await fetchResponseCount(s.id, ac.signal)) || 0,
+        })))
+        setRows(list)
+      })
+      .catch(() => setRows([]))       // 못 읽으면 이름만 보여 준다
+    return () => ac.abort()
+  }, [])
+
+  /**
+   * 현황은 **한 줄에 들어가게 짧게** 적는다.
+   * `8월 28일 (금) 오후 9시까지 · 1명 참여` 로 길게 썼더니 좁은 화면에서 두 줄로 접혔고,
+   * 그러면 카드 높이가 상태에 따라 달라져 화면 대조 검사가 흔들렸다.
+   * 자세한 마감 시각은 설문 화면에 그대로 적혀 있다.
+   */
+  const stateOf = (c: SurveyCategory) => {
+    const r = rows?.find((x) => x.category === c)
+    if (!r) return null
+    const who = r.people > 0 ? ` · ${r.people}명` : ''
+    if (!r.open) return { on: false, text: `마감${who}` }
+    const d = new Date(r.closesAt)
+    const p = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short',
+    }).formatToParts(d)
+    const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
+    return { on: true, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}` }
+  }
+
+  return (
+    <section className="survey-jump" aria-labelledby="surveyJumpTitle">
+      <p className="board-jump-kicker">모임 정하기</p>
+      <h2 id="surveyJumpTitle">설문 참여하기</h2>
+      {/* 안내문은 **상태에 따라 바뀌지 않는다.** 바꿨더니 줄 수가 달라져
+          카드 높이가 흔들렸고, 화면 대조 검사가 그걸 디자인 변화로 읽었다.
+          지금 무엇이 열려 있는지는 아래 줄들이 말한다. */}
+      <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
+
+      <ul className="survey-jump-list">
+        {(['exhibition', 'meal'] as const).map((c) => {
+          const st = stateOf(c)
+          return (
+            <li key={c}>
+              <a className={`survey-tab ${c} on`} href={CATEGORY[c].route}>
+                {CATEGORY[c].short}
+              </a>
+              {st && (
+                <span className={`survey-jump-state${st.on ? ' on' : ''}`}>
+                  {/* 색만으로 가르지 않는다 — 열린 것에는 「진행 중」 이라 적는다.
+                      배지 뒤에 빈칸을 둔다. 여백은 눈에만 보이고,
+                      화면을 읽어 주는 쪽에는 「진행 중8월」 로 붙어서 나갔다. */}
+                  {st.on && <><b>진행 중</b>{' '}</>}
+                  {st.text}
+                </span>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
 
 /**
  * 셸도 옛 화면 그대로다 — `.app-shell` · `.topbar` · `.eyebrow`.
@@ -88,28 +181,7 @@ export function App() {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1>{monthsLabel()} 모임 일정 안내</h1>
-        {/**
-          * 설문으로 가는 길.
-          *
-          * 처음엔 화면 너비를 꽉 채운 단추 둘을 위아래로 쌓았다. 두 줄을 차지하는 데다
-          * 「식사 및 Tea Time 설문」 이 길어서 화면이 어수선했다.
-          *
-          * 아래 **문화 콘텐츠 공유 보드 카드와 같은 결**로 감싼다 —
-          * 같은 테두리·모서리·그림자·글자 크기를 쓴다. 두 카드가 형제로 보여야
-          * 「여기서 나가는 길이 둘 있다」 로 읽힌다.
-          *
-          * 안쪽은 글자 크기에 맞춘 알약이다. 늘려서 자리를 채우지 않는다 —
-          * 칸을 채우려고 늘린 단추는 실제보다 중요해 보인다.
-          */}
-        <section className="survey-jump" aria-labelledby="surveyJumpTitle">
-          <p className="board-jump-kicker">모임 정하기</p>
-          <h2 id="surveyJumpTitle">설문 참여하기</h2>
-          <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다.</p>
-          <nav className="survey-jump-tabs" aria-label="설문 갈래">
-            <a className="survey-tab exhibition on" href="#/survey">전시 관람</a>
-            <a className="survey-tab meal on" href="#/survey/meal">식사·티타임</a>
-          </nav>
-        </section>
+        <SurveyJump />
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
       </main>

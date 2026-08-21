@@ -822,6 +822,8 @@
   ".cell": null,
   ".dnum": null,
   ".chip": null,
+  ".survey-jump": null,
+  ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
    "textLength": 11316,
@@ -1651,6 +1653,8 @@
   ".cell": null,
   ".dnum": null,
   ".chip": null,
+  ".survey-jump": null,
+  ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
    "textLength": 11316,
@@ -1663,7 +1667,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 2757
+    "h": 2840
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2180,9 +2184,71 @@
     "opacity": "1"
    }
   },
+  ".survey-jump": {
+   "count": 1,
+   "box": {
+    "w": 343,
+    "h": 243
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(220, 232, 227)",
+    "borderTopWidth": "1px",
+    "borderRadius": "16px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "17px",
+    "paddingRight": "17px",
+    "paddingBottom": "17px",
+    "paddingLeft": "17px",
+    "marginTop": "0px",
+    "marginBottom": "14px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "rgba(15, 110, 86, 0.08) 0px 7px 24px 0px",
+    "opacity": "1"
+   }
+  },
+  ".survey-jump-list li": {
+   "count": 2,
+   "box": {
+    "w": 307,
+    "h": 50
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "6px",
+    "paddingRight": "0px",
+    "paddingBottom": "6px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "10px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1164,
+   "textLength": 1104,
    "cardCount": 0,
    "chipCount": 10
   }
@@ -2192,7 +2258,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 2509
+    "h": 2592
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2709,9 +2775,71 @@
     "opacity": "1"
    }
   },
+  ".survey-jump": {
+   "count": 1,
+   "box": {
+    "w": 520,
+    "h": 243
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(220, 232, 227)",
+    "borderTopWidth": "1px",
+    "borderRadius": "16px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "17px",
+    "paddingRight": "17px",
+    "paddingBottom": "17px",
+    "paddingLeft": "17px",
+    "marginTop": "0px",
+    "marginBottom": "14px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "rgba(15, 110, 86, 0.08) 0px 7px 24px 0px",
+    "opacity": "1"
+   }
+  },
+  ".survey-jump-list li": {
+   "count": 2,
+   "box": {
+    "w": 484,
+    "h": 50
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "6px",
+    "paddingRight": "0px",
+    "paddingBottom": "6px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "10px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1164,
+   "textLength": 1104,
    "cardCount": 0,
    "chipCount": 10
   }
