@@ -943,3 +943,53 @@ select.admin-input { cursor: pointer; }
 .admin-member:last-child { border-bottom: none; }
 .admin-member-name { font-size: 14px; font-weight: 600; color: #1d1c19; min-width: 62px; }
 .admin-member-at { font-size: 12px; color: #6b6961; flex-grow: 1; }
+
+/* ── 보드에서 고르기 (운영자 화면) ─────────────────────────
+   후보에 넣을 내용은 이미 보드에 있다. 손으로 다시 적지 않게 골라 가져온다. */
+.admin-picker {
+  border: 1px solid #e8e5de;
+  border-radius: 12px;
+  background: #fbfaf7;
+  padding: 4px 16px 14px;
+  margin: 14px 0;
+}
+.admin-picker > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3f3d37;
+  padding: 12px 2px;
+  min-height: 24px;
+  list-style-position: inside;
+}
+.admin-kinds { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-kind {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #55534b;
+  background: #fff;
+  border: 1px solid #d9d5ca;
+  border-radius: 999px;
+  padding: 7px 15px;
+  min-height: 24px;
+  cursor: pointer;
+}
+.admin-kind.on { background: #0f6e56; border-color: #0f6e56; color: #fff; }
+.admin-picklist { max-height: 320px; overflow-y: auto; }
+.admin-pick {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 4px;
+  border-bottom: 1px solid #eeece6;
+  cursor: pointer;
+}
+.admin-pick:last-child { border-bottom: none; }
+.admin-pick input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; accent-color: #0f6e56; }
+.admin-pick-body { min-width: 0; }
+.admin-pick-title { display: block; font-size: 14px; font-weight: 600; color: #1d1c19; word-break: keep-all; }
+.admin-pick-hint { display: block; font-size: 12px; color: #6b6961; margin-top: 2px; word-break: keep-all; }
+/* 이미 넣은 것은 흐리게. 지우지 않고 남겨 둬야 왜 못 고르는지 알 수 있다. */
+.admin-pick.used { cursor: default; }
+.admin-pick.used .admin-pick-title { color: #6b6961; }

@@ -9,6 +9,9 @@ import {
   type Draft, type DraftOption, type Member, type SurveyLinkKind,
   type SurveyOption,
 } from './lib/survey'
+import { fetchEvents } from './lib/events'
+import { boardPicks, type BoardPick } from './lib/pickFromBoard'
+import { MOVIES } from './data/movies'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
 
 /**
@@ -341,6 +344,119 @@ function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void })
   )
 }
 
+/**
+ * 보드에 있는 것을 골라 후보로 넣는다.
+ *
+ * 후보에 넣을 내용은 이미 보드에 다 있다 — 기간·장소·운영시간·관람료·예매 링크.
+ * 그걸 손으로 다시 적는 자리가 틀리는 자리다. 골라서 그대로 가져온다.
+ *
+ * **보드에 없는 것은 아래에서 손으로 넣으면 된다.** 이 칸은 거들 뿐 대신하지 않는다.
+ */
+function BoardPicker({ used, room, onAdd }: {
+  used: string[]                       // 이미 넣은 제목 — 두 번 넣지 않게
+  room: number                         // 앞으로 몇 개 더 넣을 수 있나
+  onAdd: (opts: DraftOption[]) => void
+}) {
+  const [kind, setKind] = useState<'전시' | '공연' | '영화'>('전시')
+  const [q, setQ] = useState('')
+  const [picks, setPicks] = useState<BoardPick[] | null>(null)
+  const [chosen, setChosen] = useState<Set<string>>(new Set())
+  const [err, setErr] = useState('')
+
+  useEffect(() => {
+    let alive = true
+    fetchEvents()
+      .then((events) => { if (alive) setPicks(boardPicks(events, MOVIES)) })
+      // 보드를 못 읽어도 설문 올리기는 되어야 한다 — 손으로 넣는 길이 남아 있다
+      .catch(() => { if (alive) { setPicks([]); setErr('보드를 불러오지 못했습니다. 아래에서 손으로 넣어 주세요.') } })
+    return () => { alive = false }
+  }, [])
+
+  const usedSet = new Set(used.map((t) => t.trim()).filter(Boolean))
+  const shown = (picks ?? [])
+    .filter((p) => p.kind === kind)
+    .filter((p) => !q.trim() || (p.title + p.hint).toLowerCase().includes(q.trim().toLowerCase()))
+
+  const toggle = (key: string) => setChosen((prev) => {
+    const next = new Set(prev)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    return next
+  })
+
+  const add = () => {
+    const opts = (picks ?? []).filter((p) => chosen.has(p.key)).slice(0, room).map((p) => p.toOption())
+    if (opts.length) onAdd(opts)
+    setChosen(new Set())
+  }
+
+  const over = chosen.size > room
+
+  return (
+    <details className="admin-picker">
+      <summary>보드에서 고르기{picks ? ` (${picks.length}건)` : ''}</summary>
+
+      <p className="admin-hint" style={{ marginTop: 10 }}>
+        문화 콘텐츠 공유 보드에 있는 것을 고르면 <b>기간·장소·운영시간·관람료·링크가 함께 들어옵니다.</b>
+        넣은 뒤에 고쳐도 됩니다. 보드에 없으면 아래에서 손으로 넣어 주세요.
+      </p>
+      {err && <p className="admin-warn">{err}</p>}
+
+      <div className="admin-kinds">
+        {(['전시', '공연', '영화'] as const).map((k) => (
+          <button key={k} type="button"
+            className={`admin-kind${kind === k ? ' on' : ''}`}
+            aria-pressed={kind === k}
+            onClick={() => setKind(k)}>{k}</button>
+        ))}
+      </div>
+
+      <label className="survey-field" style={{ margin: '10px 0' }}>
+        <span>제목으로 찾기</span>
+        <input className="admin-input" value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder="이름 일부를 적으면 걸러집니다" />
+      </label>
+
+      {picks === null && <p className="admin-hint">불러오는 중…</p>}
+      {picks !== null && !shown.length && (
+        <p className="survey-empty">{kind} 가운데 찾는 것이 없습니다. 아래에서 손으로 넣어 주세요.</p>
+      )}
+
+      <div className="admin-picklist">
+        {shown.map((p) => {
+          const already = usedSet.has(p.title)
+          return (
+            <label key={p.key} className={`admin-pick${already ? ' used' : ''}`}>
+              <input type="checkbox" checked={chosen.has(p.key)} disabled={already}
+                onChange={() => toggle(p.key)} />
+              <span className="admin-pick-body">
+                <span className="admin-pick-title">{p.title}</span>
+                <span className="admin-pick-hint">{already ? '이미 후보에 있습니다' : p.hint}</span>
+              </span>
+            </label>
+          )
+        })}
+      </div>
+
+      {chosen.size > 0 && (
+        <div className="survey-actions" style={{ marginTop: 12 }}>
+          <button type="button" className="survey-submit" disabled={over} onClick={add}>
+            고른 {chosen.size}개를 후보로 넣기
+          </button>
+          <button type="button" className="admin-mini" onClick={() => setChosen(new Set())}>
+            선택 지우기
+          </button>
+        </div>
+      )}
+      {over && (
+        <p className="admin-warn" style={{ marginTop: 10 }}>
+          후보는 5개까지입니다. <b>{room}개</b>만 더 넣을 수 있는데 {chosen.size}개를 고르셨습니다.
+        </p>
+      )}
+    </details>
+  )
+}
+
 function Field({ label, value, onChange, placeholder, area = false }: {
   label: string; value: string; onChange: (v: string) => void
   placeholder?: string; area?: boolean
@@ -588,6 +704,18 @@ export function SurveyAdmin() {
         <p className="admin-hint">
           누가 무엇을 골랐는지는 어느 설정에서도 보이지 않습니다.
         </p>
+
+        {/**
+          * 고른 것을 **빈 후보 자리부터 채운다.**
+          * 새 설문은 빈 후보 한 칸으로 시작하는데, 그걸 두고 뒤에 붙이면
+          * 빈 칸이 남아 저장할 때 서버가 거절한다.
+          */}
+        <BoardPicker
+          used={draft.options.map((o) => o.title)}
+          room={Math.max(0, 5 - draft.options.filter((o) => o.title.trim()).length)}
+          onAdd={(opts) => set({
+            options: [...draft.options.filter((o) => o.title.trim()), ...opts].slice(0, 5),
+          })} />
 
         {draft.options.map((o, i) => (
           <OptionEditor key={i} o={o} i={i} total={draft.options.length}
