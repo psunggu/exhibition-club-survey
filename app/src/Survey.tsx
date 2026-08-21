@@ -149,9 +149,15 @@ function OneSurvey({ s }: { s: SurveyT }) {
        */
       const [ok, roster] = await Promise.all([memberOk(z, n), rosterOn()])
       if (roster && !ok) {
-        // 서버가 제출할 때 내는 문장과 같게 둔다 — 두 문장이 다르면 그 차이가 곧 답이 된다
+        /**
+         * **무엇이 잘못됐는지 그대로 말한다.**
+         * 처음에는 캐내는 사람에게 힌트가 될까 봐 「이 설문에 응답할 수 없습니다」 로 뭉갰는데,
+         * 이 자리에는 다른 실패 이유가 없다 — 거절이 곧 "명부에 없다" 라서
+         * 뭉개도 감춰지는 것이 없었다. 정작 회원만 왜 안 되는지 모르게 됐다.
+         * 서버가 내는 문장과 같게 둔다.
+         */
         setMsg({ kind: 'error',
-          text: '이 설문에 응답할 수 없습니다. 구역번호와 이름을 단톡방 프로필과 같게 적어 주세요.' })
+          text: '등록된 회원이 아닙니다. 구역번호와 이름을 단톡방 프로필과 같게 적어 주세요.' })
         return
       }
       const mine = await fetchMyChoices(s.id, z, n)
