@@ -299,9 +299,8 @@ function OneSurvey({ s }: { s: SurveyT }) {
               라고 적었는데, 운영자 화면에서 누가 무엇을 골랐는지 볼 수 있게 되면서
               그 문장이 사실이 아니게 됐다. DB 를 바꿀 때 이 문구도 같이 바꾼다. */}
           <p className="survey-who-note">
-            단톡방 프로필과 같게 적어 주세요. 같은 이름이 여러 분 계셔서 구역번호까지 받습니다.
-            {' '}다른 회원에게는 이름이 보이지 않고 숫자만 보입니다. 모임을 꾸리기 위해
-            운영진은 누가 무엇을 골랐는지 확인합니다.
+            <b>단톡방 프로필과 같게</b> 적어 주세요.
+            {' '}이름은 다른 회원에게 보이지 않고 운영진만 확인합니다.
           </p>
           {!locked && (
             <div className="survey-actions">
@@ -310,6 +309,19 @@ function OneSurvey({ s }: { s: SurveyT }) {
                 {busy ? '확인 중…' : '확인'}
               </button>
             </div>
+          )}
+          {/**
+            * 이름에 대한 답은 **이름 칸 옆에서** 한다.
+            * 아래쪽에만 두었더니 후보 네 개를 지나 화면 밖에 떠서,
+            * 「등록된 회원이 아닙니다」 를 눌러 놓고도 아무 일도 안 일어난 것처럼 보였다.
+            * 고칠 곳이 바로 위에 있는데 답이 저 아래 있으면 안 된다.
+            */}
+          {!locked && msg && (
+            <p className={`survey-status survey-message ${msg.kind === 'info' ? '' : msg.kind}`}
+              role={msg.kind === 'error' ? 'alert' : 'status'}
+              style={{ marginTop: 10 }}>
+              {msg.text}
+            </p>
           )}
           {locked && (
             <div className="survey-actions">
@@ -368,7 +380,9 @@ function OneSurvey({ s }: { s: SurveyT }) {
         </div>
       )}
 
-      {msg && (
+      {/* 이름을 확정한 뒤의 답(제출 결과 따위)만 여기 둔다.
+          확정 전 것은 위 이름 칸 옆에서 이미 보여 줬다 — 두 번 뜨면 안 된다. */}
+      {locked && msg && (
         <p className={`survey-status survey-message ${msg.kind === 'info' ? '' : msg.kind}`}
           role={msg.kind === 'error' ? 'alert' : 'status'}
           style={{ marginTop: 10 }}>

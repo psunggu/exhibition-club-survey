@@ -148,6 +148,16 @@ await ctx.route('**/rest/v1/**', async (route) => {
     try { body = JSON.parse(req.postData() ?? '{}'); } catch { /* 그대로 */ }
     sent.push({ name, body });
 
+    /**
+     * **가짜 명부.** 진짜 서버처럼 예/아니오만 답한다.
+     * 이걸 안 두면 화면이 명부 거절을 한 번도 안 겪어 보고 통과한다.
+     */
+    if (name === 'survey_roster_on') return json(true);
+    if (name === 'survey_member_ok') {
+      const z = String(body.p_zone ?? '').replace(/[^0-9]/g, '');
+      const n = String(body.p_name ?? '').trim();
+      return json(z === '4133' && n === '홍길동');
+    }
     if (name === 'survey_my_choices') return json(stored.map((id) => ({ option_id: id })));
     if (name === 'survey_submit') {
       stored = [...(body.p_options ?? [])];
@@ -247,6 +257,22 @@ await page.click('.survey-who .survey-submit');
 await page.waitForTimeout(400);
 let status = await page.$eval('.survey-message.error', (e) => e.textContent.trim()).catch(() => '');
 ok('빈 채로 확인하면 막는다', status.includes('구역번호'), status.slice(0, 40));
+
+/**
+ * **명부에 없으면 그 자리에서 알려 준다.**
+ * 답을 화면 맨 아래에만 두었더니 후보 네 개를 지나 화면 밖에 떠서,
+ * 눌러 놓고도 아무 일 없는 것처럼 보였다. 고칠 칸 바로 옆에 있어야 한다.
+ */
+await page.fill('.survey-field.zone input', '4133');
+await page.fill('.survey-field.name input', '없는이름');
+await page.click('.survey-who .survey-submit');
+await page.waitForTimeout(600);
+const denied = await page.$eval('.survey-who .survey-message.error', (e) => e.textContent.trim())
+  .catch(() => '');
+ok('명부에 없으면 등록된 회원이 아니라고 한다', denied.includes('등록된 회원이 아닙니다'), denied.slice(0, 34));
+ok('그 안내가 이름 칸 안에 있다', (await page.$$('.survey-who .survey-message')).length === 1);
+ok('명부에 없으면 체크가 안 풀린다',
+  await page.$eval('.survey-option input', (e) => e.disabled));
 
 /* ── 3. 이름을 넣으면 열린다 ────────────────────────────── */
 
