@@ -4,7 +4,7 @@ import {
   adminNames, adminNote, adminNoteSave,
   adminRespondents, adminResults, adminSave,
   emptyDraft, emptyOption, fetchResponseCount, fetchSurveys, fromDateInput,
-  koDeadline, koShort, SurveyUnavailable, toDateInput, toDraft,
+  formatPeriod, koDay, koDeadline, koShort, parsePeriod, SurveyUnavailable, toDateInput, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
   type Draft, type DraftOption, type Member, type SurveyLinkKind,
   type SurveyOption,
@@ -25,6 +25,35 @@ import { Analysis, Metrics, ResultChart } from './SurveyChart'
  * 진짜 검사는 전부 DB 함수 안에서 일어난다. 이 화면의 검사는 손이 덜 가게
  * 도와주는 것일 뿐이고, 화면을 우회해도 서버가 막는다.
  */
+
+/**
+ * 구역 열 곳에 줄 색. **검증기로 찾아낸 것이라 손으로 고치지 않는다.**
+ * 하나라도 바꾸면 맞닿은 조각의 분리도가 무너진다 —
+ * 바꿔야 하면 dataviz 의 validate_palette 로 다시 찾아야 한다.
+ * 차례가 곧 조각 차례다. 밝기가 한 칸씩 번갈아 오르내린다.
+ */
+const ZONE_COLORS = [
+  '#c1507a', '#f68262', '#aa6f05', '#b1ae1e', '#3a933d',
+  '#14c2ab', '#008ca5', '#61acfd', '#7b6bd0', '#d585dd',
+] as const
+
+/**
+ * 같은 색을 **글자에 쓸 때의 짝.**
+ *
+ * 위 조각 색을 글자에 그대로 쓰면 안 된다 — 바탕(#fbfaf7)에서 대비가 2.16~4.28:1 이라
+ * 본문 기준 4.5:1 을 못 넘는다. 흐린 글씨는 나이 드신 분이 먼저 못 읽는다.
+ *
+ * 그래서 **색상과 채도는 그대로 두고 밝기만 내려** 4.5:1 을 넘긴 값을 계산해 뒀다.
+ * 조각과 글자가 같은 색으로 보이면서 읽히기도 한다. 열 개 모두 통과한다.
+ * 위 배색을 바꾸면 이것도 다시 계산해야 한다.
+ */
+const ZONE_INK = [
+  '#bc4b76', '#bf5031', '#a06600', '#7b7600', '#28842d',
+  '#00816d', '#007e97', '#2875c2', '#7565c9', '#a154a9',
+] as const
+
+const zoneColor = (i: number) => ZONE_COLORS[i % ZONE_COLORS.length]!
+const zoneInk = (i: number) => ZONE_INK[i % ZONE_INK.length]!
 
 const KINDS: { v: SurveyLinkKind; label: string }[] = [
   { v: 'official', label: '공식·예매' },
@@ -228,6 +257,107 @@ function Results({ pw, surveyId, multiChoice, onError }: {
  * 접어 두는 이유는 설문 목록을 먼저 보여 주려는 것이고,
  * 어깨너머로 스무 명의 이름이 그냥 펼쳐져 있지 않게 하려는 것이기도 하다.
  */
+/**
+ * 구역별 인원 — 파이(도넛).
+ *
+ * ── 색은 **찾아낸 것**이지 고른 것이 아니다 ────────────────
+ * 구역이 열 곳이라 열 색이 필요한데, 아무 열 색이나 쓰면 서로 구분되지 않는다.
+ * 처음 눈대중으로 고른 열 색은 정상 시력으로도 못 가릴 만큼 가까운 쌍이 있었다
+ * (ΔE 9.6, 기준 15). 색각이상에서는 ΔE 3.1 까지 떨어졌다.
+ *
+ * 그래서 색상각·밝기·채도를 훑어 **기준을 넘는 조합을 찾아냈다.**
+ * 밝기를 한 칸씩 번갈아 준 것이 결정적이었다 — 색상만으로는 열 개가 안 갈린다.
+ *   · 정상 시력 최악 짝 ΔE 16.0 (기준 15)
+ *   · 색각이상 최악 짝 ΔE 11.4 (이름표가 있으면 6 이 바닥)
+ * 지금 쓰는 다섯 색과 같은 대역(밝기 0.59~0.73 · 채도 0.15 언저리)이라 옆에 놓아도 이질감이 없다.
+ *
+ * **바탕과의 대비는 3:1 을 넘지 못한다.** 그래서 조각마다 이름표가 반드시 있어야 한다 —
+ * 색만으로 알아보게 두면 안 된다. 이름표를 떼면 이 배색은 쓸 수 없다.
+ *
+ * 이름표는 구역번호에서 **공통 앞자리를 뗀 나머지**를 쓴다.
+ * 지금은 전부 `41` 로 시작해서 뒤 두 자리만 남기면 짧아지고, 조각 위에 들어간다.
+ * 구역 체계가 바뀌어 공통 앞자리가 없어지면 저절로 전체 번호를 쓴다.
+ */
+function ZoneDonut({ rows, total }: { rows: { zone: string; n: number }[]; total: number }) {
+  const R = 54
+  const W = 24
+  const C = 2 * Math.PI * R
+  const GAP = 2
+
+  /**
+   * 모든 구역이 함께 쓰는 앞자리를 찾는다.
+   * 뗀 뒤에 한 글자도 안 남는 구역이 생기면 아예 떼지 않는다 —
+   * 빈 이름표는 조각이 어느 구역인지 말해 주지 못한다.
+   */
+  const common = rows.length > 1
+    ? rows.reduce((p, r) => {
+      let i = 0
+      while (i < p.length && i < r.zone.length && p[i] === r.zone[i]) i += 1
+      return p.slice(0, i)
+    }, rows[0]!.zone)
+    : ''
+  const prefix = common && rows.every((r) => r.zone.length > common.length) ? common : ''
+  const short = (z: string) => (prefix && z.startsWith(prefix) ? z.slice(prefix.length) : z)
+
+  let at = 0
+  const arcs = rows.map((r) => {
+    const len = (r.n / total) * C
+    const mid = at + len / 2
+    const seg = { ...r, len: Math.max(0, len - GAP), off: at, angle: (mid / C) * 360 - 90 }
+    at += len
+    return seg
+  })
+
+  return (
+    <div className="zone-chart">
+      <svg viewBox="0 0 190 150" className="zone-donut" role="img"
+        aria-label={`구역별 인원 — ${rows.map((r) => `${r.zone} ${r.n}명`).join(', ')}`}>
+        <g transform="translate(20 0)">
+          <circle cx="70" cy="75" r={R} fill="none" stroke="#ece9e1" strokeWidth={W} />
+          {arcs.map((a, i) => (
+            <circle key={a.zone} cx="70" cy="75" r={R} fill="none"
+              stroke={zoneColor(i)} strokeWidth={W}
+              strokeDasharray={`${a.len} ${C - a.len}`}
+              strokeDashoffset={-a.off}
+              transform="rotate(-90 70 75)">
+              <title>{a.zone} — {a.n}명</title>
+            </circle>
+          ))}
+          {/* 조각마다 이름표. 이 색들은 바탕과의 대비가 3:1 을 못 넘어서,
+              이름표가 없으면 색만으로 조각을 가려야 한다. 그건 안 된다. */}
+          {arcs.map((a, i) => {
+            const rad = (a.angle * Math.PI) / 180
+            return (
+              <text key={a.zone} className="zone-slice-label"
+                style={{ stroke: zoneColor(i) }}
+                x={70 + Math.cos(rad) * R} y={75 + Math.sin(rad) * R + 4}
+                textAnchor="middle">{short(a.zone)}</text>
+            )
+          })}
+          <text x="70" y="71" textAnchor="middle" className="chart-donut-num">{total}</text>
+          <text x="70" y="87" textAnchor="middle" className="chart-donut-cap">명</text>
+        </g>
+      </svg>
+
+      <ul className="zone-legend">
+        {rows.map((r, i) => (
+          <li key={r.zone}>
+            <span className="chart-swatch" style={{ background: zoneColor(i) }} aria-hidden="true" />
+            <b>{r.zone}</b>
+            <span>{r.n}명 · {Math.round((r.n / total) * 100)}%</span>
+          </li>
+        ))}
+      </ul>
+
+      {prefix && (
+        <p className="admin-hint" style={{ margin: '8px 0 0' }}>
+          조각 위 숫자는 구역번호에서 공통인 <b>{prefix}</b> 를 뗀 뒷자리입니다.
+        </p>
+      )}
+    </div>
+  )
+}
+
 function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void }) {
   const [rows, setRows] = useState<Member[] | null>(null)
   const [open, setOpen] = useState(false)
@@ -273,11 +403,27 @@ function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void })
     catch (e) { onError(e) } finally { setBusy(false) }
   }
 
-  /** 구역별로 묶어 보여 준다 — 스무 줄을 그냥 늘어놓으면 눈이 못 따라간다 */
-  const byZone = (rows ?? []).reduce<Record<string, Member[]>>((acc, m) => {
-    (acc[m.zone] ??= []).push(m); return acc
-  }, {})
-  const zones = Object.keys(byZone).sort()
+  /**
+   * **구역번호를 줄마다 함께 보여 준다.**
+   * 예전에는 구역을 묶음 제목으로만 두고 줄에는 이름만 뒀는데,
+   * 이름 옆에 아무것도 없어서 어디까지가 번호이고 어디부터가 이름인지 눈에 안 들어왔다.
+   * 이제 줄마다 `구역번호 · 이름` 이 나란히 서고, 번호는 다른 모양으로 칠한다.
+   */
+  const sorted = [...(rows ?? [])].sort((a, b) =>
+    a.zone.localeCompare(b.zone) || a.name.localeCompare(b.name, 'ko'))
+
+  /** 구역별 인원 — 파이에 쓴다 */
+  const perZone = Object.entries(
+    (rows ?? []).reduce<Record<string, number>>((acc, m) => {
+      acc[m.zone] = (acc[m.zone] ?? 0) + 1; return acc
+    }, {}),
+  ).map(([zone, n]) => ({ zone, n })).sort((a, b) => a.zone.localeCompare(b.zone))
+
+  /**
+   * 구역이 파이에서 몇 번째 조각인지. **명단 글꼴 색이 그 조각을 따라간다.**
+   * 파이와 명단을 잇는 것이 색이므로, 차례가 어긋나면 둘이 다른 이야기를 한다.
+   */
+  const slotOf = new Map(perZone.map((z, i) => [z.zone, i]))
 
   return (
     <details className="admin-members" open={open}
@@ -323,13 +469,31 @@ function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void })
         <p className="survey-empty">아직 명부가 비어 있습니다. 지금은 누구나 응답할 수 있습니다.</p>
       )}
 
-      {zones.map((z) => (
-        <div className="admin-zone" key={z}>
-          <span className="admin-links-title">{z} ({byZone[z]!.length}명)</span>
-          {byZone[z]!.map((m) => (
+      {perZone.length > 0 && (
+        <>
+          <span className="admin-links-title">구역별 인원</span>
+          <ZoneDonut rows={perZone} total={(rows ?? []).length} />
+        </>
+      )}
+
+      {sorted.length > 0 && (
+        <div className="admin-memberlist">
+          <div className="admin-member head" aria-hidden="true">
+            <span className="admin-member-zone">구역번호</span>
+            <span className="admin-member-name">이름</span>
+            <span className="admin-member-at">등록일자</span>
+          </div>
+          {sorted.map((m) => {
+            const slot = slotOf.get(m.zone) ?? 0
+            const ink = zoneInk(slot)
+            return (
             <div className="admin-member" key={m.id}>
-              <span className="admin-member-name">{m.name}</span>
-              <span className="admin-member-at">{koShort(m.registeredAt)} 등록</span>
+              {/* 구역번호와 이름은 **그냥 글자다.** 칩으로 감쌌더니 누르는 것처럼 보였고,
+                  줄마다 알약이 늘어서서 정작 이름이 안 읽혔다.
+                  파이 조각과 잇는 일은 색만으로 충분하다. */}
+              <span className="admin-member-zone" style={{ color: ink }}>{m.zone}</span>
+              <span className="admin-member-name" style={{ color: ink }}>{m.name}</span>
+              <span className="admin-member-at">{koDay(m.registeredAt)}</span>
               <button type="button" className="admin-mini" disabled={busy}
                 onClick={() => {
                   setEdit(m); setZone(m.zone); setName(m.name); setAt(toDateInput(m.registeredAt))
@@ -337,9 +501,10 @@ function Members({ pw, onError }: { pw: string; onError: (e: unknown) => void })
               <button type="button" className="admin-mini danger" disabled={busy}
                 onClick={() => { void remove(m) }}>지우기</button>
             </div>
-          ))}
+            )
+          })}
         </div>
-      ))}
+      )}
     </details>
   )
 }
@@ -457,19 +622,115 @@ function BoardPicker({ used, room, onAdd }: {
   )
 }
 
+/**
+ * **비어 있을 때 Tab 을 누르면 예시가 그대로 채워진다.**
+ *
+ * 예시(placeholder)가 대개 그대로 쓸 만한 문장인데, 지금은 눈으로 읽고 손으로 옮겨 적어야 했다.
+ * 옮겨 적는 자리는 틀리는 자리다.
+ *
+ * Tab 을 가로채는 것이 조심스러워서 **비어 있을 때만** 가로챈다.
+ * 한 번 채워지면 Tab 은 원래대로 다음 칸으로 넘어간다 — 칸에 갇히지 않는다.
+ * 예시가 싫으면 그냥 타이핑을 시작하면 되고, 채워진 것을 지우고 Tab 하면 넘어간다.
+ */
+function useTabToFill(value: string, placeholder: string | undefined, onChange: (v: string) => void) {
+  return (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key !== 'Tab' || e.shiftKey) return
+    if (value.trim() || !placeholder?.trim()) return   // 이미 적었거나 채울 예시가 없으면 그대로 둔다
+    e.preventDefault()
+    onChange(placeholder)
+  }
+}
+
 function Field({ label, value, onChange, placeholder, area = false }: {
   label: string; value: string; onChange: (v: string) => void
   placeholder?: string; area?: boolean
 }) {
+  const onKeyDown = useTabToFill(value, placeholder, onChange)
+  const fillable = !value.trim() && !!placeholder?.trim()
   return (
     <label className="survey-field" style={{ marginBottom: 9 }}>
-      <span>{label}</span>
+      <span>
+        {label}
+        {fillable && <em className="field-tab">Tab 누르면 예시가 채워집니다</em>}
+      </span>
       {area
-        ? <textarea className="admin-input" rows={3} value={value}
+        ? <textarea className="admin-input" rows={3} value={value} onKeyDown={onKeyDown}
             placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
-        : <input className="admin-input" value={value}
+        : <input className="admin-input" value={value} onKeyDown={onKeyDown}
             placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />}
     </label>
+  )
+}
+
+/**
+ * 기간 — **달력에서 시작과 끝을 고른다.**
+ *
+ * 예전에는 `2026. 8. 27. ~ 2027. 2. 9.` 를 손으로 적었다.
+ * 점과 물결과 공백을 매번 같은 자리에 찍어야 했고, 어긋나면 회원 화면에서 그대로 어긋나 보였다.
+ *
+ * ── 저장하는 값은 그대로 글이다 ────────────────────────────
+ * DB 의 `period` 는 지금도 자유로운 글이다. 달력은 **적는 방법**만 바꾼다.
+ * 그래야 이미 들어 있는 값과, 날짜 범위가 아닌 값(영화의 `개봉 예정 · 2026. 7. 29. 개봉`)이
+ * 그대로 살아 있다.
+ *
+ * ── 못 알아보는 값은 건드리지 않는다 ───────────────────────
+ * 있는 값이 날짜 범위로 안 읽히면 달력을 채우지 못한다. 그때 값을 지워 버리면
+ * 사람이 적어 둔 것을 앗아가는 셈이다. 그래서 **글 칸을 함께 열어 두고**
+ * 달력은 비운 채로 둔다 — 고칠지 말지는 쓰는 사람이 정한다.
+ */
+function PeriodField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const known = !value.trim() || parsePeriod(value) !== null
+  const [from, setFrom] = useState(() => parsePeriod(value)?.from ?? '')
+  const [to, setTo] = useState(() => parsePeriod(value)?.to ?? '')
+
+  /**
+   * **밖에서 값이 바뀌면 달력도 따라와야 한다.**
+   * 처음엔 `useState` 초기값으로만 읽었는데, 그건 이 조각이 처음 그려질 때 한 번뿐이다.
+   * 보드에서 고른 후보가 들어와도 달력이 빈 채로 남았다 — 후보 자리를 재사용하기 때문이다.
+   *
+   * 내가 방금 내보낸 값이면 다시 읽지 않는다. 그러면 끝 날짜만 고른 경우
+   * (`formatPeriod('', t)` 는 날짜 하나만 남긴다) 그 값이 시작 칸으로 튀어 오른다.
+   */
+  const mine = useRef(value)
+  useEffect(() => {
+    if (value === mine.current) return
+    mine.current = value
+    const p = parsePeriod(value)
+    setFrom(p?.from ?? '')
+    setTo(p?.to ?? '')
+  }, [value])
+
+  const push = (f: string, t: string) => {
+    setFrom(f); setTo(t)
+    const next = formatPeriod(f, t)
+    mine.current = next
+    onChange(next)
+  }
+
+  return (
+    <div className="survey-field" style={{ marginBottom: 9 }}>
+      <span>기간</span>
+      <div className="admin-row" style={{ alignItems: 'center', gap: 8 }}>
+        <input className="admin-input" type="date" aria-label="시작일"
+          value={from} onChange={(e) => push(e.target.value, to)} />
+        <span className="period-tilde" aria-hidden="true">~</span>
+        <input className="admin-input" type="date" aria-label="끝나는 날"
+          value={to} onChange={(e) => push(from, e.target.value)} />
+      </div>
+
+      {/* 고른 결과가 회원 화면에 어떻게 보일지 그대로 보여 준다 */}
+      {value.trim() && <p className="admin-hint" style={{ margin: '6px 0 0' }}>화면에는 <b>{value}</b> 로 보입니다.</p>}
+
+      {!known && (
+        <>
+          <p className="admin-hint" style={{ margin: '6px 0 4px' }}>
+            지금 적힌 기간이 날짜 범위가 아니라 달력으로는 못 고칩니다. 아래에서 고쳐 주세요.
+          </p>
+          <input className="admin-input" value={value}
+            aria-label="기간(직접 적기)" onChange={(e) => onChange(e.target.value)} />
+        </>
+      )}
+    </div>
   )
 }
 
@@ -491,8 +752,7 @@ function OptionEditor({ o, i, total, onChange, onRemove }: {
       </div>
       <Field label="제목" value={o.title} onChange={(v) => set('title', v)}
         placeholder="서도호 개인전" />
-      <Field label="기간" value={o.period} onChange={(v) => set('period', v)}
-        placeholder="2026. 8. 27. ~ 2027. 2. 9." />
+      <PeriodField value={o.period} onChange={(v) => set('period', v)} />
       <Field label="장소" value={o.venue} onChange={(v) => set('venue', v)}
         placeholder="국립현대미술관 서울" />
       <Field label="시간" value={o.hours} onChange={(v) => set('hours', v)}

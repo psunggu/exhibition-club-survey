@@ -460,7 +460,9 @@ await page.waitForTimeout(600);
 
 const optVals = await page.$$eval('.admin-option .admin-input', (es) => es.map((e) => e.value ?? ''));
 ok('제목이 들어왔다', optVals.some((v) => v.includes('가짜 전시')), optVals[0]?.slice(0, 22));
-ok('기간이 함께 들어왔다', optVals.some((v) => v.includes('2026. 9. 1.')));
+// 기간은 이제 글이 아니라 달력 두 칸에 들어간다
+ok('기간이 달력에 들어왔다', optVals.includes('2026-09-01') && optVals.includes('2026-12-31'),
+  optVals.filter((v) => /^\d{4}-\d{2}-\d{2}$/.test(v)).join(' ~ '));
 ok('장소가 함께 들어왔다', optVals.some((v) => v.includes('가짜미술관')));
 ok('관람료가 함께 들어왔다', optVals.some((v) => v.includes('9,000원')));
 ok('안내와 할인이 함께 들어왔다',
@@ -511,6 +513,28 @@ const editTitle = await page.$eval('.admin-form .admin-input', (e) => e.value);
 ok('고칠 설문 내용이 채워져 있다', editTitle.includes('9월'), editTitle);
 const editOptions = (await page.$$('.admin-option')).length;
 ok('기존 후보가 그대로 실려 있다', editOptions === 3, `${editOptions}개`);
+/* ── 기간은 달력으로 고른다 ─────────────────────────────── */
+/**
+ * 예전에는 `2026. 8. 27. ~ 2027. 2. 9.` 를 손으로 적었다. 점과 물결을 매번 같은 자리에
+ * 찍어야 했고, 어긋나면 회원 화면에서 그대로 어긋나 보였다.
+ *
+ * 저장되는 값은 지금도 **글**이다. 달력은 적는 방법만 바꾼다 —
+ * 그래야 날짜 범위가 아닌 값(영화의 `개봉 예정 · …`)이 그대로 살아 있다.
+ */
+const dateInputs = await page.$$eval('.admin-option input[type=date]', (es) => es.map((e) => e.value));
+ok('기간이 달력 두 칸이다', dateInputs.length >= 2, `${dateInputs.length}칸`);
+ok('적혀 있던 기간이 달력에 들어와 있다',
+  dateInputs[0] === '2026-08-27' && dateInputs[1] === '2027-02-09',
+  `${dateInputs[0]} ~ ${dateInputs[1]}`);
+
+// 날짜를 바꾸면 회원 화면에 뜰 글이 따라 바뀐다
+const firstDate = (await page.$$('.admin-option input[type=date]'))[0];
+await firstDate.fill('2026-09-05');
+await page.waitForTimeout(250);
+ok('날짜를 바꾸면 글도 따라 바뀐다',
+  (await page.$$eval('.admin-option .admin-hint', (es) => es.map((e) => e.textContent)))
+    .some((t) => t.includes('2026. 9. 5. ~ 2027. 2. 9.')));
+
 ok('제목이 「설문 고치기」다',
   (await page.$eval('.admin-title', (e) => e.textContent.trim())) === '설문 고치기');
 
