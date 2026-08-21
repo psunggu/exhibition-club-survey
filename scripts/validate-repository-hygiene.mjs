@@ -1,11 +1,24 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
-  encoding: "utf8",
-})
+/**
+ * 추적 중인 파일뿐 아니라 **아직 커밋 안 한 새 파일도** 본다.
+ *
+ * 처음에는 `ls-files` 만 봤다. 그런데 새로 만든 파일은 아직 추적 전이라
+ * 로컬에서 돌리면 조용히 건너뛰고 통과했다 — 실제로 실명이 든 새 마이그레이션이
+ * 로컬을 지나 CI 에서야 걸렸다. 잡을 거면 **만든 자리에서** 잡아야 한다.
+ *
+ * `--exclude-standard` 를 붙여 .gitignore 가 막는 것은 빼 둔다.
+ * out/ 안의 명부처럼 **일부러 저장소 밖에 두는 것**까지 잡으면 검사가 못 쓰게 된다.
+ */
+const gitList = (args) => execFileSync("git", args, { encoding: "utf8" })
   .split("\0")
   .filter(Boolean);
+
+const trackedFiles = [...new Set([
+  ...gitList(["ls-files", "-z"]),
+  ...gitList(["ls-files", "-z", "--others", "--exclude-standard"]),
+])];
 
 const failures = [];
 const publicAnonConfig = "app/public/config.js";
