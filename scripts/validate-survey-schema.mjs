@@ -366,6 +366,51 @@ for (const m of liveSeed.matchAll(/'(\[[\s\S]*?\])'::jsonb/g)) {
   }
 }
 
+/* ── 8. 같은 전시의 여는 시간이 두 군데서 다르면 안 된다 ──────
+ *
+ * 설문 후보와 보드는 **같은 전시를 각자 적는다.** 서로 베끼지 않으므로
+ * 한쪽만 고치면 조용히 어긋난다. 실제로 그랬다 — 《세 번째 시》 토요일이
+ * 설문은 09:30~20:00, 보드는 10:00~19:00 이었다 (2026-08-22 에 잡아 고쳤다).
+ * 보고 간 사람이 문 닫힌 앞에 서게 되는 종류의 오류다.
+ *
+ * 글자를 통째로 비교하지는 않는다 — `화-금·일 …, 토 …` 와 `화~금·일 … / 토 …` 는
+ * 구분자만 다르지 같은 말이다. 대신 **시각 구간만 뽑아서 견준다.**
+ * 그래야 문장 다듬기에는 안 걸리고 시간이 달라질 때만 걸린다.
+ */
+const boardRows = read('202608190001b_rows.sql');
+const TIME_RANGE = /(\d{1,2}):(\d{2})\s*[-~–]\s*(\d{1,2}):(\d{2})/g;
+const spansOf = (text) => {
+  const out = new Set();
+  for (const m of (text ?? '').matchAll(TIME_RANGE)) {
+    out.add(`${m[1].padStart(2, '0')}:${m[2]}-${m[3].padStart(2, '0')}:${m[4]}`);
+  }
+  return [...out].sort().join(', ');
+};
+
+/** 보드의 update 문에서 제목별 운영시간을 거둔다 — `"time" = '…' … where title = '…'` */
+const boardHours = new Map();
+for (const m of boardRows.matchAll(/"time"\s*=\s*'([^']*)'[\s\S]*?where title = '([^']*)'/g)) {
+  boardHours.set(m[2], m[1]);
+}
+if (!boardHours.size) fail('보드 줄에서 운영시간을 하나도 못 읽었다 — 검사가 헛돈다');
+
+let hoursChecked = 0;
+const hoursSkipped = [];
+for (const block of liveSeed.matchAll(/insert into public\.survey_options[\s\S]*?\n\)/g)) {
+  const t = block[0].match(/'(《[^']*》)'/);
+  if (!t) continue;                      // 전시 아닌 후보(식당 등)는 제목 모양이 다르다
+  const onBoard = boardHours.get(t[1]);
+  if (onBoard === undefined) { hoursSkipped.push(`${t[1]} — 보드에 없다`); continue; }
+  const a = spansOf(block[0]);
+  const b = spansOf(onBoard);
+  // 한쪽이 시간을 안 적었으면 어긋난 것이 아니다 — 덜 적은 것뿐이다
+  if (!a || !b) { hoursSkipped.push(`${t[1]} — 한쪽에 시간이 없다`); continue; }
+  hoursChecked += 1;
+  if (a !== b) {
+    fail(`${t[1]} 의 여는 시간이 설문과 보드에서 다르다 — 설문 [${a}] · 보드 [${b}]`);
+  }
+}
+
 /* ── 알리기 ──────────────────────────────────────────────── */
 
 if (fails.length) {
@@ -374,4 +419,8 @@ if (fails.length) {
   process.exit(1);
 }
 console.log(`설문 스키마 검사 통과 — 잠근 표 ${LOCKED.length} · 공개 표 ${OPEN.length} `
-  + `· anon 이 부르는 함수 ${CALLABLE.length} · 후보 링크 ${linkCount}`);
+  + `· anon 이 부르는 함수 ${CALLABLE.length} · 후보 링크 ${linkCount}`
+  + ` · 보드와 시간 대조 ${hoursChecked}건`
+  + (hoursSkipped.length
+    ? `\n  건너뜀 ${hoursSkipped.length}건 — ${hoursSkipped.join(' · ')}`
+    : ''));
