@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -50,6 +51,8 @@ const sNew = await serve(path.join(ROOT, 'dist'), 8215, true);
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
+// 날짜를 타는 화면이라 시계를 묶는다 — 안 묶으면 내일 이 검사가 거짓으로 실패한다
+await freezeClock(page);
 await page.setViewportSize({ width: 375, height: 900 });
 
 const lines = async (url) => {
@@ -129,4 +132,5 @@ if (missing) {
   console.log('이미 걸렀으므로, 남은 것은 **구조가 빠진 것**이다.\n');
   process.exit(1);
 }
-console.log(`\n보이는 글 대조 통과 (문구만 다듬어진 줄 ${reworded}개는 통과로 본다)`);
+console.log(`\n보이는 글 대조 통과 (문구만 다듬어진 줄 ${reworded}개는 통과로 본다)`
+  + ` — 시계는 ${FROZEN_DAY} 에 묶고 쟀다`);

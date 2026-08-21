@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OLD = path.join(ROOT, 'app/public');
@@ -95,6 +96,8 @@ async function measure(page, url, sels, width) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
+// 날짜를 타는 화면이라 시계를 묶는다 — 안 묶으면 내일 이 검사가 거짓으로 실패한다
+await freezeClock(page);
 
 const PAIRS = [
   ['보드', `http://localhost:${PORT_OLD}/index.html`,
@@ -122,7 +125,7 @@ await browser.close();
 sOld.close(); sNew.close();
 
 if (!report.length) {
-  console.log('옛 화면과 일치 — 어긋난 곳 없음');
+  console.log(`옛 화면과 일치 — 어긋난 곳 없음 (시계는 ${FROZEN_DAY} 에 묶고 쟀다)`);
   process.exit(0);
 }
 const byScreen = {};
