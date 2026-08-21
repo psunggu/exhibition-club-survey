@@ -370,6 +370,69 @@ export const adminMemberSave = (
 export const adminMemberDelete = (pw: string, id: string, signal?: AbortSignal) =>
   rpc<null>('survey_admin_member_delete', { p_password: pw, p_id: id }, signal)
 
+/* ── 후보의 기간 ────────────────────────────────────────────
+ * DB 에 담기는 것은 `2026. 8. 27. ~ 2027. 2. 9.` 같은 **글**이다.
+ * 달력 칸은 적는 방법만 바꾸는 것이라, 글 ↔ 날짜를 오갈 수 있어야 한다.
+ */
+
+/** `2026. 8. 27.` · `2026.8.27` · `2026-08-27` 을 모두 `2026-08-27` 로 본다 */
+const oneDate = (s: string): string | null => {
+  const m = /^\s*(\d{4})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{1,2})\s*\.?\s*$/.exec(s)
+  if (!m) return null
+  const [, y, mo, d] = m
+  const iso = `${y}-${String(Number(mo)).padStart(2, '0')}-${String(Number(d)).padStart(2, '0')}`
+  // 2026-02-31 같은 것을 걸러낸다 — Date 가 조용히 3월로 넘겨 버린다
+  const t = new Date(`${iso}T00:00:00+09:00`)
+  return Number.isNaN(t.getTime()) || !iso.endsWith(String(t.getDate()).padStart(2, '0')) ? null : iso
+}
+
+/**
+ * 적혀 있는 기간을 달력이 읽을 수 있는 두 날짜로 되돌린다.
+ * **날짜 범위로 안 읽히면 null 이다** — 영화의 `개봉 예정 · 2026. 7. 29. 개봉` 같은 것.
+ * 그때는 손대지 말아야 한다. 억지로 날짜를 뽑아내면 원래 뜻이 사라진다.
+ */
+export function parsePeriod(text: string): { from: string; to: string } | null {
+  const s = (text ?? '').trim()
+  if (!s) return null
+  const parts = s.split('~')
+  if (parts.length === 1) {
+    const one = oneDate(parts[0]!)
+    return one ? { from: one, to: '' } : null
+  }
+  if (parts.length !== 2) return null
+  const from = oneDate(parts[0]!)
+  const to = oneDate(parts[1]!)
+  if (!from || !to) return null
+  return { from, to }
+}
+
+/** 달력이 준 두 날짜를 회원 화면에 뜨는 글로 만든다 */
+export function formatPeriod(from: string, to: string): string {
+  const ko = (iso: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return ''
+    const [y, m, d] = iso.split('-')
+    return `${y}. ${Number(m)}. ${Number(d)}.`
+  }
+  const a = ko(from); const b = ko(to)
+  if (a && b) return `${a} ~ ${b}`
+  return a || b
+}
+
+/**
+ * 날짜만. **시각은 빼고 보여 준다.**
+ * 명부에 `8. 22. 00:00` 이라고 뜨니 `00:00` 이 눈을 잡아끌었는데,
+ * 정작 그 숫자는 아무 뜻이 없다 — 등록일자에 시각을 받지 않기 때문이다.
+ */
+export function koDay(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const p = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric', day: 'numeric',
+  }).formatToParts(d)
+  const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
+  return `${g('year')}. ${g('month')}. ${g('day')}.`
+}
+
 /** 날짜 칸(`type="date"`)에 넣을 꼴. 한국 시간 기준으로 자른다. */
 export const toDateInput = (iso: string): string => {
   const d = new Date(iso)
