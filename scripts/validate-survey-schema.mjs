@@ -34,6 +34,7 @@ const read = (name) => {
 const tables = [
   read('202608200001a_survey_tables.sql'),
   read('202608210002a_survey_notes.sql'),
+  read('202608220001a_members.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -44,6 +45,7 @@ const admin = [
   read('202608200003a_survey_admin_results.sql'),
   read('202608210001a_survey_category.sql'),
   read('202608210002a_survey_notes.sql'),
+  read('202608220001a_members.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -51,7 +53,10 @@ const allFuncs = `${funcs}\n${admin}`;
 /* ── 1. 응답 표는 잠겨 있어야 한다 ───────────────────────── */
 
 // survey_notes 도 잠근다 — 톡방 이야기나 사람 이름이 섞일 수 있는 자리다
-const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes'];
+// survey_members 는 그 자체가 교인 명부다 — 읽히면 이름과 구역번호가 통째로 샌다
+// survey_probe_log 는 누가 언제 두드렸는지의 기록이다 — 이것도 열어 둘 이유가 없다
+const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes',
+  'survey_members', 'survey_probe_log'];
 const OPEN = ['surveys', 'survey_options'];
 
 for (const t of [...LOCKED, ...OPEN]) {
@@ -92,6 +97,8 @@ const CALLABLE = [
   'survey_admin_tally', 'survey_admin_names',
   'survey_admin_results', 'survey_admin_respondents',
   'survey_admin_note', 'survey_admin_note_save',
+  'survey_member_ok', 'survey_roster_on',
+  'survey_admin_members', 'survey_admin_member_save', 'survey_admin_member_delete',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
@@ -99,6 +106,66 @@ for (const f of CALLABLE) {
   }
   if (!new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${f}\\b[^;]*\\banon\\b`, 'i').test(allFuncs)) {
     fail(`public.${f} 에 anon 실행 권한을 주지 않았다 — 앱에서 부를 수 없다`);
+  }
+}
+
+/* ── insert 가 실제로 있는 열에 쓰는가 ────────────────────── */
+/**
+ * **plpgsql 은 만들 때 열 이름을 보지 않는다.** 부를 때 42703 으로 터진다.
+ * 그래서 없는 열에 쓰는 함수를 만들어도 마이그레이션은 조용히 성공하고,
+ * 회원이 제출을 누르는 순간에야 무너진다.
+ *
+ * 실제로 그럴 뻔했다 — survey_submit 을 다시 쓰면서 꼬리를 그대로 옮기지 않고
+ * 손으로 다시 썼더니 `display_name` 을 `name` 으로, `updated_at` 을 `answered_at` 으로,
+ * survey_choices 를 옛 모양(`survey_id, respondent_key`)으로 적었다.
+ * 검사는 통과했다. 열 이름을 안 봤기 때문이다.
+ *
+ * 표 정의에서 열을 읽어 와 견준다 — 목록을 여기 손으로 적으면 그것부터 낡는다.
+ */
+/**
+ * 열은 두 군데서 생긴다 — `create table` 과, 나중에 붙인 `alter table … add column`.
+ * 처음엔 앞엣것만 읽었더니 `surveys.category` 처럼 뒤에 붙인 열을 없는 열이라고 잡았다.
+ * 표 정의가 흩어져 있으므로 모든 마이그레이션에서 함께 긁는다.
+ */
+const everySql = [tables, funcs, seed, admin].join('\n');
+
+const columnsOf = (table) => {
+  const cols = new Set();
+  const created = new RegExp(`create table if not exists public\\.${table}\\s*\\(([\\s\\S]*?)\\n\\);`, 'i')
+    .exec(everySql);
+  if (created) {
+    for (const l of created[1].split('\n')) {
+      const c = /^([a-z_][a-z0-9_]*)\s+[a-z]/i.exec(l.replace(/--.*$/, '').trim())?.[1];
+      if (c) cols.add(c);
+    }
+  }
+  const added = new RegExp(
+    `alter\\s+table\\s+(?:only\\s+)?public\\.${table}\\s+add\\s+column\\s+(?:if\\s+not\\s+exists\\s+)?([a-z_][a-z0-9_]*)`, 'gi');
+  for (const m of everySql.matchAll(added)) cols.add(m[1]);
+  return cols.size ? cols : null;
+};
+
+/** 우리가 만드는 표 전부 — 손으로 적으면 표가 늘 때마다 낡는다 */
+const OURS = [...new Set(
+  [...everySql.matchAll(/create table if not exists public\.(\w+)/gi)].map((m) => m[1]),
+)];
+
+for (const m of allFuncs.matchAll(/insert\s+into\s+public\.(\w+)\s*\(([^)]*)\)/gi)) {
+  const [, table, list] = m;
+  const known = columnsOf(table);
+  if (!known) continue;                      // 이 저장소가 만들지 않은 표는 넘긴다
+  for (const c of list.split(',').map((x) => x.trim()).filter(Boolean)) {
+    if (!known.has(c)) fail(`public.${table} 에 없는 열에 넣는다 — ${c} (부를 때 42703 으로 터진다)`);
+  }
+}
+
+for (const m of allFuncs.matchAll(/do\s+update\s+set\s+([\s\S]*?);/gi)) {
+  // `set a = …, b = …` 에서 왼쪽 이름만 본다
+  for (const c of m[1].matchAll(/(?:^|,)\s*([a-z_][a-z0-9_]*)\s*=/gi)) {
+    const col = c[1];
+    // 어느 표인지 이 조각만으로는 모르니, 우리 표 어디에도 없는 이름이면 잡는다
+    const anywhere = OURS.some((t) => columnsOf(t)?.has(col));
+    if (!anywhere) fail(`do update set 에서 우리 표에 없는 열을 고친다 — ${col}`);
   }
 }
 

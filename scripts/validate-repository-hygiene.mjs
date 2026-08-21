@@ -1,11 +1,24 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
-  encoding: "utf8",
-})
+/**
+ * 추적 중인 파일뿐 아니라 **아직 커밋 안 한 새 파일도** 본다.
+ *
+ * 처음에는 `ls-files` 만 봤다. 그런데 새로 만든 파일은 아직 추적 전이라
+ * 로컬에서 돌리면 조용히 건너뛰고 통과했다 — 실제로 실명이 든 새 마이그레이션이
+ * 로컬을 지나 CI 에서야 걸렸다. 잡을 거면 **만든 자리에서** 잡아야 한다.
+ *
+ * `--exclude-standard` 를 붙여 .gitignore 가 막는 것은 빼 둔다.
+ * out/ 안의 명부처럼 **일부러 저장소 밖에 두는 것**까지 잡으면 검사가 못 쓰게 된다.
+ */
+const gitList = (args) => execFileSync("git", args, { encoding: "utf8" })
   .split("\0")
   .filter(Boolean);
+
+const trackedFiles = [...new Set([
+  ...gitList(["ls-files", "-z"]),
+  ...gitList(["ls-files", "-z", "--others", "--exclude-standard"]),
+])];
 
 const failures = [];
 const publicAnonConfig = "app/public/config.js";
@@ -93,6 +106,17 @@ for (const file of trackedFiles) {
      */
     ["단톡방 프로필(구역번호+성명)",
       /(?<![\d/,])\d{3,4}\s*\/\s*[가-힣]{2,4}(?![\d/가-힣])/gu],
+    /**
+     * 슬래시 없이 **띄어쓰기로만** 이어진 꼴도 본다 — 설문 화면이 그렇게 보여 주므로
+     * 옮겨 적을 때 이 모양이 된다. 실제로 이 꼴로 한 번 새어 들어왔다.
+     *
+     * 슬래시 규칙보다 헐거워서 두 가지를 좁혔다.
+     *   · **네 자리만** 본다 — 세 자리면 `404 폴백` 같은 것이 걸린다
+     *   · **19·20 으로 시작하는 것은 뺀다** — 연도다. `2026 뮤지컬` 이 걸렸었다
+     * 이 저장소를 통째로 훑어 오탐이 0 인 것을 확인하고 정한 조건이다.
+     */
+    ["단톡방 프로필(구역번호 띄고 성명)",
+      /(?<![\d/,])(?!19|20)\d{4}[ \t]+[가-힣]{2,4}(?![\d/가-힣])/gu],
     ["대화 내보내기 발화 줄", /\[[^\]\n]{1,30}\]\s*\[(?:오전|오후)\s*\d{1,2}:\d{2}\]/gu],
     ["대화 내보내기 날짜 구분선", /-{5,}\s*\d{4}년\s*\d{1,2}월\s*\d{1,2}일\s*[월화수목금토일]요일/gu],
     ["private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/u],
