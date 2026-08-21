@@ -6,7 +6,7 @@ import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 import {
-  CATEGORY, fetchResponseCount, fetchSurveys, isOpen, koDeadline,
+  CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
   type SurveyCategory,
 } from './lib/survey'
 
@@ -51,28 +51,33 @@ function SurveyJump() {
     return () => ac.abort()
   }, [])
 
+  /**
+   * 현황은 **한 줄에 들어가게 짧게** 적는다.
+   * `8월 28일 (금) 오후 9시까지 · 1명 참여` 로 길게 썼더니 좁은 화면에서 두 줄로 접혔고,
+   * 그러면 카드 높이가 상태에 따라 달라져 화면 대조 검사가 흔들렸다.
+   * 자세한 마감 시각은 설문 화면에 그대로 적혀 있다.
+   */
   const stateOf = (c: SurveyCategory) => {
     const r = rows?.find((x) => x.category === c)
     if (!r) return null
-    const who = r.people > 0 ? ` · ${r.people}명 참여` : ''
-    return r.open
-      ? { on: true, text: `${koDeadline(r.closesAt)}까지${who}` }
-      : { on: false, text: `마감${who}` }
+    const who = r.people > 0 ? ` · ${r.people}명` : ''
+    if (!r.open) return { on: false, text: `마감${who}` }
+    const d = new Date(r.closesAt)
+    const p = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short',
+    }).formatToParts(d)
+    const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
+    return { on: true, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}` }
   }
-
-  const openCount = (rows ?? []).filter((r) => r.open).length
 
   return (
     <section className="survey-jump" aria-labelledby="surveyJumpTitle">
       <p className="board-jump-kicker">모임 정하기</p>
       <h2 id="surveyJumpTitle">설문 참여하기</h2>
-      <p>
-        {rows === null
-          ? '함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다.'
-          : openCount > 0
-            ? `지금 참여할 수 있는 설문이 ${openCount}개 있습니다. 명부에 있는 분만 응답할 수 있습니다.`
-            : '지금 진행 중인 설문은 없습니다. 지난 결과는 눌러서 보실 수 있습니다.'}
-      </p>
+      {/* 안내문은 **상태에 따라 바뀌지 않는다.** 바꿨더니 줄 수가 달라져
+          카드 높이가 흔들렸고, 화면 대조 검사가 그걸 디자인 변화로 읽었다.
+          지금 무엇이 열려 있는지는 아래 줄들이 말한다. */}
+      <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
 
       <ul className="survey-jump-list">
         {(['exhibition', 'meal'] as const).map((c) => {

@@ -73,6 +73,7 @@ const WATCH = [
   '.digest', '.digest-head', '.digest-title', '.sec', '.card', '.db', '.db .d',
   '.tag', '.meta', '.card-alert',
   '.cal', '.wd', '.cell', '.dnum', '.chip',
+  '.survey-jump', '.survey-jump-list li',
 ];
 
 /** 색·글자·간격·상자 — 눈에 보이는 것을 정하는 값들 */
@@ -104,9 +105,25 @@ async function measure(page, url, width) {
       for (const p of props) style[p] = round(cs[p]);
       out[sel] = { count: els.length, box: { w: Math.round(r.width), h: Math.round(r.height) }, style };
     }
+    /**
+     * **살아 있는 값이 든 자리는 글자 수에서 뺀다.**
+     *
+     * 이 검사는 디자인이 흔들리지 않는지 본다. 그런데 설문 현황 카드에는
+     * 마감 시각·참여 인원·「진행 중인 설문 N개」 가 들어 있어 잴 때마다 길이가 달라진다.
+     * 응답이 하나 늘어도, 하루가 지나도, 불러오기가 늦어도 값이 바뀐다.
+     * 실제로 CI 에서 1222 대 1164 로 갈렸다 — 디자인은 하나도 안 바뀐 채로.
+     *
+     * 카드의 **생김새**는 위 WATCH 의 `.survey-jump` 와 `.survey-jump-list li` 가 지킨다 —
+     * 상자와 색은 불러왔든 못 불러왔든 같다는 것을 재서 확인했다.
+     * 다만 `.survey-jump-state` 는 넣지 않는다. 못 불러오면 그 조각은 아예 안 그려지고,
+     * 인원이 한 자리에서 두 자리가 되면 폭도 변한다 — 지켜볼 수 없는 값이다.
+     */
+    const live = [...document.querySelectorAll('.survey-jump')]
+      .map((e) => e.innerText.replace(/\s+/g, ' ').trim().length)
+      .reduce((a, b) => a + b, 0);
     out['#문서'] = {
       scrollWidth: document.documentElement.scrollWidth,
-      textLength: document.body.innerText.replace(/\s+/g, ' ').trim().length,
+      textLength: document.body.innerText.replace(/\s+/g, ' ').trim().length - live,
       cardCount: document.querySelectorAll('.exhibition-card').length,
       chipCount: document.querySelectorAll('.cell .chip').length,
     };
