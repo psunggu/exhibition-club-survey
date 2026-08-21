@@ -36,6 +36,9 @@ const ok = (label, cond, detail = '') => {
   if (!cond) fails.push(label);
 };
 
+/** 조건이 안 맞아 못 본 것은 통과로 세지 않는다 — 봤다고 착각하면 안 된다. */
+const skip = (label, why) => console.log(`  – ${label} — 건너뜀 (${why})`);
+
 const get = async (p) => {
   const r = await fetch(`${base}/rest/v1/${p}`, { headers: H });
   let body = null;
@@ -75,12 +78,45 @@ if (!s0) {
 }
 console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
 
-ok('후보가 딸려 온다', Array.isArray(s0.survey_options) && s0.survey_options.length === 4,
-  `${s0.survey_options?.length ?? 0}개`);
-const links = (s0.survey_options ?? []).flatMap((o) => o.links ?? []);
-ok('참고 링크가 들어 있다', links.length === 4, links.map((l) => l.kind).join(', '));
-ok('서도호 영상 링크가 있다',
-  links.some((l) => l.kind === 'video' && l.url.includes('8IvgzYaKexE')));
+/**
+ * **개수를 못박지 않는다.**
+ *
+ * 예전에는 `후보 4개 · 링크 4개` 로 적어 두었다. 그런데 운영자가 9월 후보에서
+ * 스페인 미술 500년을 빼자(#50) 이 검사가 빨개진 채로 남았다 — 화면도 DB 도
+ * 멀쩡한데 검사만 틀린 것이다. 후보 수는 운영자가 정하는 것이지
+ * 검사가 정할 것이 아니다.
+ *
+ * 그래서 개수 대신 **모양**을 본다. 여기서 진짜 보고 싶은 것은
+ * 「후보가 딸려 왔는가(중첩 select 가 도는가)」 와 「링크가 성한가」 이다.
+ */
+const opts = Array.isArray(s0.survey_options) ? s0.survey_options : [];
+ok('후보가 딸려 온다', opts.length > 0, `${opts.length}개`);
+
+const badOpt = opts.filter((o) => !String(o?.title ?? '').trim()
+  || !Number.isFinite(Number(o?.position)));
+ok('후보마다 제목과 차례가 있다', opts.length > 0 && !badOpt.length,
+  badOpt.length ? `빠진 것 ${badOpt.length}개` : `${opts.length}개 확인`);
+
+/** 화면이 그대로 눌러 쓰는 값이라, 갈래·이름·https 셋을 다 본다. */
+const LINK_KINDS = new Set(['official', 'video', 'article', 'map', 'booking']);
+const links = opts.flatMap((o) => o.links ?? []);
+const badLink = links.filter((l) => !l || !LINK_KINDS.has(l.kind)
+  || !String(l.label ?? '').trim() || !/^https:\/\//.test(String(l.url ?? '')));
+ok('참고 링크가 성한 모양이다', links.length > 0 && !badLink.length,
+  badLink.length ? `깨진 것 ${badLink.length}개` : links.map((l) => l.kind).join(', '));
+
+/**
+ * 이 하나는 **지금 후보에 서도호가 있을 때만** 본다.
+ * links 의 JSON 이 왕복하는지를 아는 값으로 확인하려는 것인데,
+ * 10월 설문으로 바뀌면 서도호는 없어진다. 그때 「없으니 실패」 는 틀린 말이다.
+ */
+const seodoho = opts.find((o) => String(o.title ?? '').includes('서도호'));
+if (seodoho) {
+  ok('서도호 영상 링크가 있다',
+    (seodoho.links ?? []).some((l) => l.kind === 'video' && String(l.url).includes('8IvgzYaKexE')));
+} else {
+  skip('서도호 영상 링크가 있다', '지금 후보에 서도호가 없다');
+}
 /**
  * **마감 시각을 못박지 않는다.** 여기서 두 번 데였다 —
  * 08시에서 17시로 옮겼을 때 한 번, 예정보다 일찍 마감했을 때 또 한 번.
@@ -130,7 +166,6 @@ ok('빈 이름을 거절한다', noName.status >= 400,
 const CLOSED_MSG = '마감된 설문입니다';
 const rejected = (r, want) => r.status >= 400 && !String(r.body?.message ?? '').includes(CLOSED_MSG)
   && (!want || String(r.body?.message ?? '').includes(want));
-const skip = (label, why) => console.log(`  – ${label} — 건너뜀 (${why})`);
 
 const noPick = await rpc('survey_submit',
   { p_survey: s0.id, p_zone: '9999', p_name: '검사용', p_options: [] });
