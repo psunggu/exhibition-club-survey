@@ -117,27 +117,39 @@ on conflict (id) do update set
   hours = excluded.hours, price = excluded.price, note = excluded.note,
   links = excluded.links;
 
--- ── 후보 4 · 스페인 미술 500년 ─────────────────────────────
-insert into public.survey_options
-  (id, survey_id, position, title, period, venue, hours, price, note, links)
-values (
-  '5e97b1a0-0000-4000-8000-000000000914',
-  '5e97b1a0-0000-4000-8000-000000000901',
-  4,
-  '《스페인 미술 500년: 빛과 어둠의 연대기》',
-  '2026. 9. 22. ~ 2027. 1. 20.',
-  '예술의전당 한가람디자인미술관',
-  '화~일 10:00~19:00 / 월 휴관',
-  '23,000원 / 얼리버드 14,000원',
-  '얼리버드 — 예매 8/4~8/31 · 관람 9/22~11/29',
-  '[
-    {"kind": "official", "label": "예매 페이지", "url": "https://mobileticket.interpark.com/goods/26010709"}
-  ]'::jsonb
-)
-on conflict (id) do update set
-  title = excluded.title, period = excluded.period, venue = excluded.venue,
-  hours = excluded.hours, price = excluded.price, note = excluded.note,
-  links = excluded.links;
+-- ── 후보 4 였던 것 · 스페인 미술 500년 — **뺐다** ─────────────
+--
+-- 2026-08-22 에 운영자가 후보에서 뺐다. 이유는 날짜다.
+--   · 2026-09-22 개막이라 9월에 볼 수 있는 날이 9/22~9/30 뿐이다
+--   · 그 사이 토요일은 9/26 하나인데 바로 앞 9/25 가 추석이다
+--   · 우리 보드도 이 전시 관람 예정일을 2026-10-17 로 잡아 두었다 — 사실상 10월 후보다
+--
+-- **하나만 고르는 설문으로 바꾸면서 더 중요해졌다.** 여러 개 고를 때는 그냥 한 표였지만,
+-- 하나만 고르면 이 전시를 고른 사람은 다른 것을 못 고른다.
+-- 9월에 가기 어려운 후보에 표가 몰리면 정작 갈 수 있는 전시가 밀린다.
+--
+-- 10월 설문을 열 때 다시 쓰려고 값은 지우지 않고 주석으로 남긴다.
+-- 되살리려면 아래를 풀고 position 을 새로 정하면 된다.
+--
+-- insert into public.survey_options
+--   (id, survey_id, position, title, period, venue, hours, price, note, links)
+-- values (
+--   '5e97b1a0-0000-4000-8000-000000000914',
+--   '5e97b1a0-0000-4000-8000-000000000901',
+--   4,
+--   '《스페인 미술 500년: 빛과 어둠의 연대기》',
+--   '2026. 9. 22. ~ 2027. 1. 20.',
+--   '예술의전당 한가람디자인미술관',
+--   '화~일 10:00~19:00 / 월 휴관',
+--   '23,000원 / 얼리버드 14,000원',
+--   '얼리버드 — 예매 8/4~8/31 · 관람 9/22~11/29',
+--   '[{"kind": "official", "label": "예매 페이지",
+--      "url": "https://mobileticket.interpark.com/goods/26010709"}]'::jsonb
+-- );
+--
+-- 이미 넣었던 것을 지운다. 여러 번 돌려도 안전하다.
+delete from public.survey_options
+ where id = '5e97b1a0-0000-4000-8000-000000000914';
 
 -- 확인 (기대: 설문 1 · 후보 4 · 링크 4)
 select
