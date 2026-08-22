@@ -17,31 +17,28 @@ insert into public.surveys
 values (
   '5e97b1a0-0000-4000-8000-000000000901',
   '9월 정기 관람 전시 추천',
-  '아래 후보 가운데 함께 보고 싶은 전시를 골라 주세요. 여러 개 고르셔도 됩니다. '
-  || '추천을 모은 뒤 투표로 최종 선정할 예정입니다.',
-  true,
+  '아래 후보 가운데 함께 보고 싶은 전시를 하나만 골라 주세요. '
+  || '가장 많이 받은 전시로 9월 정기 관람을 잡습니다.',
+  -- **하나만 고른다.** 처음에는 여러 개 고르게 했는데, 그러면 표가 흩어져
+  -- 「무엇을 보러 갈지」 가 안 정해진다. 2026-08-22 에 운영자가 바꿨다.
+  false,
   timestamptz '2026-08-20 09:00:00+09',
-  -- **운영자가 예정보다 일찍 닫았다 (2026-08-21 03:50).**
-  -- 마감은 두 번 옮겨졌다: 처음 8/21 08시 → 응답이 적어 같은 날 17시로 늘림
-  -- → 그래도 2건에서 멈춰 더 기다리지 않고 닫음.
-  -- 지난 시각으로 두면 화면이 투표받는 자리에서 결과 자리로 바뀐다(저녁식사 설문과 같은 방식).
-  --
-  -- 응답 2건으로 9월 전시를 정하기는 어렵다. 톡방에서 따로 정하거나 다시 받아야 하는데,
-  -- 그 판단은 이 파일이 아니라 운영진이 한다.
-  timestamptz '2026-08-21 03:50:00+09',
+  -- **마감은 여러 번 옮겨졌다.** 8/21 08시 → 같은 날 17시 → 03:50 로 앞당겨 닫음
+  -- → 응답 2건으로는 정할 수 없어 2026-08-22 에 8/28 21시로 다시 열었다.
+  timestamptz '2026-08-28 21:00:00+09',
   '박지현',
   'always',      -- 응답하면 바로 집계가 보인다
   'none',        -- 이름은 어디에도 안 나온다
   null           -- 마감 뒤에도 결과가 남는다
 )
-on conflict (id) do update set
-  title = excluded.title, intro = excluded.intro,
-  multi_choice = excluded.multi_choice,
-  opens_at = excluded.opens_at, closes_at = excluded.closes_at,
-  results_visible = excluded.results_visible,
-  show_names = excluded.show_names,
-  hide_after_days = excluded.hide_after_days,
-  updated_at = now();
+-- **덮어쓰지 않는다.**
+-- 이 파일은 설문을 처음 심는 씨앗이고, 그 뒤로는 운영자가 관리 화면에서 고친다.
+-- 실제로 이 파일은 한동안 실제 DB 와 어긋나 있었다 — 여러 개 고르기 · 옛 안내문 ·
+-- 지난 마감(8/21) 이 그대로 남아 있었다. 누가 다시 실행했으면
+-- **진행 중인 설문이 그 자리에서 닫혔을 것이다.**
+-- 값은 지금 것으로 맞춰 두되, 다시 실행해도 살아 있는 설문은 건드리지 않는다.
+-- 열려 있는 설문을 고칠 때는 관리 화면이나 그 한 줄만 고치는 update 를 쓴다.
+on conflict (id) do nothing;
 
 -- ── 후보 1 · 서도호 개인전 ─────────────────────────────────
 insert into public.survey_options
@@ -66,10 +63,7 @@ values (
     {"kind": "video",    "label": "참고 영상 · 9월 전시 3대장 (서도호·구정아·솔 르윗)", "url": "https://www.youtube.com/watch?v=8IvgzYaKexE"}
   ]'::jsonb
 )
-on conflict (id) do update set
-  title = excluded.title, period = excluded.period, venue = excluded.venue,
-  hours = excluded.hours, price = excluded.price, note = excluded.note,
-  links = excluded.links;
+on conflict (id) do nothing;   -- 씨앗이다. 살아 있는 값은 안 건드린다
 
 -- ── 후보 2 · 에스 데블린 ───────────────────────────────────
 insert into public.survey_options
@@ -92,10 +86,7 @@ values (
     {"kind": "official", "label": "전시 정보", "url": "https://kko.to/_RB0zDH0kK"}
   ]'::jsonb
 )
-on conflict (id) do update set
-  title = excluded.title, period = excluded.period, venue = excluded.venue,
-  hours = excluded.hours, price = excluded.price, note = excluded.note,
-  links = excluded.links;
+on conflict (id) do nothing;   -- 씨앗이다. 살아 있는 값은 안 건드린다
 
 -- ── 후보 3 · 이대원 ────────────────────────────────────────
 -- **공식 링크를 비워 두었다.** 받은 주소
@@ -116,10 +107,7 @@ values (
   null,
   '[]'::jsonb
 )
-on conflict (id) do update set
-  title = excluded.title, period = excluded.period, venue = excluded.venue,
-  hours = excluded.hours, price = excluded.price, note = excluded.note,
-  links = excluded.links;
+on conflict (id) do nothing;   -- 씨앗이다. 살아 있는 값은 안 건드린다
 
 -- ── 후보 4 였던 것 · 스페인 미술 500년 — **뺐다** ─────────────
 --
@@ -155,7 +143,71 @@ on conflict (id) do update set
 delete from public.survey_options
  where id = '5e97b1a0-0000-4000-8000-000000000914';
 
--- 확인 (기대: 설문 1 · 후보 4 · 링크 4)
+-- ── 후보 4 · 구정아 ────────────────────────────────────────
+-- 2026-08-23 에 넣었다. 참고 영상이 「9월 전시 3대장」 으로 묶은 셋 가운데 둘이
+-- 후보에 없어서 운영자가 넣으라고 했다 (서도호는 이미 후보 1).
+--
+-- 확인한 곳 (2026-08-23)
+--   리움 공식 예정전시 상세  /leeum/exhibition/94   200 · 제목·기간·M2 확인
+--   리움 방문안내            /leeum/info/visit      화~일 10:00~18:00 · 월 휴관
+--   리움 예매 사이트         ticket.leeum.org       **아직 안 올라와 있다**
+--
+-- **관람료를 비워 두었다.** 예매 사이트에 지금 걸린 것은 다른 기획전이고,
+-- 이 전시는 아직 판매 전이라 값이 없다. 지금 걸린 18,000원을 옮겨 적으면
+-- 그럴싸하지만 틀린 값이 된다 — 보고 간 사람이 다른 돈을 내게 된다.
+insert into public.survey_options
+  (id, survey_id, position, title, period, venue, hours, price, note, links)
+values (
+  '5e97b1a0-0000-4000-8000-000000000915',
+  '5e97b1a0-0000-4000-8000-000000000901',
+  4,
+  '《구정아: 우스모스》',
+  '2026. 9. 5. ~ 12. 27.',
+  '리움미술관 M2 · 용산구 이태원로55길 60-16',
+  '화~일 10:00~18:00 / 월 휴관 (티켓 판매 17:30 마감)',
+  null,
+  '관람료는 아직 공지 전입니다 (2026. 8. 23. 확인). 예매가 열리면 아래 예매 페이지에 뜹니다.'
+  || E'\n작가의 국내 최대 규모 개인전으로, 야광·스케이트 파크·자석·향 작업이 함께 나옵니다.'
+  || E'\n9월 내내 열려 있어 관람일을 아무 때나 잡을 수 있습니다.',
+  '[
+    {"kind": "official", "label": "전시 정보", "url": "https://www.leeumhoam.org/leeum/exhibition/94?params=Y"},
+    {"kind": "booking",  "label": "예매 페이지", "url": "https://ticket.leeum.org/"}
+  ]'::jsonb
+)
+on conflict (id) do nothing;
+
+-- ── 후보 5 · 솔 르윗 ───────────────────────────────────────
+-- 확인한 곳 (2026-08-23)
+--   APMA 공식 전시 상세  /contents/exhibition/4128332/view.do  200 · 제목·소개 확인
+--   APMA 첫 화면 아래단   관람시간 화-일 10:00~18:00 · 월 휴관 · 주소
+--   아모레퍼시픽 뉴스룸   stories.amorepacific.com             기간·관람료
+--
+-- **기간과 관람료는 미술관 사이트가 아니라 회사 뉴스룸에서 왔다.**
+-- 미술관 쪽은 8/31 까지 전시 교체로 임시 휴관 중이라 아직 안 올려 두었다.
+-- 뉴스룸은 아모레퍼시픽 공식 채널이고, 개막 9/1(화)·폐막 2027/2/28(일) 이
+-- 월요일 휴관과 앞뒤가 맞는다. 9월 초에 미술관 사이트에서 다시 확인하면 좋다.
+insert into public.survey_options
+  (id, survey_id, position, title, period, venue, hours, price, note, links)
+values (
+  '5e97b1a0-0000-4000-8000-000000000916',
+  '5e97b1a0-0000-4000-8000-000000000901',
+  5,
+  '솔 르윗 개인전 《Sol LeWitt: Open Structure》',
+  '2026. 9. 1. ~ 2027. 2. 28.',
+  '아모레퍼시픽미술관 · 용산구 한강대로 100',
+  '화~일 10:00~18:00 / 월 휴관',
+  '18,000원 / 대학생 14,000원 / 청소년 9,000원',
+  '개념미술 선구자 솔 르윗의 국내 첫 대규모 개인전입니다. '
+  || '월 드로잉 13점을 포함해 45점이 나옵니다.'
+  || E'\n8월 31일까지 전시 교체로 임시 휴관하고 9월 1일에 엽니다.'
+  || E'\n9월 내내 열려 있어 관람일을 아무 때나 잡을 수 있습니다.',
+  '[
+    {"kind": "official", "label": "전시 정보", "url": "https://apma.amorepacific.com/contents/exhibition/4128332/view.do"}
+  ]'::jsonb
+)
+on conflict (id) do nothing;
+
+-- 확인 (기대: 설문 1 · 후보 5 · 링크 6)
 select
   (select count(*) from public.surveys where id = '5e97b1a0-0000-4000-8000-000000000901') as 설문,
   (select count(*) from public.survey_options

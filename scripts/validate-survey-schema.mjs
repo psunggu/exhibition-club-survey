@@ -397,7 +397,10 @@ if (!boardHours.size) fail('보드 줄에서 운영시간을 하나도 못 읽�
 let hoursChecked = 0;
 const hoursSkipped = [];
 for (const block of liveSeed.matchAll(/insert into public\.survey_options[\s\S]*?\n\)/g)) {
-  const t = block[0].match(/'(《[^']*》)'/);
+  // 제목이 꼭 《 로 시작하지는 않는다 — 「솔 르윗 개인전 《Sol LeWitt: …》」 처럼
+  // 앞에 말이 붙기도 한다. 옛 규칙은 그런 후보를 조용히 건너뛰어서, 견주지도 않고
+  // 「건너뜀」 에도 안 세었다 — 통과로 보이지만 아무것도 안 본 것이다.
+  const t = block[0].match(/'([^']*《[^']*》[^']*)'/);
   if (!t) continue;                      // 전시 아닌 후보(식당 등)는 제목 모양이 다르다
   const onBoard = boardHours.get(t[1]);
   if (onBoard === undefined) { hoursSkipped.push(`${t[1]} — 보드에 없다`); continue; }
