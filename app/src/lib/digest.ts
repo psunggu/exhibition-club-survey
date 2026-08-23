@@ -1,5 +1,3 @@
-import { isRecentlyCompleted, seoulToday } from './calendar'
-
 /**
  * 주간 정리봇 요약 (R-01-05).
  *
@@ -12,13 +10,13 @@ import { isRecentlyCompleted, seoulToday } from './calendar'
  *
  * ── 고쳤던 것 ──────────────────────────────────────────────
  * `highlights` 를 문자열 배열로 잘못 읽어 **언제나 빈 배열**이었다.
- * 실제로는 `{severity,label,title,text,completed_date}` 객체 배열이고,
- * 옛 화면에서는 이것이 정리봇 본문 그 자체였다 — 심각도별 카드 5장.
- * 파서가 조용히 버리고 있었고 JSON 도 검사기도 정상이라 화면에서만 사라졌다.
+ * 실제로는 `{severity,label,title,text}` 객체 배열이고, 옛 화면에서는 이것이
+ * 정리봇 본문 그 자체였다. 파서가 조용히 버리고 있었고 JSON 도 검사기도
+ * 정상이라 화면에서만 사라졌다. 완료 항목은 아래 정책에 따라 별도 목록에 둔다.
  */
 
 export const SEVERITY_ICON = {
-  urgent: '!', check: '?', planning: '→', done: '✓',
+  urgent: '!', check: '?', planning: '→',
 } as const
 
 export type Severity = keyof typeof SEVERITY_ICON
@@ -28,7 +26,6 @@ export type Highlight = {
   label: string
   title: string
   text: string
-  completedDate?: string
 }
 
 export type Digest = {
@@ -52,9 +49,9 @@ const isSeverity = (v: unknown): v is Severity =>
 
 /**
  * 옛 `isSafeDigest` 와 같은 검사다 — 모양이 어긋난 항목은 통째로 버린다.
- * `done` 은 완료일이 있어야 하고, 오래된 것은 목록에서 내린다(옛 화면과 같은 3일 규칙).
+ * 완료 항목은 중요 확인사항이 아니다. 완료 목록과 `decisions` 에만 남기고 여기서는 받지 않는다.
  */
-function parseHighlights(v: unknown, today: string): Highlight[] {
+function parseHighlights(v: unknown): Highlight[] {
   if (!Array.isArray(v)) return []
   const out: Highlight[] = []
   for (const raw of v) {
@@ -65,17 +62,13 @@ function parseHighlights(v: unknown, today: string): Highlight[] {
     const title = str(h.title)
     const text = str(h.text)
     if (!label || !title || !text) continue
-    const completedDate = str(h.completed_date)
-    if (h.severity === 'done') {
-      if (!completedDate) continue
-      if (!isRecentlyCompleted(completedDate, today, 3)) continue
-    }
-    out.push({ severity: h.severity, label, title, text, ...(completedDate ? { completedDate } : {}) })
+    if ('completed_date' in h) continue
+    out.push({ severity: h.severity, label, title, text })
   }
   return out
 }
 
-export function parseDigest(raw: unknown, today = seoulToday()): Digest | null {
+export function parseDigest(raw: unknown): Digest | null {
   if (!raw || typeof raw !== 'object') return null
   const d = raw as Record<string, unknown>
   const summary = str(d.summary)
@@ -86,7 +79,7 @@ export function parseDigest(raw: unknown, today = seoulToday()): Digest | null {
     updatedLabel: str(d.updated_label),
     messageCount: typeof d.message_count === 'number' ? d.message_count : 0,
     summary,
-    highlights: parseHighlights(d.highlights, today),
+    highlights: parseHighlights(d.highlights),
     decisions: strArray(d.decisions),
     openQuestions: strArray(d.open_questions),
   }
