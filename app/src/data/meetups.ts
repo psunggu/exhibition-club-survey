@@ -47,6 +47,18 @@ export type Meetup = {
   mapUrl: string
   /** '완료된 모임' 목록에 뜨는 한 줄. 제목과 다른 문구다 */
   completedRow: string
+  /**
+   * 이 모임을 정하려고 돌린 설문들의 id.
+   *
+   * **왜 설문이 아니라 모임 쪽에 적나.** 설문이 모임보다 먼저 태어나기 때문이다 —
+   * 9월 설문 안내문이 「가장 많이 받은 전시로 9월 정기 관람을 잡습니다」 인 것처럼,
+   * 설문을 만드는 때에는 그 모임이 아직 없다. 모임은 언제나 나중에 확정되므로
+   * 모임 줄을 쓸 때 설문 id 를 함께 적는 것이 순서에 맞고 잊을 일이 적다.
+   *
+   * 한 모임에 전시 설문과 식사 설문이 둘 다 붙을 수 있어 처음부터 배열이다.
+   * 비워 두면 그 모임과 이어진 설문이 없다는 뜻이고, 설문 화면은 **아무것도 추측하지 않는다.**
+   */
+  surveyIds?: string[]
 }
 
 export const MEETUPS: Meetup[] = [
@@ -228,7 +240,9 @@ export const MEETUPS: Meetup[] = [
     infoUrl: 'https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok',
     infoLabel: '박물관 관람 안내 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80',
-    completedRow: ''
+    completedRow: '',
+    // 저녁식사 장소를 정한 설문. 이 모임 날짜가 지나면 설문 화면이 그것을 「지난 설문」 으로 옮긴다.
+    surveyIds: ['5e97b1a0-0000-4000-8000-000000000902']
   },
   {
     id: 'gaudi-visit',

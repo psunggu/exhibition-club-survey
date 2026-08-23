@@ -58,6 +58,14 @@ jobs:
       - name: Validate board port parity
         run: node scripts/validate-board-parity.mjs
 
+      # 설문 화면을 여는 검사가 CI 에 하나도 없었다 — 그래서 이 화면의 회귀는
+      # 로컬에서 npm run check 를 돌린 사람 눈에만 걸렸다.
+      - name: Validate survey history rule
+        run: node scripts/validate-survey-history.mjs
+
+      - name: Validate survey screens
+        run: node scripts/validate-survey-ui.mjs
+
       - name: Validate Supabase read-only boundary
         run: node scripts/validate-supabase-readonly.mjs
 

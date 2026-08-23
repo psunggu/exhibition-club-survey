@@ -729,7 +729,12 @@ select.admin-input { cursor: pointer; }
 /* 지금 보고 있는 갈래는 테두리로도 표시한다 — 색만으로 알리지 않는다 */
 .survey-tab.exhibition.on { border-color: #0f6e56; }
 .survey-tab.meal.on { border-color: #a54f1f; }
-.survey-tab:not(.on) { opacity: 0.75; }
+/* 안 보고 있는 갈래는 **흐리게 하지 않고 배경만 연하게** 한다.
+   opacity: 0.75 를 쓰고 있었는데 재 보니 전시 4.03:1 · 식사 3.68:1 로 기준(4.5:1) 아래였다.
+   대비 검사가 opacity 를 식에 안 넣어 그동안 안 걸렸을 뿐이다.
+   배경만 연하게 하면 전시 7.41:1 · 식사 6.35:1 로 오히려 올라간다. */
+.survey-tab.exhibition:not(.on) { background: #eef7f3; }
+.survey-tab.meal:not(.on) { background: #faf3ed; }
 
 /* ── 회원이 보는 결과 화면 (마감된 설문) ─────────────────── */
 
@@ -804,7 +809,10 @@ select.admin-input { cursor: pointer; }
    흐리게 두려다 #8a877d 로 했더니 흰 바탕에서 3.59:1 이라 기준에 못 미쳤다 —
    검사기가 잡았다. 색조는 그대로 두고 밝기만 낮춰 4.60:1 로 올린다. */
 .chart-bar-val.zero,
-.chart-legend-val.zero { color: #78756d; font-weight: 600; }
+/* 0표 글자는 #78756d 였는데 흰 배경에서 4.60:1 로 여유가 없었다.
+   마감 설문 카드를 가라앉히자(#f6f4ef) 4.19:1 로 떨어져 검사가 잡았다.
+   색조는 그대로 두고 밝기만 낮춘다 — #706d65 는 흰 5.17 · 지난 카드 4.95 · 마감 카드 4.70 이다. */
+.chart-legend-val.zero { color: #706d65; font-weight: 600; }
 
 .chart-bar-pct {
   margin-left: 5px;
@@ -1131,4 +1139,129 @@ select.admin-input { cursor: pointer; }
   color: #0a5b45;
   font-size: 11.5px;
   font-weight: 800;
+}
+
+/* ── 마감된 설문은 가라앉혀 보인다 ─────────────────────────
+ *
+ * **흐리기(opacity)를 쓰지 않는다.** 글자와 배경이 같이 바래서 대비가 무너지는데,
+ * 지금 대비 검사는 opacity 를 식에 넣지 않아 그 미달이 조용히 통과한다.
+ * 재 봤다 — 보조 글자 #55534b 는 opacity 0.75 에서 4.12:1 로 기준(4.5:1) 아래다.
+ *
+ * 대신 **배경만 한 단계 내리고 글자색은 그대로 둔다.** 가라앉은 느낌은 나면서
+ * 대비는 오히려 올라간다 — #1f1e1b on #f6f4ef = 15.17:1, #55534b on #f6f4ef = 7.01:1.
+ * 그리고 색만으로 알리지 않는다: 「마감」 글자와 「… 마감됨」 배지가 그대로 남는다.
+ */
+.survey-off .survey-result {
+  background: #f6f4ef;
+  border-color: #e2ded4;
+}
+
+/* 진행 중 태그는 초록, 마감 태그는 회색. 글자(「마감」)가 주된 신호이고 색은 거든다.
+   `.tag` 는 일정 화면과 함께 쓰는 규칙이라 반드시 `.survey-off` 아래로 범위를 좁힌다. */
+.survey-off .survey-head .tag {
+  background: #eceae3;
+  color: #4a4840;
+}
+
+/* ── 지난 설문 (모임까지 끝난 것) ─────────────────────────── */
+
+.survey-history {
+  margin-top: 26px;
+}
+
+.survey-history h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #3f3d37;
+  letter-spacing: -0.2px;
+}
+
+.survey-history-hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #55534b;
+}
+
+/* 카드 모양은 운영자 화면의 접는 명부(.admin-members)에서 그대로 가져왔다 —
+   새 모양을 만들지 않는다. */
+.survey-past {
+  background: #fbfaf7;
+  border: 1px solid #e8e5de;
+  border-radius: 12px;
+  padding: 0 14px;
+  margin-bottom: 10px;
+}
+
+.survey-past > summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 22px 12px 2px;   /* 오른쪽은 화살표 자리 */
+  min-height: 24px;              /* 누르는 자리 (WCAG 2.5.8) */
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+}
+
+/* 기본 삼각형을 끄고 오른쪽에 화살표를 둔다 — 일정 화면의 `.calendar-fold` 와 같은 방식.
+   접혔는지 펼쳤는지를 **모양으로도** 알린다. */
+.survey-past > summary::-webkit-details-marker { display: none; }
+.survey-past > summary::after {
+  content: "⌄";
+  position: absolute;
+  right: 2px;
+  top: 12px;
+  font-size: 15px;
+  color: #55534b;
+}
+.survey-past[open] > summary::after { content: "⌃"; }
+
+.survey-past > summary:focus-visible {
+  /* 알파 24% 를 쓰던 것을 불투명으로 바꿨다. 카드 바탕 위에 합성하면 1.43:1 이라
+     WCAG 1.4.11 이 요구하는 3:1 의 절반도 안 됐다 — 키보드만 쓰는 사람이 어디 있는지
+     사실상 못 본다. 이 파일의 다른 포커스 표시(112·312행)는 이미 불투명 #0f6e56(5.94:1)이다. */
+  outline: 2px solid #0f6e56;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.survey-past-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f1e1b;
+  line-height: 1.4;
+}
+
+.survey-past-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #55534b;
+}
+
+/* 이름표와 값을 세로로 맞춘다. 좁은 화면에서는 값이 접히되 이름표는 안 접힌다. */
+.survey-past-facts > span {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 2px 8px;
+}
+
+.survey-past-facts b {
+  font-weight: 700;
+  color: #3f3d37;
+}
+
+.survey-past-body {
+  border-top: 1px solid #ece9e1;
+  padding: 12px 0 14px;
+}
+
+/* 이미 「지난 설문」 상자 안이라 한 번 더 가라앉힐 필요가 없다.
+   두 번 눌러 놓으면 정작 보러 들어온 결과가 안 읽힌다. */
+.survey-past-body .survey-off .survey-result {
+  background: #fff;
+  border-color: #e8e5de;
 }
