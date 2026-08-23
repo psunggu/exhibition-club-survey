@@ -1218,7 +1218,10 @@ select.admin-input { cursor: pointer; }
 .survey-past[open] > summary::after { content: "⌃"; }
 
 .survey-past > summary:focus-visible {
-  outline: 3px solid rgba(15, 110, 86, 0.24);
+  /* 알파 24% 를 쓰던 것을 불투명으로 바꿨다. 카드 바탕 위에 합성하면 1.43:1 이라
+     WCAG 1.4.11 이 요구하는 3:1 의 절반도 안 됐다 — 키보드만 쓰는 사람이 어디 있는지
+     사실상 못 본다. 이 파일의 다른 포커스 표시(112·312행)는 이미 불투명 #0f6e56(5.94:1)이다. */
+  outline: 2px solid #0f6e56;
   outline-offset: 2px;
   border-radius: 8px;
 }

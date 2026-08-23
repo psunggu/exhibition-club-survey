@@ -4,7 +4,7 @@ import {
   isOpen, isVisible, koDeadline, memberOk, rosterOn, submitResponse, SurveyUnavailable,
   type Survey as SurveyT, type SurveyCategory, type SurveyLink, type SurveyOption,
 } from './lib/survey'
-import { Analysis, Metrics, ResultChart, summarize } from './SurveyChart'
+import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
 import { meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
 
 /**
@@ -420,13 +420,22 @@ function SurveyHistoryItem({ s }: { s: SurveyT }) {
           votes: t.get(o.id) ?? 0, voters: [] as string[],
         }))
         const m = summarize(rows, total)
-        // 동점이면 하나만 적으면 거짓말이 된다 — 화면의 다른 곳과 같은 규칙을 쓴다.
+        /**
+         * 동점이면 하나만 적으면 거짓말이 된다 — 화면의 다른 곳과 같은 규칙을 쓴다.
+         *
+         * **참여가 적으면 비율을 외치지 않는다.** 펼친 화면은 참여 3명 미만이면
+         * 「1위 득표율」 을 아예 안 보여 주고 「한 명만 달라져도 순위가 뒤집힙니다」 라고 적는다.
+         * 접힌 줄만 「2명 (100%)」 이라고 외치면 한 화면이 서로 반대되는 말을 하게 된다.
+         * SurveyChart 의 ENOUGH 를 그대로 가져다 쓴다 — 문턱이 두 벌이면 또 어긋난다.
+         */
+        const enough = total >= ENOUGH
+        const share = enough && total > 0 ? ` (${Math.round(m.topShare * 100)}%)` : ''
+        const caveat = !enough && m.votes ? ' · 참여가 적어 뜻으로 읽기는 이릅니다' : ''
         const result = !m.votes || !m.leaders.length
           ? '집계가 남아 있지 않습니다'
           : m.leaders.length === 1
-            ? `${m.leaders[0]!.title} ${m.top}명`
-              + (total > 0 ? ` (${Math.round(m.topShare * 100)}%)` : '')
-            : `${m.leaders.map((r) => r.title).join(' · ')} 공동 1위 (각 ${m.top}명)`
+            ? `${m.leaders[0]!.title} ${m.top}명${share}${caveat}`
+            : `${m.leaders.map((r) => r.title).join(' · ')} 공동 1위 (각 ${m.top}명)${caveat}`
         setSum({ result, people: total })
       })
       .catch(() => setSum(null))       // 못 읽으면 결과 줄만 비운다
@@ -441,7 +450,9 @@ function SurveyHistoryItem({ s }: { s: SurveyT }) {
       <summary>
         <span className="survey-past-title">{s.title}</span>
         <span className="survey-past-facts">
-          <span><b>연관 전시 관람</b>{' '}
+          {/* 이름표를 박아 두면 영화 모임에 붙었을 때 「연관 전시 관람 영화 《오디세이》 관람」
+              이 된다. 지금 자료에 이미 영화·공연 모임이 있다. */}
+          <span><b>{meet && !meet.movie ? '연관 전시 관람' : '연관 모임'}</b>{' '}
             {meet ? `${meet.title} · ${meet.dateLabel}` : '이어진 모임 없음'}</span>
           <span><b>설문 결과</b>{' '}{sum ? sum.result : '불러오는 중…'}</span>
           <span><b>종료된 일자</b>{' '}{koDeadline(s.closesAt)}

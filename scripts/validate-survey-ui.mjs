@@ -406,8 +406,11 @@ ok('옮겨 온 설문에 이름 칸이 없다', (await page.$$('.survey-who')).l
  * 그때는 전부 한 색으로 가야 하고, 이름은 옆 글자가 맡는다.
  */
 const results = await page.$$('.survey-result');
-const swatchesOf = async (n) => (await results[n].$$eval('.chart .chart-swatch',
-  (es) => es.map((e) => getComputedStyle(e).backgroundColor)));
+// 카드 수가 기대와 다르면 여기서 TypeError 로 죽어 **뒤의 검사가 통째로 안 돌았다.**
+// 깨끗하게 빈 배열을 주고 그 자리에서만 실패하게 한다.
+const swatchesOf = async (n) => (results[n]
+  ? results[n].$$eval('.chart .chart-swatch', (es) => es.map((e) => getComputedStyle(e).backgroundColor))
+  : []);
 
 // 후보 3개 — 자리마다 제 색을 쓴다
 const few = await swatchesOf(0);
@@ -502,10 +505,21 @@ if (pastCards.length === 1) {
     (es) => es.reduce((n, e) => n + e.getBoundingClientRect().height, 0));
   ok('접힌 동안에는 결과가 화면에 없다', before === 0, `${Math.round(before)}px`);
 
+  /**
+   * **높이만 재면 안 된다.** summary 안에 네 줄이 들어 있어 높이가 늘 100px 을 넘는다 —
+   * padding 과 min-height 를 통째로 0 으로 만들어도 이 검사는 ✓ 가 떴다. 실패할 수 없는 검사였다.
+   * 실제로 깨지는 것은 **여백**이다: 위아래 여백이 없으면 글자가 카드 테두리에 붙고,
+   * 오른쪽 여백이 없으면 ⌄ 화살표가 글자 위로 올라탄다.
+   */
   const box = await card.$eval('summary', (e) => {
-    const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) };
+    const r = e.getBoundingClientRect(); const c = getComputedStyle(e);
+    return { w: Math.round(r.width), h: Math.round(r.height),
+      pt: parseFloat(c.paddingTop), pb: parseFloat(c.paddingBottom), pr: parseFloat(c.paddingRight) };
   });
   ok('접기 손잡이가 24px 이상', box.h >= 24 && box.w >= 24, `${box.w}×${box.h}`);
+  ok('접기 줄에 여백이 있다 (글자가 테두리·화살표에 안 붙는다)',
+    box.pt >= 8 && box.pb >= 8 && box.pr >= 20,
+    `위 ${box.pt} · 아래 ${box.pb} · 오른쪽 ${box.pr}`);
 
   await card.$eval('summary', (e) => e.click());
   await page.waitForTimeout(1200);
@@ -526,6 +540,69 @@ const dimmed = await page.$$eval('.survey-history, .survey-history *, .survey-of
   (es) => es.filter((e) => Number(getComputedStyle(e).opacity) < 1)
     .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ')[0]}`).slice(0, 4));
 ok('지난 설문과 마감 설문에 흐리기를 쓰지 않았다', dimmed.length === 0, dimmed.join(', '));
+
+
+/**
+ * **참여가 적으면 접힌 줄이 비율을 외치면 안 된다.**
+ *
+ * 펼친 화면은 참여 3명 미만이면 「1위 득표율」 을 아예 안 보여 주고
+ * 「한 명만 달라져도 순위가 뒤집힙니다」 라고 적는다. 접힌 줄만 「2명 (100%)」 이라고
+ * 외치면 한 화면이 서로 반대되는 말을 하게 된다.
+ *
+ * 이 갈래는 지금 자료(13명)로는 절대 안 나온다. 그래서 응답을 2건으로 바꿔치고 잰다.
+ */
+await page.route('**/rpc/survey_tally', async (route) => {
+  const b = JSON.parse(route.request().postData() ?? '{}');
+  if (b.p_survey !== MEAL_PAST.id) return route.fallback();
+  return route.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify([{ option_id: MEAL_PAST.survey_options[0].id, votes: 2 }]) });
+});
+await page.route('**/rpc/survey_response_count', async (route) => {
+  const b = JSON.parse(route.request().postData() ?? '{}');
+  if (b.p_survey !== MEAL_PAST.id) return route.fallback();
+  return route.fulfill({ status: 200, contentType: 'application/json', body: '2' });
+});
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-past', { timeout: 20000 });
+await page.waitForTimeout(1100);
+const thin = await page.$eval('.survey-past > summary',
+  (e) => e.innerText.replace(/\s+/g, ' ').trim());
+ok('참여가 적으면 비율을 외치지 않는다', !/\(\d+%\)/.test(thin),
+  /설문 결과\s*([^\n]{0,40})/.exec(thin)?.[1] ?? thin.slice(0, 40));
+ok('참여가 적다는 것을 접힌 줄에도 적는다', thin.includes('참여가 적어'),
+  /설문 결과\s*([^\n]{0,40})/.exec(thin)?.[1] ?? '없다');
+await page.unroute('**/rpc/survey_tally');
+await page.unroute('**/rpc/survey_response_count');
+
+/**
+ * **포커스 표시도 대비를 지켜야 한다 (WCAG 1.4.11 · 3:1).**
+ * 알파 24% 짜리 테두리를 쓰고 있었는데 카드 바탕 위에 합성하면 1.43:1 이었다.
+ * 글자 대비 검사는 색의 알파를 버리고 앞 세 숫자만 보므로 이것을 못 잡는다.
+ */
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-past', { timeout: 20000 });
+await page.waitForTimeout(700);
+const focusRatio = await page.evaluate(() => {
+  const el = document.querySelector('.survey-past > summary');
+  el.focus();
+  const c = getComputedStyle(el);
+  const num = (s) => (s.match(/[0-9.]+/g) ?? []).map(Number);
+  const [r, g, b, a = 1] = num(c.outlineColor);
+  let bg = [255, 255, 255];
+  for (let e = el; e; e = e.parentElement) {
+    const m = num(getComputedStyle(e).backgroundColor);
+    if (m.length && (m.length < 4 || m[3] > 0.5)) { bg = m.slice(0, 3); break; }
+  }
+  const mix = [r, g, b].map((v, i) => v * a + bg[i] * (1 - a));
+  const lum = (c2) => { const v = c2.map((x) => { const t = x / 255;
+    return t <= 0.03928 ? t / 12.92 : ((t + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const x = lum(mix); const y = lum(bg);
+  return { r: (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05), w: parseFloat(c.outlineWidth) };
+});
+ok('포커스 표시가 3:1 이상이다', focusRatio.r >= 3 && focusRatio.w >= 2,
+  `${focusRatio.r.toFixed(2)}:1 · ${focusRatio.w}px`);
 
 /** 마감은 **글자로도** 알린다 — 색만으로 가르지 않는다 */
 const offTag = await page.$eval('.survey-off .tag',
