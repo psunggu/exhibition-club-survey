@@ -89,10 +89,15 @@ values (
 on conflict (id) do nothing;   -- 씨앗이다. 살아 있는 값은 안 건드린다
 
 -- ── 후보 3 · 이대원 ────────────────────────────────────────
--- **공식 링크를 비워 두었다.** 받은 주소
--- https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhFlag=1 는 500 을 낸다.
--- MMCA 상세 페이지는 exhId 가 있어야 전시가 특정된다 — exhFlag 만으로는 안 된다.
--- 정확한 주소를 알려 주시면 links 에 넣는다. 그때까지 없는 링크를 두지 않는다.
+-- 한동안 링크를 비워 두었다. 받은 주소가 exhFlag 만 있어 전시가 특정되지 않았기 때문이다.
+-- 2026-08-24 에 MMCA 현재전시 목록에서 exhId 를 찾아 넣었다.
+--   목록의 앵커가 onclick="fn_Detail('202601120002029')" 였다 — 주소에 안 적혀 있었다.
+--
+-- 열어서 확인했다: 「이대원」 · 「덕수궁」 · 기간 2026-08-06 ~ 2026-11-08 —
+-- 아래 period 와 같다. 다른 전시를 가리키는 링크가 아니다.
+--
+-- **curl 로는 400 이 난다.** MMCA 가 브라우저가 아닌 요청을 막는다 —
+-- 서도호 링크도 마찬가지다. 링크가 죽었다고 오해하지 않게 적어 둔다.
 insert into public.survey_options
   (id, survey_id, position, title, period, venue, hours, price, note, links)
 values (
@@ -105,7 +110,9 @@ values (
   null,
   '2,000원 + 덕수궁 입장료 1,000원',
   null,
-  '[]'::jsonb
+  '[
+    {"kind": "official", "label": "전시 정보", "url": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=202601120002029"}
+  ]'::jsonb
 )
 on conflict (id) do nothing;   -- 씨앗이다. 살아 있는 값은 안 건드린다
 
