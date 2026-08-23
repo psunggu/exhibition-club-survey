@@ -1,24 +1,17 @@
 (function () {
   "use strict";
 
-  var DIGEST_URL = "weekly-digest.public.json?v=20260824-1";
+  var DIGEST_URL = "weekly-digest.public.json?v=20260824-2";
   var COMPLETED_VISIBLE_DAYS = 3;
   var DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
   var FALLBACK_DIGEST = {
     "schema_version": 2,
     "bot_name": "주간 정리봇",
     "period_label": "8월 17일 ~ 8월 23일",
-    "updated_label": "2026. 8. 23. 17:17 기준",
+    "updated_label": "2026. 8. 24. 03:20 기준",
     "message_count": 98,
-    "summary": "8월 22일 서울역사박물관 공식 정기관람을 마쳤고, 9월 정기관람 후보 투표와 덕수궁·정동길 수요조사가 종료됐습니다. 선정 결과와 확정 일정은 운영진 확인이 필요하며, 운영규정 동의 설문은 8월 31일 마감입니다.",
+    "summary": "8월 22일 서울역사박물관 공식 정기관람에는 11명이 참석했습니다. 9월 정기관람 후보 투표와 덕수궁·정동길 수요조사가 종료됐으며, 선정 결과와 확정 일정은 운영진 확인이 필요합니다. 운영규정 동의 설문은 8월 31일 마감입니다.",
     "highlights": [
-      {
-        "severity": "done",
-        "label": "공식 정기관람 완료",
-        "title": "8월 22일 서울역사박물관 정기관람",
-        "text": "공식 정기관람을 마쳤습니다. 사전 신청 뒤 불참·부분 참석 변경이 있어 실제 최종 참석 인원은 운영진 확인이 필요합니다.",
-        "completed_date": "2026-08-22"
-      },
       {
         "severity": "urgent",
         "label": "8월 31일 마감",
@@ -45,14 +38,13 @@
       }
     ],
     "decisions": [
-      "8월 22일 서울역사박물관 공식 정기관람을 마쳐 완료 일정으로 전환했습니다.",
+      "8월 22일 서울역사박물관 공식 정기관람은 11명이 참석해 완료 일정으로 전환했습니다.",
       "덕수궁·정동길 관람·산책 수요조사 투표는 8월 19일 오후 6시 40분에 종료됐습니다.",
       "9월 정기관람 후보 투표는 8월 23일 0시에 종료됐습니다.",
       "가우디 서울전 관람일은 8월 29일로 유지합니다.",
       "동아리 운영규정 동의 설문은 8월 31일에 마감합니다."
     ],
     "open_questions": [
-      "8월 22일 서울역사박물관의 실제 최종 참석 인원을 확인해야 합니다.",
       "9월 정기관람으로 선정된 후보와 관람 날짜·시간을 확인해야 합니다.",
       "8월 29일 가우디 서울전의 집결 시간과 최종 참석자를 확인해야 합니다.",
       "운영규정 동의 설문의 작성 권한이 정상화됐는지 확인해야 합니다.",
@@ -63,8 +55,7 @@
   var SEVERITY_ICONS = {
     urgent: "!",
     check: "?",
-    planning: "→",
-    done: "✓"
+    planning: "→"
   };
 
   function createElement(tagName, className, text) {
@@ -151,10 +142,7 @@
           !isNonEmptyString(item.title) ||
           !isNonEmptyString(item.text)) return false;
 
-      var hasCompletedDate = Object.prototype.hasOwnProperty.call(item, "completed_date");
-      return item.severity === "done"
-        ? hasCompletedDate && isoDateToDayNumber(item.completed_date) !== null
-        : !hasCompletedDate;
+      return !Object.prototype.hasOwnProperty.call(item, "completed_date");
     }) &&
       data.decisions.every(isNonEmptyString) &&
       data.open_questions.every(isNonEmptyString);
@@ -174,9 +162,9 @@
     var priorityTitle = createElement("h3", "digest-subtitle", "중요 확인사항");
     var highlightList = createElement("div", "digest-highlights");
 
-    var visibleHighlights = data.highlights.filter(function (item) {
-      return item.severity !== "done" || isRecentCompletedDate(item.completed_date);
-    });
+    // 완료된 내용은 아래의 완료 목록과 이번 주 정리에만 둔다.
+    // 중요 확인사항은 운영진의 조치가 남은 항목만 보여야 한다.
+    var visibleHighlights = data.highlights;
 
     visibleHighlights.forEach(function (item) {
       var card = createElement("article", "digest-item digest-item-" + item.severity);
@@ -441,7 +429,7 @@
       time: "오후 2시 50분 집결 · 오후 3시~5시 30분 일정",
       venue: "서울역사박물관 앞 · 종로구 새문안로 55",
       description: "오후 3시~4시 30분 박물관 관람 후 오후 4시 30분~5시 30분 1층 파스쿠찌에서 티타임과 퀴즈를 진행합니다.",
-      note: "오후 5시 30분 이후 귀가 및 저녁식사는 자율이며 일정은 다소 변경될 수 있습니다. 참고자료는 톡게시판에서 확인해 주세요.",
+      note: "11명이 참석해 공식 정기관람을 완료했습니다. 개인별 이름은 공개하지 않습니다.",
       infoUrl: "https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok",
       infoLabel: "박물관 관람 안내 보기 →",
       mapUrl: "https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80"

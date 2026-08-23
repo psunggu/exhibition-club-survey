@@ -239,11 +239,11 @@ export const MEETUPS: Meetup[] = [
     time: '오후 2시 50분 집결 · 오후 3시~5시 30분 일정',
     venue: '서울역사박물관 앞 · 종로구 새문안로 55',
     description: '오후 3시~4시 30분 박물관 관람 후 오후 4시 30분~5시 30분 1층 파스쿠찌에서 티타임과 퀴즈를 진행합니다.',
-    note: '오후 5시 30분 이후 귀가 및 저녁식사는 자율이며 일정은 다소 변경될 수 있습니다. 참고자료는 톡게시판에서 확인해 주세요.',
+    note: '11명이 참석해 공식 정기관람을 완료했습니다. 개인별 이름은 공개하지 않습니다.',
     infoUrl: 'https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok',
     infoLabel: '박물관 관람 안내 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80',
-    completedRow: '8/22 (토) 14:50 8월 정기관람 · 서울역사박물관',
+    completedRow: '8/22 (토) 14:50 8월 정기관람 · 서울역사박물관 · 참석 11명',
     // 저녁식사 장소를 정한 설문. 이 모임 날짜가 지나면 설문 화면이 그것을 「지난 설문」 으로 옮긴다.
     surveyIds: ['5e97b1a0-0000-4000-8000-000000000902']
   },
