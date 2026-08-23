@@ -25,7 +25,10 @@ const DIR = path.join(ROOT, 'supabase/migrations');
 const fails = [];
 const fail = (m) => fails.push(m);
 
+/** read() 가 읽은 파일 이름. 아래에서 「안 본 파일이 있나」 를 셀 때 쓴다. */
+const READ_FILES = new Set();
 const read = (name) => {
+  READ_FILES.add(name);
   const p = path.join(DIR, name);
   if (!fs.existsSync(p)) { fail(`${name} 이 없다`); return ''; }
   return fs.readFileSync(p, 'utf8');
@@ -46,6 +49,7 @@ const admin = [
   read('202608210001a_survey_category.sql'),
   read('202608210002a_survey_notes.sql'),
   read('202608220001a_members.sql'),
+  read('202608240001a_anonymous.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -195,7 +199,14 @@ for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
 for (const block of allFuncs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
   const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
   if (!name || !name.startsWith('survey')) continue;
-  if (name === 'survey_respondent_key') continue;   // 값만 다듬는다. 표를 안 본다.
+  /**
+   * **표를 한 곳도 안 보는 함수는 definer 가 필요 없다.** 값만 다듬는 것들이다.
+   * 예전에는 이름을 하나(survey_respondent_key) 적어 두었는데, 그런 함수가 늘 때마다
+   * 목록을 고쳐야 했다 — 실제로 survey_anon_key 를 넣자마자 걸렸다.
+   * 이름 대신 **본문이 표에 닿는지**를 본다.
+   */
+  const body = block.split(/\bas\s+\$\$/i)[1] ?? '';
+  if (!/\b(from|join|into|update|delete\s+from)\s+public\./i.test(body)) continue;
   const head = block.split(/\bas\s+\$\$/i)[0] ?? '';
   if (!/security\s+definer/i.test(head)) {
     fail(`public.${name} 이 security definer 가 아니다 — 잠근 표에 닿지 못한다`);
@@ -412,6 +423,39 @@ for (const block of liveSeed.matchAll(/insert into public\.survey_options[\s\S]*
   if (a !== b) {
     fail(`${t[1]} 의 여는 시간이 설문과 보드에서 다르다 — 설문 [${a}] · 보드 [${b}]`);
   }
+}
+
+/* ── 9. 검사 밖에 남은 마이그레이션이 없는가 ─────────────────
+ *
+ * 이 검사기는 읽을 파일을 **손으로 들고 있다.** 그래서 새 마이그레이션을 넣어도
+ * 아무 말 없이 지나간다 — 실제로 202608240001a(익명 투표)를 넣었을 때
+ * 함수 규칙(search_path·security definer·grant·컬럼 이름)이 하나도 안 걸렸다.
+ *
+ * 안 보는 파일이 있는 것 자체는 괜찮다. 자료만 넣는 파일도 있고 다른 검사기가
+ * 보는 파일도 있다. 다만 **왜 안 보는지 적혀 있어야** 한다.
+ * 적어 두지 않은 채로 빠지는 것이 위험하다.
+ */
+const ALL_SQL = fs.readdirSync(DIR).filter((f) => f.endsWith('.sql')).sort();
+
+/** 일부러 안 보는 것 — 왜 안 보는지 함께 적는다. */
+const NOT_CHECKED = new Map([
+  ['202608190001a_columns.sql', '보드 표 — scripts/validate-supabase-readonly.mjs 가 본다'],
+  ['202608190001b_rows.sql', '보드 자료 — 아래 시간 대조에서 따로 읽는다'],
+  ['202608210001b_meal_survey.sql', '자료만 넣는다 (함수·표 없음)'],
+  ['202608210001c_survey_links.sql', '자료만 넣는다 (함수·표 없음)'],
+  ['202608240001b_september_poll.sql', '자료만 넣는다 (함수·표 없음)'],
+]);
+
+const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));
+if (unseen.length) {
+  fail(`검사기가 안 보는 마이그레이션이 있다: ${unseen.join(', ')} `
+    + '— 함수 규칙을 걸려면 위 read() 목록에 넣고, 일부러 안 볼 것이면 '
+    + 'NOT_CHECKED 에 이유와 함께 적는다');
+}
+/** 지워진 파일이 목록에 남아 있으면 그것도 거짓말이다. */
+const ghosts = [...NOT_CHECKED.keys()].filter((f) => !ALL_SQL.includes(f));
+if (ghosts.length) {
+  fail(`NOT_CHECKED 에 없는 파일이 적혀 있다: ${ghosts.join(', ')}`);
 }
 
 /* ── 알리기 ──────────────────────────────────────────────── */
