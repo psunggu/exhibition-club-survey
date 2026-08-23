@@ -1265,12 +1265,21 @@ select.admin-input { cursor: pointer; }
   font-size: 13px;
   line-height: 1.5;
   color: #55534b;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 /* 이름표와 값을 세로로 맞춘다. 좁은 화면에서는 값이 접히되 이름표는 안 접힌다. */
 .survey-past-facts > span {
   display: grid;
-  grid-template-columns: 92px 1fr;
+  /**
+   * `1fr` 이 아니라 `minmax(0, 1fr)` 이다. 격자 칸은 기본으로 **최소 내용 폭 아래로
+   * 안 줄어든다** — 값에 「서울역사박물관」 같은 긴 낱말이 있으면 그 폭만큼 칸이 버티고,
+   * 격자 전체가 카드보다 넓어져 화면 밖으로 나간다.
+   * 리눅스 CI 에서 실제로 그랬다 (문서 340 / 창 320). 같은 자리에서 윈도우는
+   * 글꼴이 좁아 아슬아슬하게 들어갔을 뿐이라 안 보였다. `.stats` 는 이미 이 꼴을 쓴다.
+   */
+  grid-template-columns: 92px minmax(0, 1fr);
   gap: 2px 8px;
 }
 
