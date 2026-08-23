@@ -122,6 +122,37 @@ const MIRROR_SURVEY = {
   })),
 };
 
+/**
+ * ── 식사 갈래 두 건 — **「지난 설문」이 두 갈래를 실제로 가르는지** 재려고 둔다.
+ *
+ * MEAL_PAST 의 id 는 **진짜 설문 uuid** 다. app/src/data/meetups.ts 의
+ * history-museum(2026-08-22)에 이 id 가 적혀 있어서, 그 날짜가 지난 지금은
+ * 「지난 설문」 으로 내려가야 한다. 가짜 id 를 쓰면 연결이 진짜로 걸려 있는지
+ * 끝내 못 재므로 일부러 진짜 값을 쓴다.
+ *
+ * MEAL_LOOSE 는 **마감됐지만 어느 모임과도 안 이어진** 설문이다.
+ * 이것이 있어야 「마감이면 무조건 내린다」 는 잘못된 구현이 걸린다 —
+ * 그 구현은 이 설문도 히스토리로 내려 버린다.
+ */
+const MEAL_PAST = {
+  id: '5e97b1a0-0000-4000-8000-000000000902',
+  title: '서울역사박물관 저녁식사 장소 추천', intro: null,
+  multi_choice: true,
+  opens_at: iso(now - 72 * HOUR), closes_at: iso(now - 48 * HOUR),
+  created_by: '', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  category: 'meal', imported_respondents: 13,
+  survey_options: ['사발', '우슴', '올리페페'].map((t, i) => ({
+    id: `meal-p-${i}`, position: i + 1, title: t,
+    period: null, venue: null, hours: null, price: null, note: null, links: [],
+  })),
+};
+
+const MEAL_LOOSE = {
+  ...MEAL_PAST, id: 'srv-meal-loose', title: '아직 모임이 안 잡힌 식사 설문',
+  imported_respondents: null,
+  survey_options: MEAL_PAST.survey_options.map((o) => ({ ...o, id: `${o.id}-l` })),
+};
+
 /* ── 브라우저 ────────────────────────────────────────────── */
 
 const browser = await chromium.launch();
@@ -139,7 +170,8 @@ await ctx.route('**/rest/v1/**', async (route) => {
     contentType: 'application/json', body: JSON.stringify(body) });
 
   if (url.includes('/rest/v1/surveys')) {
-    return json([OPEN_SURVEY, CLOSED_SURVEY, MANY_SURVEY, MIRROR_SURVEY]);
+    return json([OPEN_SURVEY, CLOSED_SURVEY, MANY_SURVEY, MIRROR_SURVEY,
+      MEAL_PAST, MEAL_LOOSE]);
   }
 
   if (url.includes('/rpc/')) {
@@ -183,6 +215,14 @@ await ctx.route('**/rest/v1/**', async (route) => {
         return json(MIRROR_SURVEY.survey_options.map((o, i) => ({
           option_id: o.id, votes: [6, 8, 1][i] })));
       }
+      if (body.p_survey === MEAL_PAST.id) {
+        return json(MEAL_PAST.survey_options.map((o, i) => ({
+          option_id: o.id, votes: [8, 6, 2][i] })));
+      }
+      if (body.p_survey === MEAL_LOOSE.id) {
+        return json(MEAL_LOOSE.survey_options.map((o, i) => ({
+          option_id: o.id, votes: [1, 0, 0][i] })));
+      }
       return json(OPEN_SURVEY.survey_options.map((o, i) => ({
         option_id: o.id, votes: stored.includes(o.id) ? 3 + i : i })));
     }
@@ -190,6 +230,8 @@ await ctx.route('**/rest/v1/**', async (route) => {
       if (body.p_survey === 'srv-many') return json(13);
       if (body.p_survey === 'srv-closed') return json(5);
       if (body.p_survey === 'srv-mirror') return json(13);
+      if (body.p_survey === MEAL_PAST.id) return json(13);
+      if (body.p_survey === MEAL_LOOSE.id) return json(1);
       return json(stored.length ? 1 : 0);
     }
     return json([]);
@@ -421,23 +463,89 @@ ok('마감 표시가 있다', badges.some((b) => b.includes('마감됨')), badge
 const whoForms = await page.$$('.survey-who');
 ok('받는 설문에만 이름 칸이 있다', whoForms.length === 1, `${whoForms.length}개`);
 
+/* ── 지난 설문 (식사 갈래) ──────────────────────────────────
+ *
+ * 여기서 재는 것은 **두 갈래를 가르는가** 다.
+ *   마감 + 이어진 모임이 지났다 → 「지난 설문」 으로 내린다
+ *   마감 + 안 이어졌다          → 그대로 둔다
+ * 두 번째가 없으면 「마감이면 무조건 내린다」 는 잘못된 구현이 그냥 통과한다.
+ */
+
+console.log('\n── 지난 설문 (식사)');
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-history, .survey-head', { timeout: 20000 });
+await page.waitForTimeout(900);
+
+const pastCards = await page.$$('.survey-past');
+ok('모임까지 끝난 설문이 지난 설문으로 내려간다', pastCards.length === 1, `${pastCards.length}개`);
+
+const liveHeads = await page.$$eval('.survey-head h3', (es) => es.map((e) => e.textContent.trim()));
+ok('안 이어진 마감 설문은 그대로 남는다',
+  liveHeads.length === 1 && liveHeads[0] === '아직 모임이 안 잡힌 식사 설문',
+  liveHeads.join(' · ') || '한 건도 없다');
+
+if (pastCards.length === 1) {
+  const card = pastCards[0];
+  ok('지난 설문은 접힌 채로 뜬다', !(await card.evaluate((e) => e.open)));
+
+  const sum = await card.$eval('summary', (e) => e.innerText.replace(/\s+/g, ' ').trim());
+  /** 접히면 화면 낭독기는 이 줄만 읽는다. 무엇이었는지가 여기 다 있어야 한다. */
+  ok('접힌 줄에 설문 제목이 있다', sum.includes('서울역사박물관 저녁식사'), sum.slice(0, 40));
+  ok('접힌 줄에 연관 전시 관람이 있다', sum.includes('연관 전시 관람') && sum.includes('8월 정기관람'),
+    /연관 전시 관람[^A-Za-z]*?([^\n]{0,34})/.exec(sum)?.[1] ?? '없다');
+  ok('접힌 줄에 설문 결과가 있다', /설문 결과.*\d+명/.test(sum),
+    /설문 결과\s*([^\n]{0,24})/.exec(sum)?.[1] ?? '없다');
+  ok('접힌 줄에 종료된 일자가 있다', sum.includes('종료된 일자'));
+
+  const before = await page.$$eval('.survey-past-body .survey-result',
+    (es) => es.reduce((n, e) => n + e.getBoundingClientRect().height, 0));
+  ok('접힌 동안에는 결과가 화면에 없다', before === 0, `${Math.round(before)}px`);
+
+  const box = await card.$eval('summary', (e) => {
+    const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) };
+  });
+  ok('접기 손잡이가 24px 이상', box.h >= 24 && box.w >= 24, `${box.w}×${box.h}`);
+
+  await card.$eval('summary', (e) => e.click());
+  await page.waitForTimeout(1200);
+  const after = await page.$$eval('.survey-past-body .survey-result',
+    (es) => es.reduce((n, e) => n + e.getBoundingClientRect().height, 0));
+  ok('열면 결과가 보인다', after > 0, `${Math.round(after)}px`);
+  ok('열면 화살표가 뒤집힌다',
+    await card.$eval('summary', (e) => getComputedStyle(e, '::after').content.includes('⌃')));
+}
+
+/**
+ * **흐리기로 「비활성」 을 표현하지 않았는지 여기서 못박는다.**
+ * 이 화면의 대비 검사는 opacity 를 식에 넣지 않는다. 그래서 `opacity: .5` 를 걸면
+ * 실제로는 2:1 로 떨어져도 「대비 기준 이상」 이 ✓ 로 나온다.
+ * 식을 고치는 대신, **이 자리에서는 흐리기 자체를 금지**한다 — 훨씬 잡기 쉽다.
+ */
+const dimmed = await page.$$eval('.survey-history, .survey-history *, .survey-off, .survey-off *',
+  (es) => es.filter((e) => Number(getComputedStyle(e).opacity) < 1)
+    .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ')[0]}`).slice(0, 4));
+ok('지난 설문과 마감 설문에 흐리기를 쓰지 않았다', dimmed.length === 0, dimmed.join(', '));
+
+/** 마감은 **글자로도** 알린다 — 색만으로 가르지 않는다 */
+const offTag = await page.$eval('.survey-off .tag',
+  (e) => ({ t: e.textContent.trim(), h: Math.round(e.getBoundingClientRect().height) }))
+  .catch(() => null);
+ok('마감 설문에 「마감」 이라고 적혀 있다', offTag?.t === '마감' && offTag.h > 0,
+  offTag ? `${offTag.t} ${offTag.h}px` : '태그가 없다');
+
 /* ── 7. 누르는 크기와 오류 ──────────────────────────────── */
 
 console.log('\n── 마무리');
-const small = await page.$$eval('a,button,input',
-  (es) => es.filter((e) => e.offsetParent !== null)
-    .map((e) => { const r = e.getBoundingClientRect();
-      return { c: e.className.toString().split(' ')[0] || e.tagName, w: Math.round(r.width), h: Math.round(r.height) }; })
-    .filter((t) => t.h > 0 && (t.h < 24 || t.w < 24)));
-ok('누르는 것이 모두 24px 이상', small.length === 0,
-  small.map((t) => `${t.c} ${t.w}×${t.h}`).join(', '));
 
 /**
- * 글자 대비도 여기서 잰다.
+ * **두 화면을 다 잰다.** 예전에는 마지막에 열려 있던 화면 하나만 쟀다.
+ * 식사 화면을 열고 나서 그대로 재니 잰 글자가 187개에서 66개로 줄었다 —
+ * 전시 화면의 색이 통째로 검사망 밖으로 나간 것인데, 화면에는 「통과」 로 보인다.
  *
- * validate-accessibility.mjs 는 일정·보드만 본다 — 설문은 데이터가 있어야
- * 내용이 그려져서 그쪽에서는 빈 화면밖에 못 잰다. 가짜 데이터가 있는 여기가
- * 잴 수 있는 유일한 자리다. **새 화면을 검사망 밖에 두지 않는다.**
+ * **접힌 것은 열고 잰다.** 닫힌 <details> 안은 offsetParent 가 null 이라
+ * 아래 두 검사가 아예 안 본다. 접어 두었다는 이유로 색과 누르는 크기가
+ * 감사에서 빠지면, 접기를 넣을수록 검사가 눈을 감는 꼴이 된다.
  */
 const lum = (c) => {
   const v = c.map((x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
@@ -447,31 +555,63 @@ const contrast = (a, b) => {
   const x = lum(a); const y = lum(b);
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 };
-const texts = await page.evaluate(() => {
-  const rgb = (s) => { const m = s.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : null; };
-  const bgOf = (el) => {
-    for (let e = el; e; e = e.parentElement) {
-      const c = getComputedStyle(e).backgroundColor;
-      const m = c.match(/[\d.]+/g);
-      if (m && (m.length < 4 || parseFloat(m[3]) > 0.5)) return rgb(c);
-    }
-    return [255, 255, 255];
-  };
-  const INLINE = new Set(['BR', 'B', 'STRONG', 'EM', 'I', 'SPAN', 'A', 'SMALL', 'SVG']);
-  return [...document.querySelectorAll('.wrap p, .wrap span, .wrap h1, .wrap h3, .wrap a, .wrap button, .wrap div')]
-    .filter((e) => e.offsetParent !== null
-      && [...e.children].every((c) => INLINE.has(c.tagName.toUpperCase()))
-      && (e.textContent || '').trim())
-    .map((e) => {
-      const c = getComputedStyle(e);
-      return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
-        size: parseFloat(c.fontSize) || 0, weight: Number(c.fontWeight) || 400,
-        fg: rgb(c.color), bg: bgOf(e), txt: (e.textContent || '').trim().slice(0, 20) };
-    });
-});
+
+const measureScreen = async (route) => {
+  await page.goto('about:blank');
+  await page.goto(`http://localhost:8261${BASE}${route}`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.survey-head, .survey-history', { timeout: 20000 });
+  await page.waitForTimeout(700);
+  // 접힌 자리를 모두 펼친다 — 안 그러면 그 안의 색과 누름 크기를 못 본다
+  await page.$$eval('details', (ds) => ds.forEach((d) => { d.open = true; }));
+  await page.waitForTimeout(900);
+
+  const small = await page.$$eval('a,button,input,summary',
+    (es) => es.filter((e) => e.offsetParent !== null)
+      .map((e) => { const r = e.getBoundingClientRect();
+        return { c: e.className.toString().split(' ')[0] || e.tagName, w: Math.round(r.width), h: Math.round(r.height) }; })
+      .filter((t) => t.h > 0 && (t.h < 24 || t.w < 24)));
+
+  const texts = await page.evaluate(() => {
+    const rgb = (s) => { const m = s.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : null; };
+    const bgOf = (el) => {
+      for (let e = el; e; e = e.parentElement) {
+        const c = getComputedStyle(e).backgroundColor;
+        const m = c.match(/[\d.]+/g);
+        if (m && (m.length < 4 || parseFloat(m[3]) > 0.5)) return rgb(c);
+      }
+      return [255, 255, 255];
+    };
+    const INLINE = new Set(['BR', 'B', 'STRONG', 'EM', 'I', 'SPAN', 'A', 'SMALL', 'SVG']);
+    return [...document.querySelectorAll('.wrap p, .wrap span, .wrap h1, .wrap h2, .wrap h3, .wrap a, .wrap button, .wrap summary, .wrap div')]
+      .filter((e) => e.offsetParent !== null
+        && [...e.children].every((c) => INLINE.has(c.tagName.toUpperCase()))
+        && (e.textContent || '').trim())
+      .map((e) => {
+        const c = getComputedStyle(e);
+        return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
+          size: parseFloat(c.fontSize) || 0, weight: Number(c.fontWeight) || 400,
+          fg: rgb(c.color), bg: bgOf(e), txt: (e.textContent || '').trim().slice(0, 20) };
+      });
+  });
+  return { small, texts };
+};
+
+const SCREENS = [['전시', '/#/survey'], ['식사', '/#/survey/meal']];
+const allSmall = [];
+const allTexts = [];
+for (const [label, route] of SCREENS) {
+  const r = await measureScreen(route);
+  allSmall.push(...r.small.map((t) => ({ ...t, c: `${label} ${t.c}` })));
+  allTexts.push(...r.texts);
+  console.log(`  · ${label} 화면 — 글자 ${r.texts.length}개 · 누르는 것 확인`);
+}
+
+ok('누르는 것이 모두 24px 이상', allSmall.length === 0,
+  allSmall.map((t) => `${t.c} ${t.w}×${t.h}`).join(', '));
+
 const dim = [];
 const seenSel = new Set();
-for (const t of texts) {
+for (const t of allTexts) {
   if (!t.fg || !t.bg) continue;
   const large = t.size >= 18.66 || (t.size >= 14 && t.weight >= 700);
   const need = large ? 3 : 4.5;
@@ -482,11 +622,12 @@ for (const t of texts) {
   dim.push(`.${t.sel} ${r.toFixed(2)}:1 (필요 ${need}) "${t.txt}"`);
 }
 ok('글자 대비가 모두 기준 이상', dim.length === 0, dim.join(' | '));
-ok(`대비를 잰 글자 ${texts.length}개`, texts.length >= 30, `${texts.length}개`);
+ok(`대비를 잰 글자 ${allTexts.length}개`, allTexts.length >= 200, `${allTexts.length}개`);
 
 ok('오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
 
 await browser.close();
+
 server.close();
 
 console.log(`\n${fails.length ? `설문 화면 검사 실패 — ${fails.length}건: ${fails.join(', ')}`
