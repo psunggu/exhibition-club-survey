@@ -197,12 +197,9 @@ const tentativeSection = tentativeStart >= 0
   : "";
 // 일정의 확정·완료 상태가 본문과 달력에서 엇갈리는 회귀를 배포 전에 차단한다.
 const confirmedEvents = [
-  {
-    id: "history-museum",
-    titleToken: "8월 22일",
-    official: true,
-    digestTokens: ["오후 2시 50분", "서울역사박물관 앞", "오후 3시", "오후 5시", "확정"]
-  },
+  // history-museum(8/22)은 2026-08-23 에 완료로 옮겼다. 이제 「다가오는 확정 모임」 이 아니라
+  // 달력의 회색 「관람 완료」 칩과 「완료된 모임」 목록에 있다.
+  // 완료된 모임을 확정으로 요구하면 이 검사가 화면과 반대되는 것을 지키게 된다.
   {
     id: "gaudi-visit",
     titleToken: "8월 29일",

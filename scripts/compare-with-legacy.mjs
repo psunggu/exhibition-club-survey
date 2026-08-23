@@ -109,6 +109,29 @@ const PAIRS = [
            `http://localhost:${PORT_NEW}${BASE}/#/calendar`, [...GLOBAL, ...CAL]],
 ];
 
+/**
+ * **알고서 다르게 둔 것.**
+ *
+ * 이 검사는 「옛 화면과 같아졌나」 를 본다. 그래서 다른 곳은 전부 실패로 봐야 맞다.
+ * 다만 **일부러 다르게 만든 것**이 하나 있고, 그걸 실패로 두면 사람이 검사를 끄게 된다.
+ * 지우는 대신 여기 적어 두고, 통과할 때도 **화면에 그대로 보여 준다** —
+ * 숨기면 그 다음 사람이 이유를 모른 채 되돌린다.
+ *
+ * 적을 때는 좁게 적는다. 선택자 하나, 값 하나까지 맞아야 넘어간다.
+ */
+const EXPECTED = [
+  {
+    screen: '일정', sel: '.drow', prop: 'display', old: 'none', now: 'flex',
+    why: '옛 페이지는 완료된 모임을 통째로 접어 두고 「N개 펼쳐보기」 로만 보여 준다. '
+      + '이식본은 사흘 안에 끝난 것만 펼쳐 두고 그 이전 것을 접는다 '
+      + '(app/src/Calendar.tsx 의 recent/older, COMPLETED_VISIBLE_DAYS=3). '
+      + '다녀온 직후에 「다녀왔습니다」 가 바로 보이는 편이 낫다고 보아 그렇게 두었다.',
+  },
+];
+
+const expectedHit = (r) => EXPECTED.find((e) => e.screen === r.screen && e.sel === r.sel
+  && e.prop === r.prop && e.old === String(r.old) && e.now === String(r.now));
+
 const report = [];
 for (const [name, oldUrl, newUrl, sels] of PAIRS) {
   const a = await measure(page, oldUrl, sels, 375);
@@ -127,6 +150,20 @@ for (const [name, oldUrl, newUrl, sels] of PAIRS) {
 await browser.close();
 sOld.close(); sNew.close();
 failOnFrozenMisses();
+
+const known = report.filter(expectedHit);
+const unexpected = report.filter((r) => !expectedHit(r));
+if (known.length) {
+  console.log(`알고서 다르게 둔 곳 ${known.length}건 — 실패로 세지 않는다`);
+  known.forEach((r) => {
+    const e = expectedHit(r);
+    console.log(`  · ${r.screen} ${r.sel}.${r.prop}: ${r.old} → ${r.now}`);
+    console.log(`    ${e.why}`);
+  });
+  console.log('');
+}
+report.length = 0;
+report.push(...unexpected);
 
 if (!report.length) {
   console.log(`옛 화면과 일치 — 어긋난 곳 없음 (시계는 ${FROZEN_DAY} 에 묶고 쟀다)`);
