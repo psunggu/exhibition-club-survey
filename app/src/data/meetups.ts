@@ -222,11 +222,14 @@ export const MEETUPS: Meetup[] = [
     mapUrl: 'https://map.kakao.com/?q=%EC%98%81%EB%93%B1%ED%8F%AC%ED%83%80%EC%9E%84%EC%8A%A4%ED%80%98%EC%96%B4%20IMAX',
     completedRow: '8/16 (일) 17:00 영화 《오디세이》 관람 · 영등포타임스퀘어 IMAX'
   },
+  // 다녀왔다 — 2026-08-23 에 운영자가 완료로 옮겼다.
+  // 주석은 반드시 이 자리(덩어리 밖)에 둔다. id…status 사이에 끼우면
+  // validate-meetup-taxonomy.mjs 의 정규식이 이 모임을 통째로 못 읽는다.
   {
     id: 'history-museum',
     date: '2026-08-22',
-    chip: '공식 · 집결 14:50',
-    kind: 'conf',
+    chip: '관람 완료',
+    kind: 'done',
     official: true,
     movie: false,
     status: '공식 정기관람',
@@ -240,7 +243,7 @@ export const MEETUPS: Meetup[] = [
     infoUrl: 'https://museum.seoul.go.kr/www/guide/vis/infomation.jsp?sso=ok',
     infoLabel: '박물관 관람 안내 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%EC%97%AD%EC%82%AC%EB%B0%95%EB%AC%BC%EA%B4%80',
-    completedRow: '',
+    completedRow: '8/22 (토) 14:50 8월 정기관람 · 서울역사박물관',
     // 저녁식사 장소를 정한 설문. 이 모임 날짜가 지나면 설문 화면이 그것을 「지난 설문」 으로 옮긴다.
     surveyIds: ['5e97b1a0-0000-4000-8000-000000000902']
   },

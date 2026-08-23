@@ -1668,7 +1668,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 2840
+    "h": 2577
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1845,15 +1845,15 @@
    }
   },
   ".card": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 343,
-    "h": 342
+    "h": 312
    },
    "style": {
     "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgb(252, 252, 255)",
-    "borderTopColor": "rgb(185, 195, 245)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
     "borderRadius": "14px",
     "fontSize": "16px",
@@ -1871,19 +1871,19 @@
     "flexDirection": "row",
     "gap": "14px",
     "textAlign": "start",
-    "boxShadow": "rgb(79, 70, 229) 4px 0px 0px 0px inset",
+    "boxShadow": "none",
     "opacity": "1"
    }
   },
   ".db": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 68,
     "h": 82
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(67, 56, 202)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
     "borderRadius": "10px",
@@ -1907,7 +1907,7 @@
    }
   },
   ".db .d": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 60,
     "h": 29
@@ -1938,15 +1938,15 @@
    }
   },
   ".tag": {
-   "count": 2,
+   "count": 1,
    "box": {
-    "w": 85,
+    "w": 41,
     "h": 24
    },
    "style": {
-    "color": "rgb(55, 48, 163)",
-    "backgroundColor": "rgb(224, 231, 255)",
-    "borderTopColor": "rgb(55, 48, 163)",
+    "color": "rgb(10, 91, 69)",
+    "backgroundColor": "rgb(225, 245, 238)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "999px",
     "fontSize": "12px",
@@ -1969,10 +1969,10 @@
    }
   },
   ".meta": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 227,
-    "h": 147
+    "h": 98
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2000,10 +2000,10 @@
    }
   },
   ".card-alert": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 227,
-    "h": 90
+    "h": 109
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2034,7 +2034,7 @@
    "count": 3,
    "box": {
     "w": 343,
-    "h": 435
+    "h": 420
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2163,7 +2163,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(110, 108, 100)",
+    "borderTopColor": "rgb(226, 222, 212)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "11.5px",
@@ -2249,7 +2249,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1104,
+   "textLength": 907,
    "cardCount": 0,
    "chipCount": 10
   }
@@ -2259,7 +2259,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 2592
+    "h": 2420
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2436,15 +2436,15 @@
    }
   },
   ".card": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 520,
-    "h": 256
+    "h": 250
    },
    "style": {
     "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgb(252, 252, 255)",
-    "borderTopColor": "rgb(185, 195, 245)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
     "borderRadius": "14px",
     "fontSize": "16px",
@@ -2462,19 +2462,19 @@
     "flexDirection": "row",
     "gap": "14px",
     "textAlign": "start",
-    "boxShadow": "rgb(79, 70, 229) 4px 0px 0px 0px inset",
+    "boxShadow": "none",
     "opacity": "1"
    }
   },
   ".db": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 68,
     "h": 82
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(67, 56, 202)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
     "borderRadius": "10px",
@@ -2498,7 +2498,7 @@
    }
   },
   ".db .d": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 60,
     "h": 29
@@ -2529,15 +2529,15 @@
    }
   },
   ".tag": {
-   "count": 2,
+   "count": 1,
    "box": {
-    "w": 85,
+    "w": 41,
     "h": 24
    },
    "style": {
-    "color": "rgb(55, 48, 163)",
-    "backgroundColor": "rgb(224, 231, 255)",
-    "borderTopColor": "rgb(55, 48, 163)",
+    "color": "rgb(10, 91, 69)",
+    "backgroundColor": "rgb(225, 245, 238)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "999px",
     "fontSize": "12px",
@@ -2560,10 +2560,10 @@
    }
   },
   ".meta": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 404,
-    "h": 98
+    "h": 74
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2591,10 +2591,10 @@
    }
   },
   ".card-alert": {
-   "count": 2,
+   "count": 1,
    "box": {
     "w": 404,
-    "h": 53
+    "h": 72
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2625,7 +2625,7 @@
    "count": 3,
    "box": {
     "w": 520,
-    "h": 425
+    "h": 415
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2754,7 +2754,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(110, 108, 100)",
+    "borderTopColor": "rgb(226, 222, 212)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "12.5px",
@@ -2840,7 +2840,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1104,
+   "textLength": 907,
    "cardCount": 0,
    "chipCount": 10
   }

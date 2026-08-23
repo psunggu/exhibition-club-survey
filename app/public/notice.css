@@ -731,6 +731,22 @@ h1 {
   outline-offset: 1px;
 }
 
+/**
+ * **끝난 일은 갈래와 상관없이 같은 회색이다.**
+ * 색으로 가르는 것은 「앞으로 할 것」 뿐이다 — 공연 완료·영화 완료·관람 완료가
+ * 저마다 다른 색이면 달력이 시끄럽고, 무엇이 끝났고 무엇이 남았는지가 한눈에 안 들어온다.
+ * 그래서 `.done` 이 `.movie`·`.official` 을 이기게 못박아 둔다
+ * (같은 힘이면 뒤가 이기지만, 나중에 순서가 바뀌어도 흔들리지 않게 세 겹으로 적는다).
+ */
+.chip.done,
+.chip.done.movie,
+.chip.done.official,
+.chip.done.official.movie {
+  background: #f1efe8;
+  color: #6e6c64;
+  border-color: #e2ded4;
+}
+
 /* 완료 칩만 3.12:1 로 미달이었다. 나머지 다섯은 이미 넘어서 손대지 않는다. */
 .done { background: #f1efe8; color: #6e6c64; }
 .conf { background: #e1f5ee; color: #0a5b45; }

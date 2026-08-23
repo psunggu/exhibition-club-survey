@@ -73,6 +73,19 @@ for (let m; (m = RE.exec(src)) !== null;) {
 }
 if (!meetups.length) fail('meetups.ts 에서 모임을 하나도 읽지 못했다');
 
+/**
+ * **하나도 못 읽는 것보다 하나만 빼먹는 것이 위험하다.**
+ * 위 정규식은 `id, date, chip, kind, official, movie, status` 가 **붙어 있어야** 읽는다.
+ * 그 사이에 주석 한 줄만 끼워도 그 모임은 통째로 안 읽히는데, 나머지가 읽히므로
+ * 검사는 그대로 통과한다. 실제로 그랬다 — 10건이 9건이 됐는데 초록불이었다.
+ * 그래서 파일에 적힌 모임 수와 읽어 낸 수를 견준다.
+ */
+const declared = src.split(/\r?\n/).filter((l) => /^ {4}id: '/.test(l)).length;
+if (meetups.length !== declared) {
+  fail(`meetups.ts 에 모임이 ${declared}건 적혀 있는데 ${meetups.length}건만 읽었다 `
+    + '— id·date·chip·kind·official·movie·status 사이에 주석이나 다른 줄이 끼어 있는지 본다');
+}
+
 const KINDS = new Set(['conf', 'done', 'dead', 'tent']);
 const SAYS_OFFICIAL = /공식/;
 
