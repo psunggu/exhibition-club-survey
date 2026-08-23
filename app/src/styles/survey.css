@@ -176,6 +176,8 @@
   color: #55534b;
   line-height: 1.75;
   word-break: keep-all;
+  /* 분석 문장에는 후보 제목이 그대로 들어간다 — 「다음은 신의주찹쌀순대광화문점 6명」 */
+  overflow-wrap: anywhere;
 }
 
 .survey-facts b { color: #1f1e1b; font-weight: 700; }
@@ -578,6 +580,8 @@ select.admin-input { cursor: pointer; }
   line-height: 1.4;
   word-break: keep-all;
   min-width: 0;
+  /* 범례에도 후보 제목이 들어간다 */
+  overflow-wrap: anywhere;
 }
 
 .chart-legend-val { color: #55534b; font-weight: 700; flex-shrink: 0; }
@@ -804,7 +808,8 @@ select.admin-input { cursor: pointer; }
   min-width: 0;
 }
 
-.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b; }
+.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b;
+  word-break: keep-all; overflow-wrap: anywhere; }
 /* 바로 아래 `.stat-sub` 에는 있는데 여기만 빠져 있었다. 글자를 200% 로 키우면
    두 칸 격자의 한 칸(320px 화면에서 ~140px)보다 값이 넓어져 칸 밖으로 넘친다.
    실제로 리눅스 CI 에서 문서가 화면보다 넓어졌다 — 글꼴이 조금만 넓어도 넘친다. */
