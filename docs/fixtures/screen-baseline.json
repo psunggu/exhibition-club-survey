@@ -6,7 +6,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21712
+    "h": 21733
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -37,7 +37,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21712
+    "h": 21733
    },
    "style": {
     "color": "rgb(23, 32, 42)",
@@ -829,7 +829,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 11316,
+   "textLength": 11404,
    "cardCount": 20,
    "chipCount": 0
   }
@@ -1662,7 +1662,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 11316,
+   "textLength": 11404,
    "cardCount": 20,
    "chipCount": 0
   }
@@ -1672,7 +1672,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 2599
+    "h": 2604
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1914,7 +1914,7 @@
    "count": 1,
    "box": {
     "w": 343,
-    "h": 312
+    "h": 313
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2006,7 +2006,7 @@
   ".tag": {
    "count": 1,
    "box": {
-    "w": 41,
+    "w": 42,
     "h": 24
    },
    "style": {
@@ -2100,7 +2100,7 @@
    "count": 3,
    "box": {
     "w": 343,
-    "h": 420
+    "h": 421
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2192,8 +2192,8 @@
   ".dnum": {
    "count": 92,
    "box": {
-    "w": 6,
-    "h": 15
+    "w": 7,
+    "h": 19
    },
    "style": {
     "color": "rgb(61, 111, 180)",
@@ -2325,7 +2325,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 2420
+    "h": 2436
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2442,7 +2442,7 @@
   ".digest-title": {
    "count": 1,
    "box": {
-    "w": 121,
+    "w": 133,
     "h": 29
    },
    "style": {
@@ -2474,7 +2474,7 @@
    "count": 1,
    "box": {
     "w": 474,
-    "h": 177
+    "h": 198
    },
    "style": {
     "color": "rgb(76, 72, 87)",
@@ -2567,7 +2567,7 @@
    "count": 1,
    "box": {
     "w": 520,
-    "h": 250
+    "h": 251
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2659,7 +2659,7 @@
   ".tag": {
    "count": 1,
    "box": {
-    "w": 41,
+    "w": 42,
     "h": 24
    },
    "style": {
@@ -2753,7 +2753,7 @@
    "count": 3,
    "box": {
     "w": 520,
-    "h": 415
+    "h": 426
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2845,8 +2845,8 @@
   ".dnum": {
    "count": 92,
    "box": {
-    "w": 6,
-    "h": 16
+    "w": 8,
+    "h": 20
    },
    "style": {
     "color": "rgb(61, 111, 180)",
