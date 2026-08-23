@@ -70,7 +70,17 @@ ok('설문을 읽을 수 있다', surveys.status === 200 && Array.isArray(survey
  * 통과 표시만 보고 넘어갔으면 못 잡았을 자리다.
  */
 const list = Array.isArray(surveys.body) ? surveys.body : [];
-const s0 = list.find((s) => s.category === 'exhibition');
+/**
+ * **옮겨 온 설문은 집지 않는다.**
+ * 위 주석대로 한 번 데였는데, 전시 갈래 안에 설문이 둘이 되면서 또 났다 —
+ * 톡방 투표(옮겨 온 것)를 집어 와서 「참고 링크가 성한 모양이다」 가 실패했다.
+ * 그 설문에 링크가 없는 것은 **정상**이다. 톡방 화면에 링크가 없었으니까.
+ *
+ * 아래 거절 검사들도 마찬가지다. 옮겨 온 설문은 `imported_respondents` 때문에
+ * 무엇을 보내든 「톡방에서 진행합니다」 로 거절되어, 다른 거절 검사가 전부
+ * **엉뚱한 이유로 통과**한다. 여기서 보고 싶은 것은 회원이 실제로 응답하는 설문이다.
+ */
+const s0 = list.find((s) => s.category === 'exhibition' && s.imported_respondents == null);
 if (!s0) {
   console.error(`\n전시 설문을 못 찾았다 — c 파일을 실행했는지 확인한다`
     + `\n읽힌 설문: ${list.map((s) => `${s.category}/${s.title}`).join(' · ') || '없음'}`);
@@ -99,7 +109,9 @@ ok('후보마다 제목과 차례가 있다', opts.length > 0 && !badOpt.length,
 
 /** 화면이 그대로 눌러 쓰는 값이라, 갈래·이름·https 셋을 다 본다. */
 const LINK_KINDS = new Set(['official', 'video', 'article', 'map', 'booking']);
-const links = opts.flatMap((o) => o.links ?? []);
+// 링크 모양은 **모든 설문**에서 본다. 어느 한 설문에 링크가 없는 것은 정상일 수 있다
+// (톡방에서 옮겨 온 투표에는 링크가 없다). 여기서 볼 것은 「있는 링크가 성한가」 다.
+const links = list.flatMap((x) => (x.survey_options ?? []).flatMap((o) => o.links ?? []));
 const badLink = links.filter((l) => !l || !LINK_KINDS.has(l.kind)
   || !String(l.label ?? '').trim() || !/^https:\/\//.test(String(l.url ?? '')));
 ok('참고 링크가 성한 모양이다', links.length > 0 && !badLink.length,
