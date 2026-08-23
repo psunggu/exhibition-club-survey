@@ -193,6 +193,7 @@ function EventCard({ e, index }: { e: Event; index: number }) {
 /** 옛 `renderMovieCard`(app.js:1604) 그대로다. 이식하며 예매율 박스와
  *  버튼 셋을 잃고 문구도 달라져 있었다. */
 function MovieCard({ m, area }: { m: Movie; area: string }) {
+  const releaseDateLabel = m.releaseStatus.startsWith('재개봉') ? '재개봉일' : '개봉일'
   return (
     <article className="exhibition-card movie-card">
       <div className="exhibition-rank">{m.bookingRank}</div>
@@ -200,7 +201,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
         <div className="exhibition-head">
           <div>
             <div className="movie-status-line">
-              <span className={`movie-status-badge${m.releaseStatus === '개봉 예정' ? ' upcoming' : ''}`}>
+              <span className={`movie-status-badge${m.releaseStatus.includes('예정') ? ' upcoming' : ''}`}>
                 {m.releaseStatus}
               </span>
               <span className="movie-ranking-badge">전국 예매 {m.bookingRank}위</span>
@@ -216,7 +217,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
         <p className="exhibition-summary">{m.summary}</p>
 
         <dl className="exhibition-details">
-          <Detail label="개봉일" value={koDate(m.releaseDate)} />
+          <Detail label={releaseDateLabel} value={koDate(m.releaseDate)} />
           <Detail label="러닝타임" value={`${m.runtime}분`} />
           <Detail label="장르" value={m.genre} />
           <Detail label="관람등급" value={m.ageRating} />
