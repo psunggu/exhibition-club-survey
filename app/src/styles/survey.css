@@ -176,6 +176,8 @@
   color: #55534b;
   line-height: 1.75;
   word-break: keep-all;
+  /* 분석 문장에는 후보 제목이 그대로 들어간다 — 「다음은 신의주찹쌀순대광화문점 6명」 */
+  overflow-wrap: anywhere;
 }
 
 .survey-facts b { color: #1f1e1b; font-weight: 700; }
@@ -578,6 +580,8 @@ select.admin-input { cursor: pointer; }
   line-height: 1.4;
   word-break: keep-all;
   min-width: 0;
+  /* 범례에도 후보 제목이 들어간다 */
+  overflow-wrap: anywhere;
 }
 
 .chart-legend-val { color: #55534b; font-weight: 700; flex-shrink: 0; }
@@ -600,6 +604,16 @@ select.admin-input { cursor: pointer; }
   color: #1f1e1b;
   line-height: 1.4;
   word-break: keep-all;
+  /**
+   * `keep-all` 만 두면 띄어쓰기 없는 한글 이름(「신의주찹쌀순대광화문점」)이
+   * 쪼개지지 않고 옆 칸으로 넘쳐 표 수 위에 겹쳐 그려진다.
+   * 글자를 200% 로 키우면 320px 화면에서 7곳이 겹쳤다 (WCAG 1.4.4 Resize Text).
+   *
+   * `anywhere` 는 **달리 방법이 없을 때만** 쪼갠다 — 보통 크기에서는 keep-all 이
+   * 그대로 이겨서 지금 보이는 줄바꿈이 하나도 안 달라진다 (재서 확인했다).
+   * 이름을 잘라 「신의주찹쌀순대광…」 으로 두지 않는다. 어느 가게인지 알아야 한다.
+   */
+  overflow-wrap: anywhere;
   min-width: 0;
 }
 
@@ -794,8 +808,19 @@ select.admin-input { cursor: pointer; }
   min-width: 0;
 }
 
-.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b; }
-.stat-value { font-size: 19px; font-weight: 800; color: #1f1e1b; line-height: 1.2; }
+.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b;
+  word-break: keep-all; overflow-wrap: anywhere; }
+/* 바로 아래 `.stat-sub` 에는 있는데 여기만 빠져 있었다. 글자를 200% 로 키우면
+   두 칸 격자의 한 칸(320px 화면에서 ~140px)보다 값이 넓어져 칸 밖으로 넘친다.
+   실제로 리눅스 CI 에서 문서가 화면보다 넓어졌다 — 글꼴이 조금만 넓어도 넘친다. */
+.stat-value {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1f1e1b;
+  line-height: 1.2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 
 .stat-sub {
   font-size: 11.5px;
@@ -1240,12 +1265,21 @@ select.admin-input { cursor: pointer; }
   font-size: 13px;
   line-height: 1.5;
   color: #55534b;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 /* 이름표와 값을 세로로 맞춘다. 좁은 화면에서는 값이 접히되 이름표는 안 접힌다. */
 .survey-past-facts > span {
   display: grid;
-  grid-template-columns: 92px 1fr;
+  /**
+   * `1fr` 이 아니라 `minmax(0, 1fr)` 이다. 격자 칸은 기본으로 **최소 내용 폭 아래로
+   * 안 줄어든다** — 값에 「서울역사박물관」 같은 긴 낱말이 있으면 그 폭만큼 칸이 버티고,
+   * 격자 전체가 카드보다 넓어져 화면 밖으로 나간다.
+   * 리눅스 CI 에서 실제로 그랬다 (문서 340 / 창 320). 같은 자리에서 윈도우는
+   * 글꼴이 좁아 아슬아슬하게 들어갔을 뿐이라 안 보였다. `.stats` 는 이미 이 꼴을 쓴다.
+   */
+  grid-template-columns: 92px minmax(0, 1fr);
   gap: 2px 8px;
 }
 
@@ -1264,4 +1298,23 @@ select.admin-input { cursor: pointer; }
 .survey-past-body .survey-off .survey-result {
   background: #fff;
   border-color: #e8e5de;
+}
+
+/**
+ * ── 긴 낱말이 칸 밖으로 나가지 않게 ─────────────────────────
+ *
+ * 이 화면은 곳곳에서 `word-break: keep-all` 을 쓴다 — 한글을 낱말 가운데서
+ * 자르지 않으려는 것이고, 읽기에는 그게 맞다. 그런데 그것만 두면
+ * **띄어쓰기 없는 긴 이름**(「신의주찹쌀순대광화문점」, 「서울역사박물관」)이
+ * 아예 안 쪼개져 칸 밖으로 넘친다. 글자를 키우면 바로 드러난다.
+ *
+ * 하나씩 쫓다가 다섯 번을 놓쳤다 — 막대 이름, 지표 값, 지표 이름표,
+ * 분석 문장, 범례, 그리고 마지막에 설문 제목(h3)까지. 자리마다 고칠 것이 아니라
+ * **짝을 지어 두는 것**이 맞다: `anywhere` 는 달리 방법이 없을 때만 자르므로
+ * 보통 크기에서는 keep-all 이 그대로 이긴다 (320·390·560px 에서 재서 확인했다).
+ *
+ * `:where()` 라 힘이 0 이다. 어느 규칙이든 이걸 덮어쓸 수 있다.
+ */
+.wrap :where(h1, h2, h3, p, li, span, strong, b, em, summary, label, dt, dd, div) {
+  overflow-wrap: anywhere;
 }
