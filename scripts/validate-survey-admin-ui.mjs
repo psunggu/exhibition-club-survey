@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { dimTexts, measureA11y } from './a11y-probe.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -556,13 +557,34 @@ ok('지웠다고 알려 준다',
 /* ── 6. 누르는 크기와 오류 ─────────────────────────────── */
 
 console.log('\n── 마무리');
-const small = await page.$$eval('a,button,input,select,textarea',
-  (es) => es.filter((e) => e.offsetParent !== null)
-    .map((e) => { const r = e.getBoundingClientRect();
-      return { c: e.className.toString().split(' ')[0] || e.tagName, w: Math.round(r.width), h: Math.round(r.height) }; })
-    .filter((t) => t.h > 0 && (t.h < 24 || t.w < 24)));
+// 긴 흐름 끝에 남은 화면은 글자가 얼마 없다. 내용이 있는 상태로 돌아가서 잰다 —
+// 얇은 화면을 재고 「통과」 하면 그게 제일 위험하다.
+// 긴 흐름 끝에 남은 화면은 글자가 얼마 없다(303자). 그래서 **두 자리를 잰다** —
+// 목록 화면과, 색을 실제로 쓰는 결과 화면. 얇은 화면 하나만 재고 「통과」 하면
+// 그게 제일 위험하다.
+const spots = [];
+await go();
+await page.fill('.admin-input', PW);
+await page.click('.survey-who .survey-submit');
+await page.waitForSelector('.admin-card', { timeout: 20000 });
+await page.waitForTimeout(900);
+spots.push(await measureA11y(page));
+await (await cardBtn(0, '결과 보기')).click();
+await page.waitForSelector('.admin-results', { timeout: 20000 });
+await page.waitForTimeout(900);
+spots.push(await measureA11y(page));
+/**
+ * **이 화면에는 대비를 재는 대목이 하나도 없었다.**
+ * 회원 설문 화면에는 있는데 여기만 없어서, 0표 글자색을 바꿨을 때
+ * 운영자 화면 색도 같이 바뀌었는데 그대로 통과했다. 같은 잣대를 쓴다.
+ */
+const small = spots.flatMap((r) => r.small);
+const texts = spots.flatMap((r) => r.texts);
 ok('누르는 것이 모두 24px 이상', small.length === 0,
   small.map((t) => `${t.c} ${t.w}×${t.h}`).join(', '));
+const dim = dimTexts(texts);
+ok('글자 대비가 모두 기준 이상', dim.length === 0, dim.join(' | '));
+ok(`대비를 잰 글자 ${texts.length}개`, texts.length >= 30, `${texts.length}개`);
 ok('오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
 
 await browser.close();

@@ -600,6 +600,16 @@ select.admin-input { cursor: pointer; }
   color: #1f1e1b;
   line-height: 1.4;
   word-break: keep-all;
+  /**
+   * `keep-all` 만 두면 띄어쓰기 없는 한글 이름(「신의주찹쌀순대광화문점」)이
+   * 쪼개지지 않고 옆 칸으로 넘쳐 표 수 위에 겹쳐 그려진다.
+   * 글자를 200% 로 키우면 320px 화면에서 7곳이 겹쳤다 (WCAG 1.4.4 Resize Text).
+   *
+   * `anywhere` 는 **달리 방법이 없을 때만** 쪼갠다 — 보통 크기에서는 keep-all 이
+   * 그대로 이겨서 지금 보이는 줄바꿈이 하나도 안 달라진다 (재서 확인했다).
+   * 이름을 잘라 「신의주찹쌀순대광…」 으로 두지 않는다. 어느 가게인지 알아야 한다.
+   */
+  overflow-wrap: anywhere;
   min-width: 0;
 }
 

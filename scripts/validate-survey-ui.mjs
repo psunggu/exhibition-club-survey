@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { dimTexts, measureA11y } from './a11y-probe.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -141,7 +142,12 @@ const MEAL_PAST = {
   opens_at: iso(now - 72 * HOUR), closes_at: iso(now - 48 * HOUR),
   created_by: '', results_visible: 'always', show_names: 'none', hide_after_days: null,
   category: 'meal', imported_respondents: 13,
-  survey_options: ['사발', '우슴', '올리페페'].map((t, i) => ({
+  /**
+   * **이름 하나는 일부러 길고 띄어쓰기가 없다.**
+   * 짧은 이름만 두었더니 「글자를 200% 로 키워도 안 겹친다」 검사가 헛돌았다 —
+   * overflow-wrap 을 지워도 통과했다. 실제로 넘쳤던 것이 이런 긴 이름이다.
+   */
+  survey_options: ['사발', '신의주찹쌀순대광화문점', '올리페페광화문점'].map((t, i) => ({
     id: `meal-p-${i}`, position: i + 1, title: t,
     period: null, venue: null, hours: null, price: null, note: null, links: [],
   })),
@@ -529,6 +535,58 @@ if (pastCards.length === 1) {
   ok('열면 화살표가 뒤집힌다',
     await card.$eval('summary', (e) => getComputedStyle(e, '::after').content.includes('⌃')));
 }
+/**
+ * **글자를 키워도 글자끼리 겹치면 안 된다 (WCAG 1.4.4 Resize Text).**
+ *
+ * 휴대폰에서 글꼴을 키워 보는 분이 실제로 겪는다. 잰 적이 없어서 몰랐는데,
+ * 320px 화면에서 글자를 200% 로 키우니 막대 그래프의 가게 이름이 표 수 위로
+ * 7곳 올라타 있었다 — 띄어쓰기 없는 한글 이름이 `word-break: keep-all` 때문에
+ * 쪼개지지 않고 옆 칸으로 넘친 것이다.
+ *
+ * 글자 상자가 아니라 **글자마디의 진짜 사각형(Range)** 을 잰다.
+ * 요소 상자만 보면 넘친 글자가 부모 안에 있는 것처럼 보여 못 잡는다.
+ */
+await page.setViewportSize({ width: 320, height: 900 });
+await page.waitForTimeout(400);
+await page.evaluate((scale) => {
+  // **한 번에 모아 읽고 나서** 적용한다. 하나씩 읽고 쓰면 자식이 부모의 커진 값을
+  // 또 배로 키워 4배·8배가 된다 — 그러면 겹침이 아니라 측정 방법이 결함이 된다.
+  const els = [...document.querySelectorAll('body *')];
+  const sizes = els.map((e) => parseFloat(getComputedStyle(e).fontSize));
+  els.forEach((e, i) => { if (Number.isFinite(sizes[i])) e.style.fontSize = `${sizes[i] * scale}px`; });
+}, 2);
+await page.waitForTimeout(500);
+const zoomHits = await page.evaluate(() => {
+  const rects = [];
+  for (const el of document.querySelectorAll('.chart-bar-row span, .chart-bar-head span')) {
+    for (const n of el.childNodes) {
+      if (n.nodeType !== 3 || !n.textContent.trim()) continue;
+      const r = document.createRange(); r.selectNodeContents(n);
+      for (const box of r.getClientRects()) {
+        if (box.width > 0 && box.height > 0) {
+          rects.push({ cls: el.className, t: n.textContent.trim().slice(0, 12), box });
+        }
+      }
+    }
+  }
+  const hit = [];
+  for (let i = 0; i < rects.length; i += 1) {
+    for (let j = i + 1; j < rects.length; j += 1) {
+      const a = rects[i].box; const c = rects[j].box;
+      const w = Math.min(a.right, c.right) - Math.max(a.left, c.left);
+      const h = Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top);
+      if (w > 1 && h > 1) hit.push(`${rects[i].cls}「${rects[i].t}」↔${rects[j].cls}「${rects[j].t}」`);
+    }
+  }
+  return { hit, seen: rects.length };
+});
+ok('글자를 200% 로 키워도 글자끼리 안 겹친다', zoomHits.hit.length === 0,
+  zoomHits.hit.length ? zoomHits.hit.slice(0, 3).join(' | ') : `글자마디 ${zoomHits.seen}개 확인`);
+ok('그때도 가로로 넘치지 않는다',
+  await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+await page.setViewportSize({ width: 390, height: 900 });
+
+
 
 /**
  * **흐리기로 「비활성」 을 표현하지 않았는지 여기서 못박는다.**
@@ -624,55 +682,13 @@ console.log('\n── 마무리');
  * 아래 두 검사가 아예 안 본다. 접어 두었다는 이유로 색과 누르는 크기가
  * 감사에서 빠지면, 접기를 넣을수록 검사가 눈을 감는 꼴이 된다.
  */
-const lum = (c) => {
-  const v = c.map((x) => { const s = x / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
-  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
-};
-const contrast = (a, b) => {
-  const x = lum(a); const y = lum(b);
-  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-};
-
 const measureScreen = async (route) => {
   await page.goto('about:blank');
   await page.goto(`http://localhost:8261${BASE}${route}`, { waitUntil: 'networkidle' });
   await page.waitForSelector('.survey-head, .survey-history', { timeout: 20000 });
   await page.waitForTimeout(700);
-  // 접힌 자리를 모두 펼친다 — 안 그러면 그 안의 색과 누름 크기를 못 본다
-  await page.$$eval('details', (ds) => ds.forEach((d) => { d.open = true; }));
-  await page.waitForTimeout(900);
-
-  const small = await page.$$eval('a,button,input,summary',
-    (es) => es.filter((e) => e.offsetParent !== null)
-      .map((e) => { const r = e.getBoundingClientRect();
-        return { c: e.className.toString().split(' ')[0] || e.tagName, w: Math.round(r.width), h: Math.round(r.height) }; })
-      .filter((t) => t.h > 0 && (t.h < 24 || t.w < 24)));
-
-  const texts = await page.evaluate(() => {
-    const rgb = (s) => { const m = s.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : null; };
-    const bgOf = (el) => {
-      for (let e = el; e; e = e.parentElement) {
-        const c = getComputedStyle(e).backgroundColor;
-        const m = c.match(/[\d.]+/g);
-        if (m && (m.length < 4 || parseFloat(m[3]) > 0.5)) return rgb(c);
-      }
-      return [255, 255, 255];
-    };
-    const INLINE = new Set(['BR', 'B', 'STRONG', 'EM', 'I', 'SPAN', 'A', 'SMALL', 'SVG']);
-    return [...document.querySelectorAll('.wrap p, .wrap span, .wrap h1, .wrap h2, .wrap h3, .wrap a, .wrap button, .wrap summary, .wrap div')]
-      .filter((e) => e.offsetParent !== null
-        && [...e.children].every((c) => INLINE.has(c.tagName.toUpperCase()))
-        && (e.textContent || '').trim())
-      .map((e) => {
-        const c = getComputedStyle(e);
-        return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
-          size: parseFloat(c.fontSize) || 0, weight: Number(c.fontWeight) || 400,
-          fg: rgb(c.color), bg: bgOf(e), txt: (e.textContent || '').trim().slice(0, 20) };
-      });
-  });
-  return { small, texts };
+  return measureA11y(page);   // 접힌 것을 펼치고 잰다
 };
-
 const SCREENS = [['전시', '/#/survey'], ['식사', '/#/survey/meal']];
 const allSmall = [];
 const allTexts = [];
@@ -686,18 +702,8 @@ for (const [label, route] of SCREENS) {
 ok('누르는 것이 모두 24px 이상', allSmall.length === 0,
   allSmall.map((t) => `${t.c} ${t.w}×${t.h}`).join(', '));
 
-const dim = [];
-const seenSel = new Set();
-for (const t of allTexts) {
-  if (!t.fg || !t.bg) continue;
-  const large = t.size >= 18.66 || (t.size >= 14 && t.weight >= 700);
-  const need = large ? 3 : 4.5;
-  const r = contrast(t.fg, t.bg);
-  if (Math.round(r * 100) / 100 >= need) continue;
-  if (seenSel.has(t.sel)) continue;
-  seenSel.add(t.sel);
-  dim.push(`.${t.sel} ${r.toFixed(2)}:1 (필요 ${need}) "${t.txt}"`);
-}
+const dim = dimTexts(allTexts);
+
 ok('글자 대비가 모두 기준 이상', dim.length === 0, dim.join(' | '));
 ok(`대비를 잰 글자 ${allTexts.length}개`, allTexts.length >= 200, `${allTexts.length}개`);
 
