@@ -681,6 +681,59 @@ const offTag = await page.$eval('.survey-off .tag',
 ok('마감 설문에 「마감」 이라고 적혀 있다', offTag?.t === '마감' && offTag.h > 0,
   offTag ? `${offTag.t} ${offTag.h}px` : '태그가 없다');
 
+/* ── 달력의 「설문 참여하기」 카드 ────────────────────────────
+ *
+ * 여기서 재는 것은 **「마감」 과 「없음」 을 가르는가** 다.
+ *   마감 + 모임이 아직   → 「마감 · N명」 (아직 볼 일이 남았다)
+ *   모임까지 끝났다      → 그 갈래에 남은 것이 없으니 「없음」
+ *
+ * 이 갈래는 화면 대조 검사가 못 본다 — 그쪽 시계는 2026-08-22 에 묶여 있고
+ * 그날은 모임 당일이라 「없음」 이 아예 안 그려진다. 여기가 유일하게 잴 수 있는 자리다.
+ */
+
+console.log('\n── 달력 카드');
+
+const jumpRows = async () => page.$$eval('.survey-jump-list li',
+  (es) => es.map((e) => e.textContent.trim().replace(/\s+/g, ' ')));
+
+// ① 목 그대로 — 식사 갈래에는 「모임이 아직인 마감 설문」(MEAL_LOOSE)이 남아 있다
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForTimeout(1500);
+const withLoose = await jumpRows();
+ok('모임이 아직인 마감 설문은 「마감」 이라고 적는다',
+  withLoose.some((t) => t.includes('식사') && t.includes('마감') && !t.includes('없음')),
+  withLoose.join(' / '));
+
+// ② 식사 갈래에 **모임까지 끝난 것만** 남겼을 때
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MEAL_PAST]) }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForTimeout(1800);
+const onlyPast = await jumpRows();
+ok('모임까지 끝났으면 「없음」 이라고 적는다',
+  onlyPast.some((t) => t.includes('식사') && t.includes('없음')), onlyPast.join(' / '));
+ok('그때 「마감」 이라고는 안 적는다',
+  !onlyPast.some((t) => t.includes('식사') && t.includes('마감')), onlyPast.join(' / '));
+
+/** 「없음」 배지는 「진행 중」 과 **같은 모양**이어야 한다 (운영자가 그렇게 정했다). */
+const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => {
+  const c = getComputedStyle(e);
+  return { t: e.textContent.trim(),
+    css: `${c.backgroundColor}|${c.color}|${c.borderRadius}|${c.fontSize}|${c.fontWeight}` };
+}));
+const run = jumpBadges.find((x) => x.t === '진행 중');
+const none = jumpBadges.find((x) => x.t === '없음');
+ok('「없음」 과 「진행 중」 이 같은 배지 모양이다',
+  !!run && !!none && run.css === none.css,
+  run && none ? `${none.css}${run.css === none.css ? '' : ` ≠ ${run.css}`}`
+    : `배지 ${jumpBadges.map((x) => x.t).join(', ') || '없다'}`);
+
+await page.unroute('**/rest/v1/surveys*');
+
 /* ── 7. 누르는 크기와 오류 ──────────────────────────────── */
 
 console.log('\n── 마무리');

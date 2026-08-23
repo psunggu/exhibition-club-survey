@@ -9,6 +9,7 @@ import {
   CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
   type SurveyCategory,
 } from './lib/survey'
+import { isPastSurvey } from './lib/surveyHistory'
 
 /** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
 const monthsLabel = () =>
@@ -28,15 +29,23 @@ function SurveyJump() {
   const [rows, setRows] = useState<{
     category: SurveyCategory; open: boolean; closesAt: string; people: number
   }[] | null>(null)
+  /** 못 읽은 것과 「없다」 는 다르다. 섞으면 화면이 거짓말을 한다. */
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     const ac = new AbortController()
     fetchSurveys(ac.signal)
       .then(async (all) => {
         const seen = new Map<SurveyCategory, typeof all[number]>()
-        // 갈래마다 **가장 늦게 닫히는 것** 하나만 보여 준다. 지금 참여할 것이 그것이다.
         for (const s of all) {
+          /**
+           * **모임까지 끝난 설문은 여기 안 뜬다.**
+           * 그건 지난 일이고 설문 화면의 「지난 설문」 으로 내려가 있다.
+           * 여기 남겨 두면 「마감 · 13명」 이 지금 뭔가 하는 자리인 것처럼 읽힌다.
+           */
+          if (isPastSurvey(s)) continue
           const cur = seen.get(s.category)
+          // 갈래마다 **가장 늦게 닫히는 것** 하나만 보여 준다. 지금 참여할 것이 그것이다.
           if (!cur || s.closesAt > cur.closesAt) seen.set(s.category, s)
         }
         const list = await Promise.all([...seen.values()].map(async (s) => ({
@@ -47,7 +56,7 @@ function SurveyJump() {
         })))
         setRows(list)
       })
-      .catch(() => setRows([]))       // 못 읽으면 이름만 보여 준다
+      .catch(() => { setFailed(true); setRows([]) })   // 못 읽으면 이름만 보여 준다
     return () => ac.abort()
   }, [])
 
@@ -57,17 +66,19 @@ function SurveyJump() {
    * 그러면 카드 높이가 상태에 따라 달라져 화면 대조 검사가 흔들렸다.
    * 자세한 마감 시각은 설문 화면에 그대로 적혀 있다.
    */
-  const stateOf = (c: SurveyCategory) => {
-    const r = rows?.find((x) => x.category === c)
-    if (!r) return null
+  const stateOf = (c: SurveyCategory): { badge: string | null; text: string; on: boolean } | null => {
+    if (!rows || failed) return null      // 아직 못 불러왔거나 못 읽었다 — 아무 말도 안 한다
+    const r = rows.find((x) => x.category === c)
+    // 이 갈래에 지금 참여할 것이 없다. 「마감」 과 다르다 — 마감은 있었는데 닫힌 것이다.
+    if (!r) return { badge: '없음', text: '', on: true }
     const who = r.people > 0 ? ` · ${r.people}명` : ''
-    if (!r.open) return { on: false, text: `마감${who}` }
+    if (!r.open) return { badge: null, text: `마감${who}`, on: false }
     const d = new Date(r.closesAt)
     const p = new Intl.DateTimeFormat('ko-KR', {
       timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short',
     }).formatToParts(d)
     const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
-    return { on: true, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}` }
+    return { badge: '진행 중', text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
   }
 
   return (
@@ -89,10 +100,10 @@ function SurveyJump() {
               </a>
               {st && (
                 <span className={`survey-jump-state${st.on ? ' on' : ''}`}>
-                  {/* 색만으로 가르지 않는다 — 열린 것에는 「진행 중」 이라 적는다.
+                  {/* 색만으로 가르지 않는다 — 배지 안에 「진행 중」·「없음」 이라 적는다.
                       배지 뒤에 빈칸을 둔다. 여백은 눈에만 보이고,
                       화면을 읽어 주는 쪽에는 「진행 중8월」 로 붙어서 나갔다. */}
-                  {st.on && <><b>진행 중</b>{' '}</>}
+                  {st.badge && <><b>{st.badge}</b>{st.text ? ' ' : ''}</>}
                   {st.text}
                 </span>
               )}
