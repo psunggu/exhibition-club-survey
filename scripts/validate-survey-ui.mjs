@@ -582,8 +582,20 @@ const zoomHits = await page.evaluate(() => {
 });
 ok('글자를 200% 로 키워도 글자끼리 안 겹친다', zoomHits.hit.length === 0,
   zoomHits.hit.length ? zoomHits.hit.slice(0, 3).join(' | ') : `글자마디 ${zoomHits.seen}개 확인`);
-ok('그때도 가로로 넘치지 않는다',
-  await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+// 넘치면 **무엇이** 넘쳤는지 말한다. 그냥 ✗ 만 뜨면 어디를 고쳐야 할지 모른다.
+const spill = await page.evaluate(() => {
+  const over = [...document.querySelectorAll('.wrap *')]
+    .filter((e) => e.scrollWidth > e.clientWidth + 1)
+    .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ')[0]} ${e.scrollWidth}>${e.clientWidth}`);
+  const far = [...document.querySelectorAll('.wrap *')]
+    .map((e) => ({ s: `${e.tagName.toLowerCase()}.${String(e.className).split(' ')[0]}`,
+      r: Math.round(e.getBoundingClientRect().right) }))
+    .sort((x, y) => y.r - x.r).slice(0, 3);
+  return { doc: document.documentElement.scrollWidth, win: window.innerWidth,
+    over: over.slice(0, 4), far: far.map((x) => `${x.s}→${x.r}`) };
+});
+ok('그때도 가로로 넘치지 않는다', spill.doc <= spill.win + 1,
+  `문서 ${spill.doc} / 창 ${spill.win} · 칸 넘침 [${spill.over.join(', ')}] · 오른쪽 끝 [${spill.far.join(', ')}]`);
 await page.setViewportSize({ width: 390, height: 900 });
 
 
