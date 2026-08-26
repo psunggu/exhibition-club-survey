@@ -92,30 +92,12 @@ const list = Array.isArray(surveys.body) ? surveys.body : [];
  * **무엇을 확인 못 했는지 밝히고 건너뛴다.** 회원용 설문이 다시 생기면 저절로 돌아온다.
  */
 const s0 = list.find((s) => s.category === 'exhibition' && s.imported_respondents == null);
-if (!s0) {
+if (s0) {
+  console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
+} else {
   console.log(`\n  회원이 응답하는 전시 설문이 지금 없다 — 아래 검사들을 건너뛴다.`
     + `\n  읽힌 설문: ${list.map((s) => `${s.category}/${s.title}`).join(' · ') || '없음'}`);
-  skip('후보가 딸려 온다', '회원용 전시 설문이 없다');
-  skip('참고 링크가 성한 모양이다', '회원용 전시 설문이 없다');
-  skip('명부에 없는 사람을 거절한다', '회원용 전시 설문이 없다');
-  skip('넣고·읽고·다시 넣기 왕복', '회원용 전시 설문이 없다');
-  console.log(`\n${fails.length ? `라이브 검사 실패 — ${fails.length}건: ${fails.join(', ')}`
-    : '라이브 검사 통과 (회원용 전시 설문이 없어 일부는 건너뜀)'}`);
-  /**
-   * **여기서 process.exit() 를 부르면 안 된다.**
-   * 바로 위에서 fetch 한 소켓이 아직 살아 있어서, Windows 에서 libuv 단언
-   * (`!(handle->flags & UV_HANDLE_CLOSING)`)에 걸려 **종료코드가 127** 이 된다.
-   * 통과인데 실패로 읽힌다 — 실제로 그렇게 나왔다.
-   *
-   * 파일 끝의 exit 는 멀쩡한데, 그때는 이미 소켓이 정리된 뒤라서다.
-   * 종료코드만 정해 두고 Node 가 스스로 끝나게 둔다.
-   */
-  process.exitCode = fails.length ? 1 : 0;
 }
-
-// s0 이 없으면 아래는 전부 건너뛴다 (위에서 종료코드를 정해 뒀다)
-if (s0) {
-console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
 
 /**
  * **개수를 못박지 않는다.**
@@ -128,13 +110,18 @@ console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
  * 그래서 개수 대신 **모양**을 본다. 여기서 진짜 보고 싶은 것은
  * 「후보가 딸려 왔는가(중첩 select 가 도는가)」 와 「링크가 성한가」 이다.
  */
-const opts = Array.isArray(s0.survey_options) ? s0.survey_options : [];
-ok('후보가 딸려 온다', opts.length > 0, `${opts.length}개`);
+const opts = Array.isArray(s0?.survey_options) ? s0.survey_options : [];
+if (s0) {
+  ok('후보가 딸려 온다', opts.length > 0, `${opts.length}개`);
 
-const badOpt = opts.filter((o) => !String(o?.title ?? '').trim()
-  || !Number.isFinite(Number(o?.position)));
-ok('후보마다 제목과 차례가 있다', opts.length > 0 && !badOpt.length,
-  badOpt.length ? `빠진 것 ${badOpt.length}개` : `${opts.length}개 확인`);
+  const badOpt = opts.filter((o) => !String(o?.title ?? '').trim()
+    || !Number.isFinite(Number(o?.position)));
+  ok('후보마다 제목과 차례가 있다', opts.length > 0 && !badOpt.length,
+    badOpt.length ? `빠진 것 ${badOpt.length}개` : `${opts.length}개 확인`);
+} else {
+  skip('후보가 딸려 온다', '회원용 전시 설문이 없다');
+  skip('후보마다 제목과 차례가 있다', '회원용 전시 설문이 없다');
+}
 
 /** 화면이 그대로 눌러 쓰는 값이라, 갈래·이름·https 셋을 다 본다. */
 const LINK_KINDS = new Set(['official', 'video', 'article', 'map', 'booking']);
@@ -143,8 +130,12 @@ const LINK_KINDS = new Set(['official', 'video', 'article', 'map', 'booking']);
 const links = list.flatMap((x) => (x.survey_options ?? []).flatMap((o) => o.links ?? []));
 const badLink = links.filter((l) => !l || !LINK_KINDS.has(l.kind)
   || !String(l.label ?? '').trim() || !/^https:\/\//.test(String(l.url ?? '')));
-ok('참고 링크가 성한 모양이다', links.length > 0 && !badLink.length,
-  badLink.length ? `깨진 것 ${badLink.length}개` : links.map((l) => l.kind).join(', '));
+if (s0) {
+  ok('참고 링크가 성한 모양이다', links.length > 0 && !badLink.length,
+    badLink.length ? `깨진 것 ${badLink.length}개` : links.map((l) => l.kind).join(', '));
+} else {
+  skip('참고 링크가 성한 모양이다', '회원용 전시 설문이 없다');
+}
 
 /**
  * 이 하나는 **지금 후보에 서도호가 있을 때만** 본다.
@@ -152,7 +143,9 @@ ok('참고 링크가 성한 모양이다', links.length > 0 && !badLink.length,
  * 10월 설문으로 바뀌면 서도호는 없어진다. 그때 「없으니 실패」 는 틀린 말이다.
  */
 const seodoho = opts.find((o) => String(o.title ?? '').includes('서도호'));
-if (seodoho) {
+if (!s0) {
+  skip('서도호 영상 링크가 있다', '회원용 전시 설문이 없다');
+} else if (seodoho) {
   ok('서도호 영상 링크가 있다',
     (seodoho.links ?? []).some((l) => l.kind === 'video' && String(l.url).includes('8IvgzYaKexE')));
 } else {
@@ -166,14 +159,22 @@ if (seodoho) {
  * 지켜야 할 것은 "몇 시냐" 가 아니라 **읽을 수 있는 시각이냐** 와 **연 시각보다 뒤냐** 다.
  * 마감은 운영자가 언제든 옮기는 값이다. 지금 몇 시인지는 알려만 주고 판정하지 않는다.
  */
-const closes = new Date(s0.closes_at);
-const opens = new Date(s0.opens_at);
+const closes = s0 ? new Date(s0.closes_at) : null;
+const opens = s0 ? new Date(s0.opens_at) : null;
 const kst = (d) => d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-ok('마감 시각을 읽을 수 있다', !Number.isNaN(closes.getTime()), String(s0.closes_at));
-ok('마감이 여는 시각보다 뒤다', closes > opens, `${kst(opens)} → ${kst(closes)}`);
-console.log(`     지금: ${closes <= new Date() ? '마감됨' : '진행 중'} · 마감 ${kst(closes)} (KST)`);
+if (s0) {
+  ok('마감 시각을 읽을 수 있다', !Number.isNaN(closes.getTime()), String(s0.closes_at));
+  ok('마감이 여는 시각보다 뒤다', closes > opens, `${kst(opens)} → ${kst(closes)}`);
+  console.log(`     지금: ${closes <= new Date() ? '마감됨' : '진행 중'} · 마감 ${kst(closes)} (KST)`);
+} else {
+  skip('마감 시각을 읽을 수 있다', '회원용 전시 설문이 없다');
+  skip('마감이 여는 시각보다 뒤다', '회원용 전시 설문이 없다');
+}
 
 /* ── 2. 읽히면 안 되는 것 ───────────────────────────────── */
+
+// 회원용 전시 설문이 없어도 이 아래의 보안 경계 검사는 반드시 계속 실행한다.
+// 설문별 검사와 함께 건너뛰면 비공개 표가 열린 회귀를 놓칠 수 있다.
 
 console.log('\n── 잠긴 표 (여기가 이 설계의 핵심이다)');
 for (const t of ['survey_responses', 'survey_choices', 'survey_admins']) {
@@ -191,12 +192,7 @@ ok('후보를 거쳐 응답으로 못 들어간다', via.status !== 200,
 /* ── 3. 함수가 막아야 할 것 ─────────────────────────────── */
 
 console.log('\n── 함수가 거절하는가');
-const optIds = (s0.survey_options ?? []).map((o) => o.id);
-
-const noName = await rpc('survey_submit',
-  { p_survey: s0.id, p_zone: '', p_name: '', p_options: [optIds[0]] });
-ok('빈 이름을 거절한다', noName.status >= 400,
-  noName.body?.message?.slice(0, 30) ?? String(noName.status));
+const optIds = (s0?.survey_options ?? []).map((o) => o.id);
 
 /**
  * **마감된 설문에서는 이 둘을 확인할 수 없다.**
@@ -208,28 +204,40 @@ const CLOSED_MSG = '마감된 설문입니다';
 const rejected = (r, want) => r.status >= 400 && !String(r.body?.message ?? '').includes(CLOSED_MSG)
   && (!want || String(r.body?.message ?? '').includes(want));
 
-const noPick = await rpc('survey_submit',
-  { p_survey: s0.id, p_zone: '9999', p_name: '검사용', p_options: [] });
-if (String(noPick.body?.message ?? '').includes(CLOSED_MSG)) {
-  skip('아무것도 안 고르면 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
-} else {
-  ok('아무것도 안 고르면 거절한다', rejected(noPick),
-    noPick.body?.message?.slice(0, 30) ?? String(noPick.status));
-}
+if (s0) {
+  const noName = await rpc('survey_submit',
+    { p_survey: s0.id, p_zone: '', p_name: '', p_options: [optIds[0]] });
+  ok('빈 이름을 거절한다', noName.status >= 400,
+    noName.body?.message?.slice(0, 30) ?? String(noName.status));
 
-const alien = await rpc('survey_submit',
-  { p_survey: s0.id, p_zone: '9999', p_name: '검사용',
-    p_options: ['00000000-0000-4000-8000-000000000000'] });
-if (String(alien.body?.message ?? '').includes(CLOSED_MSG)) {
-  skip('남의 후보 uuid 를 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
+  const noPick = await rpc('survey_submit',
+    { p_survey: s0.id, p_zone: '9999', p_name: '검사용', p_options: [] });
+  if (String(noPick.body?.message ?? '').includes(CLOSED_MSG)) {
+    skip('아무것도 안 고르면 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
+  } else {
+    ok('아무것도 안 고르면 거절한다', rejected(noPick),
+      noPick.body?.message?.slice(0, 30) ?? String(noPick.status));
+  }
+
+  const alien = await rpc('survey_submit',
+    { p_survey: s0.id, p_zone: '9999', p_name: '검사용',
+      p_options: ['00000000-0000-4000-8000-000000000000'] });
+  if (String(alien.body?.message ?? '').includes(CLOSED_MSG)) {
+    skip('남의 후보 uuid 를 거절한다', '설문이 마감돼 마감 검사가 먼저 걸린다');
+  } else {
+    ok('남의 후보 uuid 를 거절한다', rejected(alien),
+      alien.body?.message?.slice(0, 34) ?? String(alien.status));
+  }
 } else {
-  ok('남의 후보 uuid 를 거절한다', rejected(alien),
-    alien.body?.message?.slice(0, 34) ?? String(alien.status));
+  skip('빈 이름을 거절한다', '회원용 전시 설문이 없다');
+  skip('아무것도 안 고르면 거절한다', '회원용 전시 설문이 없다');
+  skip('남의 후보 uuid 를 거절한다', '회원용 전시 설문이 없다');
 }
 
 const ghost = await rpc('survey_submit',
   { p_survey: '00000000-0000-4000-8000-000000000000',
-    p_zone: '9999', p_name: '검사용', p_options: [optIds[0]] });
+    p_zone: '9999', p_name: '검사용',
+    p_options: ['00000000-0000-4000-8000-000000000000'] });
 ok('없는 설문을 거절한다', ghost.status >= 400,
   ghost.body?.message?.slice(0, 30) ?? String(ghost.status));
 
@@ -237,14 +245,19 @@ const badPw = await rpc('survey_admin_ok', { p_password: '틀린암호' });
 ok('틀린 운영자 암호는 false', badPw.status === 200 && badPw.body === false,
   JSON.stringify(badPw.body));
 
-const notMine = await rpc('survey_my_choices',
-  { p_survey: s0.id, p_zone: '0001', p_name: '없는사람' });
-ok('없는 사람은 빈 결과', notMine.status === 200
-  && Array.isArray(notMine.body) && notMine.body.length === 0,
-  JSON.stringify(notMine.body)?.slice(0, 30));
+if (s0) {
+  const notMine = await rpc('survey_my_choices',
+    { p_survey: s0.id, p_zone: '0001', p_name: '없는사람' });
+  ok('없는 사람은 빈 결과', notMine.status === 200
+    && Array.isArray(notMine.body) && notMine.body.length === 0,
+    JSON.stringify(notMine.body)?.slice(0, 30));
 
-const count = await rpc('survey_response_count', { p_survey: s0.id });
-console.log(`\n  지금까지 응답 ${count.body}건`);
+  const count = await rpc('survey_response_count', { p_survey: s0.id });
+  console.log(`\n  지금까지 응답 ${count.body}건`);
+} else {
+  skip('없는 사람은 빈 결과', '회원용 전시 설문이 없다');
+  skip('응답 수를 읽는다', '회원용 전시 설문이 없다');
+}
 
 /* ── 4. 실제로 써 본다 (--write 일 때만) ────────────────── */
 
@@ -255,7 +268,10 @@ console.log(`\n  지금까지 응답 ${count.body}건`);
  *
  * 대신 마감이 정말 먹히는지는 확인한다. 그게 지금 확인할 수 있는 것이다.
  */
-if (WRITE && closes <= new Date()) {
+if (!s0) {
+  console.log('\n  (회원용 전시 설문이 없어 쓰기 검사를 건너뛴다)');
+  skip('넣고·읽고·다시 넣기 왕복', '회원용 전시 설문이 없다');
+} else if (WRITE && closes <= new Date()) {
   console.log('\n── 실제 응답 넣기');
   const blocked = await rpc('survey_submit',
     { p_survey: s0.id, p_zone: '0000', p_name: '검사용응답', p_options: [optIds[0]] });
@@ -307,6 +323,6 @@ if (WRITE && closes <= new Date()) {
   console.log('\n  (쓰기는 확인하지 않았다 — --write 를 붙이면 한 건 넣어 본다)');
 }
 
-console.log(`\n${fails.length ? `실패 ${fails.length}건: ${fails.join(', ')}` : '설문 라이브 확인 통과'}`);
+const partial = s0 ? '' : ' (회원용 전시 설문이 없어 일부 건너뜀)';
+console.log(`\n${fails.length ? `실패 ${fails.length}건: ${fails.join(', ')}` : `설문 라이브 확인 통과${partial}`}`);
 process.exit(fails.length ? 1 : 0);
-}   // if (s0) — 회원용 전시 설문이 없으면 위에서 건너뛰고 여기까지 안 온다
