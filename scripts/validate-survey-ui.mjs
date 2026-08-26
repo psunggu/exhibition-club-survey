@@ -733,6 +733,49 @@ ok('「없음」 과 「진행 중」 이 같은 배지 모양이다',
     : `배지 ${jumpBadges.map((x) => x.t).join(', ') || '없다'}`);
 
 await page.unroute('**/rest/v1/surveys*');
+/**
+ * **톡방에서 도는 투표가 대표 자리를 빼앗으면 안 된다.**
+ *
+ * 이 카드는 갈래마다 하나만 보여 준다. 예전에는 마감이 가장 늦은 것을 골랐는데,
+ * 톡방 투표(mirrored)는 마감이 더 늦은 일이 흔하다 — 그러면 정작 회원이
+ * 응답할 수 있는 설문이 가려지고, 「진행 중」 을 눌러 들어간 회원은
+ * 설문 화면에서야 「여기서는 고르실 수 없습니다」 를 만난다.
+ *
+ * 목에는 둘 다 있다 — OPEN_SURVEY(응답 가능)와 MIRROR_SURVEY(톡방·마감 전).
+ */
+const jumpBadgeOf = async (short) => page.$$eval('.survey-jump-list li', (es, s) => {
+  const li = es.find((e) => e.textContent.includes(s));
+  return li ? (li.querySelector('.survey-jump-state b')?.textContent.trim() ?? '') : null;
+}, short);
+
+// **톡방 투표가 더 늦게 닫히게 만들어 겨루게 한다.** 목 그대로는 톡방 것이 먼저 닫혀서,
+// 옛 규칙(마감 늦은 순)으로 되돌려도 답이 같아 이 검사가 헛돌았다.
+const MIRROR_LATE = { ...MIRROR_SURVEY, id: 'srv-mirror-late',
+  closes_at: iso(now + 72 * HOUR) };
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_LATE]) }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForTimeout(1500);
+ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
+  await jumpBadgeOf('전시 관람') === '진행 중',
+  `배지 ${await jumpBadgeOf('전시 관람')} (톡방 것이 사흘 뒤 마감이라 마감순이면 그것이 이긴다)`);
+await page.unroute('**/rest/v1/surveys*');
+
+// 톡방 투표만 남기면 그때는 「톡방 투표」 라고 밝혀야 한다
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: JSON.stringify([MIRROR_SURVEY, MEAL_LOOSE]) }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForTimeout(1500);
+ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
+  await jumpBadgeOf('전시 관람') === '톡방 투표',
+  `배지 ${await jumpBadgeOf('전시 관람')}`);
+await page.unroute('**/rest/v1/surveys*');
+
+
 
 /* ── 7. 누르는 크기와 오류 ──────────────────────────────── */
 

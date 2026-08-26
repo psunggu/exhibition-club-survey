@@ -80,7 +80,17 @@ if (!meetups.length) fail('meetups.ts 에서 모임을 하나도 읽지 못했�
  * 검사는 그대로 통과한다. 실제로 그랬다 — 10건이 9건이 됐는데 초록불이었다.
  * 그래서 파일에 적힌 모임 수와 읽어 낸 수를 견준다.
  */
-const declared = src.split(/\r?\n/).filter((l) => /^ {4}id: '/.test(l)).length;
+/**
+ * **MEETUPS 배열 안만 센다.** 같은 파일에 TENTATIVE(조율 중 · 미정)가 생기면서
+ * 그쪽 `id:` 까지 세어 「11건 적혀 있는데 10건만 읽었다」 는 거짓 경보가 났다.
+ * 파일 전체를 세면 앞으로 배열이 하나 더 늘 때마다 같은 일이 난다.
+ */
+const meetupsBlock = (() => {
+  const a = src.indexOf('export const MEETUPS');
+  const b = src.indexOf('\n]', a);
+  return a < 0 || b < 0 ? '' : src.slice(a, b);
+})();
+const declared = meetupsBlock.split(/\r?\n/).filter((l) => /^ {4}id: '/.test(l)).length;
 if (meetups.length !== declared) {
   fail(`meetups.ts 에 모임이 ${declared}건 적혀 있는데 ${meetups.length}건만 읽었다 `
     + '— id·date·chip·kind·official·movie·status 사이에 주석이나 다른 줄이 끼어 있는지 본다');
