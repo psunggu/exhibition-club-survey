@@ -52,6 +52,13 @@ const PW = '맞는암호';
 let saved = null;       // 마지막으로 저장된 payload
 let deleted = [];
 let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
+/**
+ * **옮겨 적은 투표자 이름이 있는가.** 처음에는 없다 — 지금 살아 있는 설문들이 그렇고,
+ * 그 상태에서 운영자 화면이 「누가 골랐는지는 없습니다」 라고 말하는 것이 참이다.
+ * 뒤에서 이 값을 켜고 결과를 다시 열어, 이름이 생기면 그 문장이 바뀌는지 잰다.
+ * 처음부터 켜 두면 옛 문장이 검사 밖으로 나간다.
+ */
+let withVoterNames = false;
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '박지현', multi_choice: true, results_visible: 'always', show_names: 'none',
@@ -106,7 +113,10 @@ await ctx.route('**/rest/v1/**', async (route) => {
         { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
           venue: '국립현대미술관 덕수궁관', hours: null,
           price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
-      ] }]);
+      ].map((o, i) => (withVoterNames
+        // 이름은 가상 명부(docs/fixtures/sample-members.json)에서 가져온다
+        ? { ...o, imported_voters: [['최윤슬', '정다인'], [], ['한도윤']][i] }
+        : o)) }]);
   }
 
   if (!url.includes('/rpc/')) return route.continue();
@@ -249,6 +259,42 @@ ok('참여 인원이 옳다',
 ok('이름 목록은 비어 있다', (await page.$$('.admin-person')).length === 0);
 ok('왜 비었는지 밝힌다',
   (await page.$eval('.admin-results', (e) => e.textContent)).includes('지어내지 않았습니다'));
+
+/**
+ * **이름을 옮겨 오면 그 문장이 거짓이 된다.**
+ * 「누가 골랐는지는 없습니다 — 없는 사람을 지어내지 않았습니다」 는 옮겨 온 설문에
+ * 응답 행이 없어서 참이었다. 이제 후보마다 이름을 담을 수 있어, 담긴 설문에서는
+ * 회원 화면에 이름이 뜨는데 운영자 화면만 「없습니다」 라고 말하게 된다.
+ *
+ * 결과를 접었다 다시 펴면 화면이 목록을 다시 읽는다 — 그 사이에 가짜 서버를 바꾼다.
+ */
+withVoterNames = true;
+await (await cardBtn(0, '결과 닫기')).click();
+await (await cardBtn(0, '결과 보기')).click();
+await page.waitForSelector('.admin-results', { timeout: 8000 });
+await page.waitForTimeout(500);
+const namedAdmin = await page.$eval('.admin-results', (e) => e.textContent);
+ok('옮겨 적은 이름이 있으면 없다고 하지 않는다', !namedAdmin.includes('지어내지 않았습니다'));
+ok('대신 어디를 보라고 알려 준다', namedAdmin.includes('회원 화면에도 그대로 보입니다'),
+  namedAdmin.slice(-90).replace(/\s+/g, ' '));
+/**
+ * **「운영자 화면에서만 보입니다」 도 함께 뒤집혀야 한다.**
+ * 두 문장이 같은 화면에 있는데 하나만 고치면, 운영자가 아래쪽 문장을 읽고
+ * 「여기서만 보이는구나」 하고 이름을 넣는다. 실제로 이 검사가 그 상태를 잡아냈다.
+ */
+/**
+ * 「운영자 화면에서만」 이라는 말은 화면에 둘 있다 — **메모**와 **이름**.
+ * 메모 쪽은 지금도 참이라 건드리면 안 된다. 이름 쪽만 잰다.
+ * 그래서 이름 문장에만 있는 「회원 화면에는 숫자만 나옵니다」 로 가른다.
+ */
+ok('「회원 화면에는 숫자만 나옵니다」 를 그대로 두지 않는다',
+  !namedAdmin.includes('회원 화면에는 숫자만 나옵니다'),
+  namedAdmin.slice(-110).replace(/\s+/g, ' '));
+withVoterNames = false;
+await (await cardBtn(0, '결과 닫기')).click();
+await (await cardBtn(0, '결과 보기')).click();
+await page.waitForSelector('.admin-results', { timeout: 8000 });
+await page.waitForTimeout(500);
 
 /**
  * **막대가 실제로 그려지는지 잰다.**

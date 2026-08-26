@@ -38,10 +38,14 @@ const tables = [
   read('202608200001a_survey_tables.sql'),
   read('202608210002a_survey_notes.sql'),
   read('202608220001a_members.sql'),
+  /** 컬럼을 더하는 파일도 여기서 읽어야 한다 — 안 읽으면 아래 컬럼 이름 검사가
+      그 컬럼을 쓰는 함수를 「없는 열을 쓴다」 고 잡는다. */
+  read('202608270001a_imported_voters.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
+const votersTmpl = read('202608270001b_poll_voters.template.sql');
 /** 운영자 함수는 여러 파일에 흩어져 있다. 규칙은 전부에 같이 걸린다. */
 const admin = [
   read('202608200002a_survey_admin_functions.sql'),
@@ -50,6 +54,7 @@ const admin = [
   read('202608210002a_survey_notes.sql'),
   read('202608220001a_members.sql'),
   read('202608240001a_anonymous.sql'),
+  read('202608270001a_imported_voters.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -327,10 +332,80 @@ for (const m of allFuncs.matchAll(/returns\s+table\s*\(([\s\S]*?)\)\s*\n/gi)) {
 
 /* ── 3. 집계 함수가 이름을 흘리지 않는가 ─────────────────── */
 
-const tally = /create\s+or\s+replace\s+function\s+public\.survey_tally[\s\S]*?\$\$;/i.exec(funcs);
-if (!tally) fail('survey_tally 를 찾지 못했다');
-else if (/display_name|respondent_key|\bzone\b/i.test(tally[0])) {
-  fail('survey_tally 가 이름·구역번호를 건드린다 — 집계는 숫자만 돌려줘야 한다');
+/**
+ * **마지막 정의를 본다.**
+ * 예전에는 202608200001b 한 파일만 봤는데, survey_tally 는 202608210001a 에서
+ * 이미 다시 정의됐고 그 정의는 이 검사를 **한 번도 안 받았다**.
+ * 앞으로 또 다시 정의해도 마찬가지가 된다. 그래서 전 파일에서 찾아 마지막 것을 본다.
+ *
+ * `imported_voters` 도 함께 막는다 — 옮겨 온 투표의 투표자 실명이다.
+ * 이름은 후보 표(survey_options)를 REST 로 읽어 화면이 가져간다.
+ * 집계 함수까지 이름을 나르기 시작하면 「집계는 숫자만」 이 무너지고,
+ * results_visible 을 지나 나가는 길이 하나 더 생긴다.
+ */
+const tallyDefs = [...allFuncs.matchAll(
+  /create\s+or\s+replace\s+function\s+public\.survey_tally[\s\S]*?\$\$;/gi)];
+if (!tallyDefs.length) fail('survey_tally 를 찾지 못했다');
+else {
+  const last = tallyDefs[tallyDefs.length - 1][0];
+  if (/display_name|respondent_key|\bzone\b|imported_voters/i.test(last)) {
+    fail('survey_tally 가 이름·구역번호를 건드린다 — 집계는 숫자만 돌려줘야 한다');
+  }
+}
+
+/* ── 3-2. 옮겨 온 투표의 투표자 이름 ─────────────────────── */
+
+/**
+ * **공개 표에 이름칸을 만드는 일에는 조건이 붙는다.**
+ *
+ * survey_options 는 `grant select … to anon` 이 걸린 공개 표다. 컬럼 목록 grant 가
+ * 아니라 표 단위라 **새로 더한 열은 아무 SQL 을 더 쓰지 않아도 그대로 공개된다.**
+ * 그래서 이름을 이 표에 두는 것은 「보여 주기로 정했다」 와 같은 뜻이어야 한다.
+ *
+ * 지키게 하는 것 셋:
+ *   · 개수가 표 수와 같아야 한다 — 안 그러면 화면의 두 숫자가 서로 다른 말을 한다
+ *   · 빈 이름이 없어야 한다 — 빈 칩이 그려진다
+ *   · **show_names 를 켠 설문에만** 담을 수 있다 — 운영자 스위치를 옆으로 지나치지 않는다
+ *
+ * 이 규칙이 없으면 다음 사람이 컬럼 하나로 명부를 공개해도 아무도 못 잡는다.
+ * 실제로 이 검사를 넣기 전에는 전부 조용히 통과했다.
+ */
+const votersCol = /add\s+column\s+if\s+not\s+exists\s+imported_voters/i.test(tables);
+if (!votersCol) {
+  fail('imported_voters 열을 더하는 자리를 찾지 못했다');
+} else {
+  if (!/constraint\s+survey_options_voters_match\s+check[\s\S]*?cardinality\(\s*imported_voters\s*\)\s*=\s*imported_votes/i.test(tables)) {
+    fail('imported_voters 개수가 imported_votes 와 같은지 보는 제약이 없다');
+  }
+  if (!/constraint\s+survey_options_voters_nonblank\s+check/i.test(tables)) {
+    fail('imported_voters 에 빈 이름을 막는 제약이 없다');
+  }
+  for (const t of ['survey_options_voters_gate', 'surveys_show_names_gate']) {
+    if (!new RegExp(`create\\s+trigger\\s+${t}\\b`, 'i').test(tables)) {
+      fail(`${t} 방아쇠가 없다 — show_names 를 지나쳐 이름이 공개될 수 있다`);
+    }
+  }
+  if (!/show_names/i.test(tables.split('survey_voters_need_show_names')[1] ?? '')) {
+    fail('survey_voters_need_show_names 가 show_names 를 안 본다');
+  }
+}
+
+/**
+ * **틀에는 진짜 후보 id 가 없어야 한다.**
+ * 전부 0 이면 그대로 실행해도 0줄이 바뀌어 아무 일도 안 난다.
+ * 진짜 id 를 적어 두면 운영자가 자리표시자인 줄 모르고 실행해 가짜 이름이 들어간다.
+ * (이름 자체는 validate-repository-hygiene.mjs 가 가상 명부와 대조해 본다.)
+ */
+if (votersTmpl) {
+  const uuids = [...votersTmpl.matchAll(/'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'/gi)]
+    .map((m) => m[1]);
+  if (!uuids.length) fail('투표자 이름 틀에서 자리표시자 id 를 찾지 못했다');
+  for (const u of uuids) {
+    // 앞 네 마디가 모두 0 이어야 자리표시자다. 마지막 마디는 1·2·3 처럼 세어도 된다.
+    if (!/^00000000-0000-0000-0000-/i.test(u)) {
+      fail(`투표자 이름 틀에 진짜로 보이는 id 가 있다: ${u}`);
+    }
+  }
 }
 
 /* ── 4. 암호가 커밋되지 않았는가 ─────────────────────────── */
