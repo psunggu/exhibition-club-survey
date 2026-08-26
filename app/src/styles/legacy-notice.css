@@ -353,6 +353,21 @@ body:where(.calendar-page) {
   margin-top: 5px;
 }
 
+/* React 화면에서는 목록 자체가 카드다. 예전 CSS는 카드 안의 ul 만 겨냥해서
+   기본 16px 글자와 바깥 글머리표가 남았다. 왼쪽 안쪽 여백에 표식을 넣고
+   기존 정리봇 본문과 같은 13px 글꼴로 맞춘다. */
+ul.digest-decisions {
+  margin: 14px 0 16px;
+  padding: 13px 14px 13px 32px;
+  color: #4c4857;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.65;
+  list-style-position: outside;
+  word-break: keep-all;
+}
+
 .digest-open-questions {
   margin-top: 14px;
   border: 1px solid #e5c778;
@@ -384,6 +399,18 @@ body:where(.calendar-page) {
 
 .digest-open-questions li + li {
   margin-top: 5px;
+}
+
+ul.digest-open-questions {
+  margin: 14px 0 16px;
+  padding: 13px 14px 13px 32px;
+  color: #58491f;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.65;
+  list-style-position: outside;
+  word-break: keep-all;
 }
 
 .digest-source {
