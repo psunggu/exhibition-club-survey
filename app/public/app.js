@@ -1266,7 +1266,7 @@ const supportedAreas = ["서울", "경기", "인천"];
 const supportedContentTypes = ["전체", "전시", "공연", "영화"];
 let activeArea = "서울";
 let activeContentType = "전체";
-const boardUpdatedAt = "2026.08.17 21:54";
+const boardUpdatedAt = "2026.08.27";
 const dataUpdatedAt = "2026-08-17";
 const dataUpdatedLabel = dataUpdatedAt.replace(/-/g, ".");
 const retiredRecommendationTitles = new Set([
@@ -1308,7 +1308,7 @@ const elements = {
 init();
 
 async function init() {
-  elements.boardUpdatedAt.textContent = `최종 업데이트: ${boardUpdatedAt}`;
+  elements.boardUpdatedAt.textContent = `최종 정보 업데이트: ${boardUpdatedAt}`;
   populateSelect("#regionFilter", options.regions, true);
   populateSelect("#typeFilter", options.types, true);
   populateSelect("#statusFilter", options.statuses, true);

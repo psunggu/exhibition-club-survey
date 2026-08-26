@@ -76,6 +76,20 @@ for (const c of CASES) {
 
 const passed = [`지역 판정 ${CASES.length}가지`];
 
+// ── 공개 정보 업데이트 날짜 ────────────────────────────────
+// React 셸과 레거시 사본 둘 중 하나만 고치면 같은 보드가 서로 다른 날짜를 말한다.
+const APP = fs.readFileSync(path.join(ROOT, 'app/src/App.tsx'), 'utf8');
+const LEGACY_HTML = fs.readFileSync(path.join(ROOT, 'app/public/index.html'), 'utf8');
+const appInfoDate = (APP.match(/const SITE_INFO_UPDATED_ON = '([^']+)'/) ?? [])[1];
+const legacyInfoDate = (js.match(/const boardUpdatedAt = "([^"]+)"/) ?? [])[1];
+const htmlInfoDate = (LEGACY_HTML.match(/최종 정보 업데이트:\s*([0-9.]+)/) ?? [])[1];
+if (!appInfoDate || appInfoDate !== legacyInfoDate || appInfoDate !== htmlInfoDate) {
+  problems.push(`정보 업데이트 일자 불일치 → React ${appInfoDate || '없음'} · `
+    + `app.js ${legacyInfoDate || '없음'} · index.html ${htmlInfoDate || '없음'}`);
+} else {
+  passed.push(`정보 업데이트 일자 ${appInfoDate}`);
+}
+
 // ── 달력 (R-01-05) ─────────────────────────────────────────
 // notice.js 의 isoDateToDayNumber · isRecentCompletedDate 를 소스에서 꺼내
 // 이식본과 같은 입력으로 돌린다.

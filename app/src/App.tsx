@@ -16,6 +16,12 @@ const monthsLabel = () =>
   MONTHS.length ? `${MONTHS.map((m) => m.month).join(' · ')}월` : ''
 
 /**
+ * 보드·일정·설문 등 공개 정보를 마지막으로 반영한 날짜.
+ * 개별 전시의 확인일은 각 카드의 `정보 기준일`에 따로 남긴다.
+ */
+const SITE_INFO_UPDATED_ON = '2026.08.27'
+
+/**
  * 달력 화면의 설문 카드 — **지금 무엇이 열려 있는지 한 줄로 보여 준다.**
  *
  * 예전에는 갈래 이름 둘만 있어서, 눌러 보기 전에는 지금 참여할 것이 있는지 알 수 없었다.
@@ -145,7 +151,6 @@ export function App() {
   const onCalendar = route.name === 'calendar'
   const onSurvey = route.name === 'survey' || route.name === 'surveyMeal'
     || route.name === 'surveyAdmin'
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
   /**
    * 옛 CSS 두 장이 각자 `body` · `h1` · `:root` 를 정의한다.
@@ -224,9 +229,7 @@ export function App() {
           <p className="eyebrow">100주년 기념교회 41교구 전시·박물관 동아리</p>
           <h1>문화 콘텐츠 공유 보드</h1>
           <div className="board-meta-line">
-            {/* 옛 화면에 있던 "최종 업데이트" 줄. 그때는 손으로 적었고,
-                이제 DB 의 가장 최근 확인일에서 뽑는다 — 낡을 수 없다. */}
-            {updatedAt && <p className="board-updated">최종 업데이트: {updatedAt}</p>}
+            <p className="board-updated">최종 정보 업데이트: {SITE_INFO_UPDATED_ON}</p>
             <span className="update-schedule">· 매주 수요일·토요일 22시 업데이트</span>
           </div>
         </div>
@@ -240,7 +243,7 @@ export function App() {
         </div>
       </header>
 
-      {route.name === 'board' && <Board onUpdatedAt={setUpdatedAt} />}
+      {route.name === 'board' && <Board />}
       {route.name === 'notFound' && (
         <div className="empty-state">
           그런 화면은 없습니다. <a href="#/">보드로 돌아가기</a>
