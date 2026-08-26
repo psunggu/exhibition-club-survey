@@ -877,6 +877,25 @@ ok('안 정한 갈래가 「아직 안 정했습니다」 라고 말한다',
   rows.some((r) => r.text.includes('식사 장소') && r.text.includes('아직 안 정했습니다')),
   rows.find((r) => r.text.includes('식사 장소'))?.text ?? '없다');
 
+/**
+ * **한 줄이 같은 말을 두 번 하지 않는다.**
+ * 진한 줄은 날짜 딱지를, 안 진한 줄은 `value` 를 쓴다. `value` 에도 시간을 적어 두면
+ * 안 진한 줄이 「9월 19일(토) 17~18시 관람 17~18시 관람」 이 된다 —
+ * 진짜 자료로 화면을 열어 보다 실제로 나왔다.
+ */
+const dupWord = (list) => {
+  for (const r of list) {
+    const seen = new Set();
+    for (const w of r.text.match(/\S+/g) ?? []) {
+      // 두 글자 넘는 말마디가 한 줄에서 되풀이되면 잡는다
+      if (w.length > 2 && seen.has(w)) return `${r.text.split(' ')[0]} 줄의 「${w}」`;
+      seen.add(w);
+    }
+  }
+  return null;
+};
+ok('한 줄이 같은 말을 두 번 하지 않는다 (전시 탭)', dupWord(rows) === null, dupWord(rows) ?? '');
+
 /** 전시 탭에서는 전시 두 줄만 진하다 */
 const here = rows.filter((r) => r.cls.includes('here'));
 ok('전시 탭에서는 전시 갈래 두 줄만 진하다',
@@ -922,10 +941,21 @@ const mealHere = mealRows.filter((r) => r.cls.includes('here'));
 ok('식사 탭에서는 식사 갈래 두 줄이 진하다',
   mealHere.length === 2 && mealHere.every((r) => r.text.startsWith('식사')),
   mealHere.map((r) => r.text.split(' ')[0]).join(' · '));
+/**
+ * **겹침은 이쪽 탭에서 났다.** 「언제」 줄이 여기서는 진하지 않아 `value` 로 그려지는데,
+ * `value` 에도 시간을 적어 두어 「9월 19일(토) 17~18시 관람 17~18시 관람」 이 됐다.
+ * 두 탭 모두에서 재야 이런 것이 걸린다.
+ */
+ok('한 줄이 같은 말을 두 번 하지 않는다 (식사 탭)', dupWord(mealRows) === null, dupWord(mealRows) ?? '');
+/**
+ * **비었을 때 죽지 않게 한다.** `rows[i].text` 로 바로 들어가면 카드가 사라졌을 때
+ * TypeError 로 죽어서, 종료코드만 남고 무엇이 틀렸는지는 안 나온다.
+ * 결함을 심어 보다 드러났다 — 죽는 검사는 이름을 못 남긴다.
+ */
+const firstWord = (list) => list.map((r) => r.text.split(' ')[0] ?? '');
 ok('두 탭이 같은 네 줄을 쓴다',
-  mealRows.length === rows.length
-    && mealRows.every((r, i) => r.text.split(' ')[0] === rows[i].text.split(' ')[0]),
-  `${mealRows.length}줄`);
+  rows.length > 0 && firstWord(mealRows).join('|') === firstWord(rows).join('|'),
+  `전시 ${firstWord(rows).join('·') || '없음'} / 식사 ${firstWord(mealRows).join('·') || '없음'}`);
 
 /** 식사 갈래에는 응답할 수 있는 설문이 없다 → 접힌다 */
 const folds = await page.$$('.survey-fold');

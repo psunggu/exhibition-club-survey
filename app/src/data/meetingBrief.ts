@@ -83,7 +83,14 @@ export const BRIEF: MeetingBrief | null = {
       key: 'when',
       label: '언제',
       category: 'exhibition',
-      value: '9월 19일(토) 17~18시 관람',
+      /**
+       * **`value` 에 시간을 넣지 않는다.** 시간은 아래 `sub` 가 말한다.
+       * 둘 다 넣었더니 진하지 않은 줄에서
+       * 「9월 19일(토) 17~18시 관람 17~18시 관람」 이 됐다 —
+       * 진한 줄은 날짜 딱지를 쓰고, 안 진한 줄은 `value` 를 쓰기 때문이다.
+       * 진짜 자료로 화면을 열어 보다 드러났다.
+       */
+      value: '9월 19일(토)',
       dateChip: { big: '9월 19일', small: '토요일' },
       sub: '17~18시 관람',
       from: { surveyId: S_SCHEDULE, optionId: '5e97b1a0-0000-4000-8000-000000000948' },
