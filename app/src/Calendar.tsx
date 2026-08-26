@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { isRecentlyCompleted, monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
 import {
-  COMPLETED_VISIBLE_DAYS, MEETUPS, MONTHS, PAST_MONTHS, type Meetup,
+  COMPLETED_VISIBLE_DAYS, MEETUPS, MONTHS, PAST_MONTHS, TENTATIVE, type Meetup,
 } from './data/meetups'
 
 /**
@@ -237,6 +237,35 @@ export function Calendar() {
           ))}
         </>
       )}
+
+      {/**
+        * **조율 중 · 미정** — 옛 화면에 있었는데 이식하면서 빠진 자리다.
+        * 범례에는 `tent`(모집중 · 미정)가 남아 있는데 정작 그것을 보여 줄 목록이 없었다.
+        *
+        * AGENTS.md 가 정해 둔 규칙을 이 절이 실행한다 —
+        * 날짜가 확정되지 않은 것은 여기에만 두고, 정해진 뒤에
+        * 「다가오는 확정 모임」 과 달력에 함께 넣는다.
+        *
+        * **비어도 절을 없애지 않는다.** 옛 화면이 그랬다. 있다 없다 하면
+        * 「조율 중인 것이 없는 것」 과 「그런 칸이 없는 것」 이 구분되지 않는다.
+        */}
+      <h2 className="sec"><span className="dot dot-tent" />조율 중 · 미정</h2>
+      {TENTATIVE.length === 0 ? (
+        <p className="trow">
+          <span className="ttag t2">없음</span>
+          <span>지금 조율 중인 일정이 없습니다.</span>
+        </p>
+      ) : TENTATIVE.map((t) => (
+        <p className="trow" key={t.id}>
+          <span className="ttag t1">{t.tag}</span>
+          <span>
+            {t.text}
+            {t.surveyRoute && (
+              <><br /><a href={t.surveyRoute}>투표 현황 보기 <span aria-hidden="true">→</span></a></>
+            )}
+          </span>
+        </p>
+      ))}
 
       <h2 className="sec"><span className="dot dot-dark" />한눈에 보는 달력</h2>
       <p className="legend">

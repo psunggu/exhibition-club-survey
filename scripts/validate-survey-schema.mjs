@@ -445,6 +445,7 @@ const NOT_CHECKED = new Map([
   ['202608210001c_survey_links.sql', '자료만 넣는다 (함수·표 없음)'],
   ['202608240001b_september_poll.sql', '자료만 넣는다 (함수·표 없음)'],
   ['202608240001c_forget_names.sql', '옛 응답의 이름을 지우는 한 번짜리 (함수·표 없음)'],
+  ['202608260001a_september_date_poll.sql', '자료만 넣는다 (함수·표 없음)'],
 ]);
 
 const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));

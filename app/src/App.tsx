@@ -7,7 +7,7 @@ import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 import {
   CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
-  type SurveyCategory,
+  type Survey as SurveyT, type SurveyCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
 
@@ -25,9 +25,17 @@ const monthsLabel = () =>
  * 설문을 못 불러와도 갈래 이름과 링크는 그대로 남는다.
  * 달력을 보러 온 사람이 설문 때문에 빈 화면을 보면 안 된다.
  */
+/** 회원이 여기서 실제로 고를 수 있는 설문인가 — 톡방 투표는 아니다. */
+const canAnswer = (s: SurveyT) => isOpen(s) && !s.mirrored
+
+/** 참여할 수 있는 것을 먼저, 그다음 마감이 늦은 순. */
+const betterPick = (a: SurveyT, b: SurveyT) =>
+  (canAnswer(a) !== canAnswer(b) ? canAnswer(a) : a.closesAt > b.closesAt)
+
 function SurveyJump() {
   const [rows, setRows] = useState<{
-    category: SurveyCategory; open: boolean; closesAt: string; people: number
+    category: SurveyCategory; open: boolean; mirrored: boolean;
+    closesAt: string; people: number
   }[] | null>(null)
   /** 못 읽은 것과 「없다」 는 다르다. 섞으면 화면이 거짓말을 한다. */
   const [failed, setFailed] = useState(false)
@@ -45,12 +53,19 @@ function SurveyJump() {
            */
           if (isPastSurvey(s)) continue
           const cur = seen.get(s.category)
-          // 갈래마다 **가장 늦게 닫히는 것** 하나만 보여 준다. 지금 참여할 것이 그것이다.
-          if (!cur || s.closesAt > cur.closesAt) seen.set(s.category, s)
+          /**
+           * 갈래마다 하나만 보여 주므로 **무엇을 대표로 세우는지가 중요하다.**
+           * 예전에는 마감이 가장 늦은 것을 골랐는데, 톡방에서 도는 투표(mirrored)가
+           * 마감이 더 늦으면 그것이 대표 자리를 빼앗아 **정작 회원이 응답할 수 있는
+           * 설문을 가린다.** 여기 참여할 수 있는 것을 먼저 세우고, 그런 것이 없을 때만
+           * 마감이 늦은 순으로 고른다.
+           */
+          if (!cur || betterPick(s, cur)) seen.set(s.category, s)
         }
         const list = await Promise.all([...seen.values()].map(async (s) => ({
           category: s.category,
           open: isOpen(s),
+          mirrored: s.mirrored,
           closesAt: s.closesAt,
           people: Number(await fetchResponseCount(s.id, ac.signal)) || 0,
         })))
@@ -78,7 +93,10 @@ function SurveyJump() {
       timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', weekday: 'short',
     }).formatToParts(d)
     const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
-    return { badge: '진행 중', text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
+    // 톡방에서 도는 투표는 **여기서 못 고른다.** 「진행 중」 이라고만 하면
+    // 참여하러 눌러 들어갔다가 설문 화면에서야 「고르실 수 없습니다」 를 만난다.
+    const badge = r.mirrored ? '톡방 투표' : '진행 중'
+    return { badge, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
   }
 
   return (
