@@ -101,8 +101,20 @@ if (!s0) {
   skip('넣고·읽고·다시 넣기 왕복', '회원용 전시 설문이 없다');
   console.log(`\n${fails.length ? `라이브 검사 실패 — ${fails.length}건: ${fails.join(', ')}`
     : '라이브 검사 통과 (회원용 전시 설문이 없어 일부는 건너뜀)'}`);
-  process.exit(fails.length ? 1 : 0);
+  /**
+   * **여기서 process.exit() 를 부르면 안 된다.**
+   * 바로 위에서 fetch 한 소켓이 아직 살아 있어서, Windows 에서 libuv 단언
+   * (`!(handle->flags & UV_HANDLE_CLOSING)`)에 걸려 **종료코드가 127** 이 된다.
+   * 통과인데 실패로 읽힌다 — 실제로 그렇게 나왔다.
+   *
+   * 파일 끝의 exit 는 멀쩡한데, 그때는 이미 소켓이 정리된 뒤라서다.
+   * 종료코드만 정해 두고 Node 가 스스로 끝나게 둔다.
+   */
+  process.exitCode = fails.length ? 1 : 0;
 }
+
+// s0 이 없으면 아래는 전부 건너뛴다 (위에서 종료코드를 정해 뒀다)
+if (s0) {
 console.log(`  · 보는 설문: ${s0.title} (${s0.category})`);
 
 /**
@@ -297,3 +309,4 @@ if (WRITE && closes <= new Date()) {
 
 console.log(`\n${fails.length ? `실패 ${fails.length}건: ${fails.join(', ')}` : '설문 라이브 확인 통과'}`);
 process.exit(fails.length ? 1 : 0);
+}   // if (s0) — 회원용 전시 설문이 없으면 위에서 건너뛰고 여기까지 안 온다
