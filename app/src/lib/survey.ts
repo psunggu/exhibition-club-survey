@@ -9,6 +9,19 @@
  *
  * 그래서 응답 관련은 전부 RPC 를 거치고, 각 함수는 꼭 필요한 것만 돌려준다.
  * (supabase/migrations/202608200001b_survey_functions.sql)
+ *
+ * ── 예외가 하나 있다 (2026-08-27) ───────────────────────────
+ * **옮겨 온 톡방 투표의 투표자 이름**(survey_options.imported_voters)은 공개 표에 있다.
+ * 위 원칙을 어기는 것이 아니라, **일부러 공개하기로 정한 것**이다 —
+ * 운영자가 「톡방과 똑같이 보여 줘」 라고 했고, 그 화면은 회원 누구나 본다.
+ *
+ * 그래서 위 문단의 「누가 무엇에 투표했는지」 가 이 한 갈래에서는 공개된다.
+ * 대신 아무나 넣을 수 없게 두 겹을 걸었다.
+ *   · DB 방아쇠 — show_names 를 켠 설문에만 담을 수 있다 (202608270001a)
+ *   · 화면 — show_names 가 꺼져 있으면 담겨 있어도 안 그린다 (Survey.tsx)
+ *
+ * **사이트에서 받은 응답의 이름은 여전히 어디에도 안 남는다** (2026-08-24 익명화).
+ * 두 가지를 섞어 생각하면 안 된다.
  */
 
 export type SurveyLinkKind = 'official' | 'video' | 'article' | 'map' | 'booking'
@@ -29,6 +42,14 @@ export type SurveyOption = {
   price: string | null
   note: string | null
   links: SurveyLink[]
+  /**
+   * 옮겨 온 투표(톡방)에서 이 후보를 고른 사람들. 톡방 화면 글자 그대로다.
+   *
+   * 사이트에서 직접 받은 설문은 **늘 비어 있다** — 2026-08-24 부터 이름을 저장하지 않는다.
+   * 그러니 이 값이 차 있다는 것은 곧 「톡방 투표를 옮겨 온 것」 이라는 뜻이다.
+   * 옛 설문이나 마이그레이션 적용 전에도 비어 있다 (links 와 같은 이유로 빈 배열이다).
+   */
+  importedVoters: string[]
 }
 
 export type SurveyCategory = 'exhibition' | 'meal'
@@ -115,6 +136,20 @@ function parseLinks(v: unknown): SurveyLink[] {
   return out
 }
 
+/**
+ * 옮겨 온 투표의 투표자 이름을 읽는다 (survey_options.imported_voters, text[]).
+ *
+ * parseLinks 와 같은 태도다 — **모양이 어긋난 것은 버린다.** 배열이 아니면 빈 배열이라,
+ * 컬럼이 없던 때(옛 설문·마이그레이션 적용 전)도 저절로 처리된다.
+ *
+ * 빈 글자는 걸러 낸다. DB 제약이 막고 있지만(survey_options_voters_nonblank),
+ * 화면이 DB 제약을 믿고 빈 칩을 그리게 두지 않는다.
+ */
+function parseVoters(v: unknown): string[] {
+  if (!Array.isArray(v)) return []
+  return v.map(str).filter((s): s is string => s !== null)
+}
+
 type OptionRow = Record<string, unknown>
 type SurveyRow = Record<string, unknown> & { survey_options?: OptionRow[] }
 
@@ -129,6 +164,7 @@ function toOption(r: OptionRow): SurveyOption {
     price: str(r.price),
     note: str(r.note),
     links: parseLinks(r.links),
+    importedVoters: parseVoters(r.imported_voters),
   }
 }
 

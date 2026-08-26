@@ -204,19 +204,39 @@ function Results({ pw, surveyId, multiChoice, onError }: {
             <span className="admin-result-votes">{r.votes}표</span>
           </div>
           {r.voters.length > 0
+            /* key 에 이름을 쓰지 않는다 — 동명이인이 있으면 React 가 같은 줄로 본다.
+               명부에 실제로 동명이인이 있어서 가정이 아니라 사실이다. */
             ? (
               <p className="admin-voters">
-                {r.voters.map((v) => <span className="admin-voter" key={v}>{v}</span>)}
+                {r.voters.map((v, i) => (
+                  <span className="admin-voter" key={`${r.optionId}-${i}`}>{v}</span>
+                ))}
               </p>
             )
             : <p className="admin-hint" style={{ margin: '6px 0 0' }}>아직 고른 사람이 없습니다.</p>}
         </div>
       ))}
 
+      {/**
+        * **이름을 옮겨 온 설문에서는 이 문장이 거짓이 된다.**
+        * 「누가 골랐는지는 없습니다」 는 옮겨 온 설문에 응답 행이 없어서 참이었는데,
+        * 이제 후보마다 이름을 담을 수 있어 위에 이름이 떠 있을 수 있다.
+        * 그대로 두면 운영자 화면만 「없습니다」 라고 말한다.
+        */}
       {people.length === 0 && total > 0 && (
         <p className="admin-hint" style={{ marginTop: 12 }}>
-          이 설문은 밖(톡방)에서 진행된 것을 옮겨 왔습니다. 숫자만 있고
-          누가 골랐는지는 없습니다 — 없는 사람을 지어내지 않았습니다.
+          {/**
+            * **`rows[].voters` 로 가르면 안 된다.** 그 배열에는 두 가지가 섞여 들어온다 —
+            * 옮겨 적은 이름(imported_voters)과 실제 응답자(`구역번호 이름`).
+            * 후자는 옛 응답에만 남아 있고 그것 때문에 이 문장이 뒤집히면 안 된다.
+            * `options` 쪽을 보면 **옮겨 적은 이름이 있을 때만** 참이다.
+            */}
+          {options.some((o) => o.importedVoters.length > 0)
+            ? '이 설문은 밖(톡방)에서 진행된 것을 옮겨 왔습니다. 응답 행이 없어 아래 '
+              + '「참여한 사람」 목록은 비어 있고, 후보마다 옮겨 적은 이름이 위에 있습니다. '
+              + '그 이름은 회원 화면에도 그대로 보입니다.'
+            : '이 설문은 밖(톡방)에서 진행된 것을 옮겨 왔습니다. 숫자만 있고 '
+              + '누가 골랐는지는 없습니다 — 없는 사람을 지어내지 않았습니다.'}
         </p>
       )}
 
@@ -240,8 +260,17 @@ function Results({ pw, surveyId, multiChoice, onError }: {
 
       <Note pw={pw} surveyId={surveyId} onError={onError} />
 
+      {/**
+        * **이 문장은 이제 늘 참이 아니다.**
+        * 사이트에서 받은 응답의 이름은 운영자 화면에만 나온다 — 그것은 그대로다.
+        * 그런데 톡방 투표를 옮겨 오면서 담은 이름(imported_voters)은 **회원 화면에도 뜬다.**
+        * 두 경우를 한 문장으로 묶으면 운영자가 「여기서만 보인다」 고 믿고 이름을 넣는다.
+        */}
       <p className="admin-hint" style={{ marginTop: 12, marginBottom: 0 }}>
-        이 이름들은 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 숫자만 나옵니다.
+        {options.some((o) => o.importedVoters.length > 0)
+          ? <>옮겨 적은 이름은 <b>회원 화면에도 그대로</b> 보입니다. 감추려면 설문의
+            「이름 보임」 을 끄고 후보의 이름을 지워야 합니다.</>
+          : <>이 이름들은 <b>운영자 화면에서만</b> 보입니다. 회원 화면에는 숫자만 나옵니다.</>}
       </p>
     </div>
   )

@@ -121,4 +121,13 @@ const top = [...rows].sort((a, b) => b.votes - a.votes);
 if (top.length >= 2 && top[0].votes - top[1].votes <= 1 && top[0].votes > 0) {
   console.log(`  · 1위와 2위가 ${top[0].votes - top[1].votes}표 차입니다. 순위 차이로 읽지 마세요.`);
 }
-console.log('  · 이 숫자에는 이름이 없습니다. 누가 무엇을 골랐는지는 운영자 화면에서만 볼 수 있습니다.');
+/**
+ * **옮겨 온 투표에는 이름이 담길 수 있다** (survey_options.imported_voters, 2026-08-27).
+ * 그때는 회원 화면에도 이름이 뜨므로 「운영자 화면에서만」 이 거짓이 된다.
+ * 담긴 설문에서는 그 사실을 그대로 말한다.
+ */
+const named = rows.some((r) => Array.isArray(r.imported_voters) && r.imported_voters.length);
+console.log(named
+  ? '  · 이 투표는 톡방에서 옮겨 온 것이라 후보마다 고른 사람 이름이 함께 있습니다. '
+    + '그 이름은 회원 화면에도 그대로 보입니다.'
+  : '  · 이 숫자에는 이름이 없습니다. 누가 무엇을 골랐는지는 운영자 화면에서만 볼 수 있습니다.');
