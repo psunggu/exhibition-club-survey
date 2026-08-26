@@ -483,8 +483,19 @@ ok('받는 설문에만 이름 칸이 있다', whoForms.length === 1, `${whoForm
 console.log('\n── 지난 설문 (식사)');
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-history, .survey-head', { timeout: 20000 });
+await page.waitForSelector('.survey-history, .survey-fold, .survey-head', { timeout: 20000 });
 await page.waitForTimeout(900);
+
+/**
+ * **끝난 투표는 접혀 있다.** 위에 모임 요약이 결론을 말해 주기 때문이다.
+ * 이 절이 재려는 것은 갈래 나누기라 접힘과 상관없다 — 열고 잰다.
+ * (식사 갈래는 응답할 수 있는 설문이 없어 접기 규칙에 걸린다.
+ *  전시 갈래는 진행 중 설문이 있어 안 접힌다 — 그건 아래 별도 절에서 잰다.)
+ */
+await page.evaluate(() => {
+  document.querySelectorAll('details.survey-fold').forEach((d) => { d.open = true });
+});
+await page.waitForTimeout(400);
 
 const pastCards = await page.$$('.survey-past');
 ok('모임까지 끝난 설문이 지난 설문으로 내려간다', pastCards.length === 1, `${pastCards.length}개`);
@@ -795,7 +806,13 @@ console.log('\n── 마무리');
 const measureScreen = async (route) => {
   await page.goto('about:blank');
   await page.goto(`http://localhost:8261${BASE}${route}`, { waitUntil: 'networkidle' });
-  await page.waitForSelector('.survey-head, .survey-history', { timeout: 20000 });
+  /**
+   * **`.brief` 를 먼저 기다린다.** 끝난 투표를 접으면서 첫 `.survey-head` 가
+   * 닫힌 <details> 안으로 들어갔고, 그러면 「보일 때까지」 가 영영 안 끝난다.
+   * 요약 카드는 접히지 않으므로 화면이 그려진 것을 이걸로 안다.
+   * (재는 것은 measureA11y 가 접힌 것까지 펴서 하므로 검사 범위는 그대로다.)
+   */
+  await page.waitForSelector('.brief, .survey-history, .survey-head', { timeout: 20000 });
   await page.waitForTimeout(700);
   return measureA11y(page);   // 접힌 것을 펼치고 잰다
 };
@@ -819,6 +836,108 @@ ok(`대비를 잰 글자 ${allTexts.length}개`, allTexts.length >= 200, `${allT
 
 ok('오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
 
+
+
+/* ── 모임 한 장 요약 ────────────────────────────────────────
+ *
+ * 요청은 「9월 정기모임을 네 갈래로 나눠 보여 달라」 였다.
+ * 탭을 넷으로 늘리는 대신 **줄 넷**으로 세웠으므로, 여기서 재는 것은
+ *   · 네 갈래가 다 있는가
+ *   · 안 정한 갈래도 제자리에서 그렇다고 말하는가
+ *   · 지금 보는 갈래만 진한가 (두 탭이 같은 카드를 쓴다)
+ *   · 숫자를 화면이 **DB 에서 읽어** 붙이는가 (손으로 적으면 낡는다)
+ *   · 응답할 수 있는 설문은 안 접히는가
+ */
+
+/**
+ * **없으면 죽지 않고 「없다」 고 말한다.**
+ * `waitForSelector` 를 그냥 쓰면 카드가 사라졌을 때 예외로 죽어서,
+ * 종료코드만 남고 **무엇이 틀렸는지는 안 나온다.** 결함을 심어 보다 드러났다.
+ */
+const waitFor = (sel, ms = 12000) =>
+  page.waitForSelector(sel, { timeout: ms }).then(() => true).catch(() => false);
+
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+const briefUp = await waitFor('.brief');
+ok('모임 요약 카드가 뜬다', briefUp);
+await page.waitForTimeout(1200);
+
+const rows = await page.$$eval('.brief-row',
+  (es) => es.map((e) => ({ cls: e.className, text: e.innerText.replace(/\s+/g, ' ').trim() })));
+console.log(`  · 요약 줄: ${rows.map((r) => r.text.slice(0, 22)).join(' / ')}`);
+
+ok('요약이 네 갈래를 모두 보여 준다', rows.length === 4, `${rows.length}줄`);
+ok('네 갈래 이름이 다 있다',
+  ['무엇을', '언제', '식사 시간', '식사 장소'].every((l) => rows.some((r) => r.text.startsWith(l))),
+  rows.map((r) => r.text.split(' ')[0]).join(' · '));
+
+/** **안 정한 것이 제자리에서 말한다.** 빈 탭이 못 하는 일이라 이걸 하려고 줄로 바꿨다. */
+ok('안 정한 갈래가 「아직 안 정했습니다」 라고 말한다',
+  rows.some((r) => r.text.includes('식사 장소') && r.text.includes('아직 안 정했습니다')),
+  rows.find((r) => r.text.includes('식사 장소'))?.text ?? '없다');
+
+/** 전시 탭에서는 전시 두 줄만 진하다 */
+const here = rows.filter((r) => r.cls.includes('here'));
+ok('전시 탭에서는 전시 갈래 두 줄만 진하다',
+  here.length === 2 && here.every((r) => /무엇을|언제/.test(r.text)),
+  here.map((r) => r.text.split(' ')[0]).join(' · '));
+
+/**
+ * **숫자는 DB 에서 온다.** 가짜 서버가 주는 집계와 맞아야 한다.
+ * 손으로 적어 둔 숫자면 가짜 서버를 바꿔도 그대로일 것이다 —
+ * 여기 값은 위 MIRROR/OPEN 목업이 아니라 진짜 설문 id 를 가리키므로,
+ * 가짜 서버가 그 id 를 모르면 막대가 아예 안 뜬다. 그 사실을 그대로 잰다.
+ */
+const gauges = await page.$$eval('.brief-gauge', (es) => es.map((e) => e.innerText.trim()));
+console.log(`  · 근거 막대: ${gauges.join(' / ') || '(없음 — 가짜 서버가 그 설문을 모른다)'}`);
+ok('근거 막대는 진한 줄에만 붙는다', gauges.length <= here.length, `${gauges.length}개`);
+ok('막대가 뜨면 「N명 중 M명」 꼴이다',
+  gauges.every((g) => /\d+명 중 \d+명/.test(g)), gauges.join(' / ') || '막대 없음');
+
+const briefText = await page.$eval('.brief', (e) => e.innerText.replace(/\s+/g, ' ').trim())
+  .catch(() => '');
+ok('요약에 모임 이름과 상태가 있다',
+  briefText.includes('9월 정기모임') && briefText.includes('확정 발표 전'),
+  briefText.slice(0, 40) || '카드가 없다');
+
+/**
+ * **응답할 수 있는 설문이 있으면 안 접는다.**
+ * 전시 갈래에는 진행 중 설문(OPEN_SURVEY)이 있으므로 접기 손잡이가 없어야 한다.
+ * 접힌 손잡이 뒤에 둔 설문에는 아무도 응답하지 않는다.
+ */
+ok('응답할 수 있는 설문이 있으면 안 접는다', (await page.$$('.survey-fold')).length === 0,
+  `${(await page.$$('.survey-fold')).length}개`);
+ok('그때도 응답 칸은 그대로 보인다', (await page.$$('.survey-who')).length === 1);
+
+/* 식사 탭 — 같은 카드인데 진한 줄이 반대다 */
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+ok('식사 탭에도 같은 요약 카드가 뜬다', await waitFor('.brief'));
+await page.waitForTimeout(900);
+
+const mealRows = await page.$$eval('.brief-row',
+  (es) => es.map((e) => ({ cls: e.className, text: e.innerText.replace(/\s+/g, ' ').trim() })));
+const mealHere = mealRows.filter((r) => r.cls.includes('here'));
+ok('식사 탭에서는 식사 갈래 두 줄이 진하다',
+  mealHere.length === 2 && mealHere.every((r) => r.text.startsWith('식사')),
+  mealHere.map((r) => r.text.split(' ')[0]).join(' · '));
+ok('두 탭이 같은 네 줄을 쓴다',
+  mealRows.length === rows.length
+    && mealRows.every((r, i) => r.text.split(' ')[0] === rows[i].text.split(' ')[0]),
+  `${mealRows.length}줄`);
+
+/** 식사 갈래에는 응답할 수 있는 설문이 없다 → 접힌다 */
+const folds = await page.$$('.survey-fold');
+ok('끝난 투표만 있으면 접어 둔다', folds.length === 1, `${folds.length}개`);
+if (folds.length === 1) {
+  ok('접힌 채로 뜬다', !(await folds[0].evaluate((e) => e.open)));
+  const sum = await page.$eval('.survey-fold > summary',
+    (e) => ({ t: e.innerText.replace(/\s+/g, ' ').trim(),
+      h: Math.round(e.getBoundingClientRect().height) }));
+  ok('손잡이가 무엇인지 글자로 말한다', sum.t.includes('투표 자세히 보기'), sum.t);
+  ok('손잡이가 24px 이상이다', sum.h >= 24, `${sum.h}px`);
+}
 
 /* ── 옮겨 온 투표의 투표자 이름 ────────────────────────────
  *
@@ -872,7 +991,16 @@ const serveNamed = async (survey) => {
     status: 200, contentType: 'application/json', body: '7' }));
   await page.goto('about:blank');
   await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
-  await page.waitForSelector('.survey-head', { timeout: 20000 });
+  /**
+   * 여기 목업은 **마감된 톡방 투표 하나뿐**이라 접기 규칙에 걸린다
+   * (응답할 수 있는 설문이 없으면 접는다). 그러면 `.survey-head` 가 안 보여
+   * 「보일 때까지」 가 영영 안 끝난다. 요약 카드는 접히지 않으므로 그걸 기다리고,
+   * 잰 뒤 비교할 수 있게 펼친다 — 이 절이 보려는 것은 접힘이 아니라 이름 칩이다.
+   */
+  await page.waitForSelector('.brief, .survey-head', { timeout: 20000 });
+  await page.evaluate(() => {
+    document.querySelectorAll('details.survey-fold').forEach((d) => { d.open = true });
+  });
   await page.waitForTimeout(900);
 };
 const unserveNamed = async () => {

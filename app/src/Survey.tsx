@@ -6,6 +6,7 @@ import {
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
 import { meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
+import { BRIEF } from './data/meetingBrief'
 
 /**
  * 설문 화면.
@@ -520,6 +521,103 @@ function SurveyHistory({ items }: { items: SurveyT[] }) {
   )
 }
 
+/**
+ * **모임 한 장 요약.**
+ *
+ * 「이번 모임은 이렇게 정해졌습니다」 를 네 줄로 보여 준다.
+ * 글은 meetingBrief.ts 에 손으로 적혀 있고, **숫자는 여기서 DB 를 읽어 붙인다** —
+ * 손으로 적어 두면 표가 바뀌어도 그 줄만 옛 숫자로 남는다.
+ *
+ * ── 지금 탭에 해당하는 줄만 진하게 ─────────────────────────
+ * 카드는 두 탭에 같은 것이 뜬다. **하나의 카드라 두 화면이 다른 말을 할 수 없다.**
+ * 대신 지금 보는 갈래의 줄만 진하게 하고 근거 막대를 붙인다.
+ * 나머지 줄도 값은 그대로 보여 준다 — 감추면 「한 장 요약」 이 아니게 된다.
+ *
+ * ── 숫자를 못 읽어도 카드는 뜬다 ───────────────────────────
+ * 집계를 못 읽으면 막대만 빠지고 글은 그대로다.
+ * 「11명 중 7명」 이 없다고 해서 「《서도호》 로 정해졌다」 가 거짓이 되지는 않는다.
+ */
+function BriefGauge({ votes, total }: { votes: number; total: number }) {
+  if (!total || votes <= 0) return null
+  const pct = Math.min(100, Math.round((votes / total) * 100))
+  return (
+    <span className="brief-gauge">
+      <span className="brief-track">
+        <span className="brief-fill" style={{ width: `${pct}%` }} />
+      </span>
+      {/* 화면이 읽어 주는 말과 눈에 보이는 글자를 같게 둔다 */}
+      <span className="brief-pc">{total}명 중 {votes}명</span>
+    </span>
+  )
+}
+
+function MeetingBriefCard({ category }: { category: SurveyCategory }) {
+  const brief = BRIEF
+  /** 근거로 삼은 설문들. 같은 설문을 두 줄이 가리켜도 한 번만 읽는다. */
+  const surveyIds = useMemo(() => {
+    if (!brief) return []
+    return [...new Set(brief.rows.map((r) => r.from?.surveyId).filter((x): x is string => !!x))]
+  }, [brief])
+
+  const [tallies, setTallies] = useState<Map<string, { votes: Map<string, number>; total: number }>>(new Map())
+
+  useEffect(() => {
+    if (!surveyIds.length) return undefined
+    const ac = new AbortController()
+    void (async () => {
+      const next = new Map<string, { votes: Map<string, number>; total: number }>()
+      await Promise.all(surveyIds.map(async (id) => {
+        try {
+          const [t, n] = await Promise.all([
+            fetchTally(id, ac.signal), fetchResponseCount(id, ac.signal),
+          ])
+          next.set(id, { votes: t, total: Number(n) || 0 })
+        } catch { /* 못 읽으면 막대만 빠진다 */ }
+      }))
+      if (!ac.signal.aborted) setTallies(next)
+    })()
+    return () => ac.abort()
+  }, [surveyIds])
+
+  if (!brief) return null
+
+  return (
+    <section className="brief" aria-labelledby="briefTitle">
+      <div className="brief-head">
+        <h2 id="briefTitle">{brief.title}</h2>
+        <span className="brief-state">{brief.state}</span>
+      </div>
+      <dl className="brief-rows">
+        {brief.rows.map((r) => {
+          const here = r.category === category
+          const t = r.from ? tallies.get(r.from.surveyId) : undefined
+          const votes = r.from && t ? (t.votes.get(r.from.optionId) ?? 0) : 0
+          return (
+            <div className={`brief-row${here ? ' here' : ''}`} key={r.key}>
+              <dt className="brief-label">{r.label}</dt>
+              <dd className="brief-val">
+                {r.value === null
+                  ? <b className="brief-undecided">{r.pending ?? '아직 안 정했습니다'}</b>
+                  : (here && r.dateChip
+                    ? (
+                      <span className="brief-date">
+                        <b>{r.dateChip.big}</b> {r.dateChip.small}
+                      </span>
+                    )
+                    : <b className="brief-big">{r.value}</b>)}
+                {r.sub && <span className="brief-sub">{r.sub}</span>}
+                {/* 근거 막대는 지금 갈래의 줄에만. 네 줄 모두 붙이면 요약이 시끄러워진다. */}
+                {here && t && <BriefGauge votes={votes} total={t.total} />}
+              </dd>
+            </div>
+          )
+        })}
+      </dl>
+    </section>
+  )
+}
+
+
 export function Survey({ category }: { category: SurveyCategory }) {
   const [surveys, setSurveys] = useState<SurveyT[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -544,18 +642,54 @@ export function Survey({ category }: { category: SurveyCategory }) {
   }
   if (!surveys) return <p className="survey-empty" aria-live="polite">불러오는 중…</p>
   if (!surveys.length) {
+    /**
+     * 이 갈래에 설문이 하나도 없어도 **요약 카드는 보여 준다.**
+     * 요약은 설문이 아니라 **모임**을 말하는 것이라, 이 갈래에 투표가 없다는 것과
+     * 「모임이 이렇게 정해졌다」 는 서로 다른 이야기다.
+     * 실제로 식사 갈래는 9월 투표가 아직 없는데, 그 갈래에서도 식사 시간은 정해져 있다.
+     */
     return (
-      <p className="survey-empty">
-        지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
-      </p>
+      <>
+        <MeetingBriefCard category={category} />
+        <p className="survey-empty">
+          지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
+        </p>
+      </>
     )
   }
 
   // 모임까지 끝난 것은 아래 「지난 설문」 으로 내린다. 지우지는 않는다.
   const { live, past } = splitByHistory(surveys)
+
+  /**
+   * **응답할 수 있는 설문은 절대 안 접는다.**
+   *
+   * 요약 카드가 결론을 말해 주므로, 이미 끝난 투표까지 펼쳐 두면 화면만 길어진다.
+   * 그래서 **전부 끝난 경우에만** 접는다. 하나라도 지금 응답할 수 있으면
+   * 접지 않는다 — 접힌 손잡이 뒤에 둔 설문에는 아무도 응답하지 않는다.
+   *
+   * 요약 카드가 없으면(아직 요약할 모임이 없으면) 접을 이유도 없다.
+   * 접는 근거가 「위에 결론이 있다」 이기 때문이다.
+   */
+  const answerable = live.some((s) => isOpen(s) && !s.mirrored)
+  const foldable = BRIEF !== null && live.length > 0 && !answerable
+
+  const liveCards = live.map((s) => <OneSurvey key={s.id} s={s} />)
+
   return (
     <>
-      {live.map((s) => <OneSurvey key={s.id} s={s} />)}
+      <MeetingBriefCard category={category} />
+      {foldable
+        ? (
+          <details className="survey-fold">
+            <summary>
+              <span>투표 자세히 보기</span>
+              <span className="survey-fold-cnt">{live.length}건 · 마감</span>
+            </summary>
+            {liveCards}
+          </details>
+        )
+        : liveCards}
       {!live.length && past.length > 0 && (
         <p className="survey-empty">
           지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
