@@ -78,24 +78,6 @@ const koDate = (v: string | null) => {
   return `${y}. ${Number(m)}. ${Number(d)}.`
 }
 
-/**
- * DB 의 updated_at 은 `2026-08-18T18:04:07.516177+00:00` 꼴이다.
- * 옛 화면은 `2026.08.17 21:54` 로 보여 줬으므로 서울 기준으로 같은 모양을 만든다.
- * 날짜만 들어오면(예전 데이터) 시각 없이 날짜만 낸다.
- */
-const koTimestamp = (v: string) => {
-  if (/^d{4}-d{2}-d{2}$/.test(v)) return v.replace(/-/g, ".")
-  const d = new Date(v)
-  if (Number.isNaN(d.getTime())) return v.slice(0, 10).replace(/-/g, ".")
-  const p2 = (n: number) => String(n).padStart(2, "0")
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", hour12: false,
-  }).formatToParts(d)
-  const g = (t: string) => parts.find((x) => x.type === t)?.value ?? ""
-  return `${g("year")}.${g("month")}.${g("day")} ${p2(Number(g("hour")))}:${g("minute")}`
-}
-
 /** 옛 `movieTheaterMapUrl`(app.js:1654) 그대로 */
 const theaterMapUrl = (area: string) =>
   `https://map.kakao.com/?q=${encodeURIComponent(`${area} 영화관`)}`
@@ -277,7 +259,7 @@ function tabKeys<T>(items: readonly T[], current: T, set: (v: T) => void) {
   }
 }
 
-export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
+export function Board() {
   const [events, setEvents] = useState<Event[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [area, setArea] = useState<Area>('서울')
@@ -287,19 +269,13 @@ export function Board({ onUpdatedAt }: { onUpdatedAt?: (v: string) => void }) {
   useEffect(() => {
     const ac = new AbortController()
     fetchEvents(ac.signal)
-      .then((rows) => {
-        setEvents(rows)
-        // 가장 최근 확인일을 셸의 "최종 업데이트" 줄로 올려 보낸다
-        const dates = rows.map((r) => r.updatedAt).filter((v): v is string => !!v).sort()
-        const newest = dates[dates.length - 1]
-        if (newest) onUpdatedAt?.(koTimestamp(newest))
-      })
+      .then(setEvents)
       .catch((e: unknown) => {
         if (ac.signal.aborted) return
         setError(e instanceof EventsUnavailable ? e.reason : String(e))
       })
     return () => ac.abort()
-  }, [onUpdatedAt])
+  }, [])
 
   const list = useMemo(
     () => (events ? filterEvents(events, { area, type, search, today: today() }) : []),
