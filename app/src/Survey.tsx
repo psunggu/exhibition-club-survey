@@ -216,9 +216,32 @@ function OneSurvey({ s }: { s: SurveyT }) {
    * 받는 화면과 결과 화면을 가르는 것이 이 조각이다.
    */
   if (!open || s.mirrored) {
+    /**
+     * **이름을 보여 줄 두 가지 조건.**
+     *
+     * 하나 — 운영자가 켰나. 설문에는 이미 이름 스위치가 있다(show_names).
+     * 이름이 후보 쪽(survey_options)에 담긴다고 해서 그 스위치를 옆으로 지나치면,
+     * 운영자가 「이름 안 보임」 으로 두고 안심하는 사이에 이름이 공개된다.
+     * DB 방아쇠(survey_options_voters_gate)가 담는 단계에서도 같은 것을 막지만,
+     * 화면도 스스로 확인한다 — 한쪽이 뚫려도 다른 쪽이 버텨야 한다.
+     *
+     * 둘 — 다 갖춰졌나. 표를 받은 후보 가운데 하나라도 이름이 비어 있으면
+     * **아무 이름도 안 보여 준다.** 반만 보여 주면 이름 없는 줄이
+     * 「아무도 안 골랐다」 로 읽히는데 그 줄에도 표는 있다 — 화면이 사실이 아닌 말을 하게 된다.
+     * 그럴 바에는 지금까지처럼 숫자만 보여 주는 편이 낫다.
+     * DB 는 후보 하나의 **개수**만 본다(survey_options_voters_match). 「빠뜨린 후보가 없나」 는
+     * 후보 여럿을 한꺼번에 봐야 알 수 있어 CHECK 제약으로 쓸 수 없다. 그래서 여기서 본다.
+     * 빠뜨린 것을 운영자에게 알리는 자리는 화면이 아니라 202608270001b 의 확인 질의다.
+     */
+    const voted = s.options.filter((o) => (tally?.get(o.id) ?? 0) > 0)
+    const showVoters = s.showNames !== 'none'
+      && voted.length > 0
+      && voted.every((o) => o.importedVoters.length > 0)
+
     const rows = s.options.map((o) => ({
       optionId: o.id, position: o.position, title: o.title,
-      votes: tally?.get(o.id) ?? 0, voters: [] as string[],
+      votes: tally?.get(o.id) ?? 0,
+      voters: showVoters ? o.importedVoters : [],
     }))
     const anyTally = tally !== null
     return (

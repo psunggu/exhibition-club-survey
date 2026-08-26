@@ -142,6 +142,42 @@ for (const file of trackedFiles) {
     }
   }
 
+  /**
+   * **옮겨 온 투표의 투표자 실명.**
+   *
+   * survey_options.imported_voters 에는 톡방에서 옮겨 적은 회원 실명이 들어간다.
+   * 위 두 프로필 규칙은 **구역번호가 이름 옆에 붙어 있을 때만** 잡는다.
+   * 맨 이름만 늘어놓은 배열은 하나도 안 걸린다 — 재서 확인했다:
+   * `imported_voters = array['…','…']` 를 네 규칙에 모두 넣어 본 결과 0건이었다.
+   *
+   * 그래서 이 값은 **자리에서 잡는다.** 추적되는 파일의 imported_voters 배열에는
+   * 가상 명부(docs/fixtures/sample-members.json)의 이름만 올 수 있다.
+   * 진짜 이름이 든 SQL 은 커밋하지 않고 운영자가 손으로 실행한다
+   * (202608270001b_poll_voters.template.sql 이 그 틀이다).
+   *
+   * 이름은 **배열 안쪽에서만** 뽑는다. 사이에 낀 한국어 주석까지 긁으면
+   * 「투표자」·「이름」 같은 낱말이 사람 이름으로 잡혀 거짓 경보가 난다 —
+   * 거짓 경보가 한 번 나면 다음부터 이 검사를 대충 보게 된다.
+   *
+   * 배열 모양을 **세 가지** 본다. 처음에는 SQL 두 가지만 봤는데,
+   * 정작 가장 위험한 자리인 docs/fixtures/supabase-responses.json 은 JSON 이라
+   * 하나도 안 걸렸다 — 그 파일은 REST 응답을 통째로 떠서 추적된다.
+   *   array['…','…']   SQL
+   *   '{"…","…"}'      SQL 배열 리터럴
+   *   : ["…","…"]      JSON · JS 목업
+   */
+  const votersLiteral =
+    /imported_voters[\s\S]{0,200}?(array\s*\[[^\]]*\]|'\{[^}]*\}'|:\s*\[[^\]]*\])/gu;
+  for (const hit of text.matchAll(votersLiteral)) {
+    const literal = hit[1] ?? "";
+    const names = literal.match(/[가-힣]{2,4}/gu) ?? [];
+    if (!names.length) continue;
+    if (names.every((x) => fictionalNames.has(x))) continue;
+    failures.push(`${file}: imported_voters 에 가상 명부 밖의 이름이 있다 `
+      + `— ${JSON.stringify(literal.slice(0, 40))}`);
+    break;
+  }
+
   const jwtPattern = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/gu;
   for (const token of text.match(jwtPattern) ?? []) {
     const role = decodeJwtRole(token);

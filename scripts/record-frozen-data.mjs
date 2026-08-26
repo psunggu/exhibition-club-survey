@@ -68,6 +68,24 @@ const sNew = await serve(DIST, 8217, true);
  * 그게 진짜 값인 줄 안다.
  */
 const REDACT_KEYS = new Set(['created_by']);
+
+/**
+ * **이름이 배열로 오는 자리.**
+ * survey_options.imported_voters 에는 톡방 투표를 옮겨 적은 **회원 실명**이 들어간다.
+ * 이 고정본(docs/fixtures/supabase-responses.json)은 git 이 추적하는 공개 파일이라,
+ * 한 번 뜨면 그대로 커밋되고 히스토리에서 지우기 어렵다.
+ *
+ * **위 REDACT_KEYS 에 키만 더하면 아무 일도 일어나지 않는다** — 아래 갈래가
+ * `typeof === 'string'` 이라 배열은 조건을 못 맞추고 재귀로 흘러가 그대로 남는다.
+ * 그래서 배열 갈래를 따로 둔다.
+ *
+ * **길이는 지키고 내용만 바꾼다.** 칩 개수가 유지돼야 화면 기준(screen-baseline)이
+ * 실제와 같은 배치를 잰다. 빈 문자열로 두면 빈 칩이 그려져 배치가 어긋나고,
+ * 그럴싸한 가짜 이름은 위 주석이 금지한 것이다. 「회원」 은 사람 이름으로 오해할 수 없다.
+ */
+const REDACT_ARRAY_KEYS = new Set(['imported_voters', 'voters']);
+const ARRAY_STANDIN = '회원';
+
 const redacted = new Set();
 const redact = (node) => {
   if (Array.isArray(node)) { node.forEach(redact); return node; }
@@ -75,6 +93,8 @@ const redact = (node) => {
     for (const k of Object.keys(node)) {
       if (REDACT_KEYS.has(k) && typeof node[k] === 'string' && node[k]) {
         redacted.add(k); node[k] = '';
+      } else if (REDACT_ARRAY_KEYS.has(k) && Array.isArray(node[k]) && node[k].length) {
+        redacted.add(k); node[k] = node[k].map(() => ARRAY_STANDIN);
       } else redact(node[k]);
     }
   }

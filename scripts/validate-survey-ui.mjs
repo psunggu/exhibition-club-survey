@@ -558,7 +558,9 @@ await page.evaluate((scale) => {
 await page.waitForTimeout(500);
 const zoomHits = await page.evaluate(() => {
   const rects = [];
-  for (const el of document.querySelectorAll('.chart-bar-row span, .chart-bar-head span')) {
+  // `.chart-voter` 는 li 라서 span 만 훑으면 빠진다 — 이름 칩이 검사 밖에 있게 된다
+  for (const el of document.querySelectorAll(
+    '.chart-bar-row span, .chart-bar-head span, .chart-voters li')) {
     for (const n of el.childNodes) {
       if (n.nodeType !== 3 || !n.textContent.trim()) continue;
       const r = document.createRange(); r.selectNodeContents(n);
@@ -816,6 +818,124 @@ ok('글자 대비가 모두 기준 이상', dim.length === 0, dim.join(' | '));
 ok(`대비를 잰 글자 ${allTexts.length}개`, allTexts.length >= 200, `${allTexts.length}개`);
 
 ok('오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
+
+
+/* ── 옮겨 온 투표의 투표자 이름 ────────────────────────────
+ *
+ * 이 절만 따로 가짜 목록을 세운다. 위쪽 검사들이 「설문 네 건」·「결과만 셋」 처럼
+ * **개수로** 재고 있어서, 공용 목록에 하나 더 얹으면 관계없는 검사가 우수수 깨진다.
+ *
+ * 여기서 재는 것 다섯:
+ *   · 이름 칩이 실제로 그려진다
+ *   · show_names 가 'none' 이면 **안 그려진다** — 운영자 스위치를 지나치지 않는다
+ *   · 표를 받은 후보에 이름이 하나라도 빠지면 **아무 이름도 안 그린다**
+ *   · 하나만 고르는 설문이어도 **도넛이 아니라 막대**다 (도넛에는 담을 자리가 없다)
+ *   · 캡션이 그림과 같은 말을 한다 — 막대를 그려 놓고 「조각을 모두 더하면」 이라고 하지 않는다
+ *
+ * 이름은 **가상 명부**(docs/fixtures/sample-members.json)에서 가져온다.
+ * validate-repository-hygiene.mjs 가 그 명부 밖의 이름이 커밋되면 잡는다.
+ */
+const VOTER_NAMES = [
+  ['김하늘', '박서준', '이가온', '최윤슬', '정다인'],
+  ['한도윤', '오시우'],
+  [],
+];
+const namedOptions = (voters) =>
+  ['16수_18-19식사/19-20관람', '19토_17-18관람/18-19식사', '23수_19-20식사/20-21관람']
+    .map((t, i) => ({
+      id: `named-${i}`, position: i + 1, title: t,
+      period: null, venue: null, hours: null, price: null, note: null, links: [],
+      imported_voters: voters[i],
+    }));
+
+const NAMED_SURVEY = {
+  id: 'srv-named', title: '이름까지 옮겨 온 투표', intro: null,
+  // **하나만 고르기** — 후보가 셋뿐이라 원래대로면 도넛이 나온다. 그래서 여기서 잰다.
+  multi_choice: false,
+  opens_at: iso(now - 72 * HOUR), closes_at: iso(now - 48 * HOUR),
+  created_by: '', results_visible: 'always', show_names: 'participants',
+  hide_after_days: null, category: 'exhibition', imported_respondents: 7,
+  survey_options: namedOptions(VOTER_NAMES),
+};
+
+const NAMED_VOTES = [5, 2, 0];
+
+/** 이 절만 쓰는 가짜 서버. 끝나면 되돌린다. */
+const serveNamed = async (survey) => {
+  await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+    contentType: 'application/json', body: JSON.stringify([survey]) }));
+  await page.route('**/rpc/survey_tally', (route) => route.fulfill({ status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify(survey.survey_options.map((o, i) => ({
+      option_id: o.id, votes: NAMED_VOTES[i] }))) }));
+  await page.route('**/rpc/survey_response_count', (route) => route.fulfill({
+    status: 200, contentType: 'application/json', body: '7' }));
+  await page.goto('about:blank');
+  await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.survey-head', { timeout: 20000 });
+  await page.waitForTimeout(900);
+};
+const unserveNamed = async () => {
+  await page.unroute('**/rest/v1/surveys*');
+  await page.unroute('**/rpc/survey_tally');
+  await page.unroute('**/rpc/survey_response_count');
+};
+const chipTexts = () => page.$$eval('.chart-voter', (es) => es.map((e) => e.textContent.trim()));
+
+await serveNamed(NAMED_SURVEY);
+
+const chips = await chipTexts();
+ok('옮겨 온 투표의 투표자 이름이 보인다', chips.length === 7, `${chips.length}개 — ${chips.join(', ')}`);
+ok('이름이 톡방 글자 그대로다', chips.join(',') === [...VOTER_NAMES[0], ...VOTER_NAMES[1]].join(','),
+  chips.join(', '));
+/** 0표 후보에는 칩이 없어야 한다 — 「아직 아무도」 같은 줄도 넣지 않는다 */
+ok('0표 후보에는 이름 자리가 없다',
+  (await page.$$('.chart-bar-row')).length === 3 && (await page.$$('.chart-voters')).length === 2,
+  `막대 ${(await page.$$('.chart-bar-row')).length} · 이름줄 ${(await page.$$('.chart-voters')).length}`);
+
+/**
+ * **하나만 고르는 설문이어도 막대다.**
+ * 도넛은 128px 링이라 이름이 안 들어가고, 범례 줄도 한 줄짜리라 정렬이 무너진다.
+ * 그림만 바꾸고 캡션을 그대로 두면 「막대를 그려 놓고 조각 이야기를 하는」 화면이 된다.
+ */
+ok('이름이 있으면 도넛 대신 막대로 그린다',
+  (await page.$$('.chart-donut')).length === 0 && (await page.$$('.chart-bars')).length === 1);
+const namedCaption = await page.$eval('.chart-caption', (e) => e.textContent.trim());
+ok('캡션이 그림과 같은 말을 한다', !namedCaption.includes('조각'), namedCaption.slice(0, 46));
+
+await unserveNamed();
+
+/**
+ * **운영자 스위치를 지나치지 않는다.**
+ * 이름은 후보 표(survey_options)에 있고 그 표는 anon 이 통째로 읽는다.
+ * 화면이 show_names 를 안 보면, 운영자가 「이름 안 보임」 으로 둔 설문에서도 이름이 뜬다.
+ * DB 방아쇠도 같은 것을 막지만(survey_options_voters_gate) 화면도 스스로 확인해야 한다.
+ */
+await serveNamed({ ...NAMED_SURVEY, id: 'srv-named-off', show_names: 'none' });
+ok('이름 보임이 꺼져 있으면 이름을 안 그린다', (await chipTexts()).length === 0,
+  (await chipTexts()).join(', '));
+/**
+ * 이름을 안 그리면 **도넛으로 돌아간다** — 후보 셋짜리 단일선택이라 원래 자리가 도넛이다.
+ * 그래서 막대 줄 수로 재면 안 된다. 재야 할 것은 「표는 그대로 보이는가」 다.
+ */
+ok('그때도 표는 그대로 보여 준다',
+  (await page.$$('.chart')).length === 1 && (await page.$$('.chart-legend li')).length === 3,
+  `차트 ${(await page.$$('.chart')).length} · 범례 ${(await page.$$('.chart-legend li')).length}`);
+await unserveNamed();
+
+/**
+ * **반만 채우면 아예 안 보여 준다.**
+ * 이름이 없는 줄이 「아무도 안 골랐다」 로 읽히는데 그 줄에도 표는 있다 —
+ * 화면이 사실이 아닌 말을 하느니 지금까지처럼 숫자만 보여 주는 편이 낫다.
+ * (빠뜨린 것을 알리는 자리는 화면이 아니라 202608270001b 의 확인 질의다.)
+ */
+await serveNamed({
+  ...NAMED_SURVEY, id: 'srv-named-half',
+  survey_options: namedOptions([VOTER_NAMES[0], [], []]),
+});
+ok('표를 받은 후보에 이름이 빠지면 아무 이름도 안 그린다', (await chipTexts()).length === 0,
+  (await chipTexts()).join(', '));
+await unserveNamed();
 
 await browser.close();
 

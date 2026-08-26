@@ -51,6 +51,32 @@ export const ENOUGH = 3
 const hue = (i: number, count: number) =>
   (count > SERIES.length ? ONE_HUE : (SERIES[i] ?? ONE_HUE))
 
+/**
+ * **누가 골랐나.**
+ *
+ * 톡방에서 진행한 투표를 옮겨 온 설문에서만 나온다. 사이트에서 직접 받는 설문은
+ * 2026-08-24 부터 이름을 저장하지 않아 여기 넣을 것이 아예 없다 —
+ * 그러니 이 칩이 보인다는 것은 곧 「톡방 투표를 옮겨 온 것」 이라는 뜻이다.
+ *
+ * 이름은 **톡방 화면 글자 그대로** 그린다. 구역번호를 붙이지도 떼지도, 성을 가리지도 않는다.
+ * 운영자가 그렇게 정했고, 손대는 순간 원본과 맞춰 보기 전에는 아무도 못 알아채는
+ * 어긋남이 생긴다 (202608210001b 에서 실제로 겪었다).
+ *
+ * **key 에 이름을 쓰지 않는다.** 동명이인이 있으면 React 가 같은 줄로 본다 —
+ * 명부에도 실제로 동명이인이 있어서 가정이 아니라 사실이다.
+ */
+function Voters({ row }: { row: AdminResult }) {
+  if (!row.voters.length) return null
+  return (
+    <ul className="chart-voters"
+      aria-label={`${row.title}${josa(row.title, '을', '를')} 고른 사람`}>
+      {row.voters.map((v, i) => (
+        <li className="chart-voter" key={`${row.optionId}-${i}`}>{v}</li>
+      ))}
+    </ul>
+  )
+}
+
 /* ── 도넛 (하나만 고르기) ──────────────────────────────────── */
 
 function Donut({ rows, total }: { rows: AdminResult[]; total: number }) {
@@ -133,6 +159,16 @@ function Bars({ rows, total }: { rows: AdminResult[]; total: number }) {
                 <title>{r.title} — {r.votes}명 ({Math.round(pct)}%)</title>
               </div>
             </div>
+            {/**
+              * 이름은 **막대 아래**에 둔다. `.chart-bar-head` 안에 끼우면 이름 칸과
+              * 자리를 다투다 표 수를 밀어낸다 — `.chart-bar-name` 주석에 적힌
+              * 「200% 확대에서 320px 화면 일곱 곳이 겹쳤다」 가 바로 그 사고다.
+              * 막대 아래에 두면 「이 막대를 이룬 사람들」 로 자연스럽게 읽힌다.
+              *
+              * 0표 줄에 「아직 아무도」 같은 문장을 붙이지 않는다 — 표 수가 이미 `없음`
+              * 이라고 말하고, 후보 열세 곳짜리 식사 설문에서는 줄마다 되풀이된다.
+              */}
+            <Voters row={r} />
           </div>
         )
       })}
@@ -155,6 +191,17 @@ export function ResultChart({ rows, total, multiChoice }: {
    * 화면이 사실이 아닌 말을 하면 나머지 숫자도 못 믿게 된다.
    */
   const sum = rows.reduce((n, r) => n + r.votes, 0)
+  /**
+   * **이름이 있으면 도넛을 못 쓴다.**
+   * 128px 링 안에는 이름이 안 들어가고, 범례 줄은 `swatch·이름·표` 한 줄짜리라
+   * 사람 이름 목록을 네 번째로 끼우면 정렬이 무너진다 —
+   * 그렇게까지 키우면 그건 **정렬만 나쁜 막대 차트**다. 그러니 막대로 보낸다.
+   *
+   * **아래 값을 캡션과 그림 두 곳에 똑같이 쓴다.** 한 곳만 고치면
+   * 그림은 막대인데 캡션은 「조각을 모두 더하면」 이라고 말한다 —
+   * 이 파일이 거듭 경계해 온 「한 화면이 서로 반대되는 말」 이 그대로 재현된다.
+   */
+  const asBars = multiChoice || rows.length > 5 || rows.some((r) => r.voters.length > 0)
   return (
     <div className="chart">
       <p className="chart-caption">
@@ -164,10 +211,12 @@ export function ResultChart({ rows, total, multiChoice }: {
             : `여러 개 고를 수 있는 설문입니다. 아래 비율은 ${total}명 가운데 몇 명인지입니다.`)
           : rows.length > 5
             ? `하나만 고르는 설문입니다. 후보가 많아 막대로 보여 줍니다 (${total}명 가운데).`
-            : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
+            : asBars
+              ? `하나만 고르는 설문입니다. 고른 분을 함께 보여 드리려고 막대로 그립니다 (${total}명 가운데).`
+              : '하나만 고르는 설문이라 조각을 모두 더하면 응답자 수가 됩니다.'}
       </p>
       {/* 도넛은 조각 색이 곧 이름이라 후보가 많으면 읽을 수 없다. 그때는 막대로 간다. */}
-      {multiChoice || rows.length > 5
+      {asBars
         ? <Bars rows={rows} total={total} />
         : <Donut rows={rows} total={total} />}
     </div>
