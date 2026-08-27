@@ -47,6 +47,7 @@ const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
 const votersTmpl = read('202608270001b_poll_voters.template.sql');
 const membersTmpl = read('202608270001c_members_bulk.template.sql');
+const mealTmpl = read('202608280001a_meal_place_survey.template.sql');
 /** 운영자 함수는 여러 파일에 흩어져 있다. 규칙은 전부에 같이 걸린다. */
 const admin = [
   read('202608200002a_survey_admin_functions.sql'),
@@ -435,6 +436,47 @@ if (membersTmpl) {
   }
   if (!/insert\s+into\s+public\.survey_members/i.test(body)) {
     fail('명부 대량입력 틀에서 survey_members insert 를 찾지 못했다');
+  }
+}
+
+/**
+ * **식사 장소 설문 틀 — 요약 카드와 id 가 맞아야 한다.**
+ *
+ * 요약 카드의 「식사 장소」 줄이 이 설문 id 를 가리키고 있어서,
+ * **id 가 어긋나면 설문을 올려도 그 줄이 영영 「아직 안 정했습니다」 다.**
+ * 화면은 멀쩡하고 DB 도 멀쩡한데 둘이 서로를 못 알아본다 —
+ * 눈으로는 못 찾는 종류의 어긋남이라 여기서 글로 맞춰 본다.
+ *
+ * 그리고 **imported_respondents 를 넣으면 안 된다.** 넣는 순간
+ * 「톡방에서 진행」 으로 잠겨 회원이 못 고른다 — 이 설문의 존재 이유가 사라진다.
+ */
+if (mealTmpl) {
+  const body = mealTmpl.replace(/--[^\n]*/g, '');
+  const id = /'(5e97b1a0-[0-9a-f-]+)'/i.exec(body)?.[1] ?? '';
+
+  const briefPath = path.join(ROOT, 'app/src/data/meetingBrief.ts');
+  const brief = fs.existsSync(briefPath) ? fs.readFileSync(briefPath, 'utf8') : '';
+  const wanted = /decidedBy:\s*'([^']+)'/.exec(brief)?.[1] ?? '';
+
+  if (!id) fail('식사 장소 틀에서 설문 id 를 찾지 못했다');
+  else if (!wanted) fail('meetingBrief.ts 에서 decidedBy 를 찾지 못했다');
+  else if (id !== wanted) {
+    fail(`식사 장소 설문 id 가 요약 카드와 다르다 — 틀 ${id} · 카드 ${wanted} `
+      + '(어긋나면 설문을 올려도 그 줄이 영영 「아직 안 정했습니다」 다)');
+  }
+
+  /**
+   * **넣는 자리만 본다.** 처음엔 파일 전체에서 찾았더니, 맨 아래 확인 질의의
+   * `imported_respondents is not null as 옮겨온것` 을 잡아 거짓 경보가 났다 —
+   * 그 줄은 「옮겨 온 것이 아님」 을 **확인하려고** 읽는 자리다.
+   */
+  const insertCols = /insert\s+into\s+public\.surveys\s*\(([\s\S]*?)\)/i.exec(body)?.[1] ?? '';
+  if (/imported_respondents/i.test(insertCols)) {
+    fail('식사 장소 틀이 imported_respondents 를 넣는다 '
+      + '— 넣으면 「톡방에서 진행」 으로 잠겨 회원이 못 고른다');
+  }
+  if (!/'meal'/.test(body)) {
+    fail("식사 장소 틀의 갈래가 'meal' 이 아니다 — 전시 탭에 뜬다");
   }
 }
 

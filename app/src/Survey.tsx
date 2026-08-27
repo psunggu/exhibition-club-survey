@@ -551,12 +551,51 @@ function BriefGauge({ votes, total }: { votes: number; total: number }) {
   )
 }
 
-function MeetingBriefCard({ category }: { category: SurveyCategory }) {
+/**
+ * **아직 정하는 중인 줄이 무엇을 말할지 고른다.**
+ *
+ * 손으로 적어 두지 않는다 — 「투표 중입니다」 같은 말은 적는 순간부터 낡는다.
+ * 설문이 지금 어떤 상태인지 보고 화면이 스스로 고른다.
+ *
+ * 다섯 갈래를 **모두** 다룬다. 하나라도 빠뜨리면 그 상태에서 화면이
+ * 「아직 안 정했습니다」 라고 말하는데, 그건 사실이 아닐 수 있다.
+ */
+type Deciding =
+  | { kind: 'none' }                                        // 설문이 아직 없다
+  | { kind: 'open'; total: number; route: string }          // 투표 중
+  | { kind: 'won'; title: string; votes: number; total: number }
+  | { kind: 'tie'; n: number }                              // 동점이라 못 정했다
+  | { kind: 'empty' }                                       // 마감됐는데 표가 0
+
+function decideRow(
+  survey: SurveyT | undefined,
+  tally: { votes: Map<string, number>; total: number } | undefined,
+): Deciding {
+  if (!survey) return { kind: 'none' }
+  if (isOpen(survey) && !survey.mirrored) {
+    return { kind: 'open', total: tally?.total ?? 0, route: CATEGORY[survey.category].route }
+  }
+  // 마감됐다 — 집계를 못 읽었으면 아무 말도 지어내지 않는다
+  if (!tally) return { kind: 'none' }
+  const scored = survey.options.map((o) => ({ o, v: tally.votes.get(o.id) ?? 0 }))
+  const top = Math.max(0, ...scored.map((x) => x.v))
+  if (top === 0) return { kind: 'empty' }
+  const leaders = scored.filter((x) => x.v === top)
+  // **동점이면 하나를 고르지 않는다.** 골라 버리면 화면이 정해지지 않은 것을 정했다고 말한다.
+  if (leaders.length > 1) return { kind: 'tie', n: leaders.length }
+  return { kind: 'won', title: leaders[0]!.o.title, votes: top, total: tally.total }
+}
+
+function MeetingBriefCard({ category, surveys }: {
+  category: SurveyCategory; surveys: SurveyT[]
+}) {
   const brief = BRIEF
-  /** 근거로 삼은 설문들. 같은 설문을 두 줄이 가리켜도 한 번만 읽는다. */
+  /** 집계를 읽어야 할 설문들. 같은 설문을 두 줄이 가리켜도 한 번만 읽는다. */
   const surveyIds = useMemo(() => {
     if (!brief) return []
-    return [...new Set(brief.rows.map((r) => r.from?.surveyId).filter((x): x is string => !!x))]
+    return [...new Set(brief.rows
+      .flatMap((r) => [r.from?.surveyId, r.decidedBy])
+      .filter((x): x is string => !!x))]
   }, [brief])
 
   const [tallies, setTallies] = useState<Map<string, { votes: Map<string, number>; total: number }>>(new Map())
@@ -592,22 +631,73 @@ function MeetingBriefCard({ category }: { category: SurveyCategory }) {
           const here = r.category === category
           const t = r.from ? tallies.get(r.from.surveyId) : undefined
           const votes = r.from && t ? (t.votes.get(r.from.optionId) ?? 0) : 0
+          /**
+           * 아직 정하는 중인 줄은 설문을 보고 말을 고른다.
+           * `decidedBy` 가 없으면 여태처럼 손으로 적은 값을 쓴다.
+           */
+          const d = r.decidedBy
+            ? decideRow(surveys.find((s) => s.id === r.decidedBy), tallies.get(r.decidedBy))
+            : null
           return (
             <div className={`brief-row${here ? ' here' : ''}`} key={r.key}>
               <dt className="brief-label">{r.label}</dt>
               <dd className="brief-val">
-                {r.value === null
-                  ? <b className="brief-undecided">{r.pending ?? '아직 안 정했습니다'}</b>
-                  : (here && r.dateChip
-                    ? (
-                      <span className="brief-date">
-                        <b>{r.dateChip.big}</b> {r.dateChip.small}
-                      </span>
-                    )
-                    : <b className="brief-big">{r.value}</b>)}
-                {r.sub && <span className="brief-sub">{r.sub}</span>}
-                {/* 근거 막대는 지금 갈래의 줄에만. 네 줄 모두 붙이면 요약이 시끄러워진다. */}
-                {here && t && <BriefGauge votes={votes} total={t.total} />}
+                {d && d.kind !== 'none'
+                  ? (
+                    <>
+                      {d.kind === 'open' && (
+                        <>
+                          <b className="brief-big">투표 중입니다</b>
+                          <span className="brief-sub">
+                            {d.total > 0 ? `지금 ${d.total}명이 참여했습니다. ` : ''}
+                            <a className="brief-go" href={d.route}>
+                              여기서 고르실 수 있습니다 <span aria-hidden="true">→</span>
+                            </a>
+                          </span>
+                        </>
+                      )}
+                      {d.kind === 'won' && (
+                        <>
+                          <b className="brief-big">{d.title}</b>
+                          {/**
+                            * **`r.sub` 를 쓰지 않는다.** 그건 아직 안 정했을 때 할 말이라
+                            * (「정해지면 이 줄이 채워집니다」) 정해진 뒤에는 거짓이 된다.
+                            * 실제로 그렇게 나왔다 — 채워진 줄이 채워질 거라고 말했다.
+                            */}
+                          <span className="brief-sub">이 화면의 설문으로 정했습니다</span>
+                          {here && <BriefGauge votes={d.votes} total={d.total} />}
+                        </>
+                      )}
+                      {d.kind === 'tie' && (
+                        <>
+                          <b className="brief-undecided">{d.n}곳이 동점입니다</b>
+                          <span className="brief-sub">아직 하나로 좁혀지지 않았습니다.</span>
+                        </>
+                      )}
+                      {d.kind === 'empty' && (
+                        <>
+                          <b className="brief-undecided">참여가 없었습니다</b>
+                          <span className="brief-sub">설문은 마감됐지만 아무도 고르지 않았습니다.</span>
+                        </>
+                      )}
+                    </>
+                  )
+                  : (
+                    <>
+                      {r.value === null
+                        ? <b className="brief-undecided">{r.pending ?? '아직 안 정했습니다'}</b>
+                        : (here && r.dateChip
+                          ? (
+                            <span className="brief-date">
+                              <b>{r.dateChip.big}</b> {r.dateChip.small}
+                            </span>
+                          )
+                          : <b className="brief-big">{r.value}</b>)}
+                      {r.sub && <span className="brief-sub">{r.sub}</span>}
+                      {/* 근거 막대는 지금 갈래의 줄에만. 네 줄 모두 붙이면 요약이 시끄러워진다. */}
+                      {here && t && <BriefGauge votes={votes} total={t.total} />}
+                    </>
+                  )}
               </dd>
             </div>
           )
@@ -619,19 +709,32 @@ function MeetingBriefCard({ category }: { category: SurveyCategory }) {
 
 
 export function Survey({ category }: { category: SurveyCategory }) {
-  const [surveys, setSurveys] = useState<SurveyT[] | null>(null)
+  /**
+   * **갈래로 거르지 않고 다 들고 있는다.**
+   *
+   * 요약 카드는 모임을 말하는 것이라 **다른 갈래의 설문도 봐야 한다** —
+   * 전시 탭에 서 있어도 「식사 장소」 줄은 식사 갈래 설문이 정한다.
+   * 카드 안에서 따로 읽게 두면 같은 곳을 두 번 부른다. 여기서 한 번 읽어 나눠 쓴다.
+   */
+  const [all, setAll] = useState<SurveyT[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const ac = new AbortController()
     fetchSurveys(ac.signal)
-      .then((rows) => setSurveys(rows.filter((s) => isVisible(s) && s.category === category)))
+      // **그냥 넘기면 안 된다** — isVisible(s, now?) 의 둘째 자리에 배열 인덱스가 들어간다
+      .then((rows) => setAll(rows.filter((s) => isVisible(s))))
       .catch((e: unknown) => {
         if (ac.signal.aborted) return
         setError(e instanceof SurveyUnavailable ? e.reason : '불러오지 못했습니다.')
       })
     return () => ac.abort()
-  }, [category])
+  }, [])
+
+  const surveys = useMemo(
+    () => (all ? all.filter((s) => s.category === category) : null),
+    [all, category],
+  )
 
   if (error) {
     return (
@@ -650,7 +753,7 @@ export function Survey({ category }: { category: SurveyCategory }) {
      */
     return (
       <>
-        <MeetingBriefCard category={category} />
+        <MeetingBriefCard category={category} surveys={all ?? []} />
         <p className="survey-empty">
           지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
         </p>
@@ -678,7 +781,7 @@ export function Survey({ category }: { category: SurveyCategory }) {
 
   return (
     <>
-      <MeetingBriefCard category={category} />
+      <MeetingBriefCard category={category} surveys={all ?? []} />
       {foldable
         ? (
           <details className="survey-fold">

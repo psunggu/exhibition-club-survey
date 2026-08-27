@@ -969,6 +969,117 @@ if (folds.length === 1) {
   ok('손잡이가 24px 이상이다', sum.h >= 24, `${sum.h}px`);
 }
 
+
+/* ── 아직 정하는 중인 줄 ────────────────────────────────────
+ *
+ * 「식사 장소」 는 설문이 정한다. 그 설문이 어떤 상태냐에 따라 말이 달라져야 한다.
+ * **다섯 갈래를 모두 잰다** — 하나라도 빠뜨리면 그 상태에서 화면이
+ * 「아직 안 정했습니다」 라고 말하는데, 그건 사실이 아닐 수 있다.
+ *
+ *   설문 없음   → 아직 안 정했습니다        (지금 라이브 상태)
+ *   열려 있음   → 투표 중 · 여기서 고르세요
+ *   마감·1위    → 그 이름
+ *   마감·동점   → N곳이 동점입니다
+ *   마감·0표    → 참여가 없었습니다
+ */
+const PLACE_ID = '5e97b1a0-0000-4000-8000-000000000905';
+const placeOptions = ['가게 가', '가게 나', '가게 다'].map((t, i) => ({
+  id: `place-${i}`, position: i + 1, title: t,
+  period: null, venue: null, hours: null, price: null, note: null, links: [],
+}));
+
+/** 식사 장소 설문을 세운다. votes 가 null 이면 집계를 안 준다(=아직 볼 때가 아니다). */
+const servePlace = async ({ open, votes }) => {
+  const now2 = Date.now();
+  const survey = {
+    id: PLACE_ID, title: '9월 정기모임 식사 장소', intro: null,
+    multi_choice: true,
+    opens_at: iso(now2 - HOUR),
+    closes_at: iso(open ? now2 + 48 * HOUR : now2 - HOUR),
+    created_by: '박지현', results_visible: 'always', show_names: 'none',
+    hide_after_days: null, category: 'meal',
+    survey_options: placeOptions,
+  };
+  await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+    contentType: 'application/json', body: JSON.stringify([survey]) }));
+  await page.route('**/rpc/survey_tally', (route) => route.fulfill({ status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify(votes === null ? []
+      : placeOptions.map((o, i) => ({ option_id: o.id, votes: votes[i] }))) }));
+  await page.route('**/rpc/survey_response_count', (route) => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: String(votes === null ? 0 : votes.reduce((a, b) => a + b, 0)) }));
+  await page.goto('about:blank');
+  await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.brief', { timeout: 20000 });
+  await page.waitForTimeout(1200);
+};
+const unservePlace = async () => {
+  await page.unroute('**/rest/v1/surveys*');
+  await page.unroute('**/rpc/survey_tally');
+  await page.unroute('**/rpc/survey_response_count');
+};
+const placeRow = () => page.$$eval('.brief-row',
+  (es) => es.map((e) => e.innerText.replace(/\s+/g, ' ').trim())
+    .find((t) => t.startsWith('식사 장소')) ?? '');
+
+/* 1) 열려 있으면 — 투표 중 · 갈 길을 알려 준다 */
+await servePlace({ open: true, votes: [2, 1, 0] });
+let row = await placeRow();
+console.log(`  · 열림: ${row}`);
+ok('투표 중이라고 말한다', row.includes('투표 중입니다'), row);
+ok('몇 명 참여했는지 말한다', row.includes('3명이 참여'), row);
+const goHref = await page.$eval('.brief-go', (e) => e.getAttribute('href')).catch(() => null);
+ok('고르러 갈 길을 준다', goHref === '#/survey/meal', String(goHref));
+const goBox = await page.$eval('.brief-go',
+  (e) => Math.round(e.getBoundingClientRect().height)).catch(() => 0);
+ok('그 길이 24px 이상이다', goBox >= 24, `${goBox}px`);
+ok('그때는 「아직 안 정했습니다」 라고 안 한다', !row.includes('아직 안 정했습니다'), row);
+await unservePlace();
+
+/* 2) 마감 · 1위가 하나 — 이름이 저절로 채워진다 */
+await servePlace({ open: false, votes: [1, 5, 2] });
+row = await placeRow();
+console.log(`  · 마감·1위: ${row}`);
+ok('1위 가게 이름이 저절로 채워진다', row.includes('가게 나'), row);
+ok('그때는 투표 중이라고 안 한다', !row.includes('투표 중'), row);
+/**
+ * **채워진 줄이 「채워질 것」 이라고 말하면 안 된다.**
+ * `pending` 용 부연(「정해지면 이 줄이 채워집니다」)을 그대로 쓰다가 실제로 그렇게 나왔다.
+ */
+ok('정해진 뒤에 「정해지면」 이라고 안 한다', !row.includes('정해지면'), row);
+const wonGauge = await page.$$eval('.brief-gauge', (es) => es.map((e) => e.innerText.trim()));
+ok('근거 막대가 붙는다', wonGauge.some((g) => /\d+명 중 5명/.test(g)), wonGauge.join(' / '));
+await unservePlace();
+
+/* 3) 마감 · 동점 — **하나를 지어내지 않는다** */
+await servePlace({ open: false, votes: [4, 4, 1] });
+row = await placeRow();
+console.log(`  · 마감·동점: ${row}`);
+ok('동점이면 하나를 고르지 않는다', row.includes('동점'), row);
+ok('동점일 때 가게 이름을 안 적는다',
+  !row.includes('가게 가') && !row.includes('가게 나'), row);
+
+/* 4) 마감 · 아무도 안 골랐다 */
+await servePlace({ open: false, votes: [0, 0, 0] });
+row = await placeRow();
+console.log(`  · 마감·0표: ${row}`);
+ok('표가 없으면 그렇다고 말한다', row.includes('참여가 없었습니다'), row);
+await unservePlace();
+
+/* 5) 설문이 아예 없으면 — 지금 라이브 상태 */
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: '[]' }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.brief', { timeout: 20000 });
+await page.waitForTimeout(900);
+row = await placeRow();
+console.log(`  · 설문 없음: ${row}`);
+ok('설문이 없으면 아직 안 정했다고 말한다', row.includes('아직 안 정했습니다'), row);
+ok('없는 설문으로 가는 길을 만들지 않는다', (await page.$$('.brief-go')).length === 0);
+await page.unroute('**/rest/v1/surveys*');
+
 /* ── 옮겨 온 투표의 투표자 이름 ────────────────────────────
  *
  * 이 절만 따로 가짜 목록을 세운다. 위쪽 검사들이 「설문 네 건」·「결과만 셋」 처럼
