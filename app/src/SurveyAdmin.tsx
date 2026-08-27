@@ -961,6 +961,24 @@ export function SurveyAdmin() {
         )}
 
         <div className="admin-row">
+          {/**
+            * **어느 화면에 올릴지 고르는 칸.**
+            *
+            * 서버(`survey_admin_save`)는 진작부터 `category` 를 받고 있었는데
+            * 화면이 안 보내서, 여기서 만든 설문은 전부 전시 관람으로 떨어졌다.
+            * 그래서 식사·티타임 설문을 올리는 길이 SQL 밖에 없었다.
+            *
+            * 갈래를 **늘리는 것이 아니라** 있는 둘 중에서 고르게만 한다 —
+            * `surveys.category` 의 CHECK 는 그대로다.
+            */}
+          <label className="survey-field" style={{ flexGrow: 1 }}>
+            <span>어느 화면에</span>
+            <select className="admin-input" value={draft.category}
+              onChange={(e) => set({ category: e.target.value as Draft['category'] })}>
+              <option value="exhibition">전시 관람 설문</option>
+              <option value="meal">식사 및 Tea Time 설문</option>
+            </select>
+          </label>
           <label className="survey-field" style={{ flexGrow: 1 }}>
             <span>고르는 방식</span>
             <select className="admin-input" value={draft.multiChoice ? 'multi' : 'one'}
