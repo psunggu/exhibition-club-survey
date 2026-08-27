@@ -350,6 +350,17 @@ export type Draft = {
   createdBy: string
   resultsVisible: 'always' | 'after_close' | 'admin'
   showNames: 'none' | 'participants'
+  /**
+   * 어느 화면에 올릴 설문인가 — 전시 관람(`#/survey`) · 식사·티타임(`#/survey/meal`).
+   *
+   * **서버는 진작부터 이 값을 받고 있었다.** 화면이 안 보냈을 뿐이라
+   * 관리 화면으로 만든 설문은 전부 `exhibition` 으로 떨어졌고,
+   * 식사 설문을 올리는 길이 SQL 밖에 없었다.
+   *
+   * 갈래를 **늘리는 것이 아니라** 있는 둘 중에서 고르게만 한다 —
+   * `surveys.category` 의 CHECK 는 그대로 둔다.
+   */
+  category: SurveyCategory
   options: DraftOption[]
 }
 
@@ -359,7 +370,10 @@ export const emptyOption = (): DraftOption =>
 export const emptyDraft = (): Draft => ({
   id: null, title: '', intro: '', multiChoice: true, days: 3, createdBy: '',
   wasClosed: false,
-  resultsVisible: 'after_close', showNames: 'none', options: [emptyOption()],
+  resultsVisible: 'after_close', showNames: 'none',
+  // 기본값은 서버와 같게 둔다 (survey_admin_save 도 비면 exhibition 이다)
+  category: 'exhibition',
+  options: [emptyOption()],
 })
 
 export const adminNames = async (pw: string, signal?: AbortSignal): Promise<string[]> => {
@@ -511,6 +525,7 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       created_by: d.createdBy,
       results_visible: d.resultsVisible,
       show_names: d.showNames,
+      category: d.category,
       options: d.options.map((o) => ({
         title: o.title, period: o.period, venue: o.venue,
         hours: o.hours, price: o.price, note: o.note,
@@ -549,6 +564,8 @@ export const toDraft = (s: Survey): Draft => ({
   createdBy: s.createdBy,
   resultsVisible: s.resultsVisible,
   showNames: s.showNames,
+  // 고칠 때 지금 갈래를 그대로 들고 온다. 안 그러면 저장할 때마다 전시로 끌려간다.
+  category: s.category,
   options: s.options.map((o) => ({
     title: o.title, period: o.period ?? '', venue: o.venue ?? '',
     hours: o.hours ?? '', price: o.price ?? '', note: o.note ?? '',

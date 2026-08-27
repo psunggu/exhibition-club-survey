@@ -103,6 +103,13 @@ await ctx.route('**/rest/v1/**', async (route) => {
       multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
       closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '박지현',
       results_visible: 'always', show_names: 'none', hide_after_days: null,
+      /**
+       * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
+       * 기본값(exhibition)이 아닌 값이어야 한다 — 기본값이면 `toDraft` 가
+       * 갈래를 통째로 잃어버려도 검사가 그대로 통과한다.
+       * 운영자 화면은 갈래로 목록을 가르지 않으므로 다른 검사에는 영향이 없다.
+       */
+      category: 'meal',
       survey_options: [
         { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
           venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
@@ -464,6 +471,14 @@ ok('올린 사람이 채워졌다', !!saved?.created_by, saved?.created_by);
 ok('후보 1개를 보냈다', (saved?.options ?? []).length === 1, `${(saved?.options ?? []).length}개`);
 ok('링크가 함께 갔다', (saved?.options?.[0]?.links ?? []).length === 1);
 ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.days >= 1, String(saved?.days));
+/**
+ * **갈래를 실제로 보내는가.**
+ * 서버는 진작부터 category 를 받고 있었는데 화면이 안 보내서,
+ * 관리 화면으로 만든 설문이 전부 전시 관람으로 떨어졌다 —
+ * 식사·티타임 설문을 올릴 길이 SQL 밖에 없었던 이유다.
+ * 값을 안 보내면 서버가 조용히 'exhibition' 으로 채우므로, **보냈는지**를 직접 본다.
+ */
+ok('갈래를 함께 보낸다', saved?.category === 'exhibition', String(saved?.category));
 ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 2);
 
 /* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
@@ -582,6 +597,23 @@ ok('날짜를 바꾸면 글도 따라 바뀐다',
   (await page.$$eval('.admin-option .admin-hint', (es) => es.map((e) => e.textContent)))
     .some((t) => t.includes('2026. 9. 5. ~ 2027. 2. 9.')));
 
+/**
+ * **고칠 때 갈래가 살아남는가.**
+ *
+ * `toDraft` 가 갈래를 안 들고 오면, 운영자가 식사 설문을 열어 아무것도 안 바꾸고
+ * 저장만 눌러도 그 설문이 **전시 관람 탭으로 조용히 옮겨 간다.**
+ * 새 설문 검사만으로는 이 길이 안 지나가서 결함을 심어 보다 드러났다.
+ *
+ * 여기서는 **저장하지 않는다** — 저장하면 폼이 닫혀 뒤따르는 지우기 검사가 깨진다.
+ * 폼에 실린 값만 봐도 `toDraft` 가 갈래를 들고 왔는지 알 수 있다.
+ */
+const editCat = await page.evaluate(() => {
+  const f = [...document.querySelectorAll('.admin-form .survey-field')]
+    .find((e) => e.querySelector('span')?.textContent?.trim() === '어느 화면에');
+  return f?.querySelector('select')?.value ?? null;
+});
+ok('고칠 때 갈래가 살아남는다', editCat === 'meal', String(editCat));
+
 ok('제목이 「설문 고치기」다',
   (await page.$eval('.admin-title', (e) => e.textContent.trim())) === '설문 고치기');
 
@@ -599,6 +631,51 @@ ok('지워졌다 (204 빈 본문을 받아낸다)', after === before - 1, `${bef
 ok('지웠다고 알려 준다',
   (await page.$eval('.survey-message.done', (e) => e.textContent.trim()).catch(() => ''))
     .includes('지웠'));
+
+/* ── 식사 갈래로 올릴 수 있는가 ─────────────────────────────
+ *
+ * **일부러 지우기 뒤에 둔다.** 가짜 서버가 새 설문에 늘 같은 id(srv-new)를 주는데,
+ * 여기서 하나 더 저장하면 목록에 같은 id 가 둘이 되어 **지우기 검사가 흔들린다.**
+ * 이 검사가 보려는 것은 갈래가 서버까지 가느냐지 목록 개수가 아니다.
+ */
+saved = null;
+await page.click('.survey-actions .survey-submit');   // 새 설문 올리기
+await page.waitForSelector('.admin-form', { timeout: 8000 });
+await page.waitForTimeout(300);
+
+const catLabels = await page.$$eval('.admin-form .survey-field span',
+  (es) => es.map((e) => e.textContent.trim()));
+ok('갈래 고르는 칸이 있다', catLabels.includes('어느 화면에'), catLabels.slice(0, 7).join(' · '));
+
+/** 「어느 화면에」 칸을 **이름으로** 찾는다 — 순서로 찾으면 칸이 하나 늘 때마다 깨진다 */
+const pickCategory = (v) => page.evaluate((want) => {
+  const f = [...document.querySelectorAll('.admin-form .survey-field')]
+    .find((e) => e.querySelector('span')?.textContent?.trim() === '어느 화면에');
+  const sel = f?.querySelector('select');
+  if (!sel) return null;
+  const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+  setter.call(sel, want);                         // React 가 알아채게 값을 넣는다
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+  return sel.value;
+}, v);
+
+ok('식사 갈래를 고를 수 있다', (await pickCategory('meal')) === 'meal');
+
+// 첫 흐름과 같은 방식으로 채운다 — 서버가 제목·후보·올린 사람을 다 본다
+const mealInputs = await page.$$('.admin-form .admin-input');
+await mealInputs[0].fill('9월 식사 장소 투표');
+await page.waitForTimeout(150);
+const mealOpt = await page.$$('.admin-option .admin-input');
+await mealOpt[0].fill('사발');
+await page.waitForTimeout(150);
+await (await saveBtn()).click();
+await page.waitForTimeout(900);
+
+const mealErr = await page.$eval('.admin-form .survey-message.error', (e) => e.textContent.trim())
+  .catch(() => '');
+ok('식사 갈래로 저장된다', saved?.category === 'meal',
+  saved === null ? `저장이 안 됐다 — ${mealErr || '까닭 모름'}` : String(saved?.category));
+
 
 /* ── 6. 누르는 크기와 오류 ─────────────────────────────── */
 
