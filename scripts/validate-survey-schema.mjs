@@ -482,13 +482,29 @@ if (mealTmpl) {
 
 /* ── 4. 암호가 커밋되지 않았는가 ─────────────────────────── */
 
-const PLACEHOLDER = '여기에_암호를_적는다';
+/**
+ * **자리표시자 모양을 본다 — 한 낱말로 못박지 않는다.**
+ *
+ * 예전에는 `여기에_암호를_적는다` 하나만 허용했다. 그런데 운영자가 늘면서
+ * **사람마다 다른 암호**를 쓰게 됐고(survey_admin_ok 은 어느 해시든 맞으면 통과한다),
+ * 그러려면 자리표시자도 사람마다 달라야 한다 —
+ * 같은 자리표시자를 세 줄에 적어 두면 셋이 같은 암호를 쓰라는 말로 읽힌다.
+ *
+ * 지켜야 할 것은 「한 낱말이 그대로 있는가」 가 아니라 **「진짜 암호가 아닌가」** 다.
+ * 그래서 `여기에_…_적는다` 꼴이면 통과시킨다. 사람이 실수로 진짜 암호를 적으면
+ * 이 꼴을 벗어나므로 그대로 걸린다.
+ */
+const PLACEHOLDER = /^여기에_[^']*_적는다$/;
 if (tmpl) {
   const calls = [...tmpl.matchAll(/crypt\(\s*'([^']*)'/g)].map((m) => m[1]);
   for (const v of calls) {
-    if (v !== PLACEHOLDER) fail(`암호 틀에 실제 값으로 보이는 것이 들어 있다: ${JSON.stringify(v)}`);
+    if (!PLACEHOLDER.test(v)) fail(`암호 틀에 실제 값으로 보이는 것이 들어 있다: ${JSON.stringify(v)}`);
   }
   if (!calls.length) fail('암호 틀에서 crypt() 를 찾지 못했다');
+  /** 확인 질의도 같은 자리표시자를 써야 한다 — 진짜 암호가 거기 남기 쉽다 */
+  for (const v of [...tmpl.matchAll(/survey_admin_ok\(\s*'([^']*)'/g)].map((m) => m[1])) {
+    if (!PLACEHOLDER.test(v)) fail(`암호 틀의 확인 질의에 실제 암호가 있다: ${JSON.stringify(v)}`);
+  }
 }
 for (const [name, text] of [['a', tables], ['b', funcs], ['c', seed], ['2a', admin]]) {
   if (/gen_salt\s*\(/i.test(text)) {
