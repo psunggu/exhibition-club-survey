@@ -166,6 +166,33 @@ for (const file of trackedFiles) {
    *   '{"…","…"}'      SQL 배열 리터럴
    *   : ["…","…"]      JSON · JS 목업
    */
+  /**
+   * **명부 대량입력 SQL 도 같은 구멍이었다.**
+   *
+   * `('4133', '홍길동')` 은 위 두 프로필 규칙을 **하나도 안 건드린다** — 재서 확인했다.
+   * 첫 규칙은 슬래시를, 둘째는 숫자 바로 뒤의 공백을 요구하는데
+   * SQL 튜플은 사이에 `', '` 가 끼기 때문이다.
+   * 명부는 그 자체가 교인 명부라 이쪽이 더 위험하다.
+   *
+   * 그래서 **튜플 모양**을 따로 본다 — 따옴표에 싸인 3~4자리 숫자 바로 뒤에
+   * 따옴표에 싸인 한글이 오는 자리. 보드 자료(`'303', 'true'` 같은 것)는
+   * 뒤쪽에 한글이 없어 안 걸린다.
+   *
+   * **구역번호가 전부 0 이면 뺀다.** 자리표시자다 —
+   * 202608220001a 의 확인 질의가 `survey_member_ok('0000', '없는사람')` 으로
+   * 「없는 사람은 false 여야 한다」 를 재고 있는데, 그것까지 잡으면 거짓 경보가 된다.
+   * 투표자 이름 틀의 0 으로 채운 uuid 와 같은 규칙이다.
+   */
+  const memberTuple = /\(\s*'(?!0+')\d{3,4}'\s*,\s*'([^']*[가-힣][^']*)'/gu;
+  for (const hit of text.matchAll(memberTuple)) {
+    const names = (hit[1] ?? "").match(/[가-힣]{2,4}/gu) ?? [];
+    if (!names.length) continue;
+    if (names.every((x) => fictionalNames.has(x))) continue;
+    failures.push(`${file}: 명부 대량입력에 가상 명부 밖의 이름이 있다 `
+      + `— ${JSON.stringify(hit[0].slice(0, 40))}`);
+    break;
+  }
+
   const votersLiteral =
     /imported_voters[\s\S]{0,200}?(array\s*\[[^\]]*\]|'\{[^}]*\}'|:\s*\[[^\]]*\])/gu;
   for (const hit of text.matchAll(votersLiteral)) {
