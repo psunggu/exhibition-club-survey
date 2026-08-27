@@ -46,6 +46,7 @@ const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
 const tmpl = read('202608200001d_admin_password.template.sql');
 const votersTmpl = read('202608270001b_poll_voters.template.sql');
+const membersTmpl = read('202608270001c_members_bulk.template.sql');
 /** 운영자 함수는 여러 파일에 흩어져 있다. 규칙은 전부에 같이 걸린다. */
 const admin = [
   read('202608200002a_survey_admin_functions.sql'),
@@ -405,6 +406,35 @@ if (votersTmpl) {
     if (!/^00000000-0000-0000-0000-/i.test(u)) {
       fail(`투표자 이름 틀에 진짜로 보이는 id 가 있다: ${u}`);
     }
+  }
+}
+
+/**
+ * **명부 대량입력 틀은 여러 번 돌려도 안전해야 한다.**
+ *
+ * 운영자가 명부를 나눠 여러 번 넣게 된다 — 톡방 프로필을 보고 옮기는 일이라
+ * 한 번에 끝나지 않는다. `do update` 로 두면 다시 넣을 때마다 registered_at 이
+ * 오늘로 밀려, **언제 들어온 회원인지가 사라진다.**
+ * (운영자 화면의 survey_admin_member_save 도 같은 이유로 등록일자를 안 건드린다.)
+ *
+ * 이름 자체는 validate-repository-hygiene.mjs 가 가상 명부와 대조해 본다.
+ */
+if (membersTmpl) {
+  /**
+   * **주석을 걷어내고 본다.** 머리말이 「on conflict … do nothing 이라 안전하다」 고
+   * 설명하고 있어서, 정작 본문에서 그 줄을 지워도 검사가 **주석을 읽고 통과**했다.
+   * 결함을 심어 보다 드러났다 — 검사가 코드가 아니라 설명을 재고 있었다.
+   */
+  const body = membersTmpl.replace(/--[^\n]*/g, '');
+  if (!/on\s+conflict\s*\(\s*zone\s*,\s*name\s*\)\s*do\s+nothing/i.test(body)) {
+    fail('명부 대량입력 틀이 on conflict (zone, name) do nothing 이 아니다 '
+      + '— 다시 넣으면 등록일자가 오늘로 밀린다');
+  }
+  if (/do\s+update/i.test(body)) {
+    fail('명부 대량입력 틀에 do update 가 있다 — 등록일자를 덮어쓴다');
+  }
+  if (!/insert\s+into\s+public\.survey_members/i.test(body)) {
+    fail('명부 대량입력 틀에서 survey_members insert 를 찾지 못했다');
   }
 }
 
