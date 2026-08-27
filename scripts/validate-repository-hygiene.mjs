@@ -121,6 +121,7 @@ for (const file of trackedFiles) {
     ["대화 내보내기 날짜 구분선", /-{5,}\s*\d{4}년\s*\d{1,2}월\s*\d{1,2}일\s*[월화수목금토일]요일/gu],
     ["private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/u],
     ["Supabase secret key", /\bsb_secret_[A-Za-z0-9_-]{12,}\b/u],
+    ["Supabase access token", /\bsbp_(?:v\d+_)?[A-Za-z0-9_-]{20,}\b/u],
     ["GitHub token", /\b(?:github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,})\b/u],
     ["OpenAI API key", /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/u],
     ["Telegram bot token", /\b\d{8,12}:[A-Za-z0-9_-]{30,}\b/u],
