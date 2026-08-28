@@ -501,6 +501,15 @@ if (tmpl) {
     if (!PLACEHOLDER.test(v)) fail(`암호 틀에 실제 값으로 보이는 것이 들어 있다: ${JSON.stringify(v)}`);
   }
   if (!calls.length) fail('암호 틀에서 crypt() 를 찾지 못했다');
+  /**
+   * **이름도 자리표시자여야 한다.**
+   * 암호만 보고 이름은 안 봤더니 운영자 세 사람의 실명이 공개 저장소에 그대로 올라갔다.
+   * AGENTS.md 는 운영진 명단을 소스에 두지 말라고 적어 두었고,
+   * record-frozen-data.mjs 는 같은 값을 created_by 에서 이미 가리고 있었다.
+   */
+  for (const v of [...tmpl.matchAll(/\(\s*'([^']*)'\s*,\s*crypt\(/g)].map((m) => m[1])) {
+    if (!PLACEHOLDER.test(v)) fail(`암호 틀에 운영자 실명이 있다: ${JSON.stringify(v)}`);
+  }
   /** 확인 질의도 같은 자리표시자를 써야 한다 — 진짜 암호가 거기 남기 쉽다 */
   for (const v of [...tmpl.matchAll(/survey_admin_ok\(\s*'([^']*)'/g)].map((m) => m[1])) {
     if (!PLACEHOLDER.test(v)) fail(`암호 틀의 확인 질의에 실제 암호가 있다: ${JSON.stringify(v)}`);

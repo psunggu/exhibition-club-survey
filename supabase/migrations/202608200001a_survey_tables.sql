@@ -83,7 +83,7 @@ create table if not exists public.survey_options (
 create table if not exists public.survey_responses (
   id             uuid primary key default gen_random_uuid(),
   survey_id      uuid not null references public.surveys(id) on delete cascade,
-  -- '4133|박성규' 꼴로 정규화한 값. 한 설문에 한 사람 하나.
+  -- '4133|김하늘' 꼴로 정규화한 값. 한 설문에 한 사람 하나.
   respondent_key text not null,
   zone           text not null,
   display_name   text not null,

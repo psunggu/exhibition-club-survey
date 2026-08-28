@@ -61,7 +61,7 @@ let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
 let withVoterNames = false;
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
-  created_by: '박지현', multi_choice: true, results_visible: 'always', show_names: 'none',
+  created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
   option_count: 4, response_count: 3,
 }];
 
@@ -101,7 +101,7 @@ await ctx.route('**/rest/v1/**', async (route) => {
   if (url.includes('/rest/v1/surveys')) {
     return json([{ id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
       multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
-      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '박지현',
+      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '김하늘',
       results_visible: 'always', show_names: 'none', hide_after_days: null,
       /**
        * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
@@ -136,7 +136,7 @@ await ctx.route('**/rest/v1/**', async (route) => {
     if (body.p_password !== PW) return deny('운영자 암호가 맞지 않습니다.');
   }
 
-  if (name === 'survey_admin_names') return json([{ name: '박지현' }, { name: '박성규' }]);
+  if (name === 'survey_admin_names') return json([{ name: '김하늘' }, { name: '박서준' }]);
   if (name === 'survey_admin_list') return json(surveys.filter((s) => !deleted.includes(s.id)));
   if (name === 'survey_admin_save') {
     const p = body.p_payload ?? {};

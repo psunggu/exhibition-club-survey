@@ -21,12 +21,19 @@
 --
 -- 한 사람만 넣거나 바꿀 때는 그 줄만 남기고 나머지는 지우고 실행하면 됩니다.
 
+-- **이름도 자리표시자다.** 처음에는 운영자 세 사람의 실명을 그대로 적어 두었다.
+-- 이 저장소는 공개고, AGENTS.md 는 운영진 명단을 소스에 두지 말라고 적어 두었다.
+-- 암호만 가리고 이름은 지나쳤던 것이다 — record-frozen-data.mjs 는 같은 값을
+-- created_by 에서 이미 가리고 있었으니, 판단이 없었던 게 아니라 여기에 적용되지
+-- 않았을 뿐이다. 실행할 때 실제 이름으로 바꿔 넣고, 바꾼 파일은 저장하지 않는다.
+-- (scripts/validate-survey-schema.mjs 가 이름이 자리표시자 모양인지 검사한다.)
+
 insert into public.survey_admins (name, password_hash)
 values
-  ('박지현', crypt('여기에_박지현_암호를_적는다', gen_salt('bf'))),
-  ('박성규', crypt('여기에_박성규_암호를_적는다', gen_salt('bf'))),
+  ('여기에_첫째_운영자_이름을_적는다', crypt('여기에_첫째_운영자_암호를_적는다', gen_salt('bf'))),
+  ('여기에_둘째_운영자_이름을_적는다', crypt('여기에_둘째_운영자_암호를_적는다', gen_salt('bf'))),
   -- 2026-08-28 에 더한 세 번째 운영자
-  ('kimhj',  crypt('여기에_kimhj_암호를_적는다', gen_salt('bf')))
+  ('여기에_셋째_운영자_이름을_적는다', crypt('여기에_셋째_운영자_암호를_적는다', gen_salt('bf')))
 on conflict (name) do update set password_hash = excluded.password_hash;
 
 -- 확인 (기대: true)
