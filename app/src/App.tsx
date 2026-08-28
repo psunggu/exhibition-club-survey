@@ -105,6 +105,19 @@ function SurveyJump() {
     return { badge, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
   }
 
+  /**
+   * 줄로 세울 갈래 — **지금 무언가 있는 것만.**
+   *
+   * 갈래가 다섯이 되자 「없음」 줄이 넷까지 생겼고, 그만큼 달력이 아래로 밀렸다
+   * (카드가 243px → 392px). 「없음」 은 읽는 사람에게 아무것도 알려 주지 않는다.
+   * 없는 갈래는 감추고, 대신 아래 링크로 다섯 갈래 전부에 닿게 한다.
+   *
+   * 아직 못 불러왔거나 못 읽었을 때도 비어 있다. 그편이 낫다 —
+   * 이름 다섯을 먼저 그렸다가 하나로 줄어들면 카드가 눈앞에서 접힌다.
+   * 비었다가 늘어나는 쪽이 덜 튄다.
+   */
+  const active = rows ? CATEGORY_ORDER.filter((c) => rows.some((r) => r.category === c)) : []
+
   return (
     <section className="survey-jump" aria-labelledby="surveyJumpTitle">
       <p className="board-jump-kicker">모임 정하기</p>
@@ -115,7 +128,7 @@ function SurveyJump() {
       <p>관람할 곳과 날짜, 모임 뒤 식사까지 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
 
       <ul className="survey-jump-list">
-        {CATEGORY_ORDER.map((c) => {
+        {active.map((c) => {
           const st = stateOf(c)
           return (
             <li key={c}>
@@ -135,6 +148,17 @@ function SurveyJump() {
           )
         })}
       </ul>
+
+      {/* 불러왔는데 하나도 없을 때만 적는다. 못 불러온 것과 「없다」 는 다르므로
+          아직 읽는 중이거나 실패했을 때는 아무 말도 하지 않는다. */}
+      {rows && !failed && active.length === 0 && (
+        <p className="survey-jump-empty">지금 참여할 수 있는 설문이 없습니다.</p>
+      )}
+
+      {/* 감춘 갈래로 가는 길. **늘 보인다** — 줄이 하나도 없을 때도 여기로 들어간다. */}
+      <a className="survey-jump-more" href="#/survey">
+        설문 갈래 모두 보기 <span aria-hidden="true">→</span>
+      </a>
     </section>
   )
 }

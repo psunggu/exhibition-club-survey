@@ -727,23 +727,33 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1800);
 const onlyPast = await jumpRows();
-ok('모임까지 끝났으면 「없음」 이라고 적는다',
-  onlyPast.some((t) => t.includes('식사') && t.includes('없음')), onlyPast.join(' / '));
+/**
+ * **2026-08-29 부터 「없음」 줄을 안 그린다.**
+ *
+ * 갈래가 다섯이 되자 「없음」 이 넷까지 붙어 카드가 243px → 392px 로 커졌고,
+ * 달력이 그만큼 아래로 밀렸다. 「없음」 은 읽는 사람에게 아무것도 알려 주지 않는다.
+ * 없는 갈래는 감추고 「설문 갈래 모두 보기」 한 줄이 다섯 갈래 전부를 맡는다.
+ *
+ * 그래도 재는 것은 같다 — **모임까지 끝난 설문은 여기 안 뜬다.**
+ * 예전엔 「없음 이라고 적는가」 로 물었고 지금은 「줄이 사라졌는가」 로 묻는다.
+ */
+ok('모임까지 끝났으면 그 갈래 줄이 사라진다',
+  !onlyPast.some((t) => t.includes('식사')), onlyPast.join(' / ') || '(줄 없음)');
 ok('그때 「마감」 이라고는 안 적는다',
   !onlyPast.some((t) => t.includes('식사') && t.includes('마감')), onlyPast.join(' / '));
 
-/** 「없음」 배지는 「진행 중」 과 **같은 모양**이어야 한다 (운영자가 그렇게 정했다). */
-const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => {
-  const c = getComputedStyle(e);
-  return { t: e.textContent.trim(),
-    css: `${c.backgroundColor}|${c.color}|${c.borderRadius}|${c.fontSize}|${c.fontWeight}` };
-}));
-const run = jumpBadges.find((x) => x.t === '진행 중');
-const none = jumpBadges.find((x) => x.t === '없음');
-ok('「없음」 과 「진행 중」 이 같은 배지 모양이다',
-  !!run && !!none && run.css === none.css,
-  run && none ? `${none.css}${run.css === none.css ? '' : ` ≠ ${run.css}`}`
-    : `배지 ${jumpBadges.map((x) => x.t).join(', ') || '없다'}`);
+/** 감춘 갈래로 가는 길은 **늘 있어야 한다** — 줄이 하나도 없을 때도 그렇다. */
+const moreLink = await page.$eval('.survey-jump-more',
+  (e) => ({ text: e.textContent.trim().replace(/\s+/g, ' '), href: e.getAttribute('href') }))
+  .catch(() => null);
+ok('감춘 갈래로 가는 링크가 있다',
+  !!moreLink && moreLink.href === '#/survey' && moreLink.text.includes('모두 보기'),
+  moreLink ? `${moreLink.text} → ${moreLink.href}` : '링크가 없다');
+
+/** 「없음」 배지를 더는 안 그린다. 하나라도 남아 있으면 옛 동작이 살아 있는 것이다. */
+const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => e.textContent.trim()));
+ok('「없음」 배지는 이제 안 나온다',
+  !jumpBadges.includes('없음'), `배지 ${jumpBadges.join(', ') || '없다'}`);
 
 await page.unroute('**/rest/v1/surveys*');
 /**
