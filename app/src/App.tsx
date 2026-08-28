@@ -6,7 +6,7 @@ import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 import {
-  CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
+  CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen,
   type Survey as SurveyT, type SurveyCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
@@ -112,10 +112,10 @@ function SurveyJump() {
       {/* 안내문은 **상태에 따라 바뀌지 않는다.** 바꿨더니 줄 수가 달라져
           카드 높이가 흔들렸고, 화면 대조 검사가 그걸 디자인 변화로 읽었다.
           지금 무엇이 열려 있는지는 아래 줄들이 말한다. */}
-      <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
+      <p>관람할 곳과 날짜, 모임 뒤 식사까지 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
 
       <ul className="survey-jump-list">
-        {(['exhibition', 'meal'] as const).map((c) => {
+        {CATEGORY_ORDER.map((c) => {
           const st = stateOf(c)
           return (
             <li key={c}>
@@ -149,8 +149,9 @@ function SurveyJump() {
 export function App() {
   const route = useRoute()
   const onCalendar = route.name === 'calendar'
-  const onSurvey = route.name === 'survey' || route.name === 'surveyMeal'
-    || route.name === 'surveyAdmin'
+  const onSurvey = route.name === 'survey' || route.name === 'surveyDatetime'
+    || route.name === 'surveyMeal' || route.name === 'surveyClub'
+    || route.name === 'surveyEtc' || route.name === 'surveyAdmin'
 
   /**
    * 옛 CSS 두 장이 각자 `body` · `h1` · `:root` 를 정의한다.
@@ -167,20 +168,27 @@ export function App() {
 
   if (onSurvey) {
     const admin = route.name === 'surveyAdmin'
-    const category: SurveyCategory = route.name === 'surveyMeal' ? 'meal' : 'exhibition'
+    /** 라우트 이름 → 갈래. 어느 쪽도 아니면 첫 갈래(관람 장소)로 본다. */
+    const BY_ROUTE: Partial<Record<typeof route.name, SurveyCategory>> = {
+      surveyDatetime: 'datetime', surveyMeal: 'meal',
+      surveyClub: 'club', surveyEtc: 'etc',
+    }
+    const category: SurveyCategory = BY_ROUTE[route.name] ?? 'exhibition'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
         <h1>{admin ? '설문 관리' : CATEGORY[category].label}</h1>
 
-        {/* 갈래를 오갈 수 있게 둘 다 보인다. 지금 보는 쪽이 진하다. */}
+        {/* 갈래 다섯을 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
+            탭에는 **짧은 이름**을 쓴다 — 긴 이름 다섯은 375px 에 안 들어간다.
+            전체 이름은 바로 위 제목이 맡는다. */}
         {!admin && (
           <nav className="survey-tabs" aria-label="설문 갈래">
-            {(['exhibition', 'meal'] as const).map((c) => (
+            {CATEGORY_ORDER.map((c) => (
               <a key={c} href={CATEGORY[c].route}
                 className={`survey-tab ${c}${c === category ? ' on' : ''}`}
                 aria-current={c === category ? 'page' : undefined}>
-                {CATEGORY[c].label}
+                {CATEGORY[c].short}
               </a>
             ))}
           </nav>

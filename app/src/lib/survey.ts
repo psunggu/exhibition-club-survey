@@ -52,13 +52,50 @@ export type SurveyOption = {
   importedVoters: string[]
 }
 
-export type SurveyCategory = 'exhibition' | 'meal'
+export type SurveyCategory = 'exhibition' | 'datetime' | 'meal' | 'club' | 'etc'
 
-/** 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다. */
+/**
+ * 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다.
+ *
+ * **저장되는 값(`exhibition`)은 바꾸지 않는다.** 처음엔 「전시 관람 설문」 하나였고
+ * 실제로는 장소를 고르는 설문이었다. 이름만 「관람 장소」 로 바꾸고 값은 그대로 둔다 —
+ * 값을 바꾸면 이미 쌓인 설문 행을 전부 고쳐야 하고, 하나라도 놓치면
+ * 그 설문이 어느 탭에도 안 뜬다.
+ *
+ * 차례가 곧 탭 차례다. 모임을 정하는 순서(장소 → 날짜 → 식사)를 따르고,
+ * 그 뒤에 운영과 기타가 온다.
+ */
 export const CATEGORY = {
-  exhibition: { label: '전시 관람 설문', short: '전시 관람', route: '#/survey' },
-  meal:       { label: '식사 및 Tea Time 설문', short: '식사·티타임', route: '#/survey/meal' },
+  exhibition: { label: '전시 관람 장소 설문',      short: '관람 장소',  route: '#/survey' },
+  datetime:   { label: '전시 관람 일자·시간 설문', short: '일자·시간',  route: '#/survey/datetime' },
+  meal:       { label: '관람 후 식사 & Tea 설문',  short: '식사·Tea',   route: '#/survey/meal' },
+  club:       { label: '동아리 운영·요청 사항 설문', short: '운영·요청', route: '#/survey/club' },
+  etc:        { label: '기타 설문',                short: '기타',       route: '#/survey/etc' },
 } as const
+
+/** 탭에 그릴 차례. `CATEGORY` 의 키 차례와 같게 둔다. */
+export const CATEGORY_ORDER = ['exhibition', 'datetime', 'meal', 'club', 'etc'] as const
+
+/**
+ * DB 가 준 값을 갈래로 읽는다. **비어 있는 것과 모르는 것을 다르게 다룬다.**
+ *
+ * · 비어 있음(null·빈 글자) → `exhibition`.
+ *   열이 `not null default 'exhibition'` 이라 실제 행은 늘 차 있지만,
+ *   열이 생기기 전의 응답이나 갈래를 안 보내는 옛 경로가 여기로 온다.
+ *   그때는 DB 기본값과 같은 자리에 두는 것이 맞다.
+ *
+ * · 모르는 값 → `etc`.
+ *   나중에 갈래를 더 만들었을 때, 옛 번들을 쓰는 사람의 화면에서 그 설문이
+ *   조용히 전시 탭에 섞이지 않게 한다. 「기타」 에 뜨면 적어도 보이기는 한다.
+ *
+ * 처음엔 둘을 묶어 전부 `etc` 로 보냈더니 갈래 없는 붙박이 설문이 전시 탭에서
+ * 통째로 사라졌다 — validate-survey-ui 가 그걸 잡았다.
+ */
+export const toCategory = (v: unknown): SurveyCategory => {
+  const s = typeof v === 'string' ? v.trim() : ''
+  if (s === '') return 'exhibition'
+  return (CATEGORY_ORDER as readonly string[]).includes(s) ? (s as SurveyCategory) : 'etc'
+}
 
 export type Survey = {
   id: string
@@ -182,7 +219,7 @@ function toSurvey(r: SurveyRow): Survey {
     resultsVisible: rv === 'always' || rv === 'admin' ? rv : 'after_close',
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
-    category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
+    category: toCategory(str(r.category)),
     /**
      * 설문 전체에 걸리는 참고 문서. 후보 하나에 붙일 수 없는 것이 여기 온다.
      * 열이 없던 때의 응답도 읽어야 하므로 없으면 빈 배열이다.
