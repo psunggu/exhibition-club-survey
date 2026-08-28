@@ -26,6 +26,10 @@ function copyLiveAssets(): Plugin {
     // 인라인 <style> 을 걷어내고 표 수를 최종 집계로 고쳐 올린 판이다.
     'meal-review.html',
     'meal-review.css',
+    // 2026-08 운영 설문 결과를 회원에게 돌려주는 페이지.
+    // 모아서 센 숫자만 싣는다 — 이름도, 자유서술 원문도 넣지 않는다.
+    'survey-result.html',
+    'survey-result.css',
   ]
   const from = (f: string) => path.resolve(HERE, 'app/public', f)
   return {
