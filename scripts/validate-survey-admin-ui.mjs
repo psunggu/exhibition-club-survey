@@ -479,6 +479,7 @@ ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.day
  * 값을 안 보내면 서버가 조용히 'exhibition' 으로 채우므로, **보냈는지**를 직접 본다.
  */
 ok('갈래를 함께 보낸다', saved?.category === 'exhibition', String(saved?.category));
+
 ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 2);
 
 /* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
@@ -658,6 +659,28 @@ const pickCategory = (v) => page.evaluate((want) => {
   sel.dispatchEvent(new Event('change', { bubbles: true }));
   return sel.value;
 }, v);
+
+/**
+ * **고를 수 있는 갈래가 소스의 CATEGORY 와 같은가.**
+ *
+ * 다른 검사들은 「보내는가」·「살아남는가」 만 재고 **「무엇을 고를 수 있는가」** 는 안 쟀다.
+ * 그래서 2026-08-29 에 갈래를 다섯으로 늘렸을 때, 화면·주소·DB 는 늘었는데
+ * 이 `<select>` 의 `<option>` 둘만 옛 목록으로 남은 것을 **못 잡았다** —
+ * 운영자는 새 갈래를 아예 고를 수 없었고 검사는 전부 통과했다.
+ *
+ * 소스를 글자로 읽어 맞춘다 (.ts 는 그냥 import 가 안 된다).
+ * 값과 차례가 하나라도 어긋나면 그 갈래는 운영자 화면에서 만들 길이 없어진다.
+ */
+const SRC = fs.readFileSync(path.join(ROOT, 'app/src/lib/survey.ts'), 'utf8');
+const wantCats = (SRC.match(/CATEGORY_ORDER = \[([^\]]+)\]/)?.[1] ?? '')
+  .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+const gotCats = await page.$$eval('.admin-form select.admin-input', (sels) => {
+  const s = sels.find((x) => [...x.options].some((o) => o.value === 'exhibition'));
+  return s ? [...s.options].map((o) => o.value) : [];
+});
+ok('고를 수 있는 갈래가 소스와 같다',
+  wantCats.length >= 2 && JSON.stringify(gotCats) === JSON.stringify(wantCats),
+  `화면 [${gotCats.join(', ')}] / 소스 [${wantCats.join(', ')}]`);
 
 ok('식사 갈래를 고를 수 있다', (await pickCategory('meal')) === 'meal');
 
