@@ -755,6 +755,10 @@ await page.unroute('**/rest/v1/surveys*');
  * 설문 화면에서야 「여기서는 고르실 수 없습니다」 를 만난다.
  *
  * 목에는 둘 다 있다 — OPEN_SURVEY(응답 가능)와 MIRROR_SURVEY(톡방·마감 전).
+ *
+ * 찾는 글자는 **탭의 짧은 이름**이다. 2026-08-29 갈래를 다섯으로 늘리며
+ * exhibition 의 짧은 이름이 「전시 관람」 에서 「관람 장소」 로 바뀌었다
+ * (저장되는 값은 그대로 exhibition 이다).
  */
 const jumpBadgeOf = async (short) => page.$$eval('.survey-jump-list li', (es, s) => {
   const li = es.find((e) => e.textContent.includes(s));
@@ -772,8 +776,8 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1500);
 ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
-  await jumpBadgeOf('전시 관람') === '진행 중',
-  `배지 ${await jumpBadgeOf('전시 관람')} (톡방 것이 사흘 뒤 마감이라 마감순이면 그것이 이긴다)`);
+  await jumpBadgeOf('관람 장소') === '진행 중',
+  `배지 ${await jumpBadgeOf('관람 장소')} (톡방 것이 사흘 뒤 마감이라 마감순이면 그것이 이긴다)`);
 await page.unroute('**/rest/v1/surveys*');
 
 // 톡방 투표만 남기면 그때는 「톡방 투표」 라고 밝혀야 한다
@@ -784,8 +788,8 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1500);
 ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
-  await jumpBadgeOf('전시 관람') === '톡방 투표',
-  `배지 ${await jumpBadgeOf('전시 관람')}`);
+  await jumpBadgeOf('관람 장소') === '톡방 투표',
+  `배지 ${await jumpBadgeOf('관람 장소')}`);
 await page.unroute('**/rest/v1/surveys*');
 
 

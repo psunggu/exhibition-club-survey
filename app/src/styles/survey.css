@@ -774,6 +774,23 @@ select.admin-input { cursor: pointer; }
 .survey-tab.exhibition:not(.on) { background: #eef7f3; }
 .survey-tab.meal:not(.on) { background: #faf3ed; }
 
+/* ── 2026-08-29 갈래를 다섯으로 늘리며 더한 세 쌍 ──────────
+   위 두 쌍과 같은 방식으로 잰 값이다. 켠 배경과 끈 배경 **양쪽에서**
+   글자 대비가 4.5:1 을 넘는 것을 확인하고 골랐다 —
+   일자 7.16/7.60 · 운영 7.98/8.56 · 기타 6.90/7.35.
+   색을 바꾸려면 두 배경 모두 다시 재고 나서 바꾼다. */
+.survey-tab.datetime { background: #e4eefb; color: #1d4e89; }
+.survey-tab.club     { background: #efe8fa; color: #553289; }
+.survey-tab.etc      { background: #eceae2; color: #514e46; }
+
+.survey-tab.datetime.on { border-color: #2a63a8; }
+.survey-tab.club.on     { border-color: #6d4bad; }
+.survey-tab.etc.on      { border-color: #6b6960; }
+
+.survey-tab.datetime:not(.on) { background: #eff4fc; }
+.survey-tab.club:not(.on)     { background: #f5f1fc; }
+.survey-tab.etc:not(.on)      { background: #f3f1eb; }
+
 /* ── 회원이 보는 결과 화면 (마감된 설문) ─────────────────── */
 
 .survey-result {
