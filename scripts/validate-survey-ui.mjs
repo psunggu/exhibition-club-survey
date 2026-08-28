@@ -57,7 +57,7 @@ const OPEN_SURVEY = {
   intro: '함께 보고 싶은 전시를 골라 주세요.',
   multi_choice: true,
   opens_at: iso(now - HOUR), closes_at: iso(now + 24 * HOUR),
-  created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  created_by: '김하늘', results_visible: 'always', show_names: 'none', hide_after_days: null,
   survey_options: [
     { id: 'opt-1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
       venue: '국립현대미술관 서울', hours: null, price: '8,000원', note: '단체 예약이 어렵습니다.',
@@ -90,7 +90,7 @@ const MANY_SURVEY = {
   id: 'srv-many', title: '저녁식사 장소 투표', intro: null,
   multi_choice: true,
   opens_at: iso(now - 48 * HOUR), closes_at: iso(now - 2 * HOUR),
-  created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  created_by: '김하늘', results_visible: 'always', show_names: 'none', hide_after_days: null,
   /**
    * 이름을 **한글로 끝나게** 둔다. `후보 1` 처럼 숫자로 끝나면
    * 조사를 고를 수 없어 괄호 형태로 떨어지고, 그러면 조사 검사가
@@ -113,7 +113,7 @@ const MIRROR_SURVEY = {
   id: 'srv-mirror', title: '저녁식사 장소 투표', intro: null,
   multi_choice: true,
   opens_at: iso(now - 24 * HOUR), closes_at: iso(now + 7 * HOUR),
-  created_by: '박지현', results_visible: 'always', show_names: 'none', hide_after_days: null,
+  created_by: '김하늘', results_visible: 'always', show_names: 'none', hide_after_days: null,
   // 갈래는 이 검사와 무관하다. 같은 화면에서 보려고 전시로 둔다.
   category: 'exhibition',
   imported_respondents: 13,
@@ -996,7 +996,7 @@ const servePlace = async ({ open, votes }) => {
     multi_choice: true,
     opens_at: iso(now2 - HOUR),
     closes_at: iso(open ? now2 + 48 * HOUR : now2 - HOUR),
-    created_by: '박지현', results_visible: 'always', show_names: 'none',
+    created_by: '김하늘', results_visible: 'always', show_names: 'none',
     hide_after_days: null, category: 'meal',
     survey_options: placeOptions,
   };
