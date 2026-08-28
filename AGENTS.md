@@ -1,26 +1,31 @@
 # AGENTS.md — 프로젝트 컨텍스트 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-07-27 (Codex 세션에서 갱신)
+> 최종 갱신: 2026-08-29 (Vite/SPA 이식과 설문 결과 페이지 반영)
 > 이 문서는 Codex, Claude Code 등 AI 에이전트가 이어서 개발할 수 있도록 프로젝트 상태를 요약한다.
 
 ## 프로젝트 개요
 
-41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 4개:
+41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 5개:
 
 1. **문화 콘텐츠 공유 보드** — `app/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 전시·박물관 동아리에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
-2. **모임 일정 공지 페이지** — `public/notice.html` + `notice.css` + `notice.js` (2026-07-21 신규 추가). 카카오톡 단체방 대화를 정리해 만든 8·9월 중심 모임 공지. 상단 `주간 정리봇`은 `public/weekly-digest.public.json`을 기준 데이터로 읽고, 요청 실패 시 `notice.js`의 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 달력의 "오늘" 마커는 notice.js가 접속 시점 날짜로 동적 표시(`data-year`, `data-month`, `.dnum` 매칭). 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
+2. **모임 일정 화면** — SPA 라우트 `#/calendar` (`app/src/Calendar.tsx`). 2026-08 이식 전에는 `app/public/notice.html` + `notice.css` + `notice.js` 였고, 그 파일들은 지금 **화면 대조 검사의 기준(legacy baseline)** 으로만 남아 있다 — 지우면 `compare-with-legacy` · `compare-visible-text` 가 죽는다. 상단 `주간 정리봇`은 `weekly-digest.public.json`을 읽고, 실패 시 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
 3. **Google Form 설문 패키지** — `apps-script/Code.gs`(Form 2개+Sheet 1개 자동 생성), `docs/`, `sheets/` 샘플. 카톡 톡게시판 투표는 데이터 추출이 불가능해서, 참석 설문을 구글폼으로 대체하기 위한 것. **아직 미가동** (config.js에 Form URL 없음).
 4. **Telegram 업데이트 스크립트** — `scripts/send-telegram-update.js`. `app.js`의 recommendedEvents를 파싱해 텔레그램으로 주간 추천 목록 발송. `--dry-run` 지원.
+5. **설문 결과 회신 페이지(회원용)** — `app/public/survey-result.html` + `survey-result.css`, 정적 파일이며 `#/calendar` 화면의 카드에서 들어간다. 2026-08 운영 설문의 **집계 숫자만** 싣는다. 이름·자유서술 원문·참여 빈도별 집단 구분·미응답자 수는 넣지 않는다 — 공개 페이지라 회원이 자기 얘기로 읽을 수 있는 것은 전부 뺐다.
 
 ## 배포 파이프라인 (중요)
 
-- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`app/public/` 폴더를 GitHub Pages 루트로 배포**한다.
+- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`npm run build` 산출물인 `dist/`를 GitHub Pages 루트로 배포**한다. (2026-08 이식 완료. 그 전에는 `app/public/`을 그대로 올렸다.)
+- **`app/public/`은 `publicDir`이 아니다.** Vite는 `root: 'app'`으로 돌고, `app/public`의 파일은 `vite.config.ts`의 `copyLiveAssets` **allowlist에 이름을 적은 것만** `dist/`에 실린다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404**가 난다. 선례: `meal-review.html`, `survey-result.html`.
+- 화면은 해시 라우팅 SPA다 (`app/src/lib/router.ts`). 보드 `#/`, 일정 `#/calendar`, 설문 `#/survey`. 카카오톡 인앱 브라우저 때문에 해시를 쓴다 — 히스토리 API 방식으로 바꾸지 않는다.
+- 옛 주소 `notice.html`은 단톡방에 이미 뿌려져 있어서, 빌드가 `#/calendar`로 넘기는 리다이렉트 스텁을 대신 만들어 둔다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 일정·참여 인원·문구처럼 공개 콘텐츠만 바꾸는 소규모 수정은 검증 후 일반 Git으로 `main`에 직접 커밋·푸시한다.
 - 화면 구조나 기능 변경은 별도 브랜치와 PR을 권장한다. Supabase·개인정보·인증·보안 변경은 반드시 별도 브랜치와 PR로 검토한다.
 - GitHub CLI(`gh`)는 필수가 아니다. PR 또는 Actions를 터미널에서 관리할 때만 선택적으로 사용하며, 기본 배포는 Git Credential Manager와 일반 Git을 사용한다.
 - 라이브 URL:
   - 보드: https://psunggu.github.io/exhibition-club-survey/
-  - 공지: https://psunggu.github.io/exhibition-club-survey/notice.html
+  - 일정: https://psunggu.github.io/exhibition-club-survey/#/calendar (옛 `notice.html` 주소는 여기로 넘어간다)
+  - 설문 결과 회신(회원용): https://psunggu.github.io/exhibition-club-survey/survey-result.html
 - `gh-pages` 브랜치는 과거 방식의 잔재. 현재는 Actions 배포만 사용.
 
 ## 개발 규칙
@@ -84,7 +89,7 @@
 ## 다음 작업 후보 (우선순위 순)
 
 1. **구글폼 설문 가동** — `apps-script/Code.gs`를 Google Apps Script에서 실행(`setupClubSurveySystem`) → 생성된 Form 응답 URL을 `public/config.js`에 추가하고 notice/index에 버튼 연결. 질문 구성은 `docs/google_form_questions.md` 참고. 목적: 카톡 투표 대신 참석 데이터를 Sheet로 자동 수집.
-2. **index ↔ notice 상호 링크** — notice 하단에는 보드 링크가 이미 있음. 보드(index.html) 쪽에 공지 페이지 링크 추가 검토.
+2. ~~index ↔ notice 상호 링크~~ — 완료. 한 앱이 되면서 상단 탭으로 오간다. 일정 화면에는 보드 카드와 설문 결과 카드가 형제로 붙어 있다.
 3. **notice 자동 생성** — 카톡 txt 파서(날짜/일정 추출) 스크립트를 만들어 notice.html 본문 갱신을 자동화. txt 포맷: `[이름] [오전/오후 H:MM] 메시지`, 날짜 구분선 `--------------- 2026년 M월 D일 X요일 ---------------`.
 
 ## 톡방 투표를 옮겨 올 때 (2026-08-27)
@@ -119,7 +124,8 @@
 
 - 소유자 PC: Windows 11, 로컬 클론 `C:\D\Project\exhibition-club-survey`
 - Node.js 스크립트는 `node scripts/send-telegram-update.js --dry-run`으로 검증
-- 정적 사이트라 빌드 과정 없음. 로컬 확인은 `public/index.html`·`notice.html`을 브라우저로 직접 열면 됨
+- 빌드가 있다(Vite + React). 로컬 확인은 `npm run dev` — 일정은 `#/calendar`, 보드는 `#/`. 파일을 브라우저로 직접 여는 방식은 `base` 경로와 해시 라우팅 때문에 더 이상 안 된다.
+- 배포 전 검사는 `npm run check` 하나로 돈다(빌드 · CSP · 화면 대조 · 검증기 전부).
 
 ## AI 에이전트 역할 (2026-08-17 변경)
 

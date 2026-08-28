@@ -1584,3 +1584,11 @@ select.admin-input { cursor: pointer; }
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ── 달력 화면의 설문 결과 카드 ────────────────────────────
+   `.board-jump` 을 그대로 입고 자리만 붙인다. 보드 카드와 형제로 보여야
+   「여기서 나가는 길」 묶음으로 읽힌다. 새 값을 만들지 않는 이유는
+   `.survey-jump` 때와 같다 — 셋이 따로 놀면 카드가 아니라 광고로 보인다. */
+.result-jump {
+  margin-top: 10px;
+}
