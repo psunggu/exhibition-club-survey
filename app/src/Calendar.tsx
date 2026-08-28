@@ -147,6 +147,22 @@ export function Calendar() {
         </a>
       </section>
 
+      {/* 8월 운영 설문 결과를 회원에게 돌려주는 페이지.
+          답한 사람이 자기 답이 무엇을 바꿨는지 모르면 다음 설문은 회수가 안 된다.
+          `.board-jump` 를 그대로 입혀 위 카드와 형제로 보이게 둔다.
+          이 문서는 SPA 밖의 정적 파일이라 해시가 아니라 파일 경로다 —
+          vite.config.ts 의 copyLiveAssets 에 올라가 있어야 404 가 안 난다. */}
+      <section className="board-jump result-jump" aria-labelledby="resultJumpTitle">
+        <div>
+          <p className="board-jump-kicker">8월 운영 설문</p>
+          <h2 id="resultJumpTitle">답해주신 내용, 이렇게 반영했습니다</h2>
+          <p>어떤 답이 모였는지, 9월부터 무엇이 달라지는지 정리했습니다.</p>
+        </div>
+        <a className="board-jump-link" href="./survey-result.html">
+          설문 결과 보기 <span aria-hidden="true">→</span>
+        </a>
+      </section>
+
       <details className="digest">
         <summary className="digest-head">
           <span className="digest-title-group">
