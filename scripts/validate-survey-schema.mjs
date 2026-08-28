@@ -58,6 +58,7 @@ const admin = [
   read('202608240001a_anonymous.sql'),
   read('202608270001a_imported_voters.sql'),
   read('202608280002a_my_choices_gate.sql'),
+  read('202608280003a_admin_gate_hardening.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
