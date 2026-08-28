@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   adminDelete, adminList, adminMemberDelete, adminMembers, adminMemberSave,
-  adminNames, adminNote, adminNoteSave,
+  adminNames, adminNote, adminNoteSave, CATEGORY, CATEGORY_ORDER,
   adminRespondents, adminResults, adminSave,
   emptyDraft, emptyOption, fetchResponseCount, fetchSurveys, fromDateInput,
   formatPeriod, koDay, koDeadline, koShort, parsePeriod, SurveyUnavailable, toDateInput, toDraft,
@@ -968,15 +968,20 @@ export function SurveyAdmin() {
             * 화면이 안 보내서, 여기서 만든 설문은 전부 전시 관람으로 떨어졌다.
             * 그래서 식사·티타임 설문을 올리는 길이 SQL 밖에 없었다.
             *
-            * 갈래를 **늘리는 것이 아니라** 있는 둘 중에서 고르게만 한다 —
-            * `surveys.category` 의 CHECK 는 그대로다.
+            * **목록을 손으로 적지 않는다.** 2026-08-29 에 갈래를 다섯으로 늘리면서
+            * 화면·주소·DB 는 늘렸는데 여기 `<option>` 둘만 옛 목록으로 남았고,
+            * 운영자가 새 갈래를 아예 고를 수 없었다. 검사기도 「보내는가」 만 재고
+            * 「무엇을 고를 수 있는가」 는 안 재서 그냥 지나갔다.
+            * CATEGORY 에서 그려 두 곳이 어긋날 수 없게 한다
+            * (validate-survey-admin-ui 가 목록이 같은지도 잰다).
             */}
           <label className="survey-field" style={{ flexGrow: 1 }}>
             <span>어느 화면에</span>
             <select className="admin-input" value={draft.category}
               onChange={(e) => set({ category: e.target.value as Draft['category'] })}>
-              <option value="exhibition">전시 관람 설문</option>
-              <option value="meal">식사 및 Tea Time 설문</option>
+              {CATEGORY_ORDER.map((c) => (
+                <option key={c} value={c}>{CATEGORY[c].label}</option>
+              ))}
             </select>
           </label>
           <label className="survey-field" style={{ flexGrow: 1 }}>
