@@ -623,6 +623,7 @@ const NOT_CHECKED = new Map([
   ['202608260001a_september_date_poll.sql', '자료만 넣는다 (함수·표 없음)'],
   ['202608290002a_club_ops_survey.sql', '자료만 넣는다 (함수·표 없음)'],
   ['202608290003a_seodoho_board_refresh.sql', '보드 자료만 갱신한다 (함수·표 없음)'],
+  ['202608290004a_seodoho_rating_reason.sql', '보드 자료만 갱신한다 (함수·표 없음)'],
 ]);
 
 const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));
