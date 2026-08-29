@@ -401,7 +401,7 @@ ul.digest-decisions {
   margin-top: 5px;
 }
 
-ul.digest-open-questions {
+:where(body.calendar-page) ul.digest-open-questions {
   margin: 14px 0 16px;
   padding: 13px 14px 13px 32px;
   color: #58491f;

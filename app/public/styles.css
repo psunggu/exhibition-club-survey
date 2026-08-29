@@ -1,23 +1,17 @@
 :root {
-  --bg: #f5f7f8;
+  --bg: #f6f4ef;
   --panel: #ffffff;
-  --panel-soft: #eef6f1;
-  --ink: #17202a;
-  --muted: #667085;
-  --line: #d8dee5;
-  --line-soft: #e8edf2;
-  --green: #146c43;
-  --green-dark: #0f5132;
-  --blue: #215a9b;
-  --red: #9f2d44;
-  --amber: #b56b00;
-  --amber-soft: #fff4d8;
-  --purple: #7048a8;
-  --purple-soft: #f0e9fb;
-  --orange: #a54f1f;
-  --orange-dark: #7c3513;
-  --orange-soft: #fff0e7;
-  --shadow: 0 18px 48px rgba(31, 41, 55, 0.08);
+  --panel-soft: #f1efe8;
+  --ink: #1f1e1b;
+  --muted: #55534b;
+  --line: #e8e5de;
+  --line-soft: #f1efe8;
+  --green: #0f6e56;
+  --green-dark: #0a5b45;
+  --red: #a32d2d;
+  --amber: #854f0b;
+  --amber-soft: #faeeda;
+  --shadow: 0 7px 24px rgba(31, 30, 27, 0.06);
 }
 
 * {
@@ -30,9 +24,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    linear-gradient(180deg, rgba(20, 108, 67, 0.12), rgba(245, 247, 248, 0) 260px),
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   line-height: 1.5;
