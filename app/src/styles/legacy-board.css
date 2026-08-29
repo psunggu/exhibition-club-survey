@@ -85,6 +85,10 @@ body:where(.board-page) {
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   line-height: 1.5;
+  /* 한국어는 낱말 가운데서 끊지 않는다 (AGENTS.md). 이 한 줄이 없어서
+     「서울 전체 추/천」 처럼 끊기고 있었다 — 일정 화면은 스물세 곳에 따로
+     적어 지키고 있었고 보드만 빠져 있었다. */
+  word-break: keep-all;
 }
 
 :where(body.board-page) button, :where(body.board-page) input, :where(body.board-page) select, :where(body.board-page) textarea {
