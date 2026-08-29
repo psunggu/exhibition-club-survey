@@ -95,15 +95,6 @@ body:where(.board-page) {
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-.area-tab[data-area="경기"] {
-  --area-accent: #355ca8;
-  --area-accent-soft: #edf2fb;
-}
-
-.area-tab[data-area="인천"] {
-  --area-accent: #a04a2a;
-  --area-accent-soft: #fff0ea;
-}
 
 .area-tab:hover {
   background: var(--area-accent-soft);
@@ -132,8 +123,8 @@ body:where(.board-page) {
 }
 
 .content-type-tab {
-  --tab-accent: #344054;
-  --tab-accent-soft: #eef1f4;
+  --tab-accent: #55534b;
+  --tab-accent-soft: #f1efe8;
   min-width: 0;
   min-height: 58px;
   border: 0;
@@ -149,20 +140,6 @@ body:where(.board-page) {
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-.content-type-tab[data-content-type="전시"] {
-  --tab-accent: var(--green);
-  --tab-accent-soft: #e7f4ed;
-}
-
-.content-type-tab[data-content-type="공연"] {
-  --tab-accent: var(--purple);
-  --tab-accent-soft: var(--purple-soft);
-}
-
-.content-type-tab[data-content-type="영화"] {
-  --tab-accent: var(--red);
-  --tab-accent-soft: #faecef;
-}
 
 .content-type-tab:hover {
   background: var(--tab-accent-soft);
@@ -175,7 +152,7 @@ body:where(.board-page) {
 }
 
 .content-type-tab.is-active {
-  background: var(--tab-accent);
+  background: #1f1e1b;
   color: #ffffff;
 }
 
@@ -364,7 +341,7 @@ body:where(.board-page) {
 }
 
 .button.secondary {
-  background: var(--blue);
+  background: var(--ink);
   color: #ffffff;
 }
 
@@ -510,35 +487,9 @@ body:where(.board-page) {
   padding: 16px;
 }
 
-.performance-card {
-  border-left: 5px solid var(--purple);
-}
 
-.performance-card .exhibition-rank {
-  background: var(--purple);
-}
 
-.performance-card .exhibition-venue, .performance-card .exhibition-reason {
-  color: #55317f;
-}
-
-.performance-card .exhibition-reason {
-  border-left-color: var(--purple);
-}
-
-.movie-card {
-  border-left: 5px solid var(--orange);
-}
-
-.movie-card .exhibition-rank {
-  background: var(--orange-dark);
-}
-
-.movie-card .exhibition-venue {
-  color: var(--orange-dark);
-}
-
-.movie-status-line {
+.movie-status-line, .card-kind-line {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -546,30 +497,19 @@ body:where(.board-page) {
   margin-bottom: 5px;
 }
 
-.movie-status-badge, .movie-ranking-badge {
+/* 갈래는 글자가 말한다 — 전시·공연·영화가 같은 중립 칩을 쓴다.
+   옛 페이지(app/public/index.html)가 아직 배지 두 이름을 쓰므로 함께 둔다. */
+.card-kind-chip, .movie-status-badge, .movie-ranking-badge {
   display: inline-flex;
   align-items: center;
   min-height: 26px;
   border-radius: 999px;
   padding: 4px 9px;
+  background: #f1efe8;
+  color: #55534b;
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
-}
-
-.movie-status-badge {
-  background: #e9f8ee;
-  color: var(--green-dark);
-}
-
-.movie-status-badge.upcoming {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
-}
-
-.movie-ranking-badge {
-  background: var(--amber-soft);
-  color: #7b4900;
 }
 
 .movie-booking-box {
@@ -581,7 +521,7 @@ body:where(.board-page) {
 }
 
 .movie-booking-box strong {
-  color: var(--orange-dark);
+  color: var(--ink);
   font-size: 22px;
   line-height: 1;
 }
@@ -592,15 +532,6 @@ body:where(.board-page) {
   font-weight: 800;
 }
 
-.movie-card .exhibition-reason {
-  border-left-color: var(--orange);
-  color: var(--orange-dark);
-}
-
-.button.movie-booking-button {
-  background: var(--orange);
-  color: #ffffff;
-}
 
 .exhibition-rank {
   display: grid;
@@ -608,8 +539,8 @@ body:where(.board-page) {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background: var(--green-dark);
-  color: #ffffff;
+  background: #f1efe8;
+  color: #1f1e1b;
   font-size: 18px;
   font-weight: 900;
 }
@@ -639,7 +570,7 @@ body:where(.board-page) {
 }
 
 .stars {
-  color: #b56b00;
+  color: #1f1e1b;
   font-size: 14px;
   font-weight: 900;
   white-space: nowrap;
@@ -916,7 +847,7 @@ body:where(.board-page) {
 .source-block a {
   display: block;
   margin-top: 8px;
-  color: var(--blue);
+  color: var(--green);
   font-weight: 800;
   text-decoration: none;
 }
@@ -1011,8 +942,8 @@ tbody tr:hover {
 }
 
 .pill.plan {
-  background: #e8f2ff;
-  color: var(--blue);
+  background: var(--panel-soft);
+  color: var(--ink);
 }
 
 .pill.done {

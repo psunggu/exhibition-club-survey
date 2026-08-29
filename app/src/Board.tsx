@@ -36,10 +36,15 @@ const season = (now: Date = new Date()) => {
   return `${m}~${(m % 12) + 1}월`
 }
 
+/** 별점의 노란 별을 숫자로 바꾼다. 뜻은 그대로다 — 5점 만점의 몇 점.
+    색으로 말하던 것을 글자가 말하게 하는 것이라 aria-label 은 손대지 않는다. */
 const stars = (rating: string | null) => {
   const v = Math.max(0, Math.min(5, Number(rating ?? 0)))
-  return v ? '★'.repeat(v) + '☆'.repeat(5 - v) : '-'
+  return v ? `${v.toFixed(1)} / 5` : '-'
 }
+
+/** 갈래는 색이 아니라 글자가 말한다 — 카드 머리에 붙는 중립 칩의 글자. */
+const kindLabel = (type: string | null) => (type === '공연' ? '음악공연' : type || '전시')
 
 const dateRange = (e: Event) => {
   const s = e.startDate ?? ''
@@ -136,6 +141,9 @@ function EventCard({ e, index }: { e: Event; index: number }) {
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
+            <div className="card-kind-line">
+              <span className="card-kind-chip">{kindLabel(e.type)}</span>
+            </div>
             <p className="exhibition-venue">
               {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
             </p>
@@ -182,11 +190,8 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
-            <div className="movie-status-line">
-              <span className={`movie-status-badge${m.releaseStatus.includes('예정') ? ' upcoming' : ''}`}>
-                {m.releaseStatus}
-              </span>
-              <span className="movie-ranking-badge">전국 예매 {m.bookingRank}위</span>
+            <div className="card-kind-line">
+              <span className="card-kind-chip">{`영화 · ${m.releaseStatus} · 전국 예매 ${m.bookingRank}위`}</span>
             </div>
             <h3>{m.title}</h3>
           </div>
@@ -212,7 +217,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
         </p>
 
         <div className="exhibition-actions">
-          <a className="button movie-booking-button" href={MOVIE_BOOKING_URL}
+          <a className="button primary" href={MOVIE_BOOKING_URL}
             target="_blank" rel="noopener noreferrer">영화관 예매</a>
           <a className="button tertiary" href={m.infoUrl}
             target="_blank" rel="noopener noreferrer">KOBIS 영화정보</a>

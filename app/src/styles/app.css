@@ -15,7 +15,7 @@
   background: var(--panel); color: var(--ink);
 }
 .search-field input:focus-visible {
-  outline: 2px solid var(--blue); outline-offset: 2px; border-color: var(--blue);
+  outline: 2px solid var(--green); outline-offset: 2px; border-color: var(--green);
 }
 
 /* 스크린리더에만 읽히는 상태 알림 — 화면에는 아무것도 그리지 않는다 */
