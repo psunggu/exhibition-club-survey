@@ -13,6 +13,10 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+  /* 한국어는 낱말 가운데서 끊지 않는다 (AGENTS.md).
+     낱낱의 규칙 스물세 곳에 흩어 적혀 있던 것을 여기 한 줄로 모은다 —
+     빠뜨린 자리가 조용히 음절 단위로 끊기고 있었다. */
+  word-break: keep-all;
 }
 
 .wrap {
