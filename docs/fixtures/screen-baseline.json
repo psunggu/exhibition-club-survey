@@ -1672,7 +1672,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 3461
+    "h": 3865
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2229,7 +2229,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(226, 222, 212)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "11.5px",
@@ -2315,7 +2315,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1443,
+   "textLength": 1642,
    "cardCount": 0,
    "chipCount": 11
   }
@@ -2325,7 +2325,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 3079
+    "h": 3361
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2882,7 +2882,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(226, 222, 212)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "12.5px",
@@ -2968,7 +2968,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1443,
+   "textLength": 1642,
    "cardCount": 0,
    "chipCount": 11
   }

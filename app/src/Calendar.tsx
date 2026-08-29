@@ -15,22 +15,32 @@ import {
 
 const KO_WEEK = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
 
-/** 옛 notice.html:89-96 의 범례. 색만으로 뜻을 전하지 않게 하는 자리다. */
+/**
+ * 범례는 **색 점 둘**뿐이다. 달력이 색으로 가르는 것은 성격 하나이기 때문이다 —
+ * 정기냐 수시냐. 상태(확정·미정·완료)는 색이 아니라 **채움**이 말한다.
+ *
+ * 옛 범례는 여섯 가지였다. 갈래(영화 모임)와 성격(공식 정기관람)과 상태(완료·확정·
+ * 미정·마감)가 한 줄에 섞여 있어서, 칩 하나를 보고 어느 축을 읽어야 하는지 알 수 없었다.
+ */
 const LEGEND: { cls: string; label: string }[] = [
-  { cls: 'done', label: '완료' },
-  { cls: 'conf', label: '확정' },
-  { cls: 'official', label: '공식 정기관람' },
-  { cls: 'tent', label: '모집중 · 미정' },
-  { cls: 'dead', label: '예매 마감' },
-  { cls: 'movie', label: '영화 모임' },
+  { cls: 'regular', label: '정기' },
+  { cls: 'casual', label: '수시' },
 ]
 
-function DayBlock({ date, official }: { date: string; official: boolean }) {
+/** 색을 못 보는 사람에게는 이 세 줄이 범례의 전부다. 색 점과 함께 늘 붙어 다닌다. */
+const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료']
+
+/** 달력 아래 목록의 상태 칩 글자. 달력 칩은 좁아 글자가 몇 자 안 들어가므로 여기서 읽는다. */
+const STATUS_LABEL: Record<string, string> = {
+  conf: '확정', tent: '미정', done: '완료', dead: '예매 마감',
+}
+
+function DayBlock({ date, regular }: { date: string; regular: boolean }) {
   const m = Number(date.slice(5, 7))
   const d = Number(date.slice(8, 10))
   const w = KO_WEEK[new Date(`${date}T00:00:00Z`).getUTCDay()] ?? ''
   return (
-    <div className={official ? 'db db-official' : 'db'}>
+    <div className={regular ? 'db db-regular' : 'db'}>
       <div className="m">{m}월</div>
       <div className="d">{d}</div>
       <div className="w">{w}</div>
@@ -38,9 +48,12 @@ function DayBlock({ date, official }: { date: string; official: boolean }) {
   )
 }
 
+/**
+ * 칩의 두 축. 성격은 `regular|casual` 이 색을 정하고, 상태는 `kind` 가 채움을 정한다.
+ * 갈래(전시·박물관·영화…)는 여기 들어오지 않는다 — 색을 갖지 않기 때문이다.
+ */
 function chipClass(m: Meetup) {
-  return ['chip', m.kind, m.official ? 'official' : '', m.movie ? 'movie' : '', 'event-trigger']
-    .filter(Boolean).join(' ')
+  return ['chip', m.kind, m.regular ? 'regular' : 'casual', 'event-trigger'].join(' ')
 }
 
 export function Calendar() {
@@ -97,6 +110,36 @@ export function Calendar() {
   const older = done.filter((m) => !recent.includes(m))
 
   const openDialog = (m: Meetup, el: HTMLElement) => { lastTrigger.current = el; setOpen(m) }
+
+  /**
+   * 달력 칸은 좁아 칩에 글자가 몇 자 안 들어간다. **갈래는 여기서 읽는다.**
+   * 칩이 「서도호 17:00」 이라고만 말할 때, 이 줄이 「정기 · 전시」 라고 붙여 준다.
+   */
+  const renderMonthList = (year: number, month: number) => {
+    const ym = `${year}-${String(month).padStart(2, '0')}`
+    const rows = MEETUPS.filter((m) => m.date.startsWith(ym))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    if (rows.length === 0) return null
+    return (
+      <ul className="month-list" aria-label={`${year}년 ${month}월 모임 목록`}>
+        {rows.map((m) => (
+          <li key={m.id} className="mrow">
+            <span className="mrow-when">
+              {Number(m.date.slice(5, 7))}월 {Number(m.date.slice(8, 10))}일
+              {' · '}
+              {KO_WEEK[new Date(`${m.date}T00:00:00Z`).getUTCDay()] ?? ''}
+            </span>
+            <span className="mrow-kind">
+              <span className={`mdot ${m.regular ? 'regular' : 'casual'}`} aria-hidden="true" />
+              {m.regular ? '정기' : '수시'}{' · '}{m.venueKind}
+            </span>
+            <span className="mrow-title">{m.title || m.chip}</span>
+            <span className={`mtag mtag-${m.kind}`}>{STATUS_LABEL[m.kind] ?? m.kind}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 
   const renderCal = (year: number, month: number) => (
     <div className="cal" role="group" aria-label={`${year}년 ${month}월 달력`}>
@@ -235,11 +278,11 @@ export function Calendar() {
         <>
           <h2 className="sec"><span className="dot dot-conf" />다가오는 확정 모임</h2>
           {upcoming.map((m) => (
-            <article key={m.id} className={m.official ? 'card card-official' : 'card'}>
-              <DayBlock date={m.date} official={m.official} />
+            <article key={m.id} className={m.regular ? 'card card-regular' : 'card'}>
+              <DayBlock date={m.date} regular={m.regular} />
               <div>
-                <span className={m.official ? 'tag tag-official' : 'tag'}>
-                  {m.official ? '공식 정기관람' : '확정'}
+                <span className={m.regular ? 'tag tag-regular' : 'tag'}>
+                  {m.regular ? '공식 정기관람' : '확정'}
                 </span>
                 <h3>{m.title || m.chip}</h3>
                 <p className="meta">
@@ -286,6 +329,9 @@ export function Calendar() {
       <h2 className="sec"><span className="dot dot-dark" />한눈에 보는 달력</h2>
       <p className="legend">
         {LEGEND.map((l) => <span key={l.cls} className={`lchip ${l.cls}`}>{l.label}</span>)}
+        <span className="legend-note">
+          {LEGEND_NOTE.map((t) => <span key={t} className="lnote">{t}</span>)}
+        </span>
       </p>
       {MONTHS.map(({ year, month }) => {
         // 빈 달을 말없이 비워 두면 "아직 안 만든 화면"으로 보인다.
@@ -300,6 +346,7 @@ export function Calendar() {
               </p>
             )}
             {renderCal(year, month)}
+            {renderMonthList(year, month)}
           </div>
         )
       })}

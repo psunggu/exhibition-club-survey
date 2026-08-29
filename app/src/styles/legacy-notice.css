@@ -465,10 +465,9 @@ ul.digest-decisions {
   align-items: flex-start;
 }
 
-.card-official {
-  border-color: #b9c3f5;
-  background: #fcfcff;
-  box-shadow: inset 4px 0 0 #4f46e5;
+/* 정기 모임 카드. `official` 은 옛 페이지가 쓰는 같은 뜻의 이름이라 함께 둔다. */
+.card-regular, .card-official {
+  box-shadow: inset 4px 0 0 #0f6e56;
 }
 
 .db {
@@ -484,10 +483,6 @@ ul.digest-decisions {
 .db .d { font-size: 25px; font-weight: 800; line-height: 1.15; }
 .db .w { font-size: 12px; font-weight: 600; opacity: 0.9; }
 
-.db-official {
-  background: #4338ca;
-  color: #fff;
-}
 
 .tag {
   display: inline-block;
@@ -506,9 +501,9 @@ ul.digest-decisions {
   flex-wrap: wrap;
 }
 
-.tag-official {
-  background: #e0e7ff;
-  color: #3730a3;
+.tag-regular, .tag-official {
+  background: #0f6e56;
+  color: #fff;
 }
 
 .tag-tent {
@@ -516,10 +511,6 @@ ul.digest-decisions {
   color: #854f0b;
 }
 
-.tag-movie, .db-movie {
-  background: #fae8ff;
-  color: #86198f;
-}
 
 .card h3 {
   font-size: 16.5px;
@@ -583,29 +574,51 @@ ul.digest-decisions {
   overflow: hidden;
 }
 
-.lchip.movie, .chip.movie, .ttag.movie {
-  border-color: #f0abfc;
-  background: #fae8ff;
-  color: #86198f;
+/**
+ * 범례의 색 점 둘. 달력이 색으로 가르는 것은 성격 하나뿐이다.
+ * 점 뒤의 글자가 뜻을 말하므로, 색을 못 봐도 읽힌다.
+ */
+.lchip.regular, .lchip.casual {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border-color: #e8e5de;
+  color: #1f1e1b;
 }
 
-.lchip.official, .chip.official {
-  border-color: #a5b4fc;
-  background: #e0e7ff;
-  color: #3730a3;
+.lchip.regular::before, .lchip.casual::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
-/* 공식 정기관람 표시는 유지하되, 영화가 함께 붙은 날짜는 영화 범주를 먼저 인식하게 한다. */
-.chip.official.movie {
-  border-color: #f0abfc;
-  background: #fae8ff;
-  color: #86198f;
+.lchip.regular::before { background: #0f6e56; }
+.lchip.casual::before { background: #1f1e1b; }
+
+/* 옛 페이지의 여섯 칸 범례. 그 페이지가 아직 이 이름들을 쓴다. */
+.lchip.done { background: #f1efe8; color: #55534b; }
+.lchip.conf { background: #0f6e56; color: #fff; }
+.lchip.official { background: #0f6e56; color: #fff; }
+.lchip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
+.lchip.dead { background: #fcebeb; color: #a32d2d; }
+.lchip.movie { background: #f1efe8; color: #55534b; }
+
+/* 채움·점선·회색이 무엇인지 적는 세 줄. 색 점과 늘 붙어 다닌다. */
+.legend-note {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
-.lchip.official, .chip.official {
-  border-color: #a5b4fc;
-  background: #e0e7ff;
-  color: #3730a3;
+.lnote {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #55534b;
+  word-break: keep-all;
 }
 
 .calendar-fold summary {
@@ -766,23 +779,117 @@ ul.digest-decisions {
 }
 
 /**
- * **끝난 일은 갈래와 상관없이 같은 회색이다.**
- * 색으로 가르는 것은 「앞으로 할 것」 뿐이다 — 공연 완료·영화 완료·관람 완료가
- * 저마다 다른 색이면 달력이 시끄럽고, 무엇이 끝났고 무엇이 남았는지가 한눈에 안 들어온다.
- * 그래서 `.done` 이 `.movie`·`.official` 을 이기게 못박아 둔다
- * (같은 힘이면 뒤가 이기지만, 나중에 순서가 바뀌어도 흔들리지 않게 세 겹으로 적는다).
+ * **달력 칩은 두 축으로만 칠한다.**
+ *
+ *   성격 — 정기(`regular`)는 초록, 수시(`casual`)는 먹색.  ← 색
+ *   상태 — 확정은 채우고, 미정은 점선, 완료는 회색.        ← 채움
+ *
+ * 갈래(전시·박물관·영화·공연)는 **색을 갖지 않는다.** 저마다 다른 색이면
+ * 달력이 시끄럽고, 무엇이 끝났고 무엇이 남았는지가 한눈에 안 들어온다.
+ * 갈래는 달력 아래 「이번 달 모임」 목록에서 글자로 읽는다.
+ *
+ * 아래 규칙은 **수시가 바탕값**이다. 옛 페이지(app/public/notice.html)의 칩에는
+ * `casual` 이 안 붙어 있는데, 그 페이지의 칩이 실제로 수시 모임이라 뜻이 맞는다.
+ * `official` 은 옛 페이지가 `regular` 와 같은 뜻으로 쓰는 이름이라 함께 적는다.
+ * 그래서 옛 화면과 이식본이 같은 색으로 그려진다.
  */
-.chip.done, .chip.done.movie, .chip.done.official, .chip.done.official.movie {
+.chip.conf { background: #1f1e1b; color: #fff; }
+.chip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
+/**
+ * 수시 완료의 글자색만 표에 적힌 #706d65 가 아니라 #6e6c64 다.
+ * #706d65 는 흰 바탕 5.17 · 페이지 바탕 4.95 로 넉넉하지만, **칩 바탕 #f1efe8 위에서는
+ * 4.49:1** 로 기준(4.5)에 한 자리 못 미친다 — 지시서가 재지 않은 조합이다.
+ * #6e6c64 는 같은 바탕에서 4.57:1 이고 이미 이 파일이 쓰던 값이다.
+ * 정기 완료(#55534b · 6.70:1)와의 밝기 차이도 그대로 남는다.
+ */
+.chip.done { background: #f1efe8; color: #6e6c64; }
+
+.chip.conf.regular, .chip.conf.official { background: #0f6e56; color: #fff; }
+
+.chip.tent.regular, .chip.tent.official { background: #fff; border: 1px dashed #0f6e56; color: #0a5b45; }
+
+/* 끝난 정기관람은 회색이되, 왼쪽에 초록 선 하나로 성격을 남긴다. */
+.chip.done.regular, .chip.done.official {
   background: #f1efe8;
-  color: #6e6c64;
-  border-color: #e2ded4;
+  color: #55534b;
+  box-shadow: inset 2px 0 0 #0f6e56;
 }
 
-/* 완료 칩만 3.12:1 로 미달이었다. 나머지 다섯은 이미 넘어서 손대지 않는다. */
-.done { background: #f1efe8; color: #6e6c64; }
-.conf { background: #e1f5ee; color: #0a5b45; }
-.tent { background: #faeeda; color: #854f0b; }
-.dead { background: #fcebeb; color: #a32d2d; }
+/**
+ * 예매 마감만 성격과 무관하게 붉다. 지금 손을 써야 하는 것에만 쓰는 색이라
+ * 한 달에 한두 칸만 붉게 남는다.
+ */
+.chip.dead { background: #fcebeb; color: #a32d2d; }
+
+/**
+ * **이번 달 모임.** 달력 칸은 좁아 칩에 글자가 몇 자 안 들어간다.
+ * 갈래와 온전한 제목은 여기서 읽는다. 시간 순으로 늘어놓는다.
+ */
+.month-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.mrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  background: #fff;
+  border: 1px solid #eceae2;
+  border-radius: 11px;
+  padding: 11px 14px;
+  margin: 0 0 7px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.mrow-when {
+  color: #1f1e1b;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mrow-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #55534b;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mdot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.mdot.regular { background: #0f6e56; }
+.mdot.casual { background: #1f1e1b; }
+
+.mrow-title {
+  color: #1f1e1b;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mtag {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mtag-conf { background: #0f6e56; color: #fff; }
+.mtag-tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
+.mtag-done { background: #f1efe8; color: #55534b; }
+.mtag-dead { background: #fcebeb; color: #a32d2d; }
 
 .drow {
   display: flex;
@@ -944,7 +1051,7 @@ ul.digest-decisions {
 
 .event-dialog-status[data-tone="done"] { background: #f1efe8; color: #747168; }
 .event-dialog-status[data-tone="conf"] { background: #e1f5ee; color: #0a5b45; }
-.event-dialog-status[data-tone="official"] { background: #e0e7ff; color: #3730a3; }
+.event-dialog-status[data-tone="official"] { background: #0f6e56; color: #fff; }
 .event-dialog-status[data-tone="tent"] { background: #faeeda; color: #854f0b; }
 .event-dialog-status[data-tone="dead"] { background: #fcebeb; color: #a32d2d; }
 

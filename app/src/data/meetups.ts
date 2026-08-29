@@ -11,18 +11,35 @@
  * 옛 notice.html 은 달력 칸 42개를 손으로 써 넣었다. 이식본은 날짜에서 격자를
  * 만들고 여기 있는 모임을 얹는다 — 달이 바뀌어도 손댈 것이 없다.
  *
- * ── 7월 두 건의 `official` 은 일부러 false 다 ──────────────────
- * 톡방 원문에서는 방장이 톡게시판 **공지**로 `[7월 1차 정기관람]` ·
- * `[7월 2차 정기관람]` 을 올렸으므로, 원문만 보면 둘 다 공식 정기관람이다.
- * 그런데도 false 로 둔 것은 **운영자가 정한 것이다 (2026-08-21)** —
- * 지난 달력 색을 이제 와서 바꾸지 않기로 했다.
+ * ── 7월 두 건의 `regular` 를 true 로 되돌렸다 (2026-08-30) ──────
+ * 톡방 원문에서 방장이 톡게시판 **공지**로 `[7월 1차 정기관람]` ·
+ * `[7월 2차 정기관람]` 을 올렸으므로, 원문대로는 둘 다 정기관람이다.
  *
- * 그래서 분류 검사(scripts/validate-meetup-taxonomy.mjs)의 `정기관람` 규칙은
- * 2026-08-22 부터만 본다. 앞으로 넣는 모임에는 그대로 적용된다.
- * 대조하다 이 대목이 또 눈에 걸리거든, 실수가 아니라 결정이다.
+ * 2026-08-21 에는 이 둘을 false 로 두기로 했었다 — 지난 달력 색을 이제 와서
+ * 바꾸지 않기로 한 것이다. 그 결정을 뒤집은 이유는 **달력 색 규칙이 달라져서**다.
+ * 갈래마다 다른 색을 칠하던 것을 그만두고 정기/수시 두 갈래만 색으로 가르면서,
+ * 완료된 칸은 정기든 수시든 같은 회색이 되었다 — 정기에만 왼쪽에 초록 선이 하나 선다.
+ * 지난 달력이 뒤집히는 폭이 그만큼 작아졌고, 반대로 플래그를 false 로 두면
+ * 제목이 「7월 정기관람」 인 칸과 「9월 정기관람」 인 칸이 서로 다르게 그려진다.
+ * 같은 것을 같게 그리는 쪽을 택했다.
+ *
+ * 분류 검사(scripts/validate-meetup-taxonomy.mjs)의 회차 번호 규칙은 그대로
+ * 2026-08-22 부터만 본다 — 7월 제목의 ①② 는 실제로 두 번 모인 것이라 맞는 표기다.
  */
 
 export type MeetupKind = 'conf' | 'done' | 'dead' | 'tent'
+
+/**
+ * 어떤 자리인가. **상태(`kind`)와 섞지 않는다** — 이쪽은 달력에서 색을 갖지 않고,
+ * 달력 아래 「이번 달 모임」 목록에서 글자로만 읽힌다.
+ *
+ * 옛 `movie: boolean` 이 여기로 흡수됐다. 불리언 하나로는 박물관 투어와 전시 관람을
+ * 가를 방법이 제목 글자밖에 없었다.
+ *
+ * 이름이 `venue` 가 아닌 것은 그 자리가 이미 차 있어서다 — `venue` 는
+ * '퐁피두센터 한화' 처럼 **장소 이름**을 담는 칸이고 팝업이 그대로 찍는다.
+ */
+export type VenueKind = '전시' | '박물관' | '영화' | '공연' | '모임'
 
 export type Meetup = {
   id: string
@@ -31,9 +48,14 @@ export type Meetup = {
   /** 달력 칸에 뜨는 짧은 글 */
   chip: string
   kind: MeetupKind
-  /** 교구 공식 일정인가 */
-  official: boolean
-  movie: boolean
+  /**
+   * 달마다 한 번 도는 정기관람인가. 아니면 그때그때 잡힌 수시 모임이다.
+   *
+   * 옛 이름은 `official` 이었는데 「공식 계정」 처럼 읽혀서 바꿨다.
+   * 달력에서 **색을 가르는 두 축 가운데 하나**다 (다른 하나는 `kind`).
+   */
+  regular: boolean
+  venueKind: VenueKind
   status: string
   tone: string
   title: string
@@ -67,8 +89,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-05',
     chip: '킥오프 12:30',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '모임',
     status: '완료',
     tone: 'done',
     title: '킥오프 첫모임',
@@ -87,8 +109,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-11',
     chip: '큐비스트 16시',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: true,
+    venueKind: '전시',
     status: '완료',
     tone: 'done',
     title: '7월 정기관람 ① 〈큐비스트〉 주말 관람',
@@ -107,8 +129,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-26',
     chip: '성률전 관람',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '전시',
     status: '완료',
     tone: 'done',
     title: '성률 기획전 〈여름을 닮은 우리〉',
@@ -127,8 +149,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-29',
     chip: '식사·관람 19시',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: true,
+    venueKind: '전시',
     status: '완료',
     tone: 'done',
     title: '7월 정기관람 ② 〈큐비스트〉 평일 관람',
@@ -147,8 +169,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-29',
     chip: '오전벙개 10시',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '전시',
     status: '완료',
     tone: 'done',
     title: '〈큐비스트〉 오전 벙개',
@@ -167,8 +189,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-07-31',
     chip: '가우디 마감',
     kind: 'dead',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '전시',
     status: '예매 마감',
     tone: 'dead',
     title: '〈가우디: 서울에서 다시 태어나다〉',
@@ -187,8 +209,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-08-15',
     chip: '공연 완료',
     kind: 'done',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '공연',
     status: '완료',
     tone: 'done',
     title: 'S Classic Week 무료 클래식 공연',
@@ -207,8 +229,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-08-16',
     chip: '영화 완료',
     kind: 'done',
-    official: false,
-    movie: true,
+    regular: false,
+    venueKind: '영화',
     status: '완료 · 영화 모임',
     tone: 'done',
     title: '영화 《오디세이》 관람',
@@ -230,8 +252,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-08-22',
     chip: '관람 완료',
     kind: 'done',
-    official: true,
-    movie: false,
+    regular: true,
+    venueKind: '박물관',
     status: '공식 정기관람',
     tone: 'official',
     title: '8월 정기관람 · 서울역사박물관',
@@ -252,8 +274,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-08-29',
     chip: '가우디 확정',
     kind: 'conf',
-    official: false,
-    movie: false,
+    regular: false,
+    venueKind: '전시',
     status: '확정',
     tone: 'conf',
     title: '가우디 서울전 관람',
@@ -275,8 +297,8 @@ export const MEETUPS: Meetup[] = [
     date: '2026-09-19',
     chip: '서도호 17:00',
     kind: 'conf',
-    official: true,
-    movie: false,
+    regular: true,
+    venueKind: '전시',
     status: '공식 정기관람',
     tone: 'official',
     title: '9월 정기관람 · 《서도호》',
