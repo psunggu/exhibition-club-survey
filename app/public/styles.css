@@ -14,7 +14,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   /* 한국어는 낱말 가운데서 끊지 않는다 (AGENTS.md). 이 한 줄이 없어서
      「서울 전체 추/천」 처럼 끊기고 있었다 — 일정 화면은 스물세 곳에 따로

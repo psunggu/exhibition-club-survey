@@ -47,6 +47,17 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 /** 세 화면이 나눠 쓰는 값. 스코프마다 한 벌씩 복사해 붙인다. */
 const TOKENS = 'app/public/tokens.css';
 
+/**
+ * 서체 파일 경로를 SPA 용으로 고쳐 쓴다.
+ *
+ * tokens.css 의 `url('fonts/…')` 는 **옛 정적 페이지 기준**이다 —
+ * 그 파일이 app/public/ 에 있으니 app/public/fonts/ 를 가리킨다.
+ * 생성물은 app/src/styles/ 에 놓이므로 같은 상대 경로가 엉뚱한 곳을 가리키고,
+ * Vite 가 자산을 못 찾아 빌드가 선다. 그래서 배포 기준의 절대 경로로 바꾼다.
+ * (vite.config.ts 의 base 와 같아야 한다. 거기서 dist/fonts/ 로 실어 준다.)
+ */
+const FONT_BASE = '/exhibition-club-survey/fonts/';
+
 const JOBS = [
   { from: 'app/public/styles.css', to: 'app/src/styles/legacy-board.css', scope: 'body.board-page' },
   { from: 'app/public/notice.css', to: 'app/src/styles/legacy-notice.css', scope: 'body.calendar-page' },
@@ -162,7 +173,13 @@ let changed = 0;
 for (const job of JOBS) {
   const src = fs.readFileSync(path.join(ROOT, job.from), 'utf8');
   // 값은 tokens.css 한 곳에만 있고, 여기서는 범위만 입혀 앞에 세운다.
-  const tokens = transform(tokensSrc, job.scope);
+  let tokens = transform(tokensSrc, job.scope);
+  tokens = tokens.replace(/url\((['"])fonts\//g, (_, q) => `url(${q}${FONT_BASE}`);
+  /**
+   * @font-face 는 범위를 타지 않는다. 두 생성물에 다 넣으면 같은 선언이 번들에
+   * 두 벌로 들어간다 — 첫 파일에만 남기고 나머지에서는 걷어 낸다.
+   */
+  if (job !== JOBS[0]) tokens = tokens.replace(/@font-face\s*\{[^}]*\}\s*/g, () => '');
   const body = tokens + `\r\n\r\n/* ── 여기부터 ${job.from} ── */\r\n\r\n` + transform(src, job.scope);
   const header = `/* 이 파일은 생성된 것이다. 손으로 고치지 말 것.
  *

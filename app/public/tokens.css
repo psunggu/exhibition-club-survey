@@ -18,6 +18,66 @@
  * 다음 사람이 어느 쪽을 고쳐야 하는지 알기 어렵다. 생성기 한 곳에서만 다룬다.
  */
 
+/**
+ * ── 서체 ───────────────────────────────────────────────────
+ * `notice.css` 는 오래전부터 'Pretendard' 를 선언했지만 **파일이 없었다.**
+ * 어디에도 @font-face 가 없어 세 화면이 모두 기기 기본 고딕으로 그려졌고,
+ * 그래서 기기마다 글자 모양이 달랐다. CSP 가 외부 CDN 을 막으므로 파일을 저장소에 둔다.
+ *
+ * 한글 서브셋(KS X 1001)판이다 — 다섯 굵기 합쳐 1.35MB.
+ * 전체 판은 굵기 셋만 해도 2.3MB, 가변 판은 한 파일에 2.06MB 다. 회원이 카톡에서
+ * 휴대폰으로 여는 것을 생각해 서브셋을 골랐다. 아주 드문 음절은 기기 글꼴로 떨어진다.
+ *
+ * **굵기를 다섯 넣은 것은 지시서(400·600·700)와 다르다.** 화면이 실제로 쓰는 굵기를
+ * 세어 보니 800 이 28곳, 900 이 14곳이었다. 셋만 넣으면 그 마흔두 곳이 700 으로
+ * 주저앉는다. 400·500 → Regular, 600·650 → SemiBold, 700·750 → Bold 로 맞물린다.
+ *
+ * 경로가 상대인 것은 옛 정적 페이지가 이 파일을 그대로 <link> 하기 때문이다.
+ * SPA 용 복사본은 scripts/scope-legacy-css.mjs 가 절대 경로로 바꿔 준다 —
+ * 생성물이 app/src/styles/ 에 놓여 상대 경로의 기준이 달라지므로.
+ *
+ * 라이선스: SIL Open Font License 1.1 — app/public/fonts/OFL.txt
+ */
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/Pretendard-Regular.subset.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/Pretendard-SemiBold.subset.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/Pretendard-Bold.subset.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('fonts/Pretendard-ExtraBold.subset.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('fonts/Pretendard-Black.subset.woff2') format('woff2');
+}
+
 :root {
   /* ── 중립 ────────────────────────────────────────────── */
   --paper: #f6f4ef;        /* 페이지 바탕 */
@@ -49,4 +109,8 @@
   /* 지시서 5단계 예시는 알파 0.05 로 적혀 있으나, 1단계 값 표의 0.06 을 따른다.
      0.06 이 이미 적용돼 화면 대조 기준에 들어가 있고, 둘의 차이는 눈에 안 보인다. */
   --shadow: 0 7px 24px rgba(31, 30, 27, 0.06);
+
+  /* 세 화면이 같은 스택을 쓴다. 예전에는 보드만 Pretendard 가 빠져 있었다. */
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', sans-serif;
 }
