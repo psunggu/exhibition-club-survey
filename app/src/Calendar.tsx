@@ -28,7 +28,7 @@ const LEGEND: { cls: string; label: string }[] = [
 ]
 
 /** 색을 못 보는 사람에게는 이 세 줄이 범례의 전부다. 색 점과 함께 늘 붙어 다닌다. */
-const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료']
+const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료', '붉은색 = 예매 마감']
 
 /** 달력 아래 목록의 상태 칩 글자. 달력 칩은 좁아 글자가 몇 자 안 들어가므로 여기서 읽는다. */
 const STATUS_LABEL: Record<string, string> = {

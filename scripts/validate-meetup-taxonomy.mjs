@@ -39,7 +39,11 @@ const LEGEND = [
  * 색 점만으로는 상태를 말하지 못한다. 채움·점선·회색이 무엇인지 글자로 붙인다.
  * 색을 못 보는 사람에게 이 세 줄이 범례의 전부다.
  */
-const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료'];
+/**
+ * 붉은색(`dead`)은 성격과 무관하게 칠해지는 넷째 색이다. 색 점 둘만 두고
+ * 이 줄을 빼면 **범례에 없는 색이 달력에 뜬다** — 지난 달에만 있어서 안 보일 뿐이다.
+ */
+const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료', '붉은색 = 예매 마감'];
 
 const cal = fs.readFileSync(path.join(ROOT, 'app/src/Calendar.tsx'), 'utf8');
 const block = /const LEGEND[^=]*=\s*\[([\s\S]*?)\n\]/.exec(cal);
