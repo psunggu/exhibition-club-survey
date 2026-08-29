@@ -8,9 +8,9 @@
 
 body {
   margin: 0;
-  background: #f6f4ef;
+  background: var(--paper);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', sans-serif;
-  color: #1f1e1b;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
@@ -26,7 +26,7 @@ body {
   letter-spacing: 0.12em;
   /* 배경 #f6f4ef 와 3.27:1 이라 밝은 곳에서 흐렸다. 색조는 그대로 두고 밝기만 낮춘다.
      4.50:1 은 기준에 정확히 걸쳐 반올림에 따라 미달로 읽혔다 — 여유를 두고 4.70:1 로 잡는다. */
-  color: #706d65;
+  color: var(--ink-3);
   font-weight: 600;
   margin: 0;
 }
@@ -40,7 +40,7 @@ h1 {
 
 .upd {
   display: inline-block;
-  background: #1f1e1b;
+  background: var(--ink);
   color: #fff;
   border-radius: 999px;
   padding: 7px 15px;
@@ -50,7 +50,7 @@ h1 {
 
 .board-jump {
   margin-top: 20px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #dce8e3;
   border-radius: 16px;
   padding: 17px;
@@ -59,7 +59,7 @@ h1 {
 
 .board-jump-kicker {
   margin: 0 0 3px;
-  color: #0f6e56;
+  color: var(--green);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -85,9 +85,9 @@ h1 {
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 11px 13px;
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
   font-size: 14px;
   font-weight: 750;
@@ -199,7 +199,7 @@ h1 {
   flex-shrink: 0;
   border: 1px solid #cfc7f4;
   border-radius: 999px;
-  background: #fff;
+  background: var(--card);
   color: #51418a;
   padding: 5px 10px;
   font-size: 11.5px;
@@ -218,8 +218,8 @@ h1 {
 .digest-loading,
 .digest-error {
   margin: 0;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: #6d6686;
   padding: 14px;
   font-size: 13px;
@@ -325,7 +325,7 @@ h1 {
   margin-top: 14px;
   border: 1px solid #ddd7f7;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   padding: 13px 14px;
 }
 
@@ -437,15 +437,15 @@ ul.digest-open-questions {
   flex-shrink: 0;
 }
 
-.dot-conf { background: #0f6e56; }
-.dot-dark { background: #1f1e1b; }
+.dot-conf { background: var(--green); }
+.dot-dark { background: var(--ink); }
 .dot-done { background: #b4b2a9; }
 .dot-tent { background: #ef9f27; }
 
 .card {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
   display: flex;
   gap: 14px;
@@ -456,15 +456,15 @@ ul.digest-open-questions {
 /* 정기 모임 카드. `official` 은 옛 페이지가 쓰는 같은 뜻의 이름이라 함께 둔다. */
 .card-regular,
 .card-official {
-  box-shadow: inset 4px 0 0 #0f6e56;
+  box-shadow: inset 4px 0 0 var(--green);
 }
 
 .db {
   min-width: 68px;
   text-align: center;
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 9px 4px 8px;
 }
 
@@ -475,8 +475,8 @@ ul.digest-open-questions {
 
 .tag {
   display: inline-block;
-  background: #e1f5ee;
-  color: #0a5b45;
+  background: var(--green-tint);
+  color: var(--green-dark);
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
@@ -492,13 +492,13 @@ ul.digest-open-questions {
 
 .tag-regular,
 .tag-official {
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
 }
 
 .tag-tent {
-  background: #faeeda;
-  color: #854f0b;
+  background: var(--warn-tint);
+  color: var(--warn);
 }
 
 
@@ -512,13 +512,13 @@ ul.digest-open-questions {
 
 .meta {
   font-size: 14px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.75;
   word-break: keep-all;
   margin: 0;
 }
 
-.meta b { color: #1f1e1b; font-weight: 700; }
+.meta b { color: var(--ink); font-weight: 700; }
 
 .card-alert {
   margin: 10px 0 0;
@@ -539,7 +539,7 @@ ul.digest-open-questions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 10px 12px;
@@ -560,7 +560,7 @@ ul.digest-open-questions {
   margin-top: 18px;
   border: 1px solid #dedbd2;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   overflow: hidden;
 }
 
@@ -573,9 +573,9 @@ ul.digest-open-questions {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #fff;
-  border-color: #e8e5de;
-  color: #1f1e1b;
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 .lchip.regular::before,
@@ -587,16 +587,16 @@ ul.digest-open-questions {
   flex-shrink: 0;
 }
 
-.lchip.regular::before { background: #0f6e56; }
-.lchip.casual::before { background: #1f1e1b; }
+.lchip.regular::before { background: var(--green); }
+.lchip.casual::before { background: var(--ink); }
 
 /* 옛 페이지의 여섯 칸 범례. 그 페이지가 아직 이 이름들을 쓴다. */
-.lchip.done { background: #f1efe8; color: #55534b; }
-.lchip.conf { background: #0f6e56; color: #fff; }
-.lchip.official { background: #0f6e56; color: #fff; }
-.lchip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
-.lchip.dead { background: #fcebeb; color: #a32d2d; }
-.lchip.movie { background: #f1efe8; color: #55534b; }
+.lchip.done { background: var(--sunken); color: var(--ink-2); }
+.lchip.conf { background: var(--green); color: #fff; }
+.lchip.official { background: var(--green); color: #fff; }
+.lchip.tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
+.lchip.dead { background: var(--stop-tint); color: var(--stop); }
+.lchip.movie { background: var(--sunken); color: var(--ink-2); }
 
 /* 채움·점선·회색이 무엇인지 적는 세 줄. 색 점과 늘 붙어 다닌다. */
 .legend-note {
@@ -609,7 +609,7 @@ ul.digest-open-questions {
 .lnote {
   font-size: 12.5px;
   font-weight: 600;
-  color: #55534b;
+  color: var(--ink-2);
   word-break: keep-all;
 }
 
@@ -706,7 +706,7 @@ ul.digest-open-questions {
 .wd-sat { color: #3d6fb4; }
 
 .cell {
-  background: #fff;
+  background: var(--card);
   min-height: 48px;
   padding: 4px;
 }
@@ -724,7 +724,7 @@ ul.digest-open-questions {
 
 .cal .cell .dnum.is-today {
   display: inline-block;
-  background: #1f1e1b;
+  background: var(--ink);
   color: #fff;
   border-radius: 999px;
   padding: 1px 7px;
@@ -734,7 +734,7 @@ ul.digest-open-questions {
 .tlab {
   display: block;
   font-size: 10.5px;
-  color: #1f1e1b;
+  color: var(--ink);
   font-weight: 700;
   margin-top: 3px;
 }
@@ -766,7 +766,7 @@ ul.digest-open-questions {
 }
 
 .event-trigger:focus-visible {
-  outline: 2px solid #1f1e1b;
+  outline: 2px solid var(--ink);
   outline-offset: 1px;
 }
 
@@ -785,8 +785,8 @@ ul.digest-open-questions {
  * `official` 은 옛 페이지가 `regular` 와 같은 뜻으로 쓰는 이름이라 함께 적는다.
  * 그래서 옛 화면과 이식본이 같은 색으로 그려진다.
  */
-.chip.conf { background: #1f1e1b; color: #fff; }
-.chip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
+.chip.conf { background: var(--ink); color: #fff; }
+.chip.tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
 /**
  * 수시 완료의 글자색만 표에 적힌 #706d65 가 아니라 #6e6c64 다.
  * #706d65 는 흰 바탕 5.17 · 페이지 바탕 4.95 로 넉넉하지만, **칩 바탕 #f1efe8 위에서는
@@ -794,27 +794,27 @@ ul.digest-open-questions {
  * #6e6c64 는 같은 바탕에서 4.57:1 이고 이미 이 파일이 쓰던 값이다.
  * 정기 완료(#55534b · 6.70:1)와의 밝기 차이도 그대로 남는다.
  */
-.chip.done { background: #f1efe8; color: #6e6c64; }
+.chip.done { background: var(--sunken); color: #6e6c64; }
 
 .chip.conf.regular,
-.chip.conf.official { background: #0f6e56; color: #fff; }
+.chip.conf.official { background: var(--green); color: #fff; }
 
 .chip.tent.regular,
-.chip.tent.official { background: #fff; border: 1px dashed #0f6e56; color: #0a5b45; }
+.chip.tent.official { background: var(--card); border: 1px dashed var(--green); color: var(--green-dark); }
 
 /* 끝난 정기관람은 회색이되, 왼쪽에 초록 선 하나로 성격을 남긴다. */
 .chip.done.regular,
 .chip.done.official {
-  background: #f1efe8;
-  color: #55534b;
-  box-shadow: inset 2px 0 0 #0f6e56;
+  background: var(--sunken);
+  color: var(--ink-2);
+  box-shadow: inset 2px 0 0 var(--green);
 }
 
 /**
  * 예매 마감만 성격과 무관하게 붉다. 지금 손을 써야 하는 것에만 쓰는 색이라
  * 한 달에 한두 칸만 붉게 남는다.
  */
-.chip.dead { background: #fcebeb; color: #a32d2d; }
+.chip.dead { background: var(--stop-tint); color: var(--stop); }
 
 /**
  * **이번 달 모임.** 달력 칸은 좁아 칩에 글자가 몇 자 안 들어간다.
@@ -831,7 +831,7 @@ ul.digest-open-questions {
   flex-wrap: wrap;
   gap: 4px 10px;
   align-items: baseline;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 11px 14px;
@@ -842,7 +842,7 @@ ul.digest-open-questions {
 }
 
 .mrow-when {
-  color: #1f1e1b;
+  color: var(--ink);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -851,7 +851,7 @@ ul.digest-open-questions {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #55534b;
+  color: var(--ink-2);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -863,11 +863,11 @@ ul.digest-open-questions {
   flex-shrink: 0;
 }
 
-.mdot.regular { background: #0f6e56; }
-.mdot.casual { background: #1f1e1b; }
+.mdot.regular { background: var(--green); }
+.mdot.casual { background: var(--ink); }
 
 .mrow-title {
-  color: #1f1e1b;
+  color: var(--ink);
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -881,16 +881,16 @@ ul.digest-open-questions {
   white-space: nowrap;
 }
 
-.mtag-conf { background: #0f6e56; color: #fff; }
-.mtag-tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
-.mtag-done { background: #f1efe8; color: #55534b; }
-.mtag-dead { background: #fcebeb; color: #a32d2d; }
+.mtag-conf { background: var(--green); color: #fff; }
+.mtag-tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
+.mtag-done { background: var(--sunken); color: var(--ink-2); }
+.mtag-dead { background: var(--stop-tint); color: var(--stop); }
 
 .drow {
   display: flex;
   gap: 10px;
   align-items: baseline;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 11px 14px;
@@ -901,7 +901,7 @@ ul.digest-open-questions {
   word-break: keep-all;
 }
 
-.drow .ck { color: #0f6e56; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+.drow .ck { color: var(--green); font-weight: 800; font-size: 14px; flex-shrink: 0; }
 .drow b { color: #4a4840; font-weight: 700; }
 
 .completed-list .drow[hidden] {
@@ -916,8 +916,8 @@ ul.digest-open-questions {
   gap: 7px;
   margin-top: 9px;
   border: 1px solid #d9d6cc;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: #555149;
   padding: 10px 14px;
   font-family: inherit;
@@ -971,7 +971,7 @@ ul.digest-open-questions {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 12px 14px;
@@ -993,10 +993,10 @@ ul.digest-open-questions {
   margin-top: 1px;
 }
 
-.t1 { background: #faeeda; color: #854f0b; }
+.t1 { background: var(--warn-tint); color: var(--warn); }
 .t2 { background: #eef1f8; color: #3d6fb4; }
 
-.warn { color: #a32d2d; font-weight: 700; }
+.warn { color: var(--stop); font-weight: 700; }
 
 .event-dialog {
   width: calc(100% - 28px);
@@ -1006,7 +1006,7 @@ ul.digest-open-questions {
   padding: 0;
   border: 0;
   border-radius: 18px;
-  color: #1f1e1b;
+  color: var(--ink);
   background: transparent;
   overflow: auto;
   box-shadow: 0 24px 70px rgba(31, 30, 27, 0.28);
@@ -1018,7 +1018,7 @@ ul.digest-open-questions {
 }
 
 .event-dialog-card {
-  background: #fff;
+  background: var(--card);
   padding: 20px;
 }
 
@@ -1044,11 +1044,11 @@ ul.digest-open-questions {
   font-weight: 800;
 }
 
-.event-dialog-status[data-tone="done"] { background: #f1efe8; color: #55534b; }
-.event-dialog-status[data-tone="conf"] { background: #e1f5ee; color: #0a5b45; }
-.event-dialog-status[data-tone="official"] { background: #0f6e56; color: #fff; }
-.event-dialog-status[data-tone="tent"] { background: #faeeda; color: #854f0b; }
-.event-dialog-status[data-tone="dead"] { background: #fcebeb; color: #a32d2d; }
+.event-dialog-status[data-tone="done"] { background: var(--sunken); color: var(--ink-2); }
+.event-dialog-status[data-tone="conf"] { background: var(--green-tint); color: var(--green-dark); }
+.event-dialog-status[data-tone="official"] { background: var(--green); color: #fff; }
+.event-dialog-status[data-tone="tent"] { background: var(--warn-tint); color: var(--warn); }
+.event-dialog-status[data-tone="dead"] { background: var(--stop-tint); color: var(--stop); }
 
 .event-dialog-close {
   flex: 0 0 38px;
@@ -1056,7 +1056,7 @@ ul.digest-open-questions {
   height: 38px;
   border: 0;
   border-radius: 999px;
-  background: #f1efe8;
+  background: var(--sunken);
   color: #4a4840;
   font: inherit;
   font-size: 24px;
@@ -1065,7 +1065,7 @@ ul.digest-open-questions {
 }
 
 .event-dialog-close:hover {
-  background: #e8e5de;
+  background: var(--line);
 }
 
 .event-dialog-close:focus-visible,
@@ -1090,7 +1090,7 @@ ul.digest-open-questions {
 }
 
 .event-dialog-facts dt {
-  color: #55534b;
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1113,8 +1113,8 @@ ul.digest-open-questions {
 
 .event-dialog-note {
   padding: 11px 12px;
-  border-radius: 10px;
-  background: #f6f4ef;
+  border-radius: var(--r-control);
+  background: var(--paper);
   color: #67645c;
 }
 
@@ -1139,7 +1139,7 @@ ul.digest-open-questions {
 }
 
 .event-dialog-link.primary {
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
 }
 
@@ -1150,7 +1150,7 @@ ul.digest-open-questions {
 
 .event-dialog-dismiss {
   margin-left: auto;
-  background: #f1efe8;
+  background: var(--sunken);
   color: #4a4840;
 }
 

@@ -1,18 +1,6 @@
-:root {
-  --bg: #f6f4ef;
-  --panel: #ffffff;
-  --panel-soft: #f1efe8;
-  --ink: #1f1e1b;
-  --muted: #55534b;
-  --line: #e8e5de;
-  --line-soft: #f1efe8;
-  --green: #0f6e56;
-  --green-dark: #0a5b45;
-  --red: #a32d2d;
-  --amber: #854f0b;
-  --amber-soft: #faeeda;
-  --shadow: 0 7px 24px rgba(31, 30, 27, 0.06);
-}
+/* 값은 tokens.css 한 장에만 있다. 이 파일은 참조만 한다.
+   옛 정적 페이지는 tokens.css 를 <link> 로 먼저 읽고,
+   SPA 는 scripts/scope-legacy-css.mjs 가 범위를 입혀 앞에 붙인다. */
 
 * {
   box-sizing: border-box;
@@ -24,7 +12,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   line-height: 1.5;
@@ -68,7 +56,7 @@ a {
   margin: 0 0 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--panel);
+  background: var(--card);
   padding: 3px;
 }
 
@@ -80,7 +68,7 @@ a {
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: var(--muted);
+  color: var(--ink-2);
   font-weight: 800;
   transition: background-color 160ms ease, color 160ms ease;
 }
@@ -108,13 +96,13 @@ a {
   margin: 0 0 24px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--panel);
+  background: var(--card);
   padding: 3px;
 }
 
 .content-type-tab {
-  --tab-accent: #55534b;
-  --tab-accent-soft: #f1efe8;
+  --tab-accent: var(--ink-2);
+  --tab-accent-soft: var(--sunken);
   min-width: 0;
   min-height: 58px;
   border: 0;
@@ -142,7 +130,7 @@ a {
 }
 
 .content-type-tab.is-active {
-  background: #1f1e1b;
+  background: var(--ink);
   color: #ffffff;
 }
 
@@ -277,7 +265,7 @@ h3 {
 .board-updated,
 .update-schedule {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 800;
 }
@@ -291,7 +279,7 @@ h3 {
   border: 1px solid var(--green);
   border-radius: 8px;
   padding: 10px 15px;
-  background: var(--panel);
+  background: var(--card);
   color: var(--green-dark);
   font-size: 14px;
   font-weight: 800;
@@ -325,7 +313,7 @@ h3 {
 .icon-button {
   min-height: 40px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 9px 14px;
   font-weight: 800;
   text-decoration: none;
@@ -345,12 +333,12 @@ h3 {
 .button.tertiary,
 .ghost-link {
   border-color: var(--line);
-  background: var(--panel);
+  background: var(--card);
   color: var(--ink);
 }
 
 .button.danger {
-  background: var(--red);
+  background: var(--stop);
   color: #ffffff;
 }
 
@@ -358,7 +346,7 @@ h3 {
   width: 40px;
   padding: 0;
   border-color: var(--line);
-  background: var(--panel);
+  background: var(--card);
   color: var(--ink);
   font-size: 24px;
   line-height: 1;
@@ -375,14 +363,14 @@ h3 {
   min-height: 92px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--card);
   padding: 16px;
   box-shadow: var(--shadow);
 }
 
 .metric span {
   display: block;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 800;
 }
@@ -402,8 +390,8 @@ h3 {
 .guide-panel,
 .event-area {
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
+  border-radius: var(--r-card);
+  background: var(--card);
   box-shadow: var(--shadow);
 }
 
@@ -428,7 +416,7 @@ h3 {
 
 .verification-panel p:last-child {
   margin-bottom: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -448,7 +436,7 @@ h3 {
   gap: 14px;
   align-items: end;
   justify-content: space-between;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--sunken);
   padding-bottom: 10px;
 }
 
@@ -460,7 +448,7 @@ h3 {
 
 .recommendation-group-head p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 800;
 }
@@ -469,7 +457,7 @@ h3 {
   flex: 0 0 auto;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--panel-soft);
+  background: var(--sunken);
   padding: 5px 10px;
   color: var(--green-dark);
   font-size: 12px;
@@ -486,8 +474,8 @@ h3 {
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #ffffff;
+  border-radius: var(--r-card);
+  background: var(--card);
   padding: 16px;
 }
 
@@ -512,8 +500,8 @@ h3 {
   min-height: 26px;
   border-radius: 999px;
   padding: 4px 9px;
-  background: #f1efe8;
-  color: #55534b;
+  background: var(--sunken);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
@@ -534,7 +522,7 @@ h3 {
 }
 
 .movie-booking-box span {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
   font-weight: 800;
 }
@@ -546,8 +534,8 @@ h3 {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background: #f1efe8;
-  color: #1f1e1b;
+  background: var(--sunken);
+  color: var(--ink);
   font-size: 18px;
   font-weight: 900;
 }
@@ -577,7 +565,7 @@ h3 {
 }
 
 .stars {
-  color: #1f1e1b;
+  color: var(--ink);
   font-size: 14px;
   font-weight: 900;
   white-space: nowrap;
@@ -592,7 +580,7 @@ h3 {
 }
 
 .rating-source {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
   line-height: 1.35;
   font-weight: 700;
@@ -623,12 +611,12 @@ h3 {
 
 .exhibition-details div {
   min-width: 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 8px;
 }
 
 .exhibition-details dt {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
 }
@@ -669,8 +657,8 @@ h3 {
   box-sizing: border-box;
   margin-top: 12px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #ffffff;
+  border-radius: var(--r-card);
+  background: var(--card);
   box-shadow: var(--shadow);
   padding: 16px;
 }
@@ -689,12 +677,12 @@ h3 {
 }
 
 .recommendation-inline-body dl div {
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 8px;
 }
 
 .recommendation-inline-body dt {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
 }
@@ -734,7 +722,7 @@ h3 {
   cursor: pointer;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--card);
   padding: 13px 16px;
   box-shadow: var(--shadow);
   color: var(--ink);
@@ -747,7 +735,7 @@ h3 {
 
 .share-meta {
   margin: -4px 0 12px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -782,7 +770,7 @@ label {
 }
 
 label span {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 800;
 }
@@ -792,8 +780,8 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #ffffff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: var(--ink);
 }
 
@@ -856,7 +844,7 @@ a:focus-visible {
 
 .source-block {
   margin-top: 22px;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 18px;
 }
 
@@ -878,7 +866,7 @@ a:focus-visible {
 
 .result-count {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-weight: 800;
 }
 
@@ -892,7 +880,7 @@ table {
   width: 100%;
   min-width: 1060px;
   border-collapse: collapse;
-  background: #ffffff;
+  background: var(--card);
 }
 
 thead {
@@ -902,7 +890,7 @@ thead {
 
 th,
 td {
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--sunken);
   padding: 11px 12px;
   text-align: left;
   vertical-align: top;
@@ -933,14 +921,14 @@ tbody tr:hover {
 .title-cell span {
   display: block;
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
 }
 
 .sub-note {
   display: block;
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   line-height: 1.35;
 }
@@ -959,7 +947,7 @@ tbody tr:hover {
 }
 
 .pill.plan {
-  background: var(--panel-soft);
+  background: var(--sunken);
   color: var(--ink);
 }
 
@@ -970,12 +958,12 @@ tbody tr:hover {
 
 .pill.hold {
   background: #f2f4f7;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 .pill.cancel {
   background: #fdecec;
-  color: var(--red);
+  color: var(--stop);
 }
 
 .money {
@@ -992,8 +980,8 @@ tbody tr:hover {
 .row-actions a {
   min-height: 32px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #ffffff;
+  border-radius: var(--r-control);
+  background: var(--card);
   padding: 6px 9px;
   color: var(--ink);
   font-size: 12px;
@@ -1008,7 +996,7 @@ tbody tr:hover {
 .event-card {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--card);
   padding: 14px;
 }
 
@@ -1034,7 +1022,7 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1048,9 +1036,9 @@ tbody tr:hover {
 .empty-state {
   margin: 18px 0 0;
   border: 1px dashed var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-card);
   padding: 24px;
-  color: var(--muted);
+  color: var(--ink-2);
   text-align: center;
   font-weight: 800;
 }
@@ -1058,7 +1046,7 @@ tbody tr:hover {
 dialog {
   width: min(920px, calc(100% - 24px));
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-card);
   padding: 0;
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
 }

@@ -1,6 +1,6 @@
 /* 이 파일은 생성된 것이다. 손으로 고치지 말 것.
  *
- *   원본     app/public/notice.css   (한 글자도 바꾸지 않는다)
+ *   원본     app/public/tokens.css + app/public/notice.css   (한 글자도 바꾸지 않는다)
  *   생성기   scripts/scope-legacy-css.mjs
  *   범위     body.calendar-page
  *
@@ -11,6 +11,62 @@
  * 그래서 **값은 그대로 두고 적용 범위만** 라우트 클래스로 가른다.
  * 클래스 선택자는 건드리지 않는다.
  */
+/* tokens.css — 사이트가 쓰는 값을 **한 곳에** 모아 둔다.
+ *
+ * 여기 말고 다른 곳에 색을 적지 않는다. 색 하나를 바꿀 때 고칠 곳이 한 줄이어야
+ * 한다는 것이 이 파일이 있는 이유다. 보드·일정·설문 세 화면이 이 한 벌을 나눠 쓴다.
+ *
+ * ── 어떻게 세 화면에 닿나 ──────────────────────────────────
+ * 옛 정적 페이지(app/public/index.html · notice.html)는 이 파일을 그대로 <link> 한다.
+ * SPA 는 scripts/scope-legacy-css.mjs 가 이 파일을 **두 스코프로 각각 복사해**
+ * legacy-board.css · legacy-notice.css 맨 앞에 붙인다. 그래서 `:root` 가
+ * `body:where(.board-page)` · `body:where(.calendar-page)` 두 벌이 된다.
+ *
+ * 설문 화면은 body 클래스가 `calendar-page` 다 (app/src/App.tsx 의 라우트 판정).
+ * 그래서 survey.css 에서도 이 변수들을 쓸 수 있다.
+ *
+ * ── 왜 :root 하나로 안 두나 ────────────────────────────────
+ * 옛 CSS 두 장이 `body` · 맨 `h1` 같은 전역 선택자를 서로 덮어쓰는 문제 때문에
+ * 라우트별로 범위를 가르고 있다. 변수만 전역으로 빼면 그 경계가 두 겹이 되어
+ * 다음 사람이 어느 쪽을 고쳐야 하는지 알기 어렵다. 생성기 한 곳에서만 다룬다.
+ */
+
+body:where(.calendar-page) {
+  /* ── 중립 ────────────────────────────────────────────── */
+  --paper: #f6f4ef;        /* 페이지 바탕 */
+  --card: #ffffff;         /* 카드·패널 바탕 */
+  --sunken: #f1efe8;       /* 한 단 들어간 바탕 — 칩·순위 블록·연한 테두리 */
+  --line: #e8e5de;
+  --line-strong: #d9d5ca;
+
+  --ink: #1f1e1b;          /* 본문 */
+  --ink-2: #55534b;        /* 보조 — 흰 바탕 7.71:1 · 칩 바탕 6.70:1 */
+  --ink-3: #706d65;        /* 더 흐린 보조. **칩 바탕(--sunken) 위에서는 4.49:1 로
+                              기준에 못 미친다.** 흰 바탕(5.17)과 페이지 바탕(4.95)에서만 쓴다. */
+
+  /* ── 브랜드 ──────────────────────────────────────────── */
+  --green: #0f6e56;
+  --green-dark: #0a5b45;
+  --green-tint: #e1f5ee;
+
+  /* ── 상태 ────────────────────────────────────────────── */
+  --warn: #854f0b;         /* 「확인 필요」 전용 */
+  --warn-tint: #faeeda;
+  --stop: #a32d2d;         /* 「마감 · 오류」 전용 */
+  --stop-tint: #fcebeb;
+
+  /* ── 모양 ────────────────────────────────────────────── */
+  --r-card: 14px;
+  --r-control: 10px;
+
+  /* 지시서 5단계 예시는 알파 0.05 로 적혀 있으나, 1단계 값 표의 0.06 을 따른다.
+     0.06 이 이미 적용돼 화면 대조 기준에 들어가 있고, 둘의 차이는 눈에 안 보인다. */
+  --shadow: 0 7px 24px rgba(31, 30, 27, 0.06);
+}
+
+
+/* ── 여기부터 app/public/notice.css ── */
+
 body:where(.calendar-page) {
   color-scheme: light;
 }
@@ -21,9 +77,9 @@ body:where(.calendar-page) {
 
 body:where(.calendar-page) {
   margin: 0;
-  background: #f6f4ef;
+  background: var(--paper);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', sans-serif;
-  color: #1f1e1b;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
@@ -39,7 +95,7 @@ body:where(.calendar-page) {
   letter-spacing: 0.12em;
   /* 배경 #f6f4ef 와 3.27:1 이라 밝은 곳에서 흐렸다. 색조는 그대로 두고 밝기만 낮춘다.
      4.50:1 은 기준에 정확히 걸쳐 반올림에 따라 미달로 읽혔다 — 여유를 두고 4.70:1 로 잡는다. */
-  color: #706d65;
+  color: var(--ink-3);
   font-weight: 600;
   margin: 0;
 }
@@ -53,7 +109,7 @@ body:where(.calendar-page) {
 
 .upd {
   display: inline-block;
-  background: #1f1e1b;
+  background: var(--ink);
   color: #fff;
   border-radius: 999px;
   padding: 7px 15px;
@@ -63,7 +119,7 @@ body:where(.calendar-page) {
 
 .board-jump {
   margin-top: 20px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #dce8e3;
   border-radius: 16px;
   padding: 17px;
@@ -72,7 +128,7 @@ body:where(.calendar-page) {
 
 .board-jump-kicker {
   margin: 0 0 3px;
-  color: #0f6e56;
+  color: var(--green);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -98,9 +154,9 @@ body:where(.calendar-page) {
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 11px 13px;
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
   font-size: 14px;
   font-weight: 750;
@@ -212,7 +268,7 @@ body:where(.calendar-page) {
   flex-shrink: 0;
   border: 1px solid #cfc7f4;
   border-radius: 999px;
-  background: #fff;
+  background: var(--card);
   color: #51418a;
   padding: 5px 10px;
   font-size: 11.5px;
@@ -230,8 +286,8 @@ body:where(.calendar-page) {
 
 .digest-loading, .digest-error {
   margin: 0;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: #6d6686;
   padding: 14px;
   font-size: 13px;
@@ -337,7 +393,7 @@ body:where(.calendar-page) {
   margin-top: 14px;
   border: 1px solid #ddd7f7;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   padding: 13px 14px;
 }
 
@@ -356,7 +412,7 @@ body:where(.calendar-page) {
 /* React 화면에서는 목록 자체가 카드다. 예전 CSS는 카드 안의 ul 만 겨냥해서
    기본 16px 글자와 바깥 글머리표가 남았다. 왼쪽 안쪽 여백에 표식을 넣고
    기존 정리봇 본문과 같은 13px 글꼴로 맞춘다. */
-ul.digest-decisions {
+:where(body.calendar-page) ul.digest-decisions {
   margin: 14px 0 16px;
   padding: 13px 14px 13px 32px;
   color: #4c4857;
@@ -449,15 +505,15 @@ ul.digest-decisions {
   flex-shrink: 0;
 }
 
-.dot-conf { background: #0f6e56; }
-.dot-dark { background: #1f1e1b; }
+.dot-conf { background: var(--green); }
+.dot-dark { background: var(--ink); }
 .dot-done { background: #b4b2a9; }
 .dot-tent { background: #ef9f27; }
 
 .card {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
   display: flex;
   gap: 14px;
@@ -467,15 +523,15 @@ ul.digest-decisions {
 
 /* 정기 모임 카드. `official` 은 옛 페이지가 쓰는 같은 뜻의 이름이라 함께 둔다. */
 .card-regular, .card-official {
-  box-shadow: inset 4px 0 0 #0f6e56;
+  box-shadow: inset 4px 0 0 var(--green);
 }
 
 .db {
   min-width: 68px;
   text-align: center;
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 9px 4px 8px;
 }
 
@@ -486,8 +542,8 @@ ul.digest-decisions {
 
 .tag {
   display: inline-block;
-  background: #e1f5ee;
-  color: #0a5b45;
+  background: var(--green-tint);
+  color: var(--green-dark);
   font-size: 12px;
   font-weight: 700;
   border-radius: 999px;
@@ -502,13 +558,13 @@ ul.digest-decisions {
 }
 
 .tag-regular, .tag-official {
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
 }
 
 .tag-tent {
-  background: #faeeda;
-  color: #854f0b;
+  background: var(--warn-tint);
+  color: var(--warn);
 }
 
 
@@ -522,13 +578,13 @@ ul.digest-decisions {
 
 .meta {
   font-size: 14px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.75;
   word-break: keep-all;
   margin: 0;
 }
 
-.meta b { color: #1f1e1b; font-weight: 700; }
+.meta b { color: var(--ink); font-weight: 700; }
 
 .card-alert {
   margin: 10px 0 0;
@@ -549,7 +605,7 @@ ul.digest-decisions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 10px 12px;
@@ -570,7 +626,7 @@ ul.digest-decisions {
   margin-top: 18px;
   border: 1px solid #dedbd2;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   overflow: hidden;
 }
 
@@ -582,9 +638,9 @@ ul.digest-decisions {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #fff;
-  border-color: #e8e5de;
-  color: #1f1e1b;
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 .lchip.regular::before, .lchip.casual::before {
@@ -595,16 +651,16 @@ ul.digest-decisions {
   flex-shrink: 0;
 }
 
-.lchip.regular::before { background: #0f6e56; }
-.lchip.casual::before { background: #1f1e1b; }
+.lchip.regular::before { background: var(--green); }
+.lchip.casual::before { background: var(--ink); }
 
 /* 옛 페이지의 여섯 칸 범례. 그 페이지가 아직 이 이름들을 쓴다. */
-.lchip.done { background: #f1efe8; color: #55534b; }
-.lchip.conf { background: #0f6e56; color: #fff; }
-.lchip.official { background: #0f6e56; color: #fff; }
-.lchip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
-.lchip.dead { background: #fcebeb; color: #a32d2d; }
-.lchip.movie { background: #f1efe8; color: #55534b; }
+.lchip.done { background: var(--sunken); color: var(--ink-2); }
+.lchip.conf { background: var(--green); color: #fff; }
+.lchip.official { background: var(--green); color: #fff; }
+.lchip.tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
+.lchip.dead { background: var(--stop-tint); color: var(--stop); }
+.lchip.movie { background: var(--sunken); color: var(--ink-2); }
 
 /* 채움·점선·회색이 무엇인지 적는 세 줄. 색 점과 늘 붙어 다닌다. */
 .legend-note {
@@ -617,7 +673,7 @@ ul.digest-decisions {
 .lnote {
   font-size: 12.5px;
   font-weight: 600;
-  color: #55534b;
+  color: var(--ink-2);
   word-break: keep-all;
 }
 
@@ -714,7 +770,7 @@ ul.digest-decisions {
 .wd-sat { color: #3d6fb4; }
 
 .cell {
-  background: #fff;
+  background: var(--card);
   min-height: 48px;
   padding: 4px;
 }
@@ -732,7 +788,7 @@ ul.digest-decisions {
 
 .cal .cell .dnum.is-today {
   display: inline-block;
-  background: #1f1e1b;
+  background: var(--ink);
   color: #fff;
   border-radius: 999px;
   padding: 1px 7px;
@@ -742,7 +798,7 @@ ul.digest-decisions {
 .tlab {
   display: block;
   font-size: 10.5px;
-  color: #1f1e1b;
+  color: var(--ink);
   font-weight: 700;
   margin-top: 3px;
 }
@@ -774,7 +830,7 @@ ul.digest-decisions {
 }
 
 .event-trigger:focus-visible {
-  outline: 2px solid #1f1e1b;
+  outline: 2px solid var(--ink);
   outline-offset: 1px;
 }
 
@@ -793,8 +849,8 @@ ul.digest-decisions {
  * `official` 은 옛 페이지가 `regular` 와 같은 뜻으로 쓰는 이름이라 함께 적는다.
  * 그래서 옛 화면과 이식본이 같은 색으로 그려진다.
  */
-.chip.conf { background: #1f1e1b; color: #fff; }
-.chip.tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
+.chip.conf { background: var(--ink); color: #fff; }
+.chip.tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
 /**
  * 수시 완료의 글자색만 표에 적힌 #706d65 가 아니라 #6e6c64 다.
  * #706d65 는 흰 바탕 5.17 · 페이지 바탕 4.95 로 넉넉하지만, **칩 바탕 #f1efe8 위에서는
@@ -802,24 +858,24 @@ ul.digest-decisions {
  * #6e6c64 는 같은 바탕에서 4.57:1 이고 이미 이 파일이 쓰던 값이다.
  * 정기 완료(#55534b · 6.70:1)와의 밝기 차이도 그대로 남는다.
  */
-.chip.done { background: #f1efe8; color: #6e6c64; }
+.chip.done { background: var(--sunken); color: #6e6c64; }
 
-.chip.conf.regular, .chip.conf.official { background: #0f6e56; color: #fff; }
+.chip.conf.regular, .chip.conf.official { background: var(--green); color: #fff; }
 
-.chip.tent.regular, .chip.tent.official { background: #fff; border: 1px dashed #0f6e56; color: #0a5b45; }
+.chip.tent.regular, .chip.tent.official { background: var(--card); border: 1px dashed var(--green); color: var(--green-dark); }
 
 /* 끝난 정기관람은 회색이되, 왼쪽에 초록 선 하나로 성격을 남긴다. */
 .chip.done.regular, .chip.done.official {
-  background: #f1efe8;
-  color: #55534b;
-  box-shadow: inset 2px 0 0 #0f6e56;
+  background: var(--sunken);
+  color: var(--ink-2);
+  box-shadow: inset 2px 0 0 var(--green);
 }
 
 /**
  * 예매 마감만 성격과 무관하게 붉다. 지금 손을 써야 하는 것에만 쓰는 색이라
  * 한 달에 한두 칸만 붉게 남는다.
  */
-.chip.dead { background: #fcebeb; color: #a32d2d; }
+.chip.dead { background: var(--stop-tint); color: var(--stop); }
 
 /**
  * **이번 달 모임.** 달력 칸은 좁아 칩에 글자가 몇 자 안 들어간다.
@@ -836,7 +892,7 @@ ul.digest-decisions {
   flex-wrap: wrap;
   gap: 4px 10px;
   align-items: baseline;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 11px 14px;
@@ -847,7 +903,7 @@ ul.digest-decisions {
 }
 
 .mrow-when {
-  color: #1f1e1b;
+  color: var(--ink);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -856,7 +912,7 @@ ul.digest-decisions {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #55534b;
+  color: var(--ink-2);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -868,11 +924,11 @@ ul.digest-decisions {
   flex-shrink: 0;
 }
 
-.mdot.regular { background: #0f6e56; }
-.mdot.casual { background: #1f1e1b; }
+.mdot.regular { background: var(--green); }
+.mdot.casual { background: var(--ink); }
 
 .mrow-title {
-  color: #1f1e1b;
+  color: var(--ink);
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -886,16 +942,16 @@ ul.digest-decisions {
   white-space: nowrap;
 }
 
-.mtag-conf { background: #0f6e56; color: #fff; }
-.mtag-tent { background: #fff; border: 1px dashed #b6b2a6; color: #55534b; }
-.mtag-done { background: #f1efe8; color: #55534b; }
-.mtag-dead { background: #fcebeb; color: #a32d2d; }
+.mtag-conf { background: var(--green); color: #fff; }
+.mtag-tent { background: var(--card); border: 1px dashed #b6b2a6; color: var(--ink-2); }
+.mtag-done { background: var(--sunken); color: var(--ink-2); }
+.mtag-dead { background: var(--stop-tint); color: var(--stop); }
 
 .drow {
   display: flex;
   gap: 10px;
   align-items: baseline;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 11px 14px;
@@ -906,7 +962,7 @@ ul.digest-decisions {
   word-break: keep-all;
 }
 
-.drow .ck { color: #0f6e56; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+.drow .ck { color: var(--green); font-weight: 800; font-size: 14px; flex-shrink: 0; }
 .drow b { color: #4a4840; font-weight: 700; }
 
 .completed-list .drow[hidden] {
@@ -921,8 +977,8 @@ ul.digest-decisions {
   gap: 7px;
   margin-top: 9px;
   border: 1px solid #d9d6cc;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: #555149;
   padding: 10px 14px;
   font-family: inherit;
@@ -976,7 +1032,7 @@ ul.digest-decisions {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #eceae2;
   border-radius: 11px;
   padding: 12px 14px;
@@ -998,10 +1054,10 @@ ul.digest-decisions {
   margin-top: 1px;
 }
 
-.t1 { background: #faeeda; color: #854f0b; }
+.t1 { background: var(--warn-tint); color: var(--warn); }
 .t2 { background: #eef1f8; color: #3d6fb4; }
 
-.warn { color: #a32d2d; font-weight: 700; }
+.warn { color: var(--stop); font-weight: 700; }
 
 .event-dialog {
   width: calc(100% - 28px);
@@ -1011,7 +1067,7 @@ ul.digest-decisions {
   padding: 0;
   border: 0;
   border-radius: 18px;
-  color: #1f1e1b;
+  color: var(--ink);
   background: transparent;
   overflow: auto;
   box-shadow: 0 24px 70px rgba(31, 30, 27, 0.28);
@@ -1023,7 +1079,7 @@ ul.digest-decisions {
 }
 
 .event-dialog-card {
-  background: #fff;
+  background: var(--card);
   padding: 20px;
 }
 
@@ -1049,11 +1105,11 @@ ul.digest-decisions {
   font-weight: 800;
 }
 
-.event-dialog-status[data-tone="done"] { background: #f1efe8; color: #55534b; }
-.event-dialog-status[data-tone="conf"] { background: #e1f5ee; color: #0a5b45; }
-.event-dialog-status[data-tone="official"] { background: #0f6e56; color: #fff; }
-.event-dialog-status[data-tone="tent"] { background: #faeeda; color: #854f0b; }
-.event-dialog-status[data-tone="dead"] { background: #fcebeb; color: #a32d2d; }
+.event-dialog-status[data-tone="done"] { background: var(--sunken); color: var(--ink-2); }
+.event-dialog-status[data-tone="conf"] { background: var(--green-tint); color: var(--green-dark); }
+.event-dialog-status[data-tone="official"] { background: var(--green); color: #fff; }
+.event-dialog-status[data-tone="tent"] { background: var(--warn-tint); color: var(--warn); }
+.event-dialog-status[data-tone="dead"] { background: var(--stop-tint); color: var(--stop); }
 
 .event-dialog-close {
   flex: 0 0 38px;
@@ -1061,7 +1117,7 @@ ul.digest-decisions {
   height: 38px;
   border: 0;
   border-radius: 999px;
-  background: #f1efe8;
+  background: var(--sunken);
   color: #4a4840;
   font: inherit;
   font-size: 24px;
@@ -1070,7 +1126,7 @@ ul.digest-decisions {
 }
 
 .event-dialog-close:hover {
-  background: #e8e5de;
+  background: var(--line);
 }
 
 .event-dialog-close:focus-visible, .event-dialog-dismiss:focus-visible, .event-dialog-link:focus-visible {
@@ -1093,7 +1149,7 @@ ul.digest-decisions {
 }
 
 .event-dialog-facts dt {
-  color: #55534b;
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1115,8 +1171,8 @@ ul.digest-decisions {
 
 .event-dialog-note {
   padding: 11px 12px;
-  border-radius: 10px;
-  background: #f6f4ef;
+  border-radius: var(--r-control);
+  background: var(--paper);
   color: #67645c;
 }
 
@@ -1140,7 +1196,7 @@ ul.digest-decisions {
 }
 
 .event-dialog-link.primary {
-  background: #0f6e56;
+  background: var(--green);
   color: #fff;
 }
 
@@ -1151,7 +1207,7 @@ ul.digest-decisions {
 
 .event-dialog-dismiss {
   margin-left: auto;
-  background: #f1efe8;
+  background: var(--sunken);
   color: #4a4840;
 }
 
