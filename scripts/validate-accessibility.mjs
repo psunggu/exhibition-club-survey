@@ -76,82 +76,85 @@ const notes = [];
 const READY = { 일정: '.cal .cell', 보드: '.exhibition-card' };
 const MIN_TEXTS = { 일정: 100, 보드: 300 };
 
-for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
-  // 해시만 바꾸면 다시 그리지 않을 수 있다. 매번 새로 연다.
-  await page.goto('about:blank');
-  await page.goto(`http://localhost:8252${BASE}/${route}`, { waitUntil: 'networkidle' });
-  try {
-    await page.waitForSelector(READY[name], { timeout: 30000, state: 'attached' });
-  } catch {
-    fails.push(`${name} 화면이 그려지지 않아 잴 수 없었다 (${READY[name]} 없음)`);
-    continue;
-  }
-  await page.waitForTimeout(1200);
-
-  const data = await page.evaluate(() => {
-    const rgb = (s) => { const m = s.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : null; };
-    /** 투명한 조상을 거슬러 올라가 실제로 깔린 색을 찾는다 */
-    const bgOf = (el) => {
-      for (let e = el; e; e = e.parentElement) {
-        const c = getComputedStyle(e).backgroundColor;
-        const m = c.match(/[\d.]+/g);
-        if (m && (m.length < 4 || parseFloat(m[3]) > 0.5)) return rgb(c);
-      }
-      return [255, 255, 255];
-    };
-    /**
-     * `children.length === 0` 으로만 거르면 <br> 이 든 문단이 빠진다 —
-     * 실제로 그래서 꼬리말(2.79:1)을 처음 감사에서 놓쳤다.
-     * 그래서 자식이 <br>·<b>·<span> 뿐인 것도 글자 마디로 본다.
-     */
-    const INLINE = new Set(['BR', 'B', 'STRONG', 'EM', 'I', 'SPAN', 'A', 'SMALL']);
-    const leafish = (e) => [...e.children].every((c) => INLINE.has(c.tagName));
-
-    const texts = [...document.querySelectorAll('p,span,h1,h2,h3,h4,dt,dd,li,button,a,summary,strong,b')]
-      .filter((e) => e.offsetParent !== null && leafish(e) && (e.textContent || '').trim())
-      .map((e) => {
-        const c = getComputedStyle(e);
-        return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
-          size: parseFloat(c.fontSize) || 0, weight: Number(c.fontWeight) || 400,
-          fg: rgb(c.color), bg: bgOf(e), txt: (e.textContent || '').trim().slice(0, 22) };
-      });
-
-    const targets = [...document.querySelectorAll('a,button,summary,input,[role="button"]')]
-      .filter((e) => e.offsetParent !== null)
-      .map((e) => { const r = e.getBoundingClientRect();
-        return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
-          w: Math.round(r.width), h: Math.round(r.height),
-          txt: (e.textContent || '').trim().slice(0, 22) }; })
-      .filter((t) => t.h > 0);
-
-    /**
-     * **한 줄일 때의 높이**를 규칙에서 계산한다.
-     *
-     * 재기만 하면 지금 데이터에 기댄다 — 실제로 달력 칩은 글자가 두 줄로 접혀
-     * padding 을 21px 짜리로 되돌려도 40px 로 재졌고, 검사기가 통과시켰다.
-     * 짧은 칩 하나만 생기면 바로 기준 아래로 내려간다.
-     * 그래서 글자 한 줄 + 위아래 여백 + 테두리로 최소 높이를 따진다.
-     */
-    const minHeights = [];
-    for (const sel of ['.chip', '.official-info-link', '.lchip']) {
-      const e = [...document.querySelectorAll(sel)].find((x) => x.offsetParent !== null);
-      if (!e) continue;
-      const c = getComputedStyle(e);
-      const fs = parseFloat(c.fontSize) || 0;
-      const lhRaw = c.lineHeight;
-      const lh = lhRaw === 'normal' ? fs * 1.2 : (parseFloat(lhRaw) || fs * 1.2);
-      const box = c.boxSizing === 'border-box';
-      const pad = (parseFloat(c.paddingTop) || 0) + (parseFloat(c.paddingBottom) || 0);
-      const bd = (parseFloat(c.borderTopWidth) || 0) + (parseFloat(c.borderBottomWidth) || 0);
-      const minH = parseFloat(c.minHeight) || 0;
-      const oneLine = Math.max(box ? Math.max(lh + pad + bd, minH) : lh + pad + bd, minH);
-      minHeights.push({ sel, oneLine: Math.round(oneLine * 10) / 10 });
+/**
+ * 화면 하나에서 글자 · 누르는 것 · 최소 높이를 걷어 온다.
+ * `rootSel` 을 주면 그 안만 본다 — 팝업을 열고 그 안만 재려고 받는다.
+ */
+const COLLECT = (rootSel) => {
+  const root = rootSel ? document.querySelector(rootSel) : document;
+  if (!root) return { texts: [], targets: [], minHeights: [] };
+  const rgb = (s) => { const m = s.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : null; };
+  /** 투명한 조상을 거슬러 올라가 실제로 깔린 색을 찾는다 */
+  const bgOf = (el) => {
+    for (let e = el; e; e = e.parentElement) {
+      const c = getComputedStyle(e).backgroundColor;
+      const m = c.match(/[\d.]+/g);
+      if (m && (m.length < 4 || parseFloat(m[3]) > 0.5)) return rgb(c);
     }
+    return [255, 255, 255];
+  };
+  /**
+   * `children.length === 0` 으로만 거르면 <br> 이 든 문단이 빠진다 —
+   * 실제로 그래서 꼬리말(2.79:1)을 처음 감사에서 놓쳤다.
+   * 그래서 자식이 <br>·<b>·<span> 뿐인 것도 글자 마디로 본다.
+   */
+  const INLINE = new Set(['BR', 'B', 'STRONG', 'EM', 'I', 'SPAN', 'A', 'SMALL']);
+  const leafish = (e) => [...e.children].every((c) => INLINE.has(c.tagName));
 
-    return { texts, targets, minHeights };
-  });
+  const texts = [...root.querySelectorAll('p,span,h1,h2,h3,h4,dt,dd,li,button,a,summary,strong,b')]
+    .filter((e) => e.offsetParent !== null && leafish(e) && (e.textContent || '').trim())
+    .map((e) => {
+      const c = getComputedStyle(e);
+      return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
+        size: parseFloat(c.fontSize) || 0, weight: Number(c.fontWeight) || 400,
+        fg: rgb(c.color), bg: bgOf(e), txt: (e.textContent || '').trim().slice(0, 22) };
+    });
 
-  const seen = new Set();
+  const targets = [...root.querySelectorAll('a,button,summary,input,[role="button"]')]
+    .filter((e) => e.offsetParent !== null)
+    .map((e) => { const r = e.getBoundingClientRect();
+      return { sel: e.className.toString().split(' ')[0] || e.tagName.toLowerCase(),
+        w: Math.round(r.width), h: Math.round(r.height),
+        txt: (e.textContent || '').trim().slice(0, 22) }; })
+    .filter((t) => t.h > 0);
+
+  /**
+   * **한 줄일 때의 높이**를 규칙에서 계산한다.
+   *
+   * 재기만 하면 지금 데이터에 기댄다 — 실제로 달력 칩은 글자가 두 줄로 접혀
+   * padding 을 21px 짜리로 되돌려도 40px 로 재졌고, 검사기가 통과시켰다.
+   * 짧은 칩 하나만 생기면 바로 기준 아래로 내려간다.
+   * 그래서 글자 한 줄 + 위아래 여백 + 테두리로 최소 높이를 따진다.
+   */
+  const minHeights = [];
+  for (const sel of ['.chip', '.official-info-link', '.lchip']) {
+    const e = [...root.querySelectorAll(sel)].find((x) => x.offsetParent !== null);
+    if (!e) continue;
+    const c = getComputedStyle(e);
+    const fs = parseFloat(c.fontSize) || 0;
+    const lhRaw = c.lineHeight;
+    const lh = lhRaw === 'normal' ? fs * 1.2 : (parseFloat(lhRaw) || fs * 1.2);
+    const box = c.boxSizing === 'border-box';
+    const pad = (parseFloat(c.paddingTop) || 0) + (parseFloat(c.paddingBottom) || 0);
+    const bd = (parseFloat(c.borderTopWidth) || 0) + (parseFloat(c.borderBottomWidth) || 0);
+    const minH = parseFloat(c.minHeight) || 0;
+    const oneLine = Math.max(box ? Math.max(lh + pad + bd, minH) : lh + pad + bd, minH);
+    minHeights.push({ sel, oneLine: Math.round(oneLine * 10) / 10 });
+  }
+
+  return { texts, targets, minHeights };
+};
+
+/**
+ * 걷어 온 것을 규칙에 견준다.
+ * 화면과 팝업이 **같은 잣대**를 쓰게 하려고 따로 뺐다 — 두 벌로 적으면 반드시 어긋난다.
+ */
+/** 한 자리를 여러 번 일러바치지 않게, 본 것을 판정 밖에 둔다 —
+    팝업을 다섯 번 열면 같은 글자를 다섯 번 지적하게 된다. */
+const seen = new Set();
+const seenT = new Set();
+
+const judge = (name, data) => {
   for (const t of data.texts) {
     if (!t.fg || !t.bg) continue;
     const large = t.size >= 18.66 || (t.size >= 14 && t.weight >= 700);
@@ -165,7 +168,6 @@ for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
     fails.push(`${name} .${t.sel} 글자 대비 ${r.toFixed(2)}:1 (필요 ${need}) "${t.txt}"`);
   }
 
-  const seenT = new Set();
   for (const t of data.targets) {
     if (t.h >= 24 && t.w >= 24) continue;
     const key = `${name}.${t.sel}`;
@@ -179,6 +181,57 @@ for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
     if (m.oneLine >= 24) continue;
     fails.push(`${name} ${m.sel} 글자가 한 줄이면 높이 ${m.oneLine}px (필요 24px) `
       + '— 지금은 글자가 접혀 넘기고 있을 뿐, 짧은 항목이 생기면 바로 내려간다');
+  }
+};
+
+for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
+  // 해시만 바꾸면 다시 그리지 않을 수 있다. 매번 새로 연다.
+  await page.goto('about:blank');
+  await page.goto(`http://localhost:8252${BASE}/${route}`, { waitUntil: 'networkidle' });
+  try {
+    await page.waitForSelector(READY[name], { timeout: 30000, state: 'attached' });
+  } catch {
+    fails.push(`${name} 화면이 그려지지 않아 잴 수 없었다 (${READY[name]} 없음)`);
+    continue;
+  }
+  await page.waitForTimeout(1200);
+
+  const data = await page.evaluate(COLLECT, null);
+
+  judge(name, data);
+
+  /**
+   * **팝업 안도 잰다.**
+   *
+   * 달력 칩은 눌러서 상세를 여는 버튼이고, 모임 하나에 대해 회원이 읽는 글의
+   * 대부분이 그 안에 있다. 그런데 팝업은 닫혀 있어서 위 검사에 한 글자도 안 잡혔다.
+   * 그 틈으로 기준 미달인 글자 둘이 살아 있었다 —
+   * 상태 배지 4.24:1, 항목 이름 3.59:1. 뒤엣것은 이 저장소가 설문 화면에서
+   * 한 번 겪고 `survey.css` 에 적어 둔 바로 그 색(#8a877d)이었다.
+   * 한 곳에서 배운 것이 다른 곳에 안 닿은 것은, 검사기가 거기를 안 봤기 때문이다.
+   */
+  if (name === '일정') {
+    const chips = await page.$$('.chip.event-trigger');
+    let opened = 0;
+    for (const chip of chips) {
+      // 지난 달력은 <details> 안에 접혀 있다. 안 보이는 것은 누를 수 없다.
+      if (!(await chip.isVisible())) continue;
+      await chip.click();
+      try {
+        await page.waitForSelector('.event-dialog', { timeout: 5000, state: 'visible' });
+      } catch {
+        fails.push('일정 달력 칩을 눌렀는데 팝업이 열리지 않았다');
+        break;
+      }
+      await page.waitForTimeout(150);
+      judge('일정 팝업', await page.evaluate(COLLECT, '.event-dialog'));
+      opened++;
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(120);
+    }
+    // 하나도 못 열었으면 통과가 아니라 못 잰 것이다
+    if (!opened) fails.push('일정 팝업을 하나도 열지 못했다 — 칩이 없거나 안 열린다');
+    notes.push(`팝업 ${opened}개`);
   }
 
   // 잰 개수가 터무니없이 적으면 화면이 덜 그려진 것이다 — 통과로 넘기지 않는다

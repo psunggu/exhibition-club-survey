@@ -1044,7 +1044,7 @@ ul.digest-open-questions {
   font-weight: 800;
 }
 
-.event-dialog-status[data-tone="done"] { background: #f1efe8; color: #747168; }
+.event-dialog-status[data-tone="done"] { background: #f1efe8; color: #55534b; }
 .event-dialog-status[data-tone="conf"] { background: #e1f5ee; color: #0a5b45; }
 .event-dialog-status[data-tone="official"] { background: #0f6e56; color: #fff; }
 .event-dialog-status[data-tone="tent"] { background: #faeeda; color: #854f0b; }
@@ -1090,7 +1090,7 @@ ul.digest-open-questions {
 }
 
 .event-dialog-facts dt {
-  color: #8a877d;
+  color: #55534b;
   font-size: 13px;
   font-weight: 700;
 }
