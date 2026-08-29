@@ -930,8 +930,22 @@ ok('막대가 뜨면 「N명 중 M명」 꼴이다',
 
 const briefText = await page.$eval('.brief', (e) => e.innerText.replace(/\s+/g, ' ').trim())
   .catch(() => '');
-ok('요약에 모임 이름과 상태가 있다',
-  briefText.includes('9월 정기모임') && briefText.includes('확정 발표 전'),
+/**
+ * **상태 글자를 여기 박아 두지 않는다.**
+ *
+ * 예전에는 「확정 발표 전」 이라고 적어 뒀다. 그래서 2026-08-28 에 모임이
+ * 확정됐을 때 **고치면 검사가 깨지고, 안 고치면 아무도 모르는** 상태가 됐다.
+ * 실제로 하루 동안 달력·보드는 「확정」 인데 설문 화면만 「확정 발표 전」 이었다.
+ *
+ * 소스에서 읽어 화면과 맞춰 본다. 무엇이라 적혀 있든 **화면과 같기만 하면** 된다.
+ */
+const briefState = (fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8')
+  .match(/^\s*state: '([^']+)'/m) ?? [])[1];
+ok('요약의 상태 글자가 소스와 같다',
+  !!briefState && briefText.includes(briefState),
+  `소스 '${briefState ?? '(못 읽음)'}' / 화면 '${briefText.slice(0, 40)}'`);
+ok('요약에 모임 이름이 있다',
+  briefText.includes('9월 정기모임'),
   briefText.slice(0, 40) || '카드가 없다');
 
 /**
