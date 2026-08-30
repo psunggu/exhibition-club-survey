@@ -127,10 +127,44 @@ const EXPECTED = [
       + '(app/src/Calendar.tsx 의 recent/older, COMPLETED_VISIBLE_DAYS=3). '
       + '다녀온 직후에 「다녀왔습니다」 가 바로 보이는 편이 낫다고 보아 그렇게 두었다.',
   },
+  {
+    screen: '보드', sel: '.movie-status-badge', kind: '사라짐',
+    why: '갈래를 색으로 나누지 않기로 하며(디자인 통일 2단계) 영화 카드의 배지 둘을 '
+      + '중립 칩(.card-kind-chip) 하나로 합쳤다. **글자는 그대로 남아 있다** — '
+      + '「영화 · 상영 중 · 전국 예매 1위」 처럼 한 칩에 이어 붙는다. '
+      + '옛 페이지는 아직 배지 둘을 따로 그리므로 여기서만 어긋난다.',
+  },
+  {
+    screen: '보드', sel: '.movie-ranking-badge', kind: '사라짐',
+    why: '위와 같은 병합이다. 순위는 같은 칩 뒷부분에 붙어 있다.',
+  },
+  {
+    screen: '일정', sel: '.lchip', prop: 'color',
+    old: 'rgb(85, 83, 75)', now: 'rgb(31, 30, 27)',
+    why: '달력 범례를 여섯 칸에서 색 점 둘로 줄였다(디자인 통일 3단계). '
+      + '옛 범례는 갈래(영화 모임)와 성격(공식 정기관람)과 상태(완료·확정·미정·마감)를 '
+      + '한 줄에 섞어 두어, 칩 하나를 보고 어느 축을 읽어야 하는지 알 수 없었다. '
+      + '이제 색은 정기/수시만 가르고, 채움·점선·회색이 무엇인지는 옆의 글자 셋이 말한다. '
+      + '재는 것이 첫 번째 .lchip 이라 옛 화면의 「완료」 칸과 이식본의 「정기」 칸이 맞붙는다 — '
+      + '달력 칩(.chip)은 옛 화면과 값이 같다.',
+  },
+  {
+    screen: '일정', sel: '.lchip', prop: 'backgroundColor',
+    old: 'rgb(241, 239, 232)', now: 'rgb(255, 255, 255)',
+    why: '위와 같은 범례 개편이다. 옛 「완료」 칸은 베이지, 새 「정기」 칸은 흰 바탕에 초록 점이다.',
+  },
+  {
+    screen: '일정', sel: '.lchip', prop: 'display',
+    old: 'block', now: 'flex',
+    why: '색 점을 ::before 로 글자 앞에 세우려고 inline-flex 로 바꿨다. 인라인 style 없이 CSP 를 지킨다.',
+  },
 ];
 
+// kind 를 적은 항목은 「사라짐 · 새로생김」 을, 그렇지 않은 항목은 값 하나를 가리킨다.
 const expectedHit = (r) => EXPECTED.find((e) => e.screen === r.screen && e.sel === r.sel
-  && e.prop === r.prop && e.old === String(r.old) && e.now === String(r.now));
+  && (e.kind
+    ? e.kind === r.kind
+    : e.prop === r.prop && e.old === String(r.old) && e.now === String(r.now)));
 
 const report = [];
 for (const [name, oldUrl, newUrl, sels] of PAIRS) {
@@ -157,7 +191,10 @@ if (known.length) {
   console.log(`알고서 다르게 둔 곳 ${known.length}건 — 실패로 세지 않는다`);
   known.forEach((r) => {
     const e = expectedHit(r);
-    console.log(`  · ${r.screen} ${r.sel}.${r.prop}: ${r.old} → ${r.now}`);
+    // 값다름 은 prop 이 있고, 사라짐/새로생김 은 detail 이 있다
+    console.log(r.prop
+      ? `  · ${r.screen} ${r.sel}.${r.prop}: ${r.old} → ${r.now}`
+      : `  · ${r.screen} ${r.sel}: ${r.kind} — ${r.detail}`);
     console.log(`    ${e.why}`);
   });
   console.log('');

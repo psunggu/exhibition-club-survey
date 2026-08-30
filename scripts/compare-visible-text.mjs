@@ -93,6 +93,48 @@ const volatile = (l) => VOLATILE.some((r) => r.test(l));
  */
 const norm = (l) => l.replace(/[\s·~,.()]/g, '');
 
+/**
+ * **알고서 모양을 바꾼 글.**
+ *
+ * 이 검사는 「이식하며 블록이 빠지지 않았나」 를 본다. 그래서 없어진 줄은 전부 실패로 봐야 맞다.
+ * 다만 디자인 통일 2단계에서 **일부러 모양을 바꾼 글**이 있고,
+ * 그걸 실패로 두면 사람이 검사를 통째로 끄게 된다.
+ * 지우는 대신 여기 적어 두고, 통과할 때도 **화면에 그대로 보여 준다** —
+ * 숨기면 그 다음 사람이 이유를 모른 채 되돌린다.
+ * (compare-with-legacy.mjs 의 EXPECTED 와 같은 방식이다.)
+ *
+ * 적을 때는 좁게 적는다. 정규식 하나가 한 가지 글만 잡아야 한다.
+ */
+const EXPECTED_GONE = [
+  {
+    re: /^★[★☆]{4}$/,
+    why: '별점의 노란 별을 숫자로 바꿨다 — 「4.0 / 5」. 5점 만점의 몇 점이라는 뜻도, '
+      + '스크린리더가 읽는 aria-label 문구도 그대로다. 색으로 말하던 것을 글자가 말하게 한 것이다.',
+  },
+  {
+    // 데이터에 실제로 있는 네 값을 그대로 적는다 (app/src/data/movies.ts) —
+    // 「재개봉」 하나로 뭉뚱그렸더니 「재개봉 예정」·「재개봉 상영 중」 이 안 걸려,
+    // 보드 자료가 그 상태로 바뀌는 주에 이 검사가 거짓으로 실패할 참이었다.
+    re: /^(상영 중|개봉 예정|재개봉 상영 중|재개봉 예정)$/,
+    why: '영화 카드의 배지 둘을 중립 칩 하나로 합쳤다. **글자는 지워지지 않았다** — '
+      + '「영화 · 상영 중 · 전국 예매 1위」 처럼 한 칩 안에 이어 붙는다. '
+      + '이 검사가 못 알아보는 것은 여덟 자 미만인 조각을 포함으로 봐주지 않기 때문이다.',
+  },
+  {
+    re: /^전국 예매 \d+위$/,
+    why: '위와 같은 병합이다. 순위는 같은 칩 뒷부분에 붙어 있다.',
+  },
+  {
+    re: /^(모집중 · 미정|예매 마감|영화 모임)$/,
+    why: '달력 범례를 여섯 칸에서 색 점 둘(정기 · 수시)과 설명 넷으로 바꿨다 '
+      + '(디자인 통일 3단계). 옛 범례는 갈래와 성격과 상태를 한 줄에 섞어 두어 '
+      + '칩 하나를 보고 어느 축을 읽어야 하는지 알 수 없었다. '
+      + '「영화 모임」 은 이제 색을 갖지 않고 달력 아래 「이번 달 모임」 목록에 '
+      + '「수시 · 영화」 로 적힌다. 「모집중 · 미정」 은 점선 칩과 「점선 = 미정」 이 대신한다.',
+  },
+]
+const expectedGone = (l) => EXPECTED_GONE.find((e) => e.re.test(l));
+
 const PAIRS = [
   ['보드', `http://localhost:8214/index.html`, `http://localhost:8215${BASE}/#/`],
   ['일정', `http://localhost:8214/notice.html`, `http://localhost:8215${BASE}/#/calendar`],
@@ -108,12 +150,26 @@ for (const [name, oldUrl, newUrl] of PAIRS) {
 
   const gone = [];
   const drift = [];
+  const known = [];
   for (const l of a) {
     if (b.has(l) || volatile(l)) continue;
+    const e = expectedGone(l);
+    if (e) { known.push([l, e]); continue; }
     const n = norm(l);
     // 짧은 조각은 우연히 들어맞기 쉬우니 길이가 있는 줄만 포함으로 봐준다
     if (n.length >= 8 && bNorm.some((x) => x.includes(n) || n.includes(x))) drift.push(l);
     else gone.push(l);
+  }
+
+  if (known.length) {
+    console.log(`\n── ${name}: 알고서 모양을 바꾼 줄 ${known.length}개 — 실패로 세지 않는다`);
+    const seen = new Set();
+    for (const [l, e] of known) {
+      console.log(`  · ${l.slice(0, 72)}`);
+      if (seen.has(e.why)) continue;
+      seen.add(e.why);
+      console.log(`    ${e.why}`);
+    }
   }
 
   reworded += drift.length;

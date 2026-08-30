@@ -11,11 +11,11 @@
   /* 16px 미만이면 iOS 가 탭할 때 확대하고 되돌아오지 않는다 */
   font: inherit; font-size: 16px;
   width: 100%; min-height: 48px; padding: 0 14px;
-  border: 1px solid var(--line); border-radius: 12px;
-  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--r-control);
+  background: var(--card); color: var(--ink);
 }
 .search-field input:focus-visible {
-  outline: 2px solid var(--blue); outline-offset: 2px; border-color: var(--blue);
+  outline: 2px solid var(--green); outline-offset: 2px; border-color: var(--green);
 }
 
 /* 스크린리더에만 읽히는 상태 알림 — 화면에는 아무것도 그리지 않는다 */
@@ -27,7 +27,7 @@
 /* 옛 화면의 <dialog>::backdrop 자리. React 로 옮기며 배경을 직접 깐다.
    팝업 카드 자체의 크기·여백은 legacy 의 .event-dialog · .event-dialog-card 가 낸다. */
 .event-dialog-backdrop {
-  position: fixed; inset: 0; background: rgba(23, 32, 42, 0.55);
+  position: fixed; inset: 0; background: rgba(31, 30, 27, 0.55);
   display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20;
 }
 

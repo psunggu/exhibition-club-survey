@@ -15,8 +15,8 @@
 .survey-empty {
   margin: 18px 0 0;
   border-radius: 12px;
-  background: #eef1f8;
-  color: #4b6283;
+  background: var(--green-tint);
+  color: var(--green-dark);
   padding: 14px 15px;
   font-size: 13.5px;
   line-height: 1.7;
@@ -26,9 +26,9 @@
 /* ── 머리 ─────────────────────────────────────────────── */
 
 .survey-head {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -43,7 +43,7 @@
 
 .survey-intro {
   font-size: 13.5px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.75;
   margin: 0;
   word-break: keep-all;
@@ -51,8 +51,8 @@
 
 .survey-deadline {
   display: inline-block;
-  background: #f1efe8;
-  color: #55534b;
+  background: var(--sunken);
+  color: var(--ink-2);
   border-radius: 999px;
   padding: 5px 12px;
   font-size: 12.5px;
@@ -61,16 +61,16 @@
 }
 
 .survey-deadline.closed {
-  background: #fcebeb;
-  color: #a32d2d;
+  background: var(--stop-tint);
+  color: var(--stop);
 }
 
 /* ── 이름 적기 ────────────────────────────────────────── */
 
 .survey-who {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -93,15 +93,15 @@
 .survey-field span {
   font-size: 12.5px;
   font-weight: 700;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
 .survey-field input {
   font-family: inherit;
   font-size: 15px;
-  color: #1f1e1b;
-  background: #fff;
-  border: 1px solid #d9d5ca;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
   border-radius: 9px;
   padding: 9px 11px;
   min-height: 24px;
@@ -110,14 +110,14 @@
 }
 
 .survey-field input:focus-visible {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 1px;
 }
 
 .survey-who-note {
   margin: 10px 0 0;
   font-size: 12.5px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.65;
   word-break: keep-all;
 }
@@ -132,21 +132,21 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 14px 15px;
   margin-bottom: 10px;
   cursor: pointer;
 }
 
 .survey-option:focus-within {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 1px;
 }
 
 .survey-option.picked {
-  border-color: #0f6e56;
+  border-color: var(--green);
   background: #f6fbf9;
 }
 
@@ -157,7 +157,7 @@
   height: 24px;
   margin: 1px 0 0;
   flex-shrink: 0;
-  accent-color: #0f6e56;
+  accent-color: var(--green);
 }
 
 .survey-option-body { flex-grow: 1; min-width: 0; }
@@ -165,7 +165,7 @@
 .survey-option-title {
   font-size: 15.5px;
   font-weight: 700;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.45;
   word-break: keep-all;
 }
@@ -173,20 +173,20 @@
 .survey-facts {
   margin: 7px 0 0;
   font-size: 13px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.75;
   word-break: keep-all;
   /* 분석 문장에는 후보 제목이 그대로 들어간다 — 「다음은 신의주찹쌀순대광화문점 6명」 */
   overflow-wrap: anywhere;
 }
 
-.survey-facts b { color: #1f1e1b; font-weight: 700; }
+.survey-facts b { color: var(--ink); font-weight: 700; }
 
 .survey-note {
   margin: 9px 0 0;
   border-radius: 8px;
-  background: #fff3da;
-  color: #764300;
+  background: var(--warn-tint);
+  color: var(--warn);
   padding: 8px 10px;
   font-size: 12px;
   line-height: 1.6;
@@ -240,7 +240,7 @@
   font-size: 15px;
   font-weight: 700;
   color: #fff;
-  background: #0f6e56;
+  background: var(--green);
   border: 0;
   border-radius: 11px;
   padding: 12px 20px;
@@ -255,13 +255,13 @@
 
 .survey-status {
   font-size: 13px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.6;
   word-break: keep-all;
 }
 
-.survey-status.error { color: #a32d2d; font-weight: 700; }
-.survey-status.done { color: #0a5b45; font-weight: 700; }
+.survey-status.error { color: var(--stop); font-weight: 700; }
+.survey-status.done { color: var(--green-dark); font-weight: 700; }
 
 /* ── 집계 ─────────────────────────────────────────────── */
 
@@ -284,13 +284,13 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: #0f6e56;
+  background: var(--green);
 }
 
 .survey-votes {
   font-size: 12.5px;
   font-weight: 700;
-  color: #0a5b45;
+  color: var(--green-dark);
   min-width: 44px;
   text-align: right;
 }
@@ -301,9 +301,9 @@
 .admin-input {
   font-family: inherit;
   font-size: 14.5px;
-  color: #1f1e1b;
-  background: #fff;
-  border: 1px solid #d9d5ca;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
   border-radius: 9px;
   padding: 9px 11px;
   min-height: 24px;
@@ -311,16 +311,16 @@
   box-sizing: border-box;
 }
 
-.admin-input:focus-visible { outline: 2px solid #0f6e56; outline-offset: 1px; }
+.admin-input:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
 
 textarea.admin-input { line-height: 1.6; resize: vertical; }
 select.admin-input { cursor: pointer; }
 .admin-input.kind { width: 104px; flex-shrink: 0; }
 
 .admin-form {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
 }
 
@@ -332,7 +332,7 @@ select.admin-input { cursor: pointer; }
 .admin-hint {
   margin: 0 0 12px;
   font-size: 12.5px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.65;
   word-break: keep-all;
 }
@@ -354,7 +354,7 @@ select.admin-input { cursor: pointer; }
 }
 
 .admin-option {
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfaf7;
   padding: 14px;
@@ -369,10 +369,10 @@ select.admin-input { cursor: pointer; }
   margin-bottom: 10px;
 }
 
-.admin-option-head strong { font-size: 14px; font-weight: 700; color: #1f1e1b; }
+.admin-option-head strong { font-size: 14px; font-weight: 700; color: var(--ink); }
 
 .admin-links {
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   padding-top: 11px;
   margin-top: 3px;
 }
@@ -381,7 +381,7 @@ select.admin-input { cursor: pointer; }
   display: block;
   font-size: 12.5px;
   font-weight: 700;
-  color: #55534b;
+  color: var(--ink-2);
   margin-bottom: 8px;
 }
 
@@ -399,22 +399,22 @@ select.admin-input { cursor: pointer; }
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-  color: #0f6e56;
-  background: #fff;
-  border: 1px solid #0f6e56;
+  color: var(--green);
+  background: var(--card);
+  border: 1px solid var(--green);
   border-radius: 9px;
   padding: 7px 13px;
   min-height: 24px;
   cursor: pointer;
 }
 
-.admin-mini.danger { color: #a32d2d; border-color: #d99a9a; }
-.admin-mini:disabled { color: #8a877d; border-color: #d9d5ca; cursor: default; }
+.admin-mini.danger { color: var(--stop); border-color: #d99a9a; }
+.admin-mini:disabled { color: #8a877d; border-color: var(--line-strong); cursor: default; }
 
 .admin-card {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 15px;
   margin-bottom: 10px;
 }
@@ -430,7 +430,7 @@ select.admin-input { cursor: pointer; }
   min-height: 24px;
   padding: 4px 10px;
   border-radius: 8px;
-  color: #55534b;
+  color: var(--ink-2);
   font-weight: 600;
   text-decoration: underline;
 }
@@ -439,7 +439,7 @@ select.admin-input { cursor: pointer; }
    이름이 나오는 유일한 자리다. 암호 뒤에 있고 회원 화면에는 숫자만 나온다. */
 
 .admin-results {
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   margin-top: 12px;
   padding-top: 12px;
 }
@@ -447,10 +447,10 @@ select.admin-input { cursor: pointer; }
 .admin-results-sum {
   margin: 0 0 12px;
   font-size: 13.5px;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
-.admin-results-sum b { color: #1f1e1b; font-weight: 700; }
+.admin-results-sum b { color: var(--ink); font-weight: 700; }
 
 .admin-result { margin-bottom: 13px; }
 
@@ -465,7 +465,7 @@ select.admin-input { cursor: pointer; }
 .admin-result-title {
   font-size: 13.5px;
   font-weight: 700;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.45;
   word-break: keep-all;
 }
@@ -473,7 +473,7 @@ select.admin-input { cursor: pointer; }
 .admin-result-votes {
   font-size: 12.5px;
   font-weight: 700;
-  color: #0a5b45;
+  color: var(--green-dark);
   flex-shrink: 0;
 }
 
@@ -520,7 +520,7 @@ select.admin-input { cursor: pointer; }
 }
 
 .admin-people {
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   margin-top: 14px;
   padding-top: 11px;
 }
@@ -532,12 +532,12 @@ select.admin-input { cursor: pointer; }
   gap: 10px;
   padding: 5px 0;
   font-size: 13px;
-  color: #1f1e1b;
-  border-bottom: 1px solid #f1efe8;
+  color: var(--ink);
+  border-bottom: 1px solid var(--sunken);
 }
 
 .admin-person:last-child { border-bottom: 0; }
-.admin-person-meta { font-size: 12px; color: #55534b; flex-shrink: 0; }
+.admin-person-meta { font-size: 12px; color: var(--ink-2); flex-shrink: 0; }
 
 
 /* ── 결과 차트 ────────────────────────────────────────────
@@ -546,7 +546,7 @@ select.admin-input { cursor: pointer; }
    (정상 시야에서도 ΔE 9.9). 자세한 것은 SurveyChart.tsx 머리말에 적었다. */
 
 .chart {
-  border-top: 1px solid #f1efe8;
+  border-top: 1px solid var(--sunken);
   margin-top: 10px;
   padding-top: 12px;
 }
@@ -554,7 +554,7 @@ select.admin-input { cursor: pointer; }
 .chart-caption {
   margin: 0 0 12px;
   font-size: 12px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.6;
   word-break: keep-all;
 }
@@ -577,8 +577,8 @@ select.admin-input { cursor: pointer; }
 }
 
 .chart-donut { width: 128px; height: 128px; flex-shrink: 0; }
-.chart-donut-num { font-size: 26px; font-weight: 800; fill: #1f1e1b; }
-.chart-donut-cap { font-size: 11px; font-weight: 600; fill: #55534b; }
+.chart-donut-num { font-size: 26px; font-weight: 800; fill: var(--ink); }
+.chart-donut-cap { font-size: 11px; font-weight: 600; fill: var(--ink-2); }
 
 .chart-legend {
   list-style: none;
@@ -596,7 +596,7 @@ select.admin-input { cursor: pointer; }
   align-items: center;
   gap: 7px;
   font-size: 12.5px;
-  color: #1f1e1b;
+  color: var(--ink);
 }
 
 .chart-legend-name {
@@ -608,7 +608,7 @@ select.admin-input { cursor: pointer; }
   overflow-wrap: anywhere;
 }
 
-.chart-legend-val { color: #55534b; font-weight: 700; flex-shrink: 0; }
+.chart-legend-val { color: var(--ink-2); font-weight: 700; flex-shrink: 0; }
 
 /* 가로 막대 — 여러 개 고르는 설문 */
 
@@ -625,7 +625,7 @@ select.admin-input { cursor: pointer; }
   flex-grow: 1;
   font-size: 13px;
   font-weight: 700;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.4;
   word-break: keep-all;
   /**
@@ -641,7 +641,7 @@ select.admin-input { cursor: pointer; }
   min-width: 0;
 }
 
-.chart-bar-val { font-size: 12px; color: #55534b; font-weight: 700; flex-shrink: 0; }
+.chart-bar-val { font-size: 12px; color: var(--ink-2); font-weight: 700; flex-shrink: 0; }
 
 .chart-track {
   height: 10px;
@@ -660,7 +660,7 @@ select.admin-input { cursor: pointer; }
 /* ── 작품 특징으로 보기 ───────────────────────────────────── */
 
 .analysis {
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   margin-top: 14px;
   padding-top: 12px;
 }
@@ -673,9 +673,9 @@ select.admin-input { cursor: pointer; }
   gap: 8px;
   align-items: baseline;
   padding: 7px 0;
-  border-bottom: 1px solid #f1efe8;
+  border-bottom: 1px solid var(--sunken);
   font-size: 12.5px;
-  color: #1f1e1b;
+  color: var(--ink);
 }
 
 .analysis-row:last-child { border-bottom: 0; }
@@ -683,7 +683,7 @@ select.admin-input { cursor: pointer; }
 .analysis-head {
   font-size: 11.5px;
   font-weight: 700;
-  color: #55534b;
+  color: var(--ink-2);
   padding-bottom: 5px;
 }
 
@@ -698,22 +698,22 @@ select.admin-input { cursor: pointer; }
 }
 
 .analysis-flag {
-  background: #fff3da;
-  color: #764300;
+  background: var(--warn-tint);
+  color: var(--warn);
   border-radius: 5px;
   padding: 1px 6px;
   font-size: 11px;
   font-weight: 700;
 }
 
-.analysis-days { color: #55534b; font-size: 11.5px; }
-.analysis-votes { text-align: right; font-weight: 700; color: #0a5b45; }
+.analysis-days { color: var(--ink-2); font-size: 11.5px; }
+.analysis-votes { text-align: right; font-weight: 700; color: var(--green-dark); }
 
 .analysis-lines {
   margin: 12px 0 0;
   padding-left: 17px;
   font-size: 12.5px;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.75;
   word-break: keep-all;
 }
@@ -721,8 +721,8 @@ select.admin-input { cursor: pointer; }
 .analysis-soon {
   margin: 11px 0 0;
   border-radius: 8px;
-  background: #fff3da;
-  color: #764300;
+  background: var(--warn-tint);
+  color: var(--warn);
   padding: 9px 11px;
   font-size: 12px;
   line-height: 1.6;
@@ -730,17 +730,19 @@ select.admin-input { cursor: pointer; }
 }
 
 /* ── 설문 갈래 ────────────────────────────────────────────
-   전시 관람은 사이트의 초록(#0f6e56), 식사·티타임은 주황(#a54f1f).
-   둘 다 흰 글자로 4.5:1 을 넘고(6.20 · 5.62) 서로 충분히 멀다.
-   **색만으로 가르지 않는다** — 버튼과 탭에 갈래 이름이 그대로 적혀 있다. */
+   **갈래를 색으로 나누지 않는다.** 전시든 식사든 「응답」 은 같은 주된 행동이라
+   버튼 하나면 된다. 갈래는 버튼과 탭에 적힌 이름이 말한다.
+
+   2026-08-30 이전에는 전시 초록 · 식사 주황이었고, 탭은 갈래마다 다섯 색이었다.
+   설문 화면에만 다섯 색이 더 있으니 보드·일정과 다른 사이트처럼 보였다. */
 
 .survey-go {
   display: flex;
   margin-bottom: 10px;
 }
 
-.survey-go.exhibition { background: #0f6e56; }
-.survey-go.meal { background: #a54f1f; }
+.survey-go.exhibition,
+.survey-go.meal { background: var(--green); }
 
 .survey-tabs {
   display: flex;
@@ -759,62 +761,48 @@ select.admin-input { cursor: pointer; }
   font-weight: 700;
   text-decoration: none;
   border: 1px solid transparent;
+  background: var(--sunken);
+  color: var(--ink-2);
 }
 
-.survey-tab.exhibition { background: #e1f5ee; color: #0a5b45; }
-.survey-tab.meal { background: #fdf0e6; color: #8f4419; }
-
-/* 지금 보고 있는 갈래는 테두리로도 표시한다 — 색만으로 알리지 않는다 */
-.survey-tab.exhibition.on { border-color: #0f6e56; }
-.survey-tab.meal.on { border-color: #a54f1f; }
-/* 안 보고 있는 갈래는 **흐리게 하지 않고 배경만 연하게** 한다.
-   opacity: 0.75 를 쓰고 있었는데 재 보니 전시 4.03:1 · 식사 3.68:1 로 기준(4.5:1) 아래였다.
-   대비 검사가 opacity 를 식에 안 넣어 그동안 안 걸렸을 뿐이다.
-   배경만 연하게 하면 전시 7.41:1 · 식사 6.35:1 로 오히려 올라간다. */
-.survey-tab.exhibition:not(.on) { background: #eef7f3; }
-.survey-tab.meal:not(.on) { background: #faf3ed; }
-
-/* ── 2026-08-29 갈래를 다섯으로 늘리며 더한 세 쌍 ──────────
-   위 두 쌍과 같은 방식으로 잰 값이다. 켠 배경과 끈 배경 **양쪽에서**
-   글자 대비가 4.5:1 을 넘는 것을 확인하고 골랐다 —
-   일자 7.16/7.60 · 운영 7.98/8.56 · 기타 6.90/7.35.
-   색을 바꾸려면 두 배경 모두 다시 재고 나서 바꾼다. */
-.survey-tab.datetime { background: #e4eefb; color: #1d4e89; }
-.survey-tab.club     { background: #efe8fa; color: #553289; }
-.survey-tab.etc      { background: #eceae2; color: #514e46; }
-
-.survey-tab.datetime.on { border-color: #2a63a8; }
-.survey-tab.club.on     { border-color: #6d4bad; }
-.survey-tab.etc.on      { border-color: #6b6960; }
-
-.survey-tab.datetime:not(.on) { background: #eff4fc; }
-.survey-tab.club:not(.on)     { background: #f5f1fc; }
-.survey-tab.etc:not(.on)      { background: #f3f1eb; }
+/**
+ * **지금 보고 있는 갈래만 찬다.** 다섯 갈래에 다섯 색을 주던 것을 그만뒀다 —
+ * 색이 말하던 「어느 갈래인가」 는 탭에 적힌 이름이 이미 말하고 있었고,
+ * 색이 말해야 할 「지금 어디를 보고 있나」 는 오히려 테두리 1px 에 맡겨져 있었다.
+ *
+ * 대비: 안 고른 탭 #55534b on #f1efe8 = 6.70:1, 고른 탭 #fff on #1f1e1b = 15.8:1.
+ * 색만으로 가르지 않는 것은 그대로다 — 갈래 이름이 탭에 적혀 있다.
+ */
+.survey-tab.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
 
 /* ── 회원이 보는 결과 화면 (마감된 설문) ─────────────────── */
 
 .survey-result {
-  background: #fff;
-  border: 1px solid #e8e5de;
-  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
   padding: 16px;
 }
 
 .survey-result-sum {
   margin: 0 0 4px;
   font-size: 14px;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
-.survey-result-sum b { color: #1f1e1b; font-weight: 700; }
+.survey-result-sum b { color: var(--ink); font-weight: 700; }
 
 /* 톡방에서 진행 중인 투표를 옮겨 보여 줄 때의 안내.
    여기서 고를 수 있다고 오해하면 표가 사라지는 것으로 이어지므로 눈에 띄게 둔다. */
 .survey-mirror-note {
   margin: 10px 0 0;
   border-radius: 9px;
-  background: #fdf0e6;
-  color: #8f4419;
+  background: var(--warn-tint);
+  color: var(--warn);
   padding: 9px 11px;
   font-size: 12.5px;
   line-height: 1.65;
@@ -826,7 +814,7 @@ select.admin-input { cursor: pointer; }
    말할 수 있는 것이 있어야 해서, 표에서 바로 나오는 지표를 따로 둔다. */
 
 .metrics {
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   margin-top: 14px;
   padding-top: 12px;
 }
@@ -841,7 +829,7 @@ select.admin-input { cursor: pointer; }
 .stat {
   background: #fbfaf7;
   border: 1px solid #ece9e1;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
@@ -849,7 +837,7 @@ select.admin-input { cursor: pointer; }
   min-width: 0;
 }
 
-.stat-label { font-size: 11.5px; font-weight: 700; color: #55534b;
+.stat-label { font-size: 11.5px; font-weight: 700; color: var(--ink-2);
   word-break: keep-all; overflow-wrap: anywhere; }
 /* 바로 아래 `.stat-sub` 에는 있는데 여기만 빠져 있었다. 글자를 200% 로 키우면
    두 칸 격자의 한 칸(320px 화면에서 ~140px)보다 값이 넓어져 칸 밖으로 넘친다.
@@ -857,7 +845,7 @@ select.admin-input { cursor: pointer; }
 .stat-value {
   font-size: 19px;
   font-weight: 800;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.2;
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -865,7 +853,7 @@ select.admin-input { cursor: pointer; }
 
 .stat-sub {
   font-size: 11.5px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.4;
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -878,19 +866,19 @@ select.admin-input { cursor: pointer; }
 /* 0표 글자는 #78756d 였는데 흰 배경에서 4.60:1 로 여유가 없었다.
    마감 설문 카드를 가라앉히자(#f6f4ef) 4.19:1 로 떨어져 검사가 잡았다.
    색조는 그대로 두고 밝기만 낮춘다 — #706d65 는 흰 5.17 · 지난 카드 4.95 · 마감 카드 4.70 이다. */
-.chart-legend-val.zero { color: #706d65; font-weight: 600; }
+.chart-legend-val.zero { color: var(--ink-3); font-weight: 600; }
 
 .chart-bar-pct {
   margin-left: 5px;
   font-weight: 600;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
 /* ── 운영진 참고 · 분석 메모 ──────────────────────────────
    접어 둔다. 결과를 보러 온 사람이 긴 글을 먼저 만나면 정작 숫자를 못 본다. */
 
 .note {
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfaf7;
   margin-top: 14px;
@@ -906,7 +894,7 @@ select.admin-input { cursor: pointer; }
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  color: #1f1e1b;
+  color: var(--ink);
   min-height: 24px;
   list-style: none;
 }
@@ -917,18 +905,18 @@ select.admin-input { cursor: pointer; }
 .note-head::after {
   content: '▾';
   margin-left: auto;
-  color: #55534b;
+  color: var(--ink-2);
   font-size: 11px;
 }
 
 .note[open] .note-head::after { content: '▴'; }
 
-.note-head:focus-visible { outline: 2px solid #0f6e56; outline-offset: -2px; }
+.note-head:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
 
 .note-state {
   font-size: 11.5px;
   font-weight: 600;
-  color: #55534b;
+  color: var(--ink-2);
   flex-shrink: 0;
 }
 
@@ -942,7 +930,7 @@ select.admin-input { cursor: pointer; }
 .note-text {
   margin: 0;
   font-size: 13px;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.75;
   white-space: pre-wrap;
   word-break: keep-all;
@@ -954,7 +942,7 @@ select.admin-input { cursor: pointer; }
    설문이 끝난 뒤에도 한동안 쓸모가 있다. */
 .survey-details {
   margin-top: 18px;
-  border-top: 1px solid #e8e5de;
+  border-top: 1px solid var(--line);
   padding-top: 14px;
 }
 .survey-details > summary {
@@ -970,12 +958,12 @@ select.admin-input { cursor: pointer; }
 .survey-details-hint {
   margin: 6px 0 12px;
   font-size: 12.5px;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.65;
   word-break: keep-all;
 }
 .survey-details-item {
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfaf7;
   padding: 12px 14px;
@@ -990,7 +978,7 @@ select.admin-input { cursor: pointer; }
    여기 펼쳐지는 것이 곧 교인 명부라 접어 두고 연다.
    구역으로 묶는 이유는 스무 줄을 그냥 늘어놓으면 눈이 못 따라가기 때문이다. */
 .admin-members {
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfaf7;
   padding: 4px 16px 14px;
@@ -1024,7 +1012,7 @@ select.admin-input { cursor: pointer; }
 }
 .admin-member:last-child { border-bottom: none; }
 .admin-member.head {
-  border-bottom: 1px solid #d9d5ca;
+  border-bottom: 1px solid var(--line-strong);
   padding-bottom: 6px;
 }
 .admin-member.head span { font-size: 11.5px; font-weight: 700; color: #6b6961; }
@@ -1061,7 +1049,7 @@ select.admin-input { cursor: pointer; }
 /* ── 보드에서 고르기 (운영자 화면) ─────────────────────────
    후보에 넣을 내용은 이미 보드에 있다. 손으로 다시 적지 않게 골라 가져온다. */
 .admin-picker {
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfaf7;
   padding: 4px 16px 14px;
@@ -1081,15 +1069,15 @@ select.admin-input { cursor: pointer; }
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-  color: #55534b;
-  background: #fff;
-  border: 1px solid #d9d5ca;
+  color: var(--ink-2);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 7px 15px;
   min-height: 24px;
   cursor: pointer;
 }
-.admin-kind.on { background: #0f6e56; border-color: #0f6e56; color: #fff; }
+.admin-kind.on { background: var(--green); border-color: var(--green); color: #fff; }
 .admin-picklist { max-height: 320px; overflow-y: auto; }
 .admin-pick {
   display: flex;
@@ -1100,7 +1088,7 @@ select.admin-input { cursor: pointer; }
   cursor: pointer;
 }
 .admin-pick:last-child { border-bottom: none; }
-.admin-pick input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; accent-color: #0f6e56; }
+.admin-pick input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; accent-color: var(--green); }
 .admin-pick-body { min-width: 0; }
 .admin-pick-title { display: block; font-size: 14px; font-weight: 600; color: #1d1c19; word-break: keep-all; }
 .admin-pick-hint { display: block; font-size: 12px; color: #6b6961; margin-top: 2px; word-break: keep-all; }
@@ -1148,7 +1136,7 @@ select.admin-input { cursor: pointer; }
   justify-content: space-between;
   gap: 6px;
   font-size: 12.5px;
-  color: #55534b;
+  color: var(--ink-2);
   border-bottom: 1px solid #eeece6;
   padding: 3px 0;
 }
@@ -1162,7 +1150,7 @@ select.admin-input { cursor: pointer; }
    「여기서 나가는 길이 둘 있다」 로 읽힌다. 값을 바꿀 때는 둘 다 본다. */
 .survey-jump {
   margin: 0 0 14px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid #dce8e3;
   border-radius: 16px;
   padding: 17px;
@@ -1195,14 +1183,14 @@ select.admin-input { cursor: pointer; }
   line-height: 1.5;
   word-break: keep-all;
 }
-.survey-jump-state.on { color: #1f1e1b; }
+.survey-jump-state.on { color: var(--ink); }
 .survey-jump-state b {
   display: inline-block;
   margin-right: 6px;
   padding: 1px 7px;
   border-radius: 999px;
   background: #e4f2ec;
-  color: #0a5b45;
+  color: var(--green-dark);
   font-size: 11.5px;
   font-weight: 800;
 }
@@ -1218,7 +1206,7 @@ select.admin-input { cursor: pointer; }
  * 그리고 색만으로 알리지 않는다: 「마감」 글자와 「… 마감됨」 배지가 그대로 남는다.
  */
 .survey-off .survey-result {
-  background: #f6f4ef;
+  background: var(--paper);
   border-color: #e2ded4;
 }
 
@@ -1246,14 +1234,14 @@ select.admin-input { cursor: pointer; }
 .survey-history-hint {
   margin: 0 0 12px;
   font-size: 13px;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
 /* 카드 모양은 운영자 화면의 접는 명부(.admin-members)에서 그대로 가져왔다 —
    새 모양을 만들지 않는다. */
 .survey-past {
   background: #fbfaf7;
-  border: 1px solid #e8e5de;
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0 14px;
   margin-bottom: 10px;
@@ -1279,7 +1267,7 @@ select.admin-input { cursor: pointer; }
   right: 2px;
   top: 12px;
   font-size: 15px;
-  color: #55534b;
+  color: var(--ink-2);
 }
 .survey-past[open] > summary::after { content: "⌃"; }
 
@@ -1287,7 +1275,7 @@ select.admin-input { cursor: pointer; }
   /* 알파 24% 를 쓰던 것을 불투명으로 바꿨다. 카드 바탕 위에 합성하면 1.43:1 이라
      WCAG 1.4.11 이 요구하는 3:1 의 절반도 안 됐다 — 키보드만 쓰는 사람이 어디 있는지
      사실상 못 본다. 이 파일의 다른 포커스 표시(112·312행)는 이미 불투명 #0f6e56(5.94:1)이다. */
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 2px;
   border-radius: 8px;
 }
@@ -1295,7 +1283,7 @@ select.admin-input { cursor: pointer; }
 .survey-past-title {
   font-size: 15px;
   font-weight: 700;
-  color: #1f1e1b;
+  color: var(--ink);
   line-height: 1.4;
 }
 
@@ -1305,7 +1293,7 @@ select.admin-input { cursor: pointer; }
   gap: 3px;
   font-size: 13px;
   line-height: 1.5;
-  color: #55534b;
+  color: var(--ink-2);
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
@@ -1337,8 +1325,8 @@ select.admin-input { cursor: pointer; }
 /* 이미 「지난 설문」 상자 안이라 한 번 더 가라앉힐 필요가 없다.
    두 번 눌러 놓으면 정작 보러 들어온 결과가 안 읽힌다. */
 .survey-past-body .survey-off .survey-result {
-  background: #fff;
-  border-color: #e8e5de;
+  background: var(--card);
+  border-color: var(--line);
 }
 
 /**
@@ -1376,13 +1364,13 @@ select.admin-input { cursor: pointer; }
   align-items: center;
   min-height: 24px;
   margin-top: 4px;
-  color: #0f6e56;
+  color: var(--green);
   font-weight: 700;
   text-underline-offset: 2px;
 }
 
 .trow a:focus-visible {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -1394,7 +1382,7 @@ select.admin-input { cursor: pointer; }
    **안 정한 갈래도 제자리에서 그렇다고 말해야** 하기 때문이다.
    ------------------------------------------------------------------ */
 .brief {
-  background: #fff;
+  background: var(--card);
   border: 1px solid #ece9e1;
   border-radius: 12px;
   overflow: hidden;
@@ -1413,18 +1401,27 @@ select.admin-input { cursor: pointer; }
   font-size: 15px;
   font-weight: 700;
   margin: 0;
-  color: #1f1e1b;
+  color: var(--ink);
 }
 
-/* 지금 상태. 「확정 발표 전」 처럼 짧게 */
+/**
+ * 지금 상태. 「확정」 · 「확정 발표 전」 처럼 짧게.
+ *
+ * **이 딱지의 색은 글자를 따라간다.** 지금 값이 「확정」 이라 달력의 확정 칩과
+ * 같은 초록을 쓴다 — 두 화면이 같은 상태를 같은 색으로 말해야 하기 때문이다.
+ * 주황(--warn)은 「확인 필요」 전용이라, 확정에 쓰면 색이 글자와 다른 말을 한다.
+ *
+ * meetingBrief.ts 의 state 를 「확정 발표 전」 처럼 **아직 안 정해진 말**로
+ * 되돌리면 여기도 --warn-tint / --warn 으로 함께 되돌린다.
+ */
 .brief-state {
   margin-left: auto;
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 5px;
-  background: #fdf0e6;
-  color: #8f4419;
+  background: var(--green-tint);
+  color: var(--green-dark);
   white-space: nowrap;
 }
 
@@ -1453,7 +1450,7 @@ select.admin-input { cursor: pointer; }
 .brief-label {
   font-size: 11.5px;
   font-weight: 700;
-  color: #55534b;
+  color: var(--ink-2);
   line-height: 1.35;
   margin: 0;
   padding-top: 1px;
@@ -1469,10 +1466,10 @@ select.admin-input { cursor: pointer; }
   line-height: 1.45;
 }
 
-.brief-big { color: #1f1e1b; }
+.brief-big { color: var(--ink); }
 
 /* 안 정한 것. 색만으로 가르지 않는다 — 글자가 「아직 안 정했습니다」 라고 말한다 */
-.brief-undecided { color: #8f4419; }
+.brief-undecided { color: var(--warn); }
 
 .brief-date {
   display: inline-flex;
@@ -1523,7 +1520,7 @@ select.admin-input { cursor: pointer; }
   flex: none;
   font-size: 11.5px;
   font-weight: 700;
-  color: #55534b;
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1541,9 +1538,9 @@ select.admin-input { cursor: pointer; }
   /* 누르는 것은 24px 이상 (WCAG 2.5.8) */
   min-height: 24px;
   padding: 10px 13px;
-  background: #f6f4ef;
+  background: var(--paper);
   border: 1px solid #ece9e1;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   font-size: 12.5px;
   font-weight: 600;
   color: #3f3d37;
@@ -1556,7 +1553,7 @@ select.admin-input { cursor: pointer; }
 /* 손잡이는 **글자로도** 상태를 알린다 — 세모만으로 가르지 않는다 */
 .survey-fold > summary::before {
   content: '▸';
-  color: #0f6e56;
+  color: var(--green);
   font-weight: 700;
   flex: none;
 }
@@ -1568,11 +1565,11 @@ select.admin-input { cursor: pointer; }
 .survey-fold-cnt {
   margin-left: auto;
   font-weight: 600;
-  color: #55534b;
+  color: var(--ink-2);
 }
 
 .survey-fold > summary:focus-visible {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 2px;
 }
 
@@ -1588,16 +1585,16 @@ select.admin-input { cursor: pointer; }
   align-items: center;
   gap: 3px;
   min-height: 24px;
-  color: #0f6e56;
+  color: var(--green);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.brief-go:hover { color: #0a5b45; }
+.brief-go:hover { color: var(--green-dark); }
 
 .brief-go:focus-visible {
-  outline: 2px solid #0f6e56;
+  outline: 2px solid var(--green);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -1623,7 +1620,7 @@ select.admin-input { cursor: pointer; }
   padding: 6px 2px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #0a5b45;
+  color: var(--green-dark);
   text-decoration: none;
 }
 

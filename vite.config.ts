@@ -30,6 +30,19 @@ function copyLiveAssets(): Plugin {
     // 모아서 센 숫자만 싣는다 — 이름도, 자유서술 원문도 넣지 않는다.
     'survey-result.html',
     'survey-result.css',
+    // 이 페이지만 <link> 로 직접 읽는다. 보드·일정·설문은 생성기가 번들에 넣어 주므로
+    // 파일이 필요 없지만, 여기는 정적 페이지라 실제로 받아 가야 한다.
+    'tokens.css',
+    // 서체. tokens.css 의 @font-face 가 /exhibition-club-survey/fonts/ 로 가리킨다
+    // (경로는 scripts/scope-legacy-css.mjs 의 FONT_BASE 가 만든다).
+    // **여기 안 적으면 빌드는 통과하고 배포된 사이트에서만 404 가 난다.**
+    'fonts/Pretendard-Regular.subset.woff2',
+    'fonts/Pretendard-SemiBold.subset.woff2',
+    'fonts/Pretendard-Bold.subset.woff2',
+    'fonts/Pretendard-ExtraBold.subset.woff2',
+    'fonts/Pretendard-Black.subset.woff2',
+    // 재배포 조건이 붙은 라이선스다. 서체와 함께 나간다.
+    'fonts/OFL.txt',
   ]
   const from = (f: string) => path.resolve(HERE, 'app/public', f)
   return {
@@ -78,12 +91,17 @@ function serveLiveAssets(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const m = /\/(config\.js|weekly-digest\.public\.json)$/.exec(req.url ?? '')
+        const m = /\/(config\.js|weekly-digest\.public\.json|fonts\/[\w.-]+\.(?:woff2|txt))$/
+          .exec(req.url ?? '')
         if (!m) return next()
         const name = m[1] as string
         const p = path.resolve(HERE, 'app/public', name)
         if (!fs.existsSync(p)) return next()
-        res.setHeader('content-type', name.endsWith('.js') ? 'text/javascript' : 'application/json')
+        const type = name.endsWith('.js') ? 'text/javascript'
+          : name.endsWith('.woff2') ? 'font/woff2'
+          : name.endsWith('.txt') ? 'text/plain; charset=utf-8'
+          : 'application/json'
+        res.setHeader('content-type', type)
         res.end(fs.readFileSync(p))
       })
     },

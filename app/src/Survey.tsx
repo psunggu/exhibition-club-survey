@@ -487,7 +487,7 @@ function SurveyHistoryItem({ s }: { s: SurveyT }) {
         <span className="survey-past-facts">
           {/* 이름표를 박아 두면 영화 모임에 붙었을 때 「연관 전시 관람 영화 《오디세이》 관람」
               이 된다. 지금 자료에 이미 영화·공연 모임이 있다. */}
-          <span><b>{meet && !meet.movie ? '연관 전시 관람' : '연관 모임'}</b>{' '}
+          <span><b>{meet && meet.venueKind !== '영화' ? '연관 전시 관람' : '연관 모임'}</b>{' '}
             {meet ? `${meet.title} · ${meet.dateLabel}` : '이어진 모임 없음'}</span>
           <span><b>설문 결과</b>{' '}{sum ? sum.result : '불러오는 중…'}</span>
           <span><b>종료된 일자</b>{' '}{koDeadline(s.closesAt)}
