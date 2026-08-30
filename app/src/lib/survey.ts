@@ -117,6 +117,12 @@ export type Survey = {
   /** 설문 전체에 걸리는 참고 문서 (후보 하나에 붙일 수 없는 것) */
   links: SurveyLink[]
   mirrored: boolean
+  /**
+   * 누가 보는 설문인가. 회원 화면으로 온 것은 **항상 `members`** 다 —
+   * RLS 가 그러지 않은 행을 안 준다. 이 값이 `admins` 일 수 있는 것은
+   * 운영자 창구(survey_admin_get)로 불러왔을 때뿐이다.
+   */
+  audience: 'members' | 'admins'
   options: SurveyOption[]
 }
 
@@ -226,6 +232,7 @@ function toSurvey(r: SurveyRow): Survey {
      */
     links: parseLinks(r.links),
     mirrored: r.imported_respondents !== null && r.imported_respondents !== undefined,
+    audience: str(r.audience) === 'admins' ? 'admins' : 'members',
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }
 }
@@ -356,6 +363,15 @@ export type AdminSurvey = {
   multiChoice: boolean
   resultsVisible: string
   showNames: string
+  /**
+   * 누가 보는 설문인가 — `members` 는 회원 화면, `admins` 는 **운영자 화면에서만.**
+   *
+   * 이 값으로 화면을 가르지만 **여기가 자물쇠는 아니다.** 번들은 공개라
+   * 화면 코드는 누구나 읽고 고칠 수 있다. 진짜로 막는 것은 DB 쪽 넷이다 —
+   * RLS 가 행을 안 주고, 회원용 함수 넷이 거절하고, 운영자 함수는 암호를 묻는다
+   * (202608300002a).
+   */
+  audience: 'members' | 'admins'
   optionCount: number
   responseCount: number
 }
@@ -398,6 +414,14 @@ export type Draft = {
    * `surveys.category` 의 CHECK 는 그대로 둔다.
    */
   category: SurveyCategory
+  /**
+   * 회원에게 보일 설문인가, 운영진끼리 정할 설문인가.
+   *
+   * **고칠 때 반드시 지금 값을 실어 보낸다.** 안 보내면 서버가
+   * 지금 값을 지키기는 하지만, 화면이 「회원용」 으로 보이면서 실제로는
+   * 운영진용인 어깼난 상태가 된다.
+   */
+  audience: 'members' | 'admins'
   options: DraftOption[]
 }
 
@@ -410,6 +434,9 @@ export const emptyDraft = (): Draft => ({
   resultsVisible: 'after_close', showNames: 'none',
   // 기본값은 서버와 같게 둔다 (survey_admin_save 도 비면 exhibition 이다)
   category: 'exhibition',
+  // 새 설문은 회원용이 기본이다. 운영진용은 일부러 고르게 한다 —
+  // 기본을 반대로 두면 회원에게 보여야 할 설문이 조용히 안 보이는 쪽으로 넘어진다.
+  audience: 'members',
   options: [emptyOption()],
 })
 
@@ -545,6 +572,9 @@ export const adminList = async (pw: string, signal?: AbortSignal): Promise<Admin
     multiChoice: r.multi_choice !== false,
     resultsVisible: str(r.results_visible) ?? '',
     showNames: str(r.show_names) ?? '',
+    // 서버가 안 주는 옛 판이면 회원용으로 본다 — 없는 값을 운영진용으로 읽으면
+    // 회원 설문이 운영자 화면에만 갇힌다. 모르면 덜 감추는 쪽으로 넘어진다.
+    audience: str(r.audience) === 'admins' ? 'admins' : 'members',
     optionCount: Number(r.option_count) || 0,
     responseCount: Number(r.response_count) || 0,
   }))
@@ -563,6 +593,7 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       results_visible: d.resultsVisible,
       show_names: d.showNames,
       category: d.category,
+      audience: d.audience,
       options: d.options.map((o) => ({
         title: o.title, period: o.period, venue: o.venue,
         hours: o.hours, price: o.price, note: o.note,
@@ -571,6 +602,44 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       })),
     },
   }, signal)
+
+/**
+ * 고칠 · 답할 설문 하나를 후보까지 불러온다. **암호로 열며, RLS 를 안 지난다.**
+ *
+ * fetchSurveys 로는 안 된다 — 그쪽은 REST 로 표를 직접 읽어 RLS 를 거치고,
+ * 그 정책은 audience='members' 만 내준다 (202608300002a).
+ * 예전에는 이 함수 없이 fetchSurveys 로 고칠 설문을 찾았고,
+ * 운영진용 설문을 넣자 운영자에게도 「설문을 찾지 못했습니다」 가 됐다.
+ *
+ * 서버가 REST 와 **같은 모양**으로 돌려주므로 변환기를 다시 쓴다.
+ */
+export const adminGetWithCount = async (
+  pw: string, id: string, signal?: AbortSignal,
+): Promise<{ survey: Survey; responseCount: number }> => {
+  const row = await rpc<SurveyRow>('survey_admin_get', { p_password: pw, p_survey: id }, signal)
+  if (!row || typeof row !== 'object') throw new Error('설문을 불러오지 못했습니다.')
+  // 응답 수를 같이 받는다. 회원 창구인 survey_response_count 는
+  // 운영진용 설문에 0 을 주므로 그것을 쓰면 항상 0명이 된다.
+  return { survey: toSurvey(row), responseCount: Number(row.response_count) || 0 }
+}
+
+export const adminGet = async (pw: string, id: string, signal?: AbortSignal): Promise<Survey> =>
+  (await adminGetWithCount(pw, id, signal)).survey
+
+/**
+ * 운영진이 운영진용 설문에 답한다.
+ *
+ * 받는 것은 회원 설문과 똑같다 — 구역번호와 이름으로 명부와 대조한다.
+ * **그러나 저장되는 것은 익명 키뿐이다.** 이름도 구역도 행에 안 남는다
+ * (survey_anon_key · 2026-08-24). 운영진이라고 다르게 둘 이유가 없다.
+ * 같은 사람이 두 번 답하는 것은 그 키의 유니크 제약이 막는다.
+ */
+export const adminSubmit = (
+  pw: string, id: string, zone: string, name: string, optionIds: string[],
+  signal?: AbortSignal,
+) => rpc<null>('survey_admin_submit', {
+  p_password: pw, p_survey: id, p_zone: zone, p_name: name, p_options: optionIds,
+}, signal)
 
 export const adminDelete = (pw: string, id: string, signal?: AbortSignal) =>
   rpc<null>('survey_admin_delete', { p_password: pw, p_survey: id }, signal)
@@ -603,6 +672,9 @@ export const toDraft = (s: Survey): Draft => ({
   showNames: s.showNames,
   // 고칠 때 지금 갈래를 그대로 들고 온다. 안 그러면 저장할 때마다 전시로 끌려간다.
   category: s.category,
+  // 고칠 때 지금 값을 그대로 들고 온다 — 제목만 고쳐도
+  // 운영진용 설문이 회원에게 튀어나오면 되돌릴 수 없다.
+  audience: s.audience,
   options: s.options.map((o) => ({
     title: o.title, period: o.period ?? '', venue: o.venue ?? '',
     hours: o.hours ?? '', price: o.price ?? '', note: o.note ?? '',

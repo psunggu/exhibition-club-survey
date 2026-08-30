@@ -41,6 +41,8 @@ const tables = [
   /** 컬럼을 더하는 파일도 여기서 읽어야 한다 — 안 읽으면 아래 컬럼 이름 검사가
       그 컬럼을 쓰는 함수를 「없는 열을 쓴다」 고 잡는다. */
   read('202608270001a_imported_voters.sql'),
+  /** audience 컬럼을 더하는 파일 — 안 읽으면 그 컬럼을 쓰는 함수를 「없는 열」 이라 잡는다 */
+  read('202608300002a_admin_audience_surveys.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -59,6 +61,7 @@ const admin = [
   read('202608270001a_imported_voters.sql'),
   read('202608280002a_my_choices_gate.sql'),
   read('202608290001a_survey_categories_five.sql'),
+  read('202608300002a_admin_audience_surveys.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -112,6 +115,8 @@ const CALLABLE = [
   'survey_admin_note', 'survey_admin_note_save',
   'survey_member_ok', 'survey_roster_on',
   'survey_admin_members', 'survey_admin_member_save', 'survey_admin_member_delete',
+  // 운영진용 설문 (202608300002a). 조회·응답 둘 다 암호를 먼저 묻는다.
+  'survey_admin_get', 'survey_admin_submit',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
