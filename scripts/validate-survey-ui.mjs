@@ -1234,6 +1234,35 @@ ok('표를 받은 후보에 이름이 빠지면 아무 이름도 안 그린다',
   (await chipTexts()).join(', '));
 await unserveNamed();
 
+/* ── 구글 설문 갈래는 회원에게 무엇을 보여 주나 ────────────
+ *
+ * **운영진 전용 분석 가이드가 여기 오면 안 된다.** 그 글에는 참여 빈도별 집단 구분,
+ * 미응답자 수, 자유서술 인용이 들어간다 — AGENTS.md 가 공개 화면에서 금지한 것들이다.
+ * 화면 코드는 암호가 있을 때만 그리게 돼 있지만(GoogleSurveyRounds 의 pw),
+ * **그 조건을 지우는 것은 한 글자다.** 그래서 여기서 잰다.
+ */
+console.log('\n── 구글 설문 (회원)');
+const rpcSeen = [];
+page.on('request', (r) => {
+  const u = r.url();
+  if (u.includes('/rpc/')) rpcSeen.push(u.split('/rpc/')[1].split('?')[0]);
+});
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/google`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+
+const gRounds = await page.$$('.gsurvey');
+ok('회차 카드가 그려진다', gRounds.length >= 1, `${gRounds.length}건`);
+ok('운영진 전용 가이드가 없다', (await page.$$('.admin-guide')).length === 0);
+ok('가이드 창구를 부르지 않는다', !rpcSeen.includes('survey_admin_guide'),
+  rpcSeen.join(', ') || '(RPC 없음)');
+/** 가이드가 새면 이 글자들이 먼저 보인다 — 화면 글 전체에서 찾는다 */
+const gBody = await page.evaluate(() => document.body.innerText);
+ok('집단 구분·미응답자 수가 회원 화면에 없다',
+  !/코어|주변부|미응답/.test(gBody));
+ok('결과 페이지로 가는 길이 있다',
+  (await page.$$('a.gsurvey-link')).length >= 1);
+
 await browser.close();
 
 server.close();

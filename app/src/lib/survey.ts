@@ -693,6 +693,25 @@ export const adminNoteSave = (pw: string, id: string, body: string, signal?: Abo
   rpc<null>('survey_admin_note_save',
     { p_password: pw, p_survey: id, p_body: body }, signal)
 
+/**
+ * 운영진만 읽는 긴 글 (202608310001a).
+ *
+ * `adminNote` 와 구조가 같고 **매다는 자리만 다르다** — 저쪽은 설문 id,
+ * 이쪽은 이름표(구글 설문 회차 id). 구글 설문은 surveys 행이 없어서 저쪽에 못 넣는다.
+ *
+ * 본문은 **저장소에 없다.** 운영자가 화면에서 붙여 넣고 잠긴 표에만 산다 —
+ * 번들이 공개라 화면 코드에 두면 암호가 가림막이 된다.
+ */
+export const adminGuide = async (pw: string, key: string, signal?: AbortSignal): Promise<string> => {
+  const v = await rpc<string | null>('survey_admin_guide',
+    { p_password: pw, p_key: key }, signal)
+  return typeof v === 'string' ? v : ''
+}
+
+export const adminGuideSave = (pw: string, key: string, body: string, signal?: AbortSignal) =>
+  rpc<null>('survey_admin_guide_save',
+    { p_password: pw, p_key: key, p_body: body }, signal)
+
 /** 고칠 설문을 편집용 모양으로 바꾼다 */
 export const toDraft = (s: Survey): Draft => ({
   id: s.id,

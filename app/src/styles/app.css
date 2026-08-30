@@ -319,3 +319,53 @@
 
 /* 운영자 화면에서는 접이식 안에 들어간다 — 위쪽 여백만 준다 */
 .gsurvey-admin { margin-top: 10px; }
+
+/* 운영진 전용 분석 가이드 (AdminGuide.tsx).
+   틀은 「분석 메모」(.note) 를 그대로 쓰고, 본문 서식만 여기서 준다 —
+   대여섯 쪽짜리 글이라 통글자로 흘리면 휴대폰에서 어디가 어디인지 안 보인다.
+   읽는 것은 줄 첫머리 셋뿐이다: `## 제목` · `- 목록` · 그 밖에는 문단. */
+.guide-text { margin: 0; }
+
+.guide-h {
+  margin: 16px 0 6px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+/* 첫 제목 위에는 여백을 주지 않는다 — 손잡이 바로 아래가 뜬다 */
+.guide-text > .guide-h:first-child { margin-top: 0; }
+
+.guide-p {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 목록은 글머리를 글자로 세운다 — ::before 로 그리면 복사할 때 딸려 나오지 않는다 */
+.guide-li {
+  position: relative;
+  margin: 0 0 6px;
+  padding-left: 14px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.guide-li::before {
+  content: "·";
+  position: absolute;
+  left: 4px;
+  color: var(--ink-2);
+  font-weight: 900;
+}
+
+/* 가이드는 회차 카드 안에 들어간다 — 카드 여백과 겹치지 않게 위만 띄운다 */
+.gsurvey .admin-guide { margin-top: 14px; }
