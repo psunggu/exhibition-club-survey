@@ -43,6 +43,8 @@ const tables = [
   read('202608270001a_imported_voters.sql'),
   /** audience 컬럼을 더하는 파일 — 안 읽으면 그 컬럼을 쓰는 함수를 「없는 열」 이라 잡는다 */
   read('202608300002a_admin_audience_surveys.sql'),
+  /** 운영진 전용 긴 글을 담는 잠긴 표 — 아래 LOCKED 가 RLS 를 검사한다 */
+  read('202608310001a_admin_guides.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -63,6 +65,7 @@ const admin = [
   read('202608290001a_survey_categories_five.sql'),
   read('202608300002a_admin_audience_surveys.sql'),
   read('202608300004a_news_admin_functions.sql'),
+  read('202608310001a_admin_guides.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -72,8 +75,10 @@ const allFuncs = `${funcs}\n${admin}`;
 // survey_notes 도 잠근다 — 톡방 이야기나 사람 이름이 섞일 수 있는 자리다
 // survey_members 는 그 자체가 교인 명부다 — 읽히면 이름과 구역번호가 통째로 샌다
 // survey_probe_log 는 누가 언제 두드렸는지의 기록이다 — 이것도 열어 둘 이유가 없다
+// admin_guides 는 운영진 전용 분석 가이드다 — 집단 구분 · 미응답자 수 ·
+// 자유서술 인용이 들어가므로 열리면 회원이 자기 얘기로 읽는다
 const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes',
-  'survey_members', 'survey_probe_log'];
+  'survey_members', 'survey_probe_log', 'admin_guides'];
 const OPEN = ['surveys', 'survey_options'];
 
 for (const t of [...LOCKED, ...OPEN]) {
@@ -121,6 +126,8 @@ const CALLABLE = [
   // 보드 소식 (202608300004a). events 는 anon 에게 select 만 열려 있어서
   // 쓰기는 반드시 이 두 함수를 거친다.
   'news_admin_save', 'news_admin_delete',
+  // 운영진 전용 긴 글 (202608310001a). 읽기도 암호를 먼저 묻는다.
+  'survey_admin_guide', 'survey_admin_guide_save',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {

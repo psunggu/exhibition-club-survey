@@ -77,6 +77,13 @@ let newsRows = [
 ];
 let newsSaved = null;
 let newsDeleted = [];
+/**
+ * 운영진 전용 분석 가이드. **본문은 저장소에 없고 잠긴 표에만 산다** —
+ * 여기서는 서버가 내주는 것을 흉내 낸다.
+ * 회원 화면에 이 글자가 한 번이라도 나오면 그 자체가 사고다(아래에서 잰다).
+ */
+let guideBody = '## 가짜 제목\n- 가짜 목록 한 줄\n가짜 가이드 본문 · 코어 9명 대 주변부 8명';
+let guideSaved = null;
 
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
@@ -179,6 +186,12 @@ await ctx.route('**/rest/v1/**', async (route) => {
         : n));
     }
     return json(p.id ?? 'nw-new');            // uuid 를 돌려준다
+  }
+  if (name === 'survey_admin_guide') return json(guideBody);
+  if (name === 'survey_admin_guide_save') {
+    guideSaved = { key: body.p_key, body: body.p_body };
+    guideBody = String(body.p_body ?? '');
+    return noContent();                        // 아무것도 안 돌려준다 → 204 빈 본문
   }
   if (name === 'news_admin_delete') {
     newsDeleted.push(body.p_news);
@@ -925,6 +938,34 @@ await page.waitForTimeout(900);
 ok('지우기가 운영자 창구로 간다', newsDeleted.includes('nw-2'), newsDeleted.join(','));
 ok('지운 것이 목록에서 사라진다',
   !(await newsBox.innerText()).includes('지나간 가짜 소식'));
+
+/* ── 구글 설문 · 운영진 전용 분석 가이드 ───────────────────
+ * 이 글에는 집단 구분 · 미응답자 수 · 자유서술 인용이 들어간다.
+ * **운영자 화면에만 있어야 하고 회원 화면에는 한 글자도 없어야 한다.**
+ */
+const gBox = page.locator('.admin-members', { hasText: '구글 설문 결과' }).first();
+ok('구글 설문 자리가 있다', await gBox.count() === 1);
+await page.evaluate(() => {
+  document.querySelectorAll('details').forEach((d) => { d.open = false; });
+});
+await page.waitForTimeout(200);
+await gBox.locator('> summary').click();
+await page.waitForSelector('.gsurvey', { timeout: 20000 });
+await page.waitForTimeout(400);
+
+const guideFold = gBox.locator('.admin-guide').first();
+ok('회차마다 분석 가이드가 붙는다', await guideFold.count() === 1);
+await guideFold.locator('> summary').click();
+await page.waitForTimeout(400);
+const gText = await guideFold.innerText();
+ok('가이드 본문이 나온다', gText.includes('가짜 가이드 본문'));
+/** `##` 와 `-` 만 읽는다 — 글자 그대로가 아니라 제목·목록으로 그려져야 한다 */
+ok('제목 줄을 제목으로 그린다',
+  (await guideFold.locator('.guide-h').innerText()) === '가짜 제목');
+ok('목록 줄을 목록으로 그린다',
+  (await guideFold.locator('.guide-li').innerText()) === '가짜 목록 한 줄');
+ok('서식 기호를 글자로 남기지 않는다', !gText.includes('## ') && !gText.includes('- 가짜'));
+ok('어디에만 보이는지 화면이 말한다', gText.includes('운영자 화면에서만'));
 
 // 펼친 채로 한 번 더 잰다 — 새로 생긴 칸과 단추의 대비·크기도 같은 잣대로 본다
 spots.push(await measureA11y(page));

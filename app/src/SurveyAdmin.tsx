@@ -1207,7 +1207,8 @@ export function SurveyAdmin() {
       <details className="admin-members">
         <summary>구글 설문 결과 ({GOOGLE_SURVEYS.length}회차)</summary>
         <div className="gsurvey-admin">
-          <GoogleSurveyRounds forAdmin />
+          <GoogleSurveyRounds pw={pw}
+            onError={(e) => say(e, '분석 가이드를 다루지 못했습니다.')} />
         </div>
       </details>
 
