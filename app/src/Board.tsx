@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  AREAS, CONTENT_TYPES, EventsUnavailable, fetchEvents, filterEvents, isCurrent,
+  AREAS, CONTENT_TYPES, EventsUnavailable, fetchEvents, filterEvents,
   type Area, type ContentType, type Event,
 } from './lib/events'
+import { pickNews } from './lib/news'
 import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
@@ -350,12 +351,10 @@ export function Board() {
    * 소식은 **`list` 가 아니라 `events` 원본에서** 뽑는다.
    * `filterEvents` 를 거치면 `eventArea` 가 지역을 서울로 떨어뜨리므로
    * 경기 · 인천 탭에서 소식이 통째로 사라진다. 지역을 타는 정보가 아니다.
-   * 기간이 지난 것만 내린다 — end_date 를 걸어 두면 잊어도 알아서 사라진다.
+   * 고르는 규칙은 `pickNews` 에 있다 — 운영자 화면과 같은 규칙을 써야
+   * 「올렸는데 안 보인다」 가 생기지 않는다.
    */
-  const news = useMemo(
-    () => events?.find((e) => e.type === '소식' && isCurrent(e, today())) ?? null,
-    [events],
-  )
+  const news = useMemo(() => (events ? pickNews(events, today()) : null), [events])
 
   const groups = useMemo(() => {
     const out: { key: string; title: string; subtitle: string; nodes: React.ReactNode[] }[] = []

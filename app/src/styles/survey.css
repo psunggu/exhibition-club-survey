@@ -411,7 +411,12 @@ select.admin-input { cursor: pointer; }
 .admin-mini.danger { color: var(--stop); border-color: #d99a9a; }
 .admin-mini:disabled { color: #8a877d; border-color: var(--line-strong); cursor: default; }
 
-.admin-card {
+/* `.admin-card` 는 **설문 카드**다. 보드 소식은 같은 모양이지만 이름을 나눈다 —
+   검사기가 `.admin-card` 를 차례로 짚어 「몇 번째 설문」 을 고르기 때문이다
+   (validate-survey-admin-ui.mjs 의 cardBtn). 소식이 같은 이름을 쓰면 0번이
+   소식으로 바뀌어 설문 검사가 통째로 엉뚱한 카드를 누른다 — 실제로 그렇게 됐다. */
+.admin-card,
+.admin-news-card {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-card);

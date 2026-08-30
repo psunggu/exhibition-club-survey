@@ -262,8 +262,11 @@ export async function fetchSurveys(signal?: AbortSignal): Promise<Survey[]> {
   return rows.map(toSurvey)
 }
 
-/** RPC 한 번. 실패하면 서버가 준 메시지를 그대로 올린다 — 사람이 읽을 문장이다. */
-async function rpc<T>(name: string, body: unknown, signal?: AbortSignal): Promise<T> {
+/** RPC 한 번. 실패하면 서버가 준 메시지를 그대로 올린다 — 사람이 읽을 문장이다.
+ *
+ *  **내보내는 이유**: 보드 소식(lib/news.ts)도 같은 창구를 쓴다. 베껴 두면 아래
+ *  204 빈 본문 처리가 한쪽에만 남는다 — 그 실수는 이미 한 번 라이브에서 터졌다. */
+export async function rpc<T>(name: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const { url, headers } = base()
   const res = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: 'POST', headers, signal, body: JSON.stringify(body),

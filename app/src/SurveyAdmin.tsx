@@ -11,6 +11,7 @@ import {
   type SurveyOption,
 } from './lib/survey'
 import { fetchEvents } from './lib/events'
+import { News } from './SurveyAdminNews'
 import { boardPicks, type BoardPick } from './lib/pickFromBoard'
 import { MOVIES } from './data/movies'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
@@ -1191,6 +1192,9 @@ export function SurveyAdmin() {
           role={msg.kind === 'error' ? 'alert' : 'status'}
           style={{ marginBottom: 12 }}>{msg.text}</p>
       )}
+
+      {/* 보드 소식이 명부보다 위다 — 매주 손대는 것이 이쪽이고, 명부는 어쩌다 한 번이다. */}
+      <News pw={pw} onError={(e) => say(e, '소식을 다루지 못했습니다.')} />
 
       <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
 

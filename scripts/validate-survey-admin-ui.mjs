@@ -61,6 +61,23 @@ let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
 /** 화면이 부른 RPC 이름. 「회원 창구가 아니라 운영자 창구로 갔나」 를 재는 데 쓴다. */
 const calls = [];
 let withVoterNames = false;
+/**
+ * 보드 소식 두 줄. `end_date` 가 지난 것과 안 지난 것을 함께 둔다 —
+ * 하나만 두면 「기간이 지나면 안 보인다」 를 한 번도 재지 않는다.
+ */
+let newsRows = [
+  { id: 'nw-1', type: '소식', status: '공유완료', title: '가짜 미술축제 소식',
+    genre: '영상 · 유튜브', venue: '가짜 문화채널', summary: '9월 코엑스',
+    start_date: '2026-08-30', end_date: '2099-01-01',
+    main_url: 'https://www.youtube.com/watch?v=fake' },
+  { id: 'nw-2', type: '소식', status: '공유완료', title: '지나간 가짜 소식',
+    genre: '기사', venue: '가짜신문', summary: null,
+    start_date: '2026-01-01', end_date: '2026-01-31',
+    main_url: 'https://example.com/old' },
+];
+let newsSaved = null;
+let newsDeleted = [];
+
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
@@ -107,6 +124,13 @@ await ctx.route('**/rest/v1/**', async (route) => {
         info_url: 'https://example.com/perf' },
       // `기타` 는 고르는 목록에 나오면 안 된다 — 전시·공연·영화 셋으로만 나눈다
       { id: 'ev-3', type: '기타', status: '공유완료', title: '가짜 워크숍' },
+      /**
+       * **보드 소식.** 운영자 화면의 「보드 소식」 이 이 길로 읽는다(events select) —
+       * 쓰기만 함수를 거치고 읽기는 보드와 같은 창구다.
+       * 하나는 살아 있고 하나는 기간이 지났다. 지난 것도 목록에 남아야
+       * 운영자가 치울 수 있고, 「보드에 보임」 은 살아 있는 쪽에만 붙어야 한다.
+       */
+      ...newsRows,
     ]);
   }
 
@@ -122,8 +146,44 @@ await ctx.route('**/rest/v1/**', async (route) => {
   try { body = JSON.parse(route.request().postData() ?? '{}'); } catch { /* 그대로 */ }
 
   // **암호 확인은 진짜처럼 서버가 한다.** 화면이 우회해도 여기서 막혀야 한다.
-  if (name.startsWith('survey_admin') && name !== 'survey_admin_ok') {
+  /**
+   * **`survey_admin` 앞머리로 걸면 새 갈래가 관문 밖으로 나간다.**
+   * news_admin_save 를 더했을 때 실제로 그랬다 — 진짜 함수는 암호를 보는데
+   * 가짜 서버는 안 봐서, 「암호가 틀리면 막힌다」 를 소식에 대해서는
+   * 한 번도 재지 않는 검사가 될 뻔했다. 진짜 규칙과 같은 잣대를 쓴다.
+   */
+  if (name.includes('_admin_') && name !== 'survey_admin_ok') {
     if (body.p_password !== PW) return deny('운영자 암호가 맞지 않습니다.');
+  }
+
+  /**
+   * **진짜 news_admin_save 가 보는 것을 여기서도 본다.**
+   * 가짜가 관대하면 「서버가 막는다」 검사가 막지 않는 서버를 상대로 돈다.
+   */
+  if (name === 'news_admin_save') {
+    const p = body.p_payload ?? {};
+    if (!String(p.title ?? '').trim()) return deny('소식 제목을 적어 주세요.');
+    if (!/^https:\/\//.test(String(p.url ?? ''))) return deny('주소는 https:// 로 시작해야 합니다.');
+    if (!(p.days >= 1 && p.days <= 180)) return deny('보일 기간은 1일에서 180일 사이로 정해 주세요.');
+    newsSaved = p;
+    if (!p.id) {
+      newsRows = [...newsRows, { id: 'nw-new', type: '소식', status: '공유완료',
+        title: p.title, genre: p.genre, venue: p.venue, summary: p.summary,
+        start_date: '2026-08-30',
+        end_date: new Date(Date.now() + p.days * 86400e3).toISOString().slice(0, 10),
+        main_url: p.url }];
+    } else {
+      newsRows = newsRows.map((n) => (n.id === p.id
+        ? { ...n, title: p.title, genre: p.genre, venue: p.venue,
+            summary: p.summary, main_url: p.url }
+        : n));
+    }
+    return json(p.id ?? 'nw-new');            // uuid 를 돌려준다
+  }
+  if (name === 'news_admin_delete') {
+    newsDeleted.push(body.p_news);
+    newsRows = newsRows.filter((n) => n.id !== body.p_news);
+    return noContent();                        // 아무것도 안 돌려주는 함수 → 204 빈 본문
   }
 
   if (name === 'survey_admin_names') return json([{ name: '김하늘' }, { name: '박서준' }]);
@@ -782,6 +842,90 @@ await page.click('.survey-who .survey-submit');
 await page.waitForSelector('.admin-card', { timeout: 20000 });
 await page.waitForTimeout(900);
 spots.push(await measureA11y(page));
+
+/* ── 보드 소식 ─────────────────────────────────────────────
+ * 운영자가 영상 주소를 올리고·고치고·지운다. 보드에 나가는 유일한 자유 입력이라
+ * 여기서 막지 못하면 회원 화면에 그대로 걸린다.
+ */
+// 지우기 확인창은 262행에서 이미 받고 있다. 여기서 또 걸면 같은 창을 두 번
+// 받아 「already handled」 로 터진다.
+
+const newsSummary = page.locator('.admin-members > summary', { hasText: '보드 소식' });
+ok('보드 소식 자리가 있다', await newsSummary.count() === 1);
+/**
+ * **먼저 닫는다.** 바로 위 measureA11y 가 `openFolds` 로 페이지의 <details> 를
+ * 전부 열어 두고 간다(a11y-probe.mjs:43). 그 상태에서 누르면 여는 것이 아니라
+ * **닫는** 것이 되어, 아래 검사가 통째로 빈 화면을 상대로 돌았다.
+ * 눌러서 여는 길을 재려면 닫힌 데서 시작해야 한다.
+ */
+await page.evaluate(() => {
+  document.querySelectorAll('details').forEach((d) => { d.open = false; });
+});
+await page.waitForTimeout(300);
+await newsSummary.click();
+await page.waitForSelector('.admin-members[open] .admin-news-card', { timeout: 20000 });
+await page.waitForTimeout(500);
+
+const newsBox = page.locator('.admin-members', { hasText: '보드 소식' }).first();
+const newsText = await newsBox.innerText();
+ok('지난 소식도 목록에 남는다', newsText.includes('지나간 가짜 소식'));
+ok('지난 것은 안 보인다고 알린다', newsText.includes('기간이 지나 보이지 않습니다'));
+/** 「보드에 보임」 은 살아 있는 하나에만 붙어야 한다 — 둘에 붙으면 거짓말이다. */
+ok('보드에 보이는 것을 하나만 짚는다',
+  (newsText.match(/보드에 보임/g) ?? []).length === 1,
+  `${(newsText.match(/보드에 보임/g) ?? []).length}건`);
+
+const newsInputs = newsBox.locator('.admin-input');
+const newsSave = newsBox.locator('.survey-submit');
+/** 칸 차례 — 제목 · 주소 · 갈래 · 출처 · 기간 · 덧붙이는 말 */
+await newsInputs.nth(0).fill('새 가짜 소식');
+await newsInputs.nth(1).fill('http://insecure.example.com');
+await page.waitForTimeout(200);
+ok('https 가 아니면 저장을 막는다', await newsSave.isDisabled());
+ok('https 가 아니면 그 자리에서 알린다',
+  (await newsBox.innerText()).includes('https:// 로 시작해야 합니다'));
+
+await newsInputs.nth(1).fill('https://www.youtube.com/watch?v=new');
+await newsInputs.nth(3).fill('새 채널');
+await page.waitForTimeout(200);
+ok('https 면 저장할 수 있다', await newsSave.isEnabled());
+await newsSave.click();
+await page.waitForTimeout(900);
+ok('소식을 운영자 창구로 보낸다', calls.includes('news_admin_save'));
+ok('보낸 것이 화면에 적은 그대로다',
+  newsSaved?.title === '새 가짜 소식'
+  && newsSaved?.url === 'https://www.youtube.com/watch?v=new'
+  && newsSaved?.venue === '새 채널'
+  && newsSaved?.id === null,
+  JSON.stringify(newsSaved));
+ok('기간을 날짜가 아니라 날수로 보낸다',
+  typeof newsSaved?.days === 'number' && newsSaved.days >= 1 && newsSaved.days <= 180,
+  String(newsSaved?.days));
+
+/** 고치기 — 칸이 채워지고, 저장할 때 id 가 함께 가야 새 줄이 하나 더 생기지 않는다. */
+await newsBox.locator('.admin-news-card', { hasText: '가짜 미술축제 소식' })
+  .locator('button', { hasText: '고치기' }).click();
+await page.waitForTimeout(300);
+ok('고치기가 칸을 채운다', await newsInputs.nth(0).inputValue() === '가짜 미술축제 소식');
+await newsInputs.nth(0).fill('고친 가짜 소식');
+await newsSave.click();
+await page.waitForTimeout(900);
+ok('고칠 때 id 를 함께 보낸다', newsSaved?.id === 'nw-1', String(newsSaved?.id));
+ok('고친 제목이 목록에 반영된다',
+  (await newsBox.innerText()).includes('고친 가짜 소식'));
+
+/** 지우기 */
+await newsBox.locator('.admin-news-card', { hasText: '지나간 가짜 소식' })
+  .locator('button', { hasText: '지우기' }).click();
+await page.waitForTimeout(900);
+ok('지우기가 운영자 창구로 간다', newsDeleted.includes('nw-2'), newsDeleted.join(','));
+ok('지운 것이 목록에서 사라진다',
+  !(await newsBox.innerText()).includes('지나간 가짜 소식'));
+
+// 펼친 채로 한 번 더 잰다 — 새로 생긴 칸과 단추의 대비·크기도 같은 잣대로 본다
+spots.push(await measureA11y(page));
+await newsSummary.click();
+await page.waitForTimeout(300);
 await (await cardBtn(0, '결과 보기')).click();
 await page.waitForSelector('.admin-results', { timeout: 20000 });
 await page.waitForTimeout(900);

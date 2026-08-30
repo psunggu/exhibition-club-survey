@@ -6,7 +6,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21610
+    "h": 23274
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -37,7 +37,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21610
+    "h": 23274
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -437,7 +437,7 @@
    }
   },
   ".exhibition-card": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 309,
     "h": 1060
@@ -468,7 +468,7 @@
    }
   },
   ".exhibition-rank": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 36,
     "h": 36
@@ -499,7 +499,7 @@
    }
   },
   ".exhibition-venue": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 275,
     "h": 20
@@ -530,7 +530,7 @@
    }
   },
   ".exhibition-card h3": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 54
@@ -561,7 +561,7 @@
    }
   },
   ".exhibition-summary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 63
@@ -592,7 +592,7 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 275,
     "h": 18
@@ -623,7 +623,7 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 275,
     "h": 21
@@ -654,7 +654,7 @@
    }
   },
   ".exhibition-reason": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 63
@@ -685,7 +685,7 @@
    }
   },
   ".button.primary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 44
@@ -716,7 +716,7 @@
    }
   },
   ".official-info-link": {
-   "count": 5,
+   "count": 6,
    "box": {
     "w": 84,
     "h": 24
@@ -747,7 +747,7 @@
    }
   },
   ".stars": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 43,
     "h": 21
@@ -778,7 +778,7 @@
    }
   },
   ".rating-source": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 275,
     "h": 30
@@ -829,8 +829,8 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 11517,
-   "cardCount": 20,
+   "textLength": 12979,
+   "cardCount": 21,
    "chipCount": 0
   }
  },
@@ -839,7 +839,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 11037
+    "h": 11942
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -870,7 +870,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 11037
+    "h": 11942
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1270,7 +1270,7 @@
    }
   },
   ".exhibition-card": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1202,
     "h": 520
@@ -1301,7 +1301,7 @@
    }
   },
   ".exhibition-rank": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 44,
     "h": 44
@@ -1332,7 +1332,7 @@
    }
   },
   ".exhibition-venue": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 426,
     "h": 20
@@ -1363,7 +1363,7 @@
    }
   },
   ".exhibition-card h3": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 426,
     "h": 27
@@ -1394,7 +1394,7 @@
    }
   },
   ".exhibition-summary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1110,
     "h": 21
@@ -1425,7 +1425,7 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 549,
     "h": 18
@@ -1456,7 +1456,7 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 549,
     "h": 21
@@ -1487,7 +1487,7 @@
    }
   },
   ".exhibition-reason": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1110,
     "h": 21
@@ -1518,7 +1518,7 @@
    }
   },
   ".button.primary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 85,
     "h": 44
@@ -1549,7 +1549,7 @@
    }
   },
   ".official-info-link": {
-   "count": 5,
+   "count": 6,
    "box": {
     "w": 84,
     "h": 24
@@ -1580,7 +1580,7 @@
    }
   },
   ".stars": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 43,
     "h": 21
@@ -1611,7 +1611,7 @@
    }
   },
   ".rating-source": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 260,
     "h": 30
@@ -1662,8 +1662,8 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 11517,
-   "cardCount": 20,
+   "textLength": 12979,
+   "cardCount": 21,
    "chipCount": 0
   }
  },

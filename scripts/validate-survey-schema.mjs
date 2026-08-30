@@ -62,6 +62,7 @@ const admin = [
   read('202608280002a_my_choices_gate.sql'),
   read('202608290001a_survey_categories_five.sql'),
   read('202608300002a_admin_audience_surveys.sql'),
+  read('202608300004a_news_admin_functions.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -117,6 +118,9 @@ const CALLABLE = [
   'survey_admin_members', 'survey_admin_member_save', 'survey_admin_member_delete',
   // 운영진용 설문 (202608300002a). 조회·응답 둘 다 암호를 먼저 묻는다.
   'survey_admin_get', 'survey_admin_submit',
+  // 보드 소식 (202608300004a). events 는 anon 에게 select 만 열려 있어서
+  // 쓰기는 반드시 이 두 함수를 거친다.
+  'news_admin_save', 'news_admin_delete',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
@@ -201,7 +205,13 @@ for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
    * 그것들은 암호를 요구하면 안 된다 — 회원이 부르는 것이니까.
    * 처음에 그 구분 없이 걸었더니 회원용 셋을 잘못 잡았다.
    */
-  if (!name.startsWith('survey_admin_')) continue;
+  /**
+   * **`survey_admin_` 앞머리로 걸면 새 갈래가 통째로 빠진다.**
+   * 보드 소식 함수를 news_admin_save 로 지으니 실제로 이 검사 밖으로 나갔다 —
+   * security definer 에 anon 실행 권한까지 준 함수가 암호 검사 없이 지나갈 뻔했다.
+   * 이름 어디엔가 `_admin_` 이 있으면 운영자 함수로 본다. 갈래가 늘어도 걸린다.
+   */
+  if (!name.includes('_admin_')) continue;
   // survey_admin_ok 는 검사하는 쪽이지 검사받는 쪽이 아니다
   if (name === 'survey_admin_ok') continue;
   if (!/survey_admin_ok\s*\(\s*p_password\s*\)/.test(block)) {
@@ -212,7 +222,12 @@ for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
 // 응답에 닿는 함수는 definer 여야 하고, search_path 를 고정해야 한다
 for (const block of allFuncs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
   const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
-  if (!name || !name.startsWith('survey')) continue;
+  /**
+   * 예전에는 `survey` 앞머리만 봤다. 여기서 읽는 파일의 함수가 전부 survey 로
+   * 시작하던 동안에는 같은 말이었지만, 갈래가 늘면 조용히 빠진다.
+   * **읽은 파일에 든 함수는 전부 본다** — 넓혀도 기존 함수는 새로 걸리지 않는다.
+   */
+  if (!name) continue;
   /**
    * **표를 한 곳도 안 보는 함수는 definer 가 필요 없다.** 값만 다듬는 것들이다.
    * 예전에는 이름을 하나(survey_respondent_key) 적어 두었는데, 그런 함수가 늘 때마다
