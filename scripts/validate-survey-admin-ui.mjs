@@ -58,11 +58,23 @@ let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
  * 뒤에서 이 값을 켜고 결과를 다시 열어, 이름이 생기면 그 문장이 바뀌는지 잰다.
  * 처음부터 켜 두면 옛 문장이 검사 밖으로 나간다.
  */
+/** 화면이 부른 RPC 이름. 「회원 창구가 아니라 운영자 창구로 갔나」 를 재는 데 쓴다. */
+const calls = [];
 let withVoterNames = false;
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
   option_count: 4, response_count: 3,
+}, {
+  /**
+   * **운영진용 설문 한 건.** 회원용만 두면 「운영진용」 배지도 「답하기」 단추도
+   * 한 번도 안 그려지고, 그 자리를 통째로 지워도 검사가 통과한다.
+   * 실제로 갈래 목록을 그렇게 놓쳤다 — 운영자가 새 갈래를 못 고르는 채 배포됐다.
+   */
+  id: 'srv-2', title: '운영진끼리 정할 것',
+  closes_at: new Date(Date.now() + 86400e3).toISOString(),
+  created_by: '김하늘', multi_choice: true, results_visible: 'admin', show_names: 'none',
+  audience: 'admins', option_count: 3, response_count: 0,
 }];
 
 const browser = await chromium.launch();
@@ -99,35 +111,13 @@ await ctx.route('**/rest/v1/**', async (route) => {
   }
 
   if (url.includes('/rest/v1/surveys')) {
-    return json([{ id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
-      multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
-      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '김하늘',
-      results_visible: 'always', show_names: 'none', hide_after_days: null,
-      /**
-       * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
-       * 기본값(exhibition)이 아닌 값이어야 한다 — 기본값이면 `toDraft` 가
-       * 갈래를 통째로 잃어버려도 검사가 그대로 통과한다.
-       * 운영자 화면은 갈래로 목록을 가르지 않으므로 다른 검사에는 영향이 없다.
-       */
-      category: 'meal',
-      survey_options: [
-        { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
-          venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
-          note: '얼리버드 예매 8/17~8/26',
-          links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] },
-        { id: 'o2', position: 2, title: '에스 데블린', period: '2026. 8. 20. ~ 2027. 1. 17.',
-          venue: '푸투라서울', hours: null, price: '22,000원', note: null, links: [] },
-        { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
-          venue: '국립현대미술관 덕수궁관', hours: null,
-          price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
-      ].map((o, i) => (withVoterNames
-        // 이름은 가상 명부(docs/fixtures/sample-members.json)에서 가져온다
-        ? { ...o, imported_voters: [['최윤슬', '정다인'], [], ['한도윤']][i] }
-        : o)) }]);
+    return json([mockSurveyRow()]);
   }
+
 
   if (!url.includes('/rpc/')) return route.continue();
   const name = url.split('/rpc/')[1].split('?')[0];
+  calls.push(name);
   let body = {};
   try { body = JSON.parse(route.request().postData() ?? '{}'); } catch { /* 그대로 */ }
 
@@ -138,6 +128,15 @@ await ctx.route('**/rest/v1/**', async (route) => {
 
   if (name === 'survey_admin_names') return json([{ name: '김하늘' }, { name: '박서준' }]);
   if (name === 'survey_admin_list') return json(surveys.filter((s) => !deleted.includes(s.id)));
+  /**
+   * 운영자 화면은 후보와 응답 수를 **이 창구로만** 읽는다 (202608300002a).
+   * 예전에는 REST 로 표를 직접 읽고 survey_response_count 를 따로 불렀는데,
+   * 운영진용 설문은 RLS 가 안 내주고 그 함수도 0 을 주므로 둘 다 못 쓴다.
+   * 모양은 REST 가 주던 것과 같고 response_count 만 얹혀 있다.
+   */
+  if (name === 'survey_admin_get') return json({ ...mockSurveyRow(), response_count: 13 });  // 13 을 그대로 적는다 — MOCK_PEOPLE 은 아래에서 선언되고,
+                                                                     // 이 콜백은 그 줄에 닿기 전(top-level await)에 이미 불린다
+  if (name === 'survey_admin_submit') return noContent();
   if (name === 'survey_admin_save') {
     const p = body.p_payload ?? {};
     if (!String(p.title ?? '').trim()) return deny('설문 제목을 적어 주세요.');
@@ -228,7 +227,8 @@ ok('틀린 암호로는 목록이 안 보인다', (await page.$$('.admin-card'))
 await page.fill('.admin-input', PW);
 await page.click('.survey-who .survey-submit');
 await page.waitForTimeout(800);
-ok('맞는 암호로 들어간다', (await page.$$('.admin-card')).length === 1);
+// 씨앗은 둘이다 — 회원용(srv-1) 과 운영진용(srv-2). 운영자에게는 둘 다 보여야 한다.
+ok('맞는 암호로 들어간다', (await page.$$('.admin-card')).length === 2);
 ok('응답 수가 보인다',
   (await page.$eval('.admin-card', (e) => e.textContent)).includes('3건'));
 
@@ -480,7 +480,8 @@ ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.day
  */
 ok('갈래를 함께 보낸다', saved?.category === 'exhibition', String(saved?.category));
 
-ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 2);
+// 씨앗 둘 + 방금 올린 하나
+ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 3);
 
 /* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
 /**
@@ -707,6 +708,72 @@ console.log('\n── 마무리');
 // 얇은 화면을 재고 「통과」 하면 그게 제일 위험하다.
 // 긴 흐름 끝에 남은 화면은 글자가 얼마 없다(303자). 그래서 **두 자리를 잰다** —
 // 목록 화면과, 색을 실제로 쓰는 결과 화면. 얇은 화면 하나만 재고 「통과」 하면
+/* ── 운영진용 설문 ──────────────────────────────────────── */
+/**
+ * 이 화면의 값어치는 **회원이 못 보는 것을 운영진이 보는 것**이다.
+ * 그러니 「운영진용으로 표시되나 · 답할 자리가 있나 · 회원용에는 안 붙나」 를 잰다.
+ * 자물쇠 자체는 DB 에 있고(202608300002a) 여기서 잴 수 없다 —
+ * 여기서 재는 것은 **운영자가 그 자물쇠를 쓸 수 있는가**다.
+ */
+await go();
+await page.fill('.admin-input', PW);
+await page.click('.survey-who .survey-submit');
+await page.waitForSelector('.admin-card', { timeout: 20000 });
+await page.waitForTimeout(600);
+
+{
+  const cards = await page.$$('.admin-card');
+  const titleOf = async (i) => (await cards[i].$eval('.admin-card-title', (e) => e.textContent)).trim();
+  const t0 = await titleOf(0);
+  const t1 = await titleOf(1);
+  // 목록은 마감 차례라 둘 중 어느 쪽이 먼저일지 고정하지 않는다
+  const adminIdx = t0.includes('운영진끼리') ? 0 : 1;
+  const memberIdx = adminIdx === 0 ? 1 : 0;
+
+  ok('운영진용 설문에 「운영진용」 이 붙는다',
+    (await titleOf(adminIdx)).includes('운영진용'), await titleOf(adminIdx));
+  ok('회원용 설문에는 안 붙는다',
+    !(await titleOf(memberIdx)).includes('운영진용'), await titleOf(memberIdx));
+
+  const btnTexts = async (i) => Promise.all(
+    (await cards[i].$$('.admin-mini')).map(async (b) => (await b.textContent()).trim()));
+  ok('운영진용에는 「답하기」 가 있다', (await btnTexts(adminIdx)).includes('답하기'),
+    (await btnTexts(adminIdx)).join(' · '));
+  ok('회원용에는 「답하기」 가 없다', !(await btnTexts(memberIdx)).includes('답하기'),
+    (await btnTexts(memberIdx)).join(' · '));
+
+  // 펴서 실제로 답하는 자리가 그려지는지
+  await (await cardBtn(adminIdx, '답하기')).click();
+  await page.waitForSelector('.admin-entry .survey-option', { timeout: 20000 });
+  const optN = (await page.$$('.admin-entry .survey-option')).length;
+  ok('후보가 그려진다', optN === 3, `${optN}개`);
+  const fields = await page.$$eval('.admin-entry .survey-field span',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('구역번호와 이름을 받는다',
+    fields.includes('구역번호') && fields.includes('이름'), fields.join(' · '));
+  ok('이름이 저장되지 않는다고 알린다',
+    (await page.$eval('.admin-entry .admin-hint', (e) => e.textContent)).includes('저장되지 않습니다'));
+
+  // 하나 골라 보내고, 운영자 창구로 갔는지 본다
+  await page.click('.admin-entry .survey-option input');
+  await page.click('.admin-entry .survey-submit');
+  await page.waitForTimeout(700);
+  ok('회원 창구가 아니라 운영자 창구로 보낸다',
+    calls.includes('survey_admin_submit') && !calls.includes('survey_submit'),
+    calls.filter((c) => c.includes('submit')).join(' · ') || '(부른 적 없음)');
+}
+
+/* ── 새 설문을 올릴 때 운영진용을 고를 수 있나 ─────────────── */
+{
+  await page.click('.survey-actions .survey-submit');   // 새 설문 올리기
+  await page.waitForSelector('.admin-form', { timeout: 20000 });
+  const opts = await page.$$eval('.admin-form select',
+    (sels) => sels.flatMap((s) => [...s.options].map((o) => o.value)));
+  ok('새 설문 양식에서 운영진용을 고를 수 있다',
+    opts.includes('admins') && opts.includes('members'),
+    `audience 값 ${opts.filter((v) => v === 'admins' || v === 'members').join(' · ')}`);
+}
+
 // 그게 제일 위험하다.
 const spots = [];
 await go();
@@ -739,3 +806,36 @@ server.close();
 console.log(`\n${fails.length ? `운영자 화면 검사 실패 — ${fails.length}건: ${fails.join(', ')}`
   : '운영자 화면 검사 통과'}`);
 process.exit(fails.length ? 1 : 0);
+
+/**
+ * **가짜 설문 한 건.** REST(`/rest/v1/surveys`)와 운영자 창구(`survey_admin_get`)가
+ * 같은 것을 주어야 한다 — 화면이 둘을 오가며 읽기 때문이다.
+ * 함수 선언이라 호이스팅된다. 위 route 콜백이 요청 때 부르므로 순서를 안 탄다.
+ */
+function mockSurveyRow() {
+  return { id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
+      multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
+      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '김하늘',
+      results_visible: 'always', show_names: 'none', hide_after_days: null,
+      /**
+       * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
+       * 기본값(exhibition)이 아닌 값이어야 한다 — 기본값이면 `toDraft` 가
+       * 갈래를 통째로 잃어버려도 검사가 그대로 통과한다.
+       * 운영자 화면은 갈래로 목록을 가르지 않으므로 다른 검사에는 영향이 없다.
+       */
+      category: 'meal',
+      survey_options: [
+        { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
+          venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
+          note: '얼리버드 예매 8/17~8/26',
+          links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] },
+        { id: 'o2', position: 2, title: '에스 데블린', period: '2026. 8. 20. ~ 2027. 1. 17.',
+          venue: '푸투라서울', hours: null, price: '22,000원', note: null, links: [] },
+        { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
+          venue: '국립현대미술관 덕수궁관', hours: null,
+          price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
+      ].map((o, i) => (withVoterNames
+        // 이름은 가상 명부(docs/fixtures/sample-members.json)에서 가져온다
+        ? { ...o, imported_voters: [['최윤슬', '정다인'], [], ['한도윤']][i] }
+        : o)) };
+}
