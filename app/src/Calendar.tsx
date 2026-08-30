@@ -27,7 +27,7 @@ const LEGEND: { cls: string; label: string }[] = [
   { cls: 'casual', label: '수시' },
 ]
 
-/** 색을 못 보는 사람에게는 이 세 줄이 범례의 전부다. 색 점과 함께 늘 붙어 다닌다. */
+/** 색을 못 보는 사람에게는 이 네 줄이 범례의 전부다. 색 점과 함께 늘 붙어 다닌다. */
 const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료', '붉은색 = 예매 마감']
 
 /** 달력 아래 목록의 상태 칩 글자. 달력 칩은 좁아 글자가 몇 자 안 들어가므로 여기서 읽는다. */
@@ -35,12 +35,12 @@ const STATUS_LABEL: Record<string, string> = {
   conf: '확정', tent: '미정', done: '완료', dead: '예매 마감',
 }
 
-function DayBlock({ date, regular }: { date: string; regular: boolean }) {
+function DayBlock({ date }: { date: string }) {
   const m = Number(date.slice(5, 7))
   const d = Number(date.slice(8, 10))
   const w = KO_WEEK[new Date(`${date}T00:00:00Z`).getUTCDay()] ?? ''
   return (
-    <div className={regular ? 'db db-regular' : 'db'}>
+    <div className="db">
       <div className="m">{m}월</div>
       <div className="d">{d}</div>
       <div className="w">{w}</div>
@@ -279,7 +279,7 @@ export function Calendar() {
           <h2 className="sec"><span className="dot dot-conf" />다가오는 확정 모임</h2>
           {upcoming.map((m) => (
             <article key={m.id} className={m.regular ? 'card card-regular' : 'card'}>
-              <DayBlock date={m.date} regular={m.regular} />
+              <DayBlock date={m.date} />
               <div>
                 <span className={m.regular ? 'tag tag-regular' : 'tag'}>
                   {m.regular ? '공식 정기관람' : '확정'}

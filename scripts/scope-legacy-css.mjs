@@ -2,7 +2,8 @@
 /**
  * scope-legacy-css.mjs — 옛 CSS 두 장의 **적용 범위만** 라우트별로 가른다.
  *
- *   node scripts/scope-legacy-css.mjs
+ *   node scripts/scope-legacy-css.mjs           다시 만든다
+ *   node scripts/scope-legacy-css.mjs --check   낡았는지만 본다 (안 고친다)
  *
  * ── 왜 필요한가 ────────────────────────────────────────────
  * 옛 사이트는 index.html(styles.css) 과 notice.html(notice.css) **두 장의 별개 페이지**였다.
@@ -169,7 +170,19 @@ function transform(css, scope) {
 
 const tokensSrc = fs.readFileSync(path.join(ROOT, TOKENS), 'utf8');
 
+/**
+ * `--check` 는 **고치지 않고 낡았는지만** 본다.
+ *
+ * 이 생성기는 `npm run check` 에도 CI 에도 없었다. 그런데 실제로 배포되는 것은
+ * 원본이 아니라 생성물(app/src/styles/legacy-*.css)이라, 원본만 고치고 생성기를
+ * 안 돌리면 **낡은 CSS 가 그대로 나간다.** 초록불인 채로.
+ * 실제로 그런 상태였다 — notice.css 의 한 규칙이 범위 접두사를 잃은 채
+ * 커밋돼 있었고, 다음 생성 때에야 드러났다.
+ */
+const checkOnly = process.argv.includes('--check');
+
 let changed = 0;
+const stale = [];
 for (const job of JOBS) {
   const src = fs.readFileSync(path.join(ROOT, job.from), 'utf8');
   // 값은 tokens.css 한 곳에만 있고, 여기서는 범위만 입혀 앞에 세운다.
@@ -198,8 +211,23 @@ for (const job of JOBS) {
   const prev = fs.existsSync(path.join(ROOT, job.to))
     ? fs.readFileSync(path.join(ROOT, job.to), 'utf8') : '';
   const next = header + body;
-  if (prev !== next) { fs.writeFileSync(path.join(ROOT, job.to), next); changed++; }
+  // 줄 끝은 환경마다 다르므로 견줄 때만 맞춘다 (내용이 같은지를 묻는 것이다)
+  const same = prev.replace(/\r\n/g, '\n') === next.replace(/\r\n/g, '\n');
+  if (checkOnly) { if (!same) stale.push(job.to); }
+  else if (prev !== next) { fs.writeFileSync(path.join(ROOT, job.to), next); changed++; }
   const scoped = (body.match(new RegExp(job.scope.replace('.', '\\.'), 'g')) ?? []).length;
   console.log(`${job.to}  ← ${job.from}  · 범위 적용 ${scoped}곳`);
+}
+if (checkOnly) {
+  if (stale.length) {
+    console.log(`\n생성물이 낡았다 — ${stale.length}개\n`);
+    stale.forEach((f) => console.log(`  · ${f}`));
+    console.log('\n원본(app/public/*.css · tokens.css)만 고치고 생성기를 안 돌린 것이다.');
+    console.log('배포되는 것은 생성물 쪽이므로 이대로 나가면 화면이 원본과 다르다.');
+    console.log('  npm run css:scope\n');
+    process.exit(1);
+  }
+  console.log('생성물이 원본과 같다 — 낡지 않았다');
+  process.exit(0);
 }
 console.log(changed ? `${changed}개 파일 갱신` : '변경 없음');

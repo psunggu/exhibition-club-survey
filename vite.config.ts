@@ -30,6 +30,9 @@ function copyLiveAssets(): Plugin {
     // 모아서 센 숫자만 싣는다 — 이름도, 자유서술 원문도 넣지 않는다.
     'survey-result.html',
     'survey-result.css',
+    // 이 페이지만 <link> 로 직접 읽는다. 보드·일정·설문은 생성기가 번들에 넣어 주므로
+    // 파일이 필요 없지만, 여기는 정적 페이지라 실제로 받아 가야 한다.
+    'tokens.css',
     // 서체. tokens.css 의 @font-face 가 /exhibition-club-survey/fonts/ 로 가리킨다
     // (경로는 scripts/scope-legacy-css.mjs 의 FONT_BASE 가 만든다).
     // **여기 안 적으면 빌드는 통과하고 배포된 사이트에서만 404 가 난다.**

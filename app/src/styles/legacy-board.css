@@ -911,7 +911,8 @@ body:where(.board-page) {
 }
 
 :where(body.board-page) input:focus, :where(body.board-page) select:focus, :where(body.board-page) textarea:focus, :where(body.board-page) button:focus-visible, :where(body.board-page) a:focus-visible {
-  outline: 3px solid rgba(33, 90, 155, 0.25);
+  /* 옛 --blue(#215a9b)가 rgba 안에 남아 있었다. hex 로만 훑어 못 찾았다. */
+  outline: 3px solid rgba(15, 110, 86, 0.25);
   outline-offset: 2px;
 }
 
@@ -1154,11 +1155,11 @@ tbody tr:hover {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   padding: 0;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 28px 80px rgba(31, 30, 27, 0.28);
 }
 
 :where(body.board-page) dialog::backdrop {
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(31, 30, 27, 0.45);
 }
 
 #eventForm {

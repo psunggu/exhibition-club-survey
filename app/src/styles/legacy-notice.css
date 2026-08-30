@@ -227,7 +227,7 @@ body:where(.calendar-page) {
 }
 
 .digest-head:focus-visible {
-  outline: 3px solid rgba(98, 80, 164, 0.24);
+  outline: 3px solid rgba(15, 110, 86, 0.24);
   outline-offset: 5px;
   border-radius: 8px;
 }
@@ -692,7 +692,7 @@ body:where(.calendar-page) {
 .lchip.dead { background: var(--stop-tint); color: var(--stop); }
 .lchip.movie { background: var(--sunken); color: var(--ink-2); }
 
-/* 채움·점선·회색이 무엇인지 적는 세 줄. 색 점과 늘 붙어 다닌다. */
+/* 채움·점선·회색·붉은색이 무엇인지 적는 네 줄. 색 점과 늘 붙어 다닌다. */
 .legend-note {
   display: inline-flex;
   flex-wrap: wrap;

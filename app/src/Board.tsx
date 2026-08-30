@@ -43,8 +43,14 @@ const stars = (rating: string | null) => {
   return v ? `${v.toFixed(1)} / 5` : '-'
 }
 
-/** 갈래는 색이 아니라 글자가 말한다 — 카드 머리에 붙는 중립 칩의 글자. */
-const kindLabel = (type: string | null) => (type === '공연' ? '음악공연' : type || '전시')
+/**
+ * 갈래는 색이 아니라 글자가 말한다 — 카드 머리에 붙는 중립 칩의 글자.
+ *
+ * **모르면 아무 말도 하지 않는다.** 예전에는 type 이 비면 '전시' 로 떨어뜨렸는데,
+ * 보드에는 전시·공연·영화 어디에도 안 들어가는 「그 밖에」 묶음이 있다.
+ * 그 카드에 「전시」 라고 적으면 회원이 읽는 것이 틀린 정보가 된다.
+ */
+const kindLabel = (type: string | null) => (type === '공연' ? '음악공연' : type || null)
 
 const dateRange = (e: Event) => {
   const s = e.startDate ?? ''
@@ -141,9 +147,11 @@ function EventCard({ e, index }: { e: Event; index: number }) {
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
-            <div className="card-kind-line">
-              <span className="card-kind-chip">{kindLabel(e.type)}</span>
-            </div>
+            {kindLabel(e.type) && (
+              <div className="card-kind-line">
+                <span className="card-kind-chip">{kindLabel(e.type)}</span>
+              </div>
+            )}
             <p className="exhibition-venue">
               {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
             </p>
