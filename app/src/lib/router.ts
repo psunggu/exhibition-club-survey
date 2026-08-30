@@ -19,6 +19,7 @@ export type Route =
   | { name: 'surveyDatetime' }
   | { name: 'surveyMeal' }
   | { name: 'surveyClub' }
+  | { name: 'surveyGoogle' }
   | { name: 'surveyEtc' }
   | { name: 'surveyAdmin' }
   | { name: 'notFound'; path: string }
@@ -39,6 +40,8 @@ export function parseHash(hash: string): Route {
       return { name: 'surveyMeal' }
     case '/survey/club':
       return { name: 'surveyClub' }
+    case '/survey/google':
+      return { name: 'surveyGoogle' }
     case '/survey/etc':
       return { name: 'surveyEtc' }
     case '/survey/admin':

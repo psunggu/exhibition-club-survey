@@ -7,7 +7,7 @@ import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 import {
   CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen,
-  type Survey as SurveyT, type SurveyCategory,
+  type Survey as SurveyT, type SurveyCategory, type TabCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
 
@@ -87,7 +87,7 @@ function SurveyJump() {
    * 그러면 카드 높이가 상태에 따라 달라져 화면 대조 검사가 흔들렸다.
    * 자세한 마감 시각은 설문 화면에 그대로 적혀 있다.
    */
-  const stateOf = (c: SurveyCategory): { badge: string | null; text: string; on: boolean } | null => {
+  const stateOf = (c: TabCategory): { badge: string | null; text: string; on: boolean } | null => {
     if (!rows || failed) return null      // 아직 못 불러왔거나 못 읽었다 — 아무 말도 안 한다
     const r = rows.find((x) => x.category === c)
     // 이 갈래에 지금 참여할 것이 없다. 「마감」 과 다르다 — 마감은 있었는데 닫힌 것이다.
@@ -175,6 +175,7 @@ export function App() {
   const onCalendar = route.name === 'calendar'
   const onSurvey = route.name === 'survey' || route.name === 'surveyDatetime'
     || route.name === 'surveyMeal' || route.name === 'surveyClub'
+    || route.name === 'surveyGoogle'
     || route.name === 'surveyEtc' || route.name === 'surveyAdmin'
 
   /**
@@ -193,11 +194,11 @@ export function App() {
   if (onSurvey) {
     const admin = route.name === 'surveyAdmin'
     /** 라우트 이름 → 갈래. 어느 쪽도 아니면 첫 갈래(관람 장소)로 본다. */
-    const BY_ROUTE: Partial<Record<typeof route.name, SurveyCategory>> = {
+    const BY_ROUTE: Partial<Record<typeof route.name, TabCategory>> = {
       surveyDatetime: 'datetime', surveyMeal: 'meal',
-      surveyClub: 'club', surveyEtc: 'etc',
+      surveyClub: 'club', surveyGoogle: 'google', surveyEtc: 'etc',
     }
-    const category: SurveyCategory = BY_ROUTE[route.name] ?? 'exhibition'
+    const category: TabCategory = BY_ROUTE[route.name] ?? 'exhibition'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>

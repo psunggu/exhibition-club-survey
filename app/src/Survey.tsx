@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CATEGORY, fetchMyChoices, fetchResponseCount, fetchSurveys, fetchTally,
   isOpen, isVisible, koDeadline, memberOk, rosterOn, submitResponse, SurveyUnavailable,
-  type Survey as SurveyT, type SurveyCategory, type SurveyLink, type SurveyOption,
+  type Survey as SurveyT, type SurveyLink, type SurveyOption, type TabCategory,
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
 import { meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
 import { BRIEF } from './data/meetingBrief'
+import { GoogleSurveyRounds } from './GoogleSurveyRounds'
 
 /**
  * 설문 화면.
@@ -59,7 +60,7 @@ function LinkChip({ l }: { l: SurveyLink }) {
  * 결과 화면의 성격은 그대로 두면서 필요한 사람만 열어 볼 수 있다.
  */
 function OptionDetails({ options, category }: {
-  options: SurveyOption[]; category: SurveyCategory
+  options: SurveyOption[]; category: TabCategory
 }) {
   const worth = options.filter((o) => o.links.length > 0 || o.note
     || o.period || o.venue || o.hours || o.price)
@@ -88,7 +89,7 @@ function OptionDetails({ options, category }: {
   )
 }
 
-function Facts({ o, category }: { o: SurveyOption; category: SurveyCategory }) {
+function Facts({ o, category }: { o: SurveyOption; category: TabCategory }) {
   // 식당에 `관람료` 라고 쓰면 딴 얘기가 된다. 갈래에 따라 말이 달라져야 한다.
   const meal = category === 'meal'
   const rows: [string, string][] = []
@@ -587,7 +588,7 @@ function decideRow(
 }
 
 function MeetingBriefCard({ category, surveys }: {
-  category: SurveyCategory; surveys: SurveyT[]
+  category: TabCategory; surveys: SurveyT[]
 }) {
   const brief = BRIEF
   /** 집계를 읽어야 할 설문들. 같은 설문을 두 줄이 가리켜도 한 번만 읽는다. */
@@ -708,7 +709,19 @@ function MeetingBriefCard({ category, surveys }: {
 }
 
 
-export function Survey({ category }: { category: SurveyCategory }) {
+export function Survey({ category }: { category: TabCategory }) {
+  /**
+   * **구글 설문은 DB 를 부르지 않는다.** 구글 폼에서 받아 정리한 결과를 보여 주는
+   * 자리이지 여기서 투표를 받지 않는다. 아래 흐름(설문 읽기 · 요약 카드 · 지난 설문)은
+   * 전부 `surveys` 행을 전제로 하므로, 그 앞에서 갈라 나간다.
+   *
+   * 훅보다 먼저 return 하지 않는다 — 아래 useState · useEffect 가 건너뛰어지면
+   * 갈래를 오갈 때 훅 개수가 달라져 React 가 터진다. 그래서 훅을 다 부른 뒤에 가른다.
+   */
+  return <SurveyBody category={category} />
+}
+
+function SurveyBody({ category }: { category: TabCategory }) {
   /**
    * **갈래로 거르지 않고 다 들고 있는다.**
    *
@@ -735,6 +748,9 @@ export function Survey({ category }: { category: SurveyCategory }) {
     () => (all ? all.filter((s) => s.category === category) : null),
     [all, category],
   )
+
+  // 훅을 다 부른 뒤에 가른다 (위 Survey 주석 참고)
+  if (category === 'google') return <GoogleSurveyRounds />
 
   if (error) {
     return (

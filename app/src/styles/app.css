@@ -50,3 +50,272 @@
   gap: 8px;
   align-items: flex-start;
 }
+
+/* 소식 줄 — 목록 머리글 아래에 거는 바깥 링크 하나 (Board.tsx 의 NewsLine).
+   옛 화면에 없던 것이라 여기가 자리다. **legacy 규칙을 덮어쓰지 않는다** —
+   .card-kind-chip 을 가져다 쓰면 바탕색을 뒤집어야 하므로 손대지 않는다.
+
+   색은 tokens.css 안에서만 고른다. --ink-3 는 쓰지 않는다 — --sunken 바탕에서
+   4.49:1 이라 접근성 기준(4.5)에 못 미친다고 tokens.css 에 적혀 있다.
+   갈래 칩을 따로 세우지 않는 이유는 Board.tsx 의 NewsLine 주석에 적었다 — 높이다.
+   여백은 4·8·12·16 눈금. */
+.news-line {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-height: 56px;               /* 누르는 크기 — validate-accessibility 는 24px 이상을 본다 */
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  padding: 12px;
+  background: var(--sunken);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.news-line:hover {
+  border-color: var(--line-strong);
+}
+
+.news-line:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.news-line-icon,
+.news-line-out {
+  flex: none;
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.news-line-out {
+  color: var(--ink-2);
+}
+
+.news-line-body {
+  min-width: 0;                   /* 안 주면 긴 제목이 칸을 넘겨 375px 에서 가로 스크롤이 난다 */
+}
+
+.news-line-title {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.news-line-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-2);            /* --sunken 바탕 6.70:1 */
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 완료된 모임 — 해 탭과 달 묶음 (Calendar.tsx).
+   옛 화면은 최근 3일치를 평평하게 늘어놓고 나머지를 단추 뒤에 숨겼다.
+   지난 기록을 찾아보는 자리로 바뀌면서 해·달로 묶었고, 그 모양이 옛 CSS 에
+   없으므로 여기가 자리다. 색은 tokens.css 안에서만 고른다. */
+.year-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.year-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;               /* 누르는 크기 — 검사기는 24px 이상을 본다 */
+  padding: 4px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink-2);            /* 흰 바탕 7.71:1 */
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.year-tab:hover { border-color: var(--line-strong); }
+
+.year-tab:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* 고른 해. **글자도 함께 바뀐다** — aria-pressed 가 눌린 것을 말하므로
+   색을 못 봐도 어느 해를 보고 있는지 읽힌다. */
+.year-tab.on {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--card);
+}
+
+.year-tab-count { font-weight: 600; }
+
+.completed-month {
+  margin: 0 0 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.completed-month > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;               /* 기본 삼각형을 지우고 아래 ⌄ 로 바꾼다 */
+}
+
+.completed-month > summary::-webkit-details-marker { display: none; }
+
+.completed-month > summary::after {
+  content: "⌄";
+  margin-left: auto;
+  color: var(--ink-2);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.completed-month[open] > summary::after { content: "⌃"; }
+
+.completed-month > summary:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+.completed-month-count {
+  color: var(--ink-2);            /* 흰 바탕 7.71:1 */
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 줄(.drow)이 아래쪽 여백을 7px 갖고 있어 바닥은 조금만 준다 */
+.completed-month-body { padding: 0 14px 6px; }
+
+/* 구글 설문 결과 — 구글 폼으로 받은 회차를 정리해 보여 준다
+   (GoogleSurveyRounds.tsx). 회원 화면과 운영자 화면이 같은 모양을 쓴다.
+   옛 화면에 없던 것이라 여기가 자리다. 색은 tokens.css 안에서만 고른다. */
+.gsurvey-intro { margin: 0 0 12px; }
+
+.gsurvey {
+  margin: 0 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--card);
+  padding: 16px;
+}
+
+.gsurvey-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* 회차는 색이 아니라 글자가 말한다 — 「1차」 */
+.gsurvey-round {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--sunken);
+  color: var(--ink-2);            /* 칩 바탕 6.70:1 */
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.gsurvey-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.gsurvey-count {
+  flex: none;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.gsurvey-when {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.gsurvey-stats {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.gsurvey-stats div {
+  border-top: 1px solid var(--sunken);
+  padding-top: 8px;
+}
+
+.gsurvey-stats dt {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.gsurvey-stats dd {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.gsurvey-answer { font-weight: 700; word-break: keep-all; }
+.gsurvey-pct { flex: none; color: var(--green-dark); font-weight: 900; }
+
+/* 이 회차로 무엇이 달라졌는지. 보드 카드의 `.exhibition-reason` 과 같은 결이다. */
+.gsurvey-outcome {
+  margin: 12px 0 0;
+  border-left: 4px solid var(--green);
+  padding-left: 10px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.gsurvey-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin-top: 12px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.gsurvey-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* 운영자 화면에서는 접이식 안에 들어간다 — 위쪽 여백만 준다 */
+.gsurvey-admin { margin-top: 10px; }
