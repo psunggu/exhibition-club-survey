@@ -733,7 +733,11 @@ const pickCategory = (v) => page.evaluate((want) => {
  * 값과 차례가 하나라도 어긋나면 그 갈래는 운영자 화면에서 만들 길이 없어진다.
  */
 const SRC = fs.readFileSync(path.join(ROOT, 'app/src/lib/survey.ts'), 'utf8');
-const wantCats = (SRC.match(/CATEGORY_ORDER = \[([^\]]+)\]/)?.[1] ?? '')
+// **POSTABLE_ 쪽을 읽는다.** 화면이 고를 수 있는 갈래는 탭 목록과 하나가 다르다 —
+// 「구글 설문」 은 화면에만 있는 갈래라 DB 가 거절한다 (lib/survey.ts 주석 참고).
+// `[^=]*` 로 타입 표기를 건너뛴다 — `: readonly SurveyCategory[]` 안의 대괄호에
+// 정규식이 걸려 소스를 빈 목록으로 읽었고, 검사가 그대로 실패했다.
+const wantCats = (SRC.match(/POSTABLE_CATEGORY_ORDER[^=]*= \[([^\]]+)\]/)?.[1] ?? '')
   .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
 const gotCats = await page.$$eval('.admin-form select.admin-input', (sels) => {
   const s = sels.find((x) => [...x.options].some((o) => o.value === 'exhibition'));

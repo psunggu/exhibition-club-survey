@@ -52,7 +52,21 @@ export type SurveyOption = {
   importedVoters: string[]
 }
 
+/**
+ * **DB 에 저장되는 갈래.** `surveys_category_check`(202608290001a) 와 같아야 한다.
+ * 이 목록을 늘리려면 제약과 `survey_admin_save` 를 함께 고쳐야 한다.
+ */
 export type SurveyCategory = 'exhibition' | 'datetime' | 'meal' | 'club' | 'etc'
+
+/**
+ * **화면 탭의 갈래.** DB 갈래에 화면에만 있는 `google` 이 하나 더 붙는다.
+ *
+ * 구글 설문은 구글 폼에서 받은 것을 정리해 보여 주는 자리이지 여기서 투표를
+ * 받지 않는다. 그래서 `surveys` 행으로 존재한 적이 없고 DB 도 그 값을 모른다.
+ * **두 이름을 하나로 합치지 않는다** — 합치면 「저장할 수 있는 값」 과
+ * 「탭에 있는 값」 이 같다고 타입이 말하게 되고, 그건 사실이 아니다.
+ */
+export type TabCategory = SurveyCategory | 'google'
 
 /**
  * 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다.
@@ -70,11 +84,29 @@ export const CATEGORY = {
   datetime:   { label: '전시 관람 일자·시간 설문', short: '일자·시간',  route: '#/survey/datetime' },
   meal:       { label: '관람 후 식사 & Tea 설문',  short: '식사·Tea',   route: '#/survey/meal' },
   club:       { label: '동아리 운영·요청 사항 설문', short: '운영·요청', route: '#/survey/club' },
+  google:     { label: '구글 설문 결과',           short: '구글 설문',  route: '#/survey/google' },
   etc:        { label: '기타 설문',                short: '기타',       route: '#/survey/etc' },
 } as const
 
 /** 탭에 그릴 차례. `CATEGORY` 의 키 차례와 같게 둔다. */
-export const CATEGORY_ORDER = ['exhibition', 'datetime', 'meal', 'club', 'etc'] as const
+export const CATEGORY_ORDER: readonly TabCategory[]
+  = ['exhibition', 'datetime', 'meal', 'club', 'google', 'etc']
+
+/**
+ * **운영자가 설문을 올릴 수 있는 갈래.** 위 목록과 하나가 다르다.
+ *
+ * `google` 은 화면에만 있는 갈래다 — 구글 폼으로 받아 정리한 결과를 보여 주는
+ * 자리이지 여기서 투표를 받지 않는다. DB 의 `surveys_category_check` 도
+ * 그 값을 모른다(202608290001a 의 다섯 가지뿐).
+ *
+ * **두 목록을 하나로 합치지 않는다.** 합치면 운영자 화면에서 고를 수는 있는데
+ * 저장에서 서버가 거절하고, 어느 쪽이 막았는지 모를 오류가 뜬다 —
+ * 202608290001a 머리말이 「두 곳을 함께 고쳐야 한다」 고 적어 둔 그 사고다.
+ * 나중에 이 갈래로도 투표를 받기로 하면 제약과 survey_admin_save 를 함께 늘리고
+ * 그때 이 목록을 지운다.
+ */
+export const POSTABLE_CATEGORY_ORDER: readonly SurveyCategory[]
+  = ['exhibition', 'datetime', 'meal', 'club', 'etc']
 
 /**
  * DB 가 준 값을 갈래로 읽는다. **비어 있는 것과 모르는 것을 다르게 다룬다.**

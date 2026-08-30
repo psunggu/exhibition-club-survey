@@ -204,3 +204,118 @@
 
 /* 줄(.drow)이 아래쪽 여백을 7px 갖고 있어 바닥은 조금만 준다 */
 .completed-month-body { padding: 0 14px 6px; }
+
+/* 구글 설문 결과 — 구글 폼으로 받은 회차를 정리해 보여 준다
+   (GoogleSurveyRounds.tsx). 회원 화면과 운영자 화면이 같은 모양을 쓴다.
+   옛 화면에 없던 것이라 여기가 자리다. 색은 tokens.css 안에서만 고른다. */
+.gsurvey-intro { margin: 0 0 12px; }
+
+.gsurvey {
+  margin: 0 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--card);
+  padding: 16px;
+}
+
+.gsurvey-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* 회차는 색이 아니라 글자가 말한다 — 「1차」 */
+.gsurvey-round {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--sunken);
+  color: var(--ink-2);            /* 칩 바탕 6.70:1 */
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.gsurvey-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.gsurvey-count {
+  flex: none;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.gsurvey-when {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.gsurvey-stats {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.gsurvey-stats div {
+  border-top: 1px solid var(--sunken);
+  padding-top: 8px;
+}
+
+.gsurvey-stats dt {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.gsurvey-stats dd {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.gsurvey-answer { font-weight: 700; word-break: keep-all; }
+.gsurvey-pct { flex: none; color: var(--green-dark); font-weight: 900; }
+
+/* 이 회차로 무엇이 달라졌는지. 보드 카드의 `.exhibition-reason` 과 같은 결이다. */
+.gsurvey-outcome {
+  margin: 12px 0 0;
+  border-left: 4px solid var(--green);
+  padding-left: 10px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.gsurvey-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin-top: 12px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.gsurvey-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* 운영자 화면에서는 접이식 안에 들어간다 — 위쪽 여백만 준다 */
+.gsurvey-admin { margin-top: 10px; }

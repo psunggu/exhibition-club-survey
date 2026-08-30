@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   adminDelete, adminList, adminMemberDelete, adminMembers, adminMemberSave,
   adminGet, adminNames, adminNote, adminNoteSave, adminSubmit,
-  CATEGORY, CATEGORY_ORDER,
-  adminRespondents, adminResults, adminSave,
+  CATEGORY,
+  adminRespondents, adminResults, adminSave, POSTABLE_CATEGORY_ORDER,
   adminGetWithCount, emptyDraft, emptyOption, fromDateInput,
   formatPeriod, koDay, koDeadline, koShort, parsePeriod, SurveyUnavailable, toDateInput, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
@@ -12,6 +12,8 @@ import {
 } from './lib/survey'
 import { fetchEvents } from './lib/events'
 import { News } from './SurveyAdminNews'
+import { GoogleSurveyRounds } from './GoogleSurveyRounds'
+import { GOOGLE_SURVEYS } from './data/googleSurveys'
 import { boardPicks, type BoardPick } from './lib/pickFromBoard'
 import { MOVIES } from './data/movies'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
@@ -1091,7 +1093,10 @@ export function SurveyAdmin() {
             <span>어느 화면에</span>
             <select className="admin-input" value={draft.category}
               onChange={(e) => set({ category: e.target.value as Draft['category'] })}>
-              {CATEGORY_ORDER.map((c) => (
+              {/* **CATEGORY_ORDER 가 아니다.** 「구글 설문」 은 화면에만 있는 갈래라
+                  DB 가 그 값을 거절한다 — 고를 수 있게 두면 저장할 때야 막힌다.
+                  이유는 lib/survey.ts 의 POSTABLE_CATEGORY_ORDER 주석에 적었다. */}
+              {POSTABLE_CATEGORY_ORDER.map((c) => (
                 <option key={c} value={c}>{CATEGORY[c].label}</option>
               ))}
             </select>
@@ -1195,6 +1200,16 @@ export function SurveyAdmin() {
 
       {/* 보드 소식이 명부보다 위다 — 매주 손대는 것이 이쪽이고, 명부는 어쩌다 한 번이다. */}
       <News pw={pw} onError={(e) => say(e, '소식을 다루지 못했습니다.')} />
+
+      {/* 구글 설문은 **여기서 올리는 것이 아니다.** 회원 화면에 나가 있는 회차를
+          운영진도 같은 자리에서 확인하라고 둔다. 접힌 채로 시작한다 — 매주
+          손대는 것이 아니라 회차가 생길 때만 보는 자리다. */}
+      <details className="admin-members">
+        <summary>구글 설문 결과 ({GOOGLE_SURVEYS.length}회차)</summary>
+        <div className="gsurvey-admin">
+          <GoogleSurveyRounds forAdmin />
+        </div>
+      </details>
 
       <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
 
