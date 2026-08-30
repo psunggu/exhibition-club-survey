@@ -82,7 +82,35 @@ let newsDeleted = [];
  * 여기서는 서버가 내주는 것을 흉내 낸다.
  * 회원 화면에 이 글자가 한 번이라도 나오면 그 자체가 사고다(아래에서 잰다).
  */
-let guideBody = '## 가짜 제목\n- 가짜 목록 한 줄\n가짜 가이드 본문 · 코어 9명 대 주변부 8명';
+/**
+ * 분석 가이드 목 — **구조화 JSON**. 실제 본문이 JSON 이므로 그 경로를 잰다.
+ * 섹션 타입을 하나씩 넣어 리치 렌더가 다 그려지는지 본다.
+ * 도메인 문구(코어·주변부)를 넣어 두면 회원 화면 누출 검사가 진짜 값으로 돈다.
+ */
+const guideDoc = {
+  schema: 'admin-guide.v1',
+  title: '가짜 1차 분석',
+  sections: [
+    { type: 'headline', title: '한눈에', lead: '가짜 요약.', stats: [
+      { value: '82%', bar: 82, text: '가짜 지표 하나' },
+      { value: '7/17', text: '막대 없는 값' } ] },
+    { type: 'personas', title: '세 사람', items: [
+      { name: '코어', size: '9명', gloss: '가짜.', metrics: [{ value: '78%', bar: 78, text: '가짜' }],
+        callouts: [{ label: '주의', tone: 'caution', text: '가짜 주의' }] },
+      { name: '주변부', size: '8명', metrics: [{ value: '75%', bar: 75, text: '가짜' }] } ] },
+    { type: 'divergence', title: '갈라짐', poles: { a: '코어', b: '주변부' }, items: [
+      { label: '가짜 축', a: 22, b: 75, gap: '53p', note: '가짜 note' } ] },
+    { type: 'directives', variant: 'keep', title: '규칙', items: [
+      { number: '01', title: '가짜 규칙', body: [{ type: 'text', text: '가짜 본문' },
+        { type: 'quote', text: '가짜 인용' }], evidence: '가짜 근거' } ] },
+    { type: 'directives', variant: 'avoid', title: '금지', items: [
+      { number: '01', title: '가짜 금지', body: [{ type: 'text', text: '가짜' }], evidence: '가짜' } ] },
+    { type: 'table', title: '편성', columns: ['시기', '무엇'], rows: [['9월', '가짜 일정']] },
+    { type: 'actions', title: '이번 주', items: ['가짜 할 일'] },
+    { type: 'footer', title: '읽는 법', meta: '가짜 표본', notes: ['가짜 주의'] },
+  ],
+};
+let guideBody = JSON.stringify(guideDoc);
 let guideSaved = null;
 
 let surveys = [{
@@ -956,16 +984,46 @@ await page.waitForTimeout(400);
 const guideFold = gBox.locator('.admin-guide').first();
 ok('회차마다 분석 가이드가 붙는다', await guideFold.count() === 1);
 await guideFold.locator('> summary').click();
+await page.waitForSelector('.admin-guide[open] .gdoc', { timeout: 20000 });
 await page.waitForTimeout(400);
+
+/* ── JSON 본문이 지표·페르소나·격차·편성으로 그려진다 ────── */
+ok('JSON 을 오류 없이 읽는다', await guideFold.locator('.gdoc-error').count() === 0);
+ok('지표 막대를 그린다', await guideFold.locator('.gdoc-bar-fill').count() >= 3,
+  `${await guideFold.locator('.gdoc-bar-fill').count()}개`);
+/** 막대 폭은 SVG width 속성 = 값 그대로 (인라인 style 아님 → CSP 안전) */
+ok('막대 폭이 값을 따른다',
+  (await guideFold.locator('.gdoc-bar-fill').first().getAttribute('width')) === '82');
+ok('페르소나 카드가 선다', await guideFold.locator('.gdoc-persona').count() === 2);
+ok('격차 차트를 그린다', await guideFold.locator('.gdoc-div-plot').count() === 1);
+ok('규칙·금지 카드가 선다', await guideFold.locator('.gdoc-rule').count() === 2);
+ok('편성을 행-카드로 접는다', await guideFold.locator('.gdoc-sched').count() === 1);
 const gText = await guideFold.innerText();
-ok('가이드 본문이 나온다', gText.includes('가짜 가이드 본문'));
-/** `##` 와 `-` 만 읽는다 — 글자 그대로가 아니라 제목·목록으로 그려져야 한다 */
-ok('제목 줄을 제목으로 그린다',
-  (await guideFold.locator('.guide-h').innerText()) === '가짜 제목');
-ok('목록 줄을 목록으로 그린다',
-  (await guideFold.locator('.guide-li').innerText()) === '가짜 목록 한 줄');
-ok('서식 기호를 글자로 남기지 않는다', !gText.includes('## ') && !gText.includes('- 가짜'));
+ok('값이 글자로 남는다', gText.includes('82%') && gText.includes('차이 53p'));
 ok('어디에만 보이는지 화면이 말한다', gText.includes('운영자 화면에서만'));
+ok('375px 가로 스크롤 없음',
+  await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
+
+/* ── 깨진 JSON 은 화면을 죽이지 않고 막는다 ──────────────── */
+await guideFold.locator('.admin-guide-body .admin-mini', { hasText: '고치기' }).click();
+await page.waitForSelector('.admin-guide textarea', { timeout: 8000 });
+await guideFold.locator('textarea').fill('{ "sections": [ }');   // 문법 오류
+await page.waitForTimeout(300);
+ok('깨진 JSON 에 오류를 보인다', await guideFold.locator('.gdoc-error').count() >= 1);
+ok('깨진 JSON 이면 저장을 막는다',
+  await guideFold.locator('.survey-submit').isDisabled());
+ok('깨져도 화면이 살아 있다', await guideFold.count() === 1);
+
+/* ── 옛 마크다운 본문은 폴백으로 그려진다 (미리보기로 확인) ── */
+await guideFold.locator('textarea').fill('## 옛 제목\n- 옛 목록');
+await page.waitForTimeout(300);
+ok('마크다운 폴백이 산다', await guideFold.locator('.gdoc-preview .guide-h').count() === 1);
+ok('마크다운 미리보기가 제목을 그린다',
+  (await guideFold.locator('.gdoc-preview .guide-h').innerText()) === '옛 제목');
+
+// 편집 원복 — 뒤 검사에 영향 없게 그만두기
+await guideFold.locator('.admin-guide-body .admin-mini', { hasText: '그만두기' }).click();
+await page.waitForTimeout(300);
 
 // 펼친 채로 한 번 더 잰다 — 새로 생긴 칸과 단추의 대비·크기도 같은 잣대로 본다
 spots.push(await measureA11y(page));

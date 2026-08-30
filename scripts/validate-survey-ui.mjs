@@ -1263,6 +1263,21 @@ ok('집단 구분·미응답자 수가 회원 화면에 없다',
 ok('결과 페이지로 가는 길이 있다',
   (await page.$$('a.gsurvey-link')).length >= 1);
 
+/**
+ * **진짜 자물쇠: 번들 소스에 도메인 문구가 없어야 한다.**
+ * 위 innerText 검사는 *렌더된* 글만 본다 — 렌더러 TSX 에 「코어」 를 하드코딩하면
+ * 화면엔 안 떠도 공개 번들 assets/*.js 에 실려 암호가 무의미해진다. 그건 이 검사만 잡는다.
+ * (분석 본문은 잠긴 표에만 있어야 하고, 렌더러는 일반 라벨만 가져야 한다.)
+ */
+const distDir = path.join(ROOT, 'dist', 'assets');
+const bundleJs = fs.existsSync(distDir)
+  ? fs.readdirSync(distDir).filter((f) => f.endsWith('.js'))
+    .map((f) => fs.readFileSync(path.join(distDir, f), 'utf8')).join('\n')
+  : '';
+ok('번들 소스에 분석 도메인 문구가 없다',
+  bundleJs.length > 0 && !/코어|주변부|말 없는|미응답/.test(bundleJs),
+  bundleJs.length ? '없음' : 'dist 없음');
+
 await browser.close();
 
 server.close();
