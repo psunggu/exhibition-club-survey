@@ -50,3 +50,65 @@
   gap: 8px;
   align-items: flex-start;
 }
+
+/* 소식 줄 — 목록 머리글 아래에 거는 바깥 링크 하나 (Board.tsx 의 NewsLine).
+   옛 화면에 없던 것이라 여기가 자리다. **legacy 규칙을 덮어쓰지 않는다** —
+   .card-kind-chip 을 가져다 쓰면 바탕색을 뒤집어야 하므로 손대지 않는다.
+
+   색은 tokens.css 안에서만 고른다. --ink-3 는 쓰지 않는다 — --sunken 바탕에서
+   4.49:1 이라 접근성 기준(4.5)에 못 미친다고 tokens.css 에 적혀 있다.
+   갈래 칩을 따로 세우지 않는 이유는 Board.tsx 의 NewsLine 주석에 적었다 — 높이다.
+   여백은 4·8·12·16 눈금. */
+.news-line {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-height: 56px;               /* 누르는 크기 — validate-accessibility 는 24px 이상을 본다 */
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  padding: 12px;
+  background: var(--sunken);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.news-line:hover {
+  border-color: var(--line-strong);
+}
+
+.news-line:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.news-line-icon,
+.news-line-out {
+  flex: none;
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.news-line-out {
+  color: var(--ink-2);
+}
+
+.news-line-body {
+  min-width: 0;                   /* 안 주면 긴 제목이 칸을 넘겨 375px 에서 가로 스크롤이 난다 */
+}
+
+.news-line-title {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.news-line-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-2);            /* --sunken 바탕 6.70:1 */
+  font-size: 12px;
+  line-height: 1.5;
+}
