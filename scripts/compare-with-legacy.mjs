@@ -66,11 +66,6 @@ const BOARD = ['.app-shell', '.topbar', '.topbar h1', '.eyebrow', '.topbar-notic
   '.button.primary', '.official-info-link', '.stars', '.rating-source',
   '.recommendation-group-head', '.recommendation-group-head h3',
   '.movie-card', '.movie-status-badge', '.movie-ranking-badge'];
-/** 일정 화면 */
-const CAL = ['.digest', '.digest-head', '.digest-title', '.digest-period',
-  '.sec', '.card', '.db', '.db .d', '.db .m', '.tag', '.meta', '.card-alert',
-  '.mon', '.cal', '.wd', '.cell', '.dnum', '.chip', '.legend', '.lchip',
-  '.completed-list', '.drow'];
 
 const PROPS = ['color', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight',
   'lineHeight', 'letterSpacing', 'fontFamily', 'minHeight',
@@ -102,11 +97,32 @@ await freezeClock(page);
 // DB 응답도 떠 둔 것으로 고정한다 — 보드가 갱신되면 이 검사가 거짓으로 실패한다
 await serveFrozenData(page);
 
+/**
+ * ── 일정 화면은 이 대조에서 뺐다 (2026-08-30) ──────────────
+ *
+ * 이 검사의 목적은 **이식이 옛 화면에 충실했나**였고, 그건 끝났다.
+ * 남은 문제는 옛 페이지가 **얼어 있다**는 것이다 — notice.html 은 8월 29일
+ * 가우디를 「다가오는 확정」 으로 손으로 박아 두었고 앞으로도 그대로다.
+ * 이식본은 데이터를 읽으므로 모임이 하나 완료될 때마다 첫 카드가 바뀌고,
+ * `.card` · `.tag` · 보이는 글이 옛 화면과 어긋난다.
+ *
+ * 그때마다 예외를 한 줄씩 적으면 목록이 달마다 길어지고, 결국 아무도 안 읽는다.
+ * **모임이 끝나는 것은 고장이 아니라 정상이다.** 그것을 실패로 부르는 검사는
+ * 수명이 다한 것이다.
+ *
+ * 일정 화면의 디자인은 다른 것들이 지킨다 —
+ *   snapshot-screens.mjs      기준과 견줘 의도치 않은 변화를 잡는다 (일정 두 폭 포함)
+ *   validate-accessibility    대비 · 누르는 크기 · 팝업 안까지
+ *   validate-meetup-taxonomy  분류와 범례
+ *   validate-weekly-digest    notice.html 을 아직 읽는다
+ *
+ * 그래서 app/public/notice.html · notice.css 는 **여전히 지우면 안 된다.**
+ * notice.css 는 legacy-notice.css 의 원본이고, notice.html 은 위 검사기가 읽는다.
+ */
+
 const PAIRS = [
   ['보드', `http://localhost:${PORT_OLD}/index.html`,
            `http://localhost:${PORT_NEW}${BASE}/#/`, [...GLOBAL, ...BOARD]],
-  ['일정', `http://localhost:${PORT_OLD}/notice.html`,
-           `http://localhost:${PORT_NEW}${BASE}/#/calendar`, [...GLOBAL, ...CAL]],
 ];
 
 /**
@@ -120,13 +136,7 @@ const PAIRS = [
  * 적을 때는 좁게 적는다. 선택자 하나, 값 하나까지 맞아야 넘어간다.
  */
 const EXPECTED = [
-  {
-    screen: '일정', sel: '.drow', prop: 'display', old: 'none', now: 'flex',
-    why: '옛 페이지는 완료된 모임을 통째로 접어 두고 「N개 펼쳐보기」 로만 보여 준다. '
-      + '이식본은 사흘 안에 끝난 것만 펼쳐 두고 그 이전 것을 접는다 '
-      + '(app/src/Calendar.tsx 의 recent/older, COMPLETED_VISIBLE_DAYS=3). '
-      + '다녀온 직후에 「다녀왔습니다」 가 바로 보이는 편이 낫다고 보아 그렇게 두었다.',
-  },
+
   {
     screen: '보드', sel: '.movie-status-badge', kind: '사라짐',
     why: '갈래를 색으로 나누지 않기로 하며(디자인 통일 2단계) 영화 카드의 배지 둘을 '
@@ -138,26 +148,7 @@ const EXPECTED = [
     screen: '보드', sel: '.movie-ranking-badge', kind: '사라짐',
     why: '위와 같은 병합이다. 순위는 같은 칩 뒷부분에 붙어 있다.',
   },
-  {
-    screen: '일정', sel: '.lchip', prop: 'color',
-    old: 'rgb(85, 83, 75)', now: 'rgb(31, 30, 27)',
-    why: '달력 범례를 여섯 칸에서 색 점 둘로 줄였다(디자인 통일 3단계). '
-      + '옛 범례는 갈래(영화 모임)와 성격(공식 정기관람)과 상태(완료·확정·미정·마감)를 '
-      + '한 줄에 섞어 두어, 칩 하나를 보고 어느 축을 읽어야 하는지 알 수 없었다. '
-      + '이제 색은 정기/수시만 가르고, 채움·점선·회색이 무엇인지는 옆의 글자 셋이 말한다. '
-      + '재는 것이 첫 번째 .lchip 이라 옛 화면의 「완료」 칸과 이식본의 「정기」 칸이 맞붙는다 — '
-      + '달력 칩(.chip)은 옛 화면과 값이 같다.',
-  },
-  {
-    screen: '일정', sel: '.lchip', prop: 'backgroundColor',
-    old: 'rgb(241, 239, 232)', now: 'rgb(255, 255, 255)',
-    why: '위와 같은 범례 개편이다. 옛 「완료」 칸은 베이지, 새 「정기」 칸은 흰 바탕에 초록 점이다.',
-  },
-  {
-    screen: '일정', sel: '.lchip', prop: 'display',
-    old: 'block', now: 'flex',
-    why: '색 점을 ::before 로 글자 앞에 세우려고 inline-flex 로 바꿨다. 인라인 style 없이 CSP 를 지킨다.',
-  },
+
 ];
 
 // kind 를 적은 항목은 「사라짐 · 새로생김」 을, 그렇지 않은 항목은 값 하나를 가리킨다.
