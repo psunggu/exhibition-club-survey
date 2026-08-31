@@ -1,3 +1,4 @@
+import type { AdminDoc, DocBlock, DocEntry } from './adminDoc'
 /**
  * 설문 읽고 쓰기.
  *
@@ -640,6 +641,31 @@ export const adminSubmit = (
 ) => rpc<null>('survey_admin_submit', {
   p_password: pw, p_survey: id, p_zone: zone, p_name: name, p_options: optionIds,
 }, signal)
+
+/**
+ * 운영진만 읽는 문서. **암호로 열고, 표에는 정책이 없어 다른 길이 없다.**
+ * 본문은 블록 배열이라 화면이 그린다 — 서버 글이 코드가 될 길이 없다 (adminDoc.ts).
+ */
+export const adminDocs = async (pw: string, signal?: AbortSignal): Promise<DocEntry[]> => {
+  const rows = await rpc<Record<string, unknown>[]>('survey_admin_docs', { p_password: pw }, signal)
+  if (!Array.isArray(rows)) return []
+  return rows.map((r) => ({
+    slug: String(r.slug ?? ''),
+    title: str(r.title) ?? '',
+    updatedAt: str(r.updated_at) ?? '',
+  }))
+}
+
+export const adminDoc = async (pw: string, slug: string, signal?: AbortSignal): Promise<AdminDoc> => {
+  const v = await rpc<Record<string, unknown>>('survey_admin_doc',
+    { p_password: pw, p_slug: slug }, signal)
+  if (!v || typeof v !== 'object') throw new Error('문서를 불러오지 못했습니다.')
+  return {
+    title: str(v.title) ?? '',
+    updatedAt: str(v.updated_at) ?? '',
+    body: Array.isArray(v.body) ? (v.body as DocBlock[]) : [],
+  }
+}
 
 export const adminDelete = (pw: string, id: string, signal?: AbortSignal) =>
   rpc<null>('survey_admin_delete', { p_password: pw, p_survey: id }, signal)

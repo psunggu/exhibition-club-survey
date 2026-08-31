@@ -11,6 +11,7 @@ import {
   type SurveyOption,
 } from './lib/survey'
 import { splitAdminByHistory } from './lib/surveyHistory'
+import { SurveyDoc } from './SurveyDoc'
 import { fetchEvents } from './lib/events'
 import { boardPicks, type BoardPick } from './lib/pickFromBoard'
 import { MOVIES } from './data/movies'
@@ -1243,6 +1244,13 @@ export function SurveyAdmin() {
       )}
 
       <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
+
+      {/* 분석 문서. 본문은 DB 에 있고 암호로만 열린다 (202609010001a).
+          접어 두는 이유 — 설문을 다루러 온 사람이 매번 긴 글을 지나칠 이유가 없다. */}
+      <details className="admin-members">
+        <summary>설문 분석 — 운영진만 보는 글</summary>
+        <SurveyDoc pw={pw} onError={(e) => say(e, '문서를 불러오지 못했습니다.')} />
+      </details>
 
       {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
 

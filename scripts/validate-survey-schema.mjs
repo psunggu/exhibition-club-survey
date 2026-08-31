@@ -43,6 +43,8 @@ const tables = [
   read('202608270001a_imported_voters.sql'),
   /** audience 컬럼을 더하는 파일 — 안 읽으면 그 컬럼을 쓰는 함수를 「없는 열」 이라 잡는다 */
   read('202608300002a_admin_audience_surveys.sql'),
+  /** admin_docs 를 만드는 파일 — 아래 「잠근 표」 검사가 이 표를 봐야 한다 */
+  read('202609010001a_admin_doc.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -62,6 +64,7 @@ const admin = [
   read('202608280002a_my_choices_gate.sql'),
   read('202608290001a_survey_categories_five.sql'),
   read('202608300002a_admin_audience_surveys.sql'),
+  read('202609010001a_admin_doc.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -71,8 +74,10 @@ const allFuncs = `${funcs}\n${admin}`;
 // survey_notes 도 잠근다 — 톡방 이야기나 사람 이름이 섞일 수 있는 자리다
 // survey_members 는 그 자체가 교인 명부다 — 읽히면 이름과 구역번호가 통째로 샌다
 // survey_probe_log 는 누가 언제 두드렸는지의 기록이다 — 이것도 열어 둘 이유가 없다
+// admin_docs 는 회원이 직접 쓴 자유서술 원문이 통째로 들어 있는 표다 —
+// 열리면 「누가 썼는지」 는 몰라도 「무엇을 썼는지」 는 전부 나간다
 const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes',
-  'survey_members', 'survey_probe_log'];
+  'survey_members', 'survey_probe_log', 'admin_docs'];
 const OPEN = ['surveys', 'survey_options'];
 
 for (const t of [...LOCKED, ...OPEN]) {
@@ -117,6 +122,8 @@ const CALLABLE = [
   'survey_admin_members', 'survey_admin_member_save', 'survey_admin_member_delete',
   // 운영진용 설문 (202608300002a). 조회·응답 둘 다 암호를 먼저 묻는다.
   'survey_admin_get', 'survey_admin_submit',
+  // 운영진만 읽는 문서 (202609010001a)
+  'survey_admin_docs', 'survey_admin_doc',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {

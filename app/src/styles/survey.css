@@ -1636,3 +1636,135 @@ select.admin-input { cursor: pointer; }
   color: #67645c;
   line-height: 1.6;
 }
+
+/* ── 운영진 분석 문서 ───────────────────────────────────────
+   본문은 DB 에서 오는 **블록 배열**이고 SurveyDoc.tsx 가 그린다.
+   HTML 을 심지 않는 이유는 CSP 의 style-src-attr 때문이다 —
+   서버가 준 style="width:83%" 는 막히고, React 의 style prop 은 안 막힌다.
+   그래서 막대 너비만 style prop 으로 오고 나머지 모양은 전부 여기 있다.
+
+   색은 tokens.css 것만 쓴다. 한 곳만 새로 만든다 — 두 집단을 가르는 보라(--doc-alt).
+   두 계열을 나란히 놓아야 하는 자리가 이 문서뿐이라 팔레트에 올리지 않고 여기 둔다. */
+.doc-wrap { --doc-alt: #7a4bb0; --doc-alt-tint: #efe6f8; --doc-alt-ink: #5d3689; margin-top: 8px; }
+
+.doc-cover { padding-bottom: 18px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+.doc-eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; font-weight: 600; color: var(--green-dark); }
+.doc-title { margin: 8px 0 10px; font-size: 26px; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
+.doc-dek { margin: 0; font-size: 15px; color: var(--ink-2); }
+.doc-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; margin-top: 16px; }
+.doc-tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); padding: 12px 13px; }
+.doc-tile p { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+.doc-big { font-size: 24px; font-weight: 800; color: var(--green); line-height: 1.1;
+  font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+.doc-why { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+.doc-num { margin: 32px 0 2px; font-size: 11.5px; font-weight: 800; letter-spacing: .1em; color: var(--ink-3); }
+.doc-h2 { margin: 0 0 10px; font-size: 22px; font-weight: 800; letter-spacing: -.015em; }
+.doc-h3 { margin: 24px 0 9px; font-size: 15.5px; font-weight: 700; }
+.doc-h4 { margin: 0 0 7px; font-size: 16px; font-weight: 700; }
+.doc-kind { font-size: 11.5px; font-weight: 600; color: var(--ink-3); margin-left: 6px; }
+.doc-lede { margin: 0 0 16px; font-size: 15px; color: var(--ink-2); }
+.doc-p { margin: 0 0 9px; font-size: 14.5px; color: var(--ink-2); }
+.doc-p:last-child { margin-bottom: 0; }
+.doc-note { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); }
+.doc-tail { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+.doc-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); margin-bottom: 10px; }
+.doc-pad { padding: 15px 16px; }
+.doc-flag { background: var(--warn-tint); border-radius: var(--r-card); padding: 14px 16px; margin-bottom: 10px; }
+.doc-flag h4 { color: var(--warn); }
+.doc-flag p { margin: 0 0 7px; font-size: 14.5px; }
+
+/* 사람 카드 */
+.doc-person { border-left: 4px solid var(--green); }
+.doc-person.b { border-left-color: var(--doc-alt); }
+.doc-person.c { border-left-color: var(--ink-3); }
+.doc-whohead { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.doc-cnt { font-size: 12px; font-weight: 700; color: var(--green-dark);
+  background: var(--green-tint); padding: 2px 8px; border-radius: var(--r-control); }
+.doc-person.b .doc-cnt { color: var(--doc-alt-ink); background: var(--doc-alt-tint); }
+.doc-person.c .doc-cnt { color: var(--ink-2); background: var(--sunken); }
+.doc-dek2 { margin: 6px 0 10px; font-size: 14px; color: var(--ink-2); }
+.doc-pt { display: grid; grid-template-columns: 54px 1fr; gap: 3px 11px; padding: 6px 0; font-size: 14px; }
+.doc-pt + .doc-pt { border-top: 1px solid var(--line); }
+.doc-pt b { font-variant-numeric: tabular-nums; color: var(--green-dark); font-weight: 800; }
+.doc-person.b .doc-pt b { color: var(--doc-alt-ink); }
+.doc-careful { margin: 11px 0 0; background: var(--warn-tint); border-radius: var(--r-control);
+  padding: 10px 12px; font-size: 13.5px; }
+.doc-careful b { color: var(--warn); }
+
+/* 막대 */
+.doc-chart { padding: 12px 15px; }
+.doc-row { padding: 6px 0; }
+.doc-row + .doc-row { border-top: 1px solid var(--line); }
+.doc-lab { display: flex; justify-content: space-between; align-items: baseline; gap: 11px; font-size: 14px; }
+.doc-row.top .doc-lab { font-weight: 600; }
+.doc-v { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12px;
+  font-weight: 600; white-space: nowrap; }
+.doc-track { height: 8px; background: var(--sunken); border-radius: 0 4px 4px 0;
+  overflow: hidden; margin-top: 3px; }
+.doc-track i { display: block; height: 100%; background: var(--green); border-radius: 0 4px 4px 0; }
+
+/* 격차 — 두 집단 */
+.doc-gap { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+  padding: 13px 15px; margin-bottom: 10px; }
+.doc-gaphead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 7px; }
+.doc-gaphead .t { font-size: 14.5px; font-weight: 600; }
+.doc-mult { font-size: 12px; font-weight: 800; color: var(--green-dark);
+  background: var(--green-tint); padding: 2px 8px; border-radius: var(--r-control); white-space: nowrap; }
+.doc-mult.b { color: var(--doc-alt-ink); background: var(--doc-alt-tint); }
+.doc-pair { display: grid; grid-template-columns: 44px 1fr 74px; gap: 8px;
+  align-items: center; font-size: 12px; color: var(--ink-2); }
+.doc-pair + .doc-pair { margin-top: 4px; }
+.doc-k { font-weight: 600; color: var(--ink-3); }
+.doc-xt { display: block; height: 8px; background: var(--sunken); border-radius: 0 4px 4px 0; overflow: hidden; }
+.doc-xt i { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+.doc-xt i.f-a { background: var(--green); }
+.doc-xt i.f-b { background: var(--doc-alt); }
+.doc-xv { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;
+  white-space: nowrap; font-size: 11.5px; }
+
+/* 규칙 */
+.doc-rule.yes { border-left: 3px solid var(--green); }
+.doc-rule.no { border-left: 3px solid var(--stop); }
+.doc-rn { margin: 0 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--ink-3); }
+.doc-chg { display: inline-block; font-size: 11px; font-weight: 700; color: var(--doc-alt-ink);
+  background: var(--doc-alt-tint); padding: 1px 7px; border-radius: var(--r-control); margin-left: 6px; }
+.doc-quote { margin: 9px 0; padding-left: 12px; border-left: 3px solid var(--green); font-size: 14.5px; }
+.doc-ev { margin: 9px 0 0; padding-left: 10px; border-left: 2px solid var(--line);
+  font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* 표 */
+.doc-tw { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-card);
+  background: var(--card); margin-bottom: 10px; }
+.doc-tw table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 13.5px; }
+.doc-tw th, .doc-tw td { text-align: left; padding: 9px 12px;
+  border-bottom: 1px solid var(--line); vertical-align: top; }
+.doc-tw th { background: var(--sunken); font-weight: 700; font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.doc-tw tr:last-child td { border-bottom: 0; }
+
+/* 원문 */
+.doc-raw { margin: 0 0 8px; background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r-card); padding: 11px 14px; font-size: 14.5px; }
+.doc-who { display: inline-block; font-size: 11px; font-weight: 700; color: var(--ink-3);
+  font-variant-numeric: tabular-nums; margin-right: 8px; background: var(--sunken);
+  padding: 1px 7px; border-radius: var(--r-control); }
+
+/* 접기 */
+.doc-fold { background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r-card); margin-bottom: 10px; }
+.doc-fold > summary { list-style: none; cursor: pointer; min-height: 48px;
+  display: flex; align-items: center; gap: 8px; padding: 0 16px;
+  font-weight: 700; font-size: 14.5px; color: var(--green-dark); }
+.doc-fold > summary::-webkit-details-marker { display: none; }
+.doc-fold > summary::before { content: "▸"; font-size: 11px; color: var(--ink-3); }
+.doc-fold[open] > summary::before { content: "▾"; }
+.doc-fold[open] > summary { border-bottom: 1px solid var(--line); }
+.doc-foldbody { padding: 4px 15px 15px; }
+.doc-foldbody .doc-h3:first-child { margin-top: 14px; }
+
+@media (max-width: 420px) {
+  .doc-pair { grid-template-columns: 40px 1fr 68px; gap: 6px; }
+  .doc-pt { grid-template-columns: 48px 1fr; gap: 3px 9px; }
+  .doc-foldbody { padding: 4px 11px 12px; }
+}
