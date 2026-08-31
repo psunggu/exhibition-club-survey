@@ -10,6 +10,7 @@ import {
   type Draft, type DraftOption, type Member, type SurveyLinkKind,
   type SurveyOption,
 } from './lib/survey'
+import { splitAdminByHistory } from './lib/surveyHistory'
 import { fetchEvents } from './lib/events'
 import { News } from './SurveyAdminNews'
 import { GoogleSurveyRounds } from './GoogleSurveyRounds'
@@ -1186,37 +1187,11 @@ export function SurveyAdmin() {
 
   /* ── 목록 ─────────────────────────────────────────────── */
 
-  return (
-    <div>
-      <div className="survey-actions" style={{ marginBottom: 14 }}>
-        <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
-      </div>
+  // 다녀온 모임의 설문을 아래로 접는다. 규칙은 회원 화면과 같은 것을 쓴다.
+  const { live, past } = splitAdminByHistory(list)
 
-      {msg && (
-        <p className={`survey-status survey-message ${msg.kind}`}
-          role={msg.kind === 'error' ? 'alert' : 'status'}
-          style={{ marginBottom: 12 }}>{msg.text}</p>
-      )}
-
-      {/* 보드 소식이 명부보다 위다 — 매주 손대는 것이 이쪽이고, 명부는 어쩌다 한 번이다. */}
-      <News pw={pw} onError={(e) => say(e, '소식을 다루지 못했습니다.')} />
-
-      {/* 구글 설문은 **여기서 올리는 것이 아니다.** 회원 화면에 나가 있는 회차를
-          운영진도 같은 자리에서 확인하라고 둔다. 접힌 채로 시작한다 — 매주
-          손대는 것이 아니라 회차가 생길 때만 보는 자리다. */}
-      <details className="admin-members">
-        <summary>구글 설문 결과 ({GOOGLE_SURVEYS.length}회차)</summary>
-        <div className="gsurvey-admin">
-          <GoogleSurveyRounds pw={pw}
-            onError={(e) => say(e, '분석 가이드를 다루지 못했습니다.')} />
-        </div>
-      </details>
-
-      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
-
-      {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
-
-      {list.map((s) => (
+  // 카드 한 장. **두 묶음이 같은 함수를 쓴다** — 따로 적으면 한쪽만 고쳐진다.
+  const card = (s: AdminSurvey) => (
         <div className="admin-card" key={s.id}>
           <div className="admin-card-title">
             {s.audience === 'admins' && (
@@ -1259,7 +1234,57 @@ export function SurveyAdmin() {
               onError={(e) => say(e, '결과를 불러오지 못했습니다.')} />
           )}
         </div>
-      ))}
+  )
+
+  return (
+    <div>
+      <div className="survey-actions" style={{ marginBottom: 14 }}>
+        <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
+      </div>
+
+      {msg && (
+        <p className={`survey-status survey-message ${msg.kind}`}
+          role={msg.kind === 'error' ? 'alert' : 'status'}
+          style={{ marginBottom: 12 }}>{msg.text}</p>
+      )}
+
+      {/* 보드 소식이 명부보다 위다 — 매주 손대는 것이 이쪽이고, 명부는 어쩌다 한 번이다. */}
+      <News pw={pw} onError={(e) => say(e, '소식을 다루지 못했습니다.')} />
+
+      {/* 구글 설문은 **여기서 올리는 것이 아니다.** 회원 화면에 나가 있는 회차를
+          운영진도 같은 자리에서 확인하라고 둔다. 접힌 채로 시작한다 — 매주
+          손대는 것이 아니라 회차가 생길 때만 보는 자리다. */}
+      <details className="admin-members">
+        <summary>구글 설문 결과 ({GOOGLE_SURVEYS.length}회차)</summary>
+        <div className="gsurvey-admin">
+          <GoogleSurveyRounds pw={pw}
+            onError={(e) => say(e, '분석 가이드를 다루지 못했습니다.')} />
+        </div>
+      </details>
+
+      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
+
+      {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
+
+      {live.map(card)}
+
+      {/**
+        * ── 「지난 관람」 을 따로 접어 둔다 ──────────────────────
+        * 다녀온 모임의 설문은 지워지지 않는다 — 결과가 기록이기 때문이다.
+        * 그런데 목록 맨 위에 그대로 두면, 지금 돌려야 할 설문이 끝난 것들에 밀린다.
+        * 8월 설문 넷이 쌓인 지금 이미 그렇다.
+        *
+        * **판정은 회원 화면과 같은 규칙을 쓴다** (surveyHistory.ts 의 pastCore) —
+        * 마감됐고 + 이어진 모임이 지났을 때만 지난 것이다. 마감만으로는 안 접는다.
+        * 모임이 아직인 마감 설문이야말로 운영자가 들여다볼 때다.
+        */}
+      {past.length > 0 && (
+        <details className="admin-members admin-past">
+          <summary>지난 관람 {past.length}건 — 다녀온 모임의 설문입니다</summary>
+          {past.map(card)}
+        </details>
+      )}
+
     </div>
   )
 }
