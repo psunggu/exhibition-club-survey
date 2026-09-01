@@ -1,26 +1,31 @@
 # AGENTS.md — 프로젝트 컨텍스트 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-07-27 (Codex 세션에서 갱신)
+> 최종 갱신: 2026-08-30 (디자인 통일 — tokens.css · 서체 · 달력 두 축 반영)
 > 이 문서는 Codex, Claude Code 등 AI 에이전트가 이어서 개발할 수 있도록 프로젝트 상태를 요약한다.
 
 ## 프로젝트 개요
 
-41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 4개:
+41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 5개:
 
 1. **문화 콘텐츠 공유 보드** — `app/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 전시·박물관 동아리에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
-2. **모임 일정 공지 페이지** — `public/notice.html` + `notice.css` + `notice.js` (2026-07-21 신규 추가). 카카오톡 단체방 대화를 정리해 만든 8·9월 중심 모임 공지. 상단 `주간 정리봇`은 `public/weekly-digest.public.json`을 기준 데이터로 읽고, 요청 실패 시 `notice.js`의 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 달력의 "오늘" 마커는 notice.js가 접속 시점 날짜로 동적 표시(`data-year`, `data-month`, `.dnum` 매칭). 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
+2. **모임 일정 화면** — SPA 라우트 `#/calendar` (`app/src/Calendar.tsx`). 2026-08 이식 전에는 `app/public/notice.html` + `notice.css` + `notice.js` 였고, 그 파일들은 지금도 **지우면 안 된다** — `notice.css` 는 `legacy-notice.css` 의 원본이고(생성기가 만든다), `notice.html` · `notice.js` 는 `validate-weekly-digest` · `validate-board-parity` 가 읽는다. 다만 **일정 화면은 2026-08-30 에 `compare-with-legacy` · `compare-visible-text` 대조에서 뺐다** — 옛 페이지는 일정이 손으로 박힌 채 얼어 있어서, 모임이 완료될 때마다 정상적인 변화를 실패로 부르기 때문이다. 이유는 그 스크립트 안에 적어 두었다. 상단 `주간 정리봇`은 `weekly-digest.public.json`을 읽고, 실패 시 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
 3. **Google Form 설문 패키지** — `apps-script/Code.gs`(Form 2개+Sheet 1개 자동 생성), `docs/`, `sheets/` 샘플. 카톡 톡게시판 투표는 데이터 추출이 불가능해서, 참석 설문을 구글폼으로 대체하기 위한 것. **아직 미가동** (config.js에 Form URL 없음).
 4. **Telegram 업데이트 스크립트** — `scripts/send-telegram-update.js`. `app.js`의 recommendedEvents를 파싱해 텔레그램으로 주간 추천 목록 발송. `--dry-run` 지원.
+5. **설문 결과 회신 페이지(회원용)** — `app/public/survey-result.html` + `survey-result.css`, 정적 파일이며 `#/calendar` 화면의 카드에서 들어간다. 2026-08 운영 설문의 **집계 숫자만** 싣는다. 이름·자유서술 원문·참여 빈도별 집단 구분·미응답자 수는 넣지 않는다 — 공개 페이지라 회원이 자기 얘기로 읽을 수 있는 것은 전부 뺐다.
 
 ## 배포 파이프라인 (중요)
 
-- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`app/public/` 폴더를 GitHub Pages 루트로 배포**한다.
+- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`npm run build` 산출물인 `dist/`를 GitHub Pages 루트로 배포**한다. (2026-08 이식 완료. 그 전에는 `app/public/`을 그대로 올렸다.)
+- **`app/public/`은 `publicDir`이 아니다.** Vite는 `root: 'app'`으로 돌고, `app/public`의 파일은 `vite.config.ts`의 `copyLiveAssets` **allowlist에 이름을 적은 것만** `dist/`에 실린다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404**가 난다. 선례: `meal-review.html`, `survey-result.html`.
+- 화면은 해시 라우팅 SPA다 (`app/src/lib/router.ts`). 보드 `#/`, 일정 `#/calendar`, 설문 `#/survey`. 카카오톡 인앱 브라우저 때문에 해시를 쓴다 — 히스토리 API 방식으로 바꾸지 않는다.
+- 옛 주소 `notice.html`은 단톡방에 이미 뿌려져 있어서, 빌드가 `#/calendar`로 넘기는 리다이렉트 스텁을 대신 만들어 둔다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 일정·참여 인원·문구처럼 공개 콘텐츠만 바꾸는 소규모 수정은 검증 후 일반 Git으로 `main`에 직접 커밋·푸시한다.
 - 화면 구조나 기능 변경은 별도 브랜치와 PR을 권장한다. Supabase·개인정보·인증·보안 변경은 반드시 별도 브랜치와 PR로 검토한다.
 - GitHub CLI(`gh`)는 필수가 아니다. PR 또는 Actions를 터미널에서 관리할 때만 선택적으로 사용하며, 기본 배포는 Git Credential Manager와 일반 Git을 사용한다.
 - 라이브 URL:
   - 보드: https://psunggu.github.io/exhibition-club-survey/
-  - 공지: https://psunggu.github.io/exhibition-club-survey/notice.html
+  - 일정: https://psunggu.github.io/exhibition-club-survey/#/calendar (옛 `notice.html` 주소는 여기로 넘어간다)
+  - 설문 결과 회신(회원용): https://psunggu.github.io/exhibition-club-survey/survey-result.html
 - `gh-pages` 브랜치는 과거 방식의 잔재. 현재는 Actions 배포만 사용.
 
 ## 개발 규칙
@@ -29,6 +34,23 @@
 - **캐시 버스팅**: CSS/JS 링크에 `?v=YYYYMMDD-n` 쿼리를 붙이고, 내용 수정 시 버전을 올린다. (예: `notice.css?v=20260721-1`)
 - **모바일 우선**: 회원 대부분이 카톡 링크로 휴대폰에서 열람. 375px 폭에서 가로 스크롤 없어야 함.
 - **한국어 텍스트 줄바꿈**: `word-break: keep-all` 사용 (음절 단위 줄바꿈 방지).
+  `styles.css`·`notice.css` 의 `body` 에 걸어 두었으므로 낱낱의 규칙에 다시 적을 필요는 없다.
+- **색·모서리·그림자·서체는 `app/public/tokens.css` 한 곳에만 적는다.** 다른 CSS 는 `var(--…)` 로
+  참조만 한다. 팔레트는 중립 8 · 브랜드 3 · 상태 4 로 열다섯이고, **여기 없는 색을 새로 만들지 않는다.**
+  - 색이 말하는 것은 **상태**뿐이다. 갈래(전시·공연·영화 / 설문 갈래)는 색으로 나누지 않고 글자로 적는다.
+  - `--warn` 은 「확인 필요」, `--stop` 은 「마감·오류」 전용이다. 다른 뜻에 쓰면 색이 글자를 부정한다.
+  - 세 화면에 닿는 길: 옛 정적 페이지는 `tokens.css` 를 `<link>` 하고, SPA 는
+    `scripts/scope-legacy-css.mjs` 가 두 스코프로 한 벌씩 복사해 생성물 앞에 붙인다.
+    설문 화면의 body 클래스는 `calendar-page` 라 그쪽 한 벌을 같이 쓴다.
+- **여백은 4 · 8 · 12 · 16 · 22 · 32 눈금을 쓴다 — 새로 쓰는 값에만 적용한다.**
+  기존 336곳은 눈금 밖이지만 손대지 않기로 했다 (2026-08-30). 대부분이 `10px`·`14px` 인데,
+  올리면 375px 에서 넘칠 위험이 있고 내리면 화면이 빡빡해진다 — 회원에게 안 보이는 이득을 위해
+  공개 화면 전체를 2px 씩 움직일 이유가 없다고 보았다. 고칠 일이 생긴 자리부터 눈금으로 옮긴다.
+- **서체는 저장소 안에 있다**: `app/public/fonts/` 의 Pretendard 한글 서브셋 woff2 다섯 굵기
+  (400·600·700·800·900 · 합계 1.35MB · SIL OFL 1.1, `OFL.txt` 동봉). CSP 가 CDN 을 막으므로
+  파일을 넣는다. `@font-face` 는 `tokens.css` 에 있다.
+  - **새 정적 파일을 `app/public/` 에 넣으면 `vite.config.ts` 의 `copyLiveAssets` 목록에도 적는다.**
+    안 적으면 빌드는 통과하고 **배포된 사이트에서만 404** 가 난다.
 - **개인정보 최소 수집**: 회원에게 받는 것은 **이름 · 소속 구역** 둘뿐이다.
   - **연락처 컬럼을 어떤 앱 테이블에도 만들지 않는다** (`email`·`phone` 모두).
   - 주소·생년월일·계좌번호·주민등록번호는 어떤 경우에도 만들지 않는다.
@@ -84,7 +106,7 @@
 ## 다음 작업 후보 (우선순위 순)
 
 1. **구글폼 설문 가동** — `apps-script/Code.gs`를 Google Apps Script에서 실행(`setupClubSurveySystem`) → 생성된 Form 응답 URL을 `public/config.js`에 추가하고 notice/index에 버튼 연결. 질문 구성은 `docs/google_form_questions.md` 참고. 목적: 카톡 투표 대신 참석 데이터를 Sheet로 자동 수집.
-2. **index ↔ notice 상호 링크** — notice 하단에는 보드 링크가 이미 있음. 보드(index.html) 쪽에 공지 페이지 링크 추가 검토.
+2. ~~index ↔ notice 상호 링크~~ — 완료. 한 앱이 되면서 상단 탭으로 오간다. 일정 화면에는 보드 카드와 설문 결과 카드가 형제로 붙어 있다.
 3. **notice 자동 생성** — 카톡 txt 파서(날짜/일정 추출) 스크립트를 만들어 notice.html 본문 갱신을 자동화. txt 포맷: `[이름] [오전/오후 H:MM] 메시지`, 날짜 구분선 `--------------- 2026년 M월 D일 X요일 ---------------`.
 
 ## 톡방 투표를 옮겨 올 때 (2026-08-27)
@@ -119,7 +141,8 @@
 
 - 소유자 PC: Windows 11, 로컬 클론 `C:\D\Project\exhibition-club-survey`
 - Node.js 스크립트는 `node scripts/send-telegram-update.js --dry-run`으로 검증
-- 정적 사이트라 빌드 과정 없음. 로컬 확인은 `public/index.html`·`notice.html`을 브라우저로 직접 열면 됨
+- 빌드가 있다(Vite + React). 로컬 확인은 `npm run dev` — 일정은 `#/calendar`, 보드는 `#/`. 파일을 브라우저로 직접 여는 방식은 `base` 경로와 해시 라우팅 때문에 더 이상 안 된다.
+- 배포 전 검사는 `npm run check` 하나로 돈다(빌드 · CSP · 화면 대조 · 검증기 전부).
 
 ## AI 에이전트 역할 (2026-08-17 변경)
 

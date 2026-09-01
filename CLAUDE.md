@@ -18,13 +18,21 @@ git fetch origin --prune && git status -sb && git log --oneline main..origin/mai
 
 ## 배포 전 검증
 
-빌드 과정이 없고 `package.json`도 없다. `main`에 푸시하면 곧바로 Pages로 나가므로, 푸시 전에 CI(`.github/workflows/validate.yml`)와 같은 검사를 로컬에서 돌린다.
+**빌드가 있다.** Vite + React 앱이고 `package.json`이 있다. `main`에 푸시하면 곧바로 Pages로 나가므로, 푸시 전에 CI와 같은 검사를 로컬에서 돌린다.
 
 ```bash
-node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && node --check app/public/app.js && node --check app/public/config.js && node --check app/public/notice.js
+npm run check
 ```
 
-`validate-weekly-digest.mjs`가 `weekly-digest.public.json`과 `notice.js`의 `FALLBACK_DIGEST` 일치를 검사한다. 둘 중 하나만 고치면 여기서 걸린다 — 이 검사를 우회하지 말고 양쪽을 함께 고친다.
+`npm run check`는 빌드부터 화면 대조까지 한 번에 돈다. 개별로 돌릴 때는 최소한 이 셋을 함께 본다 — 나머지는 `package.json`의 `check` 항목에 나열돼 있다.
+
+```bash
+npm run build && node scripts/validate-csp-build.mjs && node scripts/snapshot-screens.mjs check
+```
+
+`validate-weekly-digest.mjs`가 `weekly-digest.public.json`과 대체 사본의 일치를 검사한다. 둘 중 하나만 고치면 여기서 걸린다 — 이 검사를 우회하지 말고 양쪽을 함께 고친다.
+
+`snapshot-screens.mjs check`는 화면이 **의도치 않게** 바뀌었는지 본다. 화면을 일부러 바꿨다면 `node scripts/snapshot-screens.mjs save`로 기준을 갱신하고, 무엇이 왜 바뀌었는지 커밋 메시지에 적는다. 그냥 save부터 하지 않는다 — 먼저 `check`로 어느 화면이 얼마나 달라졌는지 읽는다.
 
 ## 검증 스크립트가 잡지 못하는 것
 
@@ -35,7 +43,7 @@ CI가 통과해도 아래는 사람이 확인해야 한다. 공개 페이지라 
 - **CSP 위반** — 인라인 `style=`·`<style>`·`<script>`, 외부 CDN. 브라우저 콘솔에만 뜨고 CI는 못 잡는다.
 - **달력의 "오늘" 마커** — `notice.js`가 접속 시점 기준으로 동적 계산하므로, 날짜 관련 수정 후에는 실제로 열어서 확인한다.
 
-로컬 확인은 `app/public/notice.html`을 브라우저로 직접 열면 된다.
+로컬 확인은 `npm run dev` 로 띄운다. 일정 화면은 `#/calendar`, 보드는 `#/`다. 파일을 브라우저로 직접 여는 방식은 이제 안 된다 — 해시 라우팅과 `base` 경로 때문이다.
 
 ## 커밋
 

@@ -41,6 +41,10 @@ const tables = [
   /** 컬럼을 더하는 파일도 여기서 읽어야 한다 — 안 읽으면 아래 컬럼 이름 검사가
       그 컬럼을 쓰는 함수를 「없는 열을 쓴다」 고 잡는다. */
   read('202608270001a_imported_voters.sql'),
+  /** audience 컬럼을 더하는 파일 — 안 읽으면 그 컬럼을 쓰는 함수를 「없는 열」 이라 잡는다 */
+  read('202608300002a_admin_audience_surveys.sql'),
+  /** 운영진 전용 긴 글을 담는 잠긴 표 — 아래 LOCKED 가 RLS 를 검사한다 */
+  read('202608310001a_admin_guides.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -59,6 +63,10 @@ const admin = [
   read('202608270001a_imported_voters.sql'),
   read('202608280002a_my_choices_gate.sql'),
   read('202608280003a_admin_gate_hardening.sql'),
+  read('202608290001a_survey_categories_five.sql'),
+  read('202608300002a_admin_audience_surveys.sql'),
+  read('202608300004a_news_admin_functions.sql'),
+  read('202608310001a_admin_guides.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;
@@ -68,8 +76,10 @@ const allFuncs = `${funcs}\n${admin}`;
 // survey_notes 도 잠근다 — 톡방 이야기나 사람 이름이 섞일 수 있는 자리다
 // survey_members 는 그 자체가 교인 명부다 — 읽히면 이름과 구역번호가 통째로 샌다
 // survey_probe_log 는 누가 언제 두드렸는지의 기록이다 — 이것도 열어 둘 이유가 없다
+// admin_guides 는 운영진 전용 분석 가이드다 — 집단 구분 · 미응답자 수 ·
+// 자유서술 인용이 들어가므로 열리면 회원이 자기 얘기로 읽는다
 const LOCKED = ['survey_responses', 'survey_choices', 'survey_admins', 'survey_notes',
-  'survey_members', 'survey_probe_log'];
+  'survey_members', 'survey_probe_log', 'admin_guides'];
 const OPEN = ['surveys', 'survey_options'];
 
 for (const t of [...LOCKED, ...OPEN]) {
@@ -112,6 +122,13 @@ const CALLABLE = [
   'survey_admin_note', 'survey_admin_note_save',
   'survey_member_ok', 'survey_roster_on',
   'survey_admin_members', 'survey_admin_member_save', 'survey_admin_member_delete',
+  // 운영진용 설문 (202608300002a). 조회·응답 둘 다 암호를 먼저 묻는다.
+  'survey_admin_get', 'survey_admin_submit',
+  // 보드 소식 (202608300004a). events 는 anon 에게 select 만 열려 있어서
+  // 쓰기는 반드시 이 두 함수를 거친다.
+  'news_admin_save', 'news_admin_delete',
+  // 운영진 전용 긴 글 (202608310001a). 읽기도 암호를 먼저 묻는다.
+  'survey_admin_guide', 'survey_admin_guide_save',
 ];
 for (const f of CALLABLE) {
   if (!new RegExp(`create\\s+or\\s+replace\\s+function\\s+public\\.${f}\\b`, 'i').test(allFuncs)) {
@@ -196,7 +213,13 @@ for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
    * 그것들은 암호를 요구하면 안 된다 — 회원이 부르는 것이니까.
    * 처음에 그 구분 없이 걸었더니 회원용 셋을 잘못 잡았다.
    */
-  if (!name.startsWith('survey_admin_')) continue;
+  /**
+   * **`survey_admin_` 앞머리로 걸면 새 갈래가 통째로 빠진다.**
+   * 보드 소식 함수를 news_admin_save 로 지으니 실제로 이 검사 밖으로 나갔다 —
+   * security definer 에 anon 실행 권한까지 준 함수가 암호 검사 없이 지나갈 뻔했다.
+   * 이름 어디엔가 `_admin_` 이 있으면 운영자 함수로 본다. 갈래가 늘어도 걸린다.
+   */
+  if (!name.includes('_admin_')) continue;
   // survey_admin_ok 는 검사하는 쪽이지 검사받는 쪽이 아니다
   if (name === 'survey_admin_ok') continue;
   if (!/survey_admin_ok\s*\(\s*p_password\s*\)/.test(block)) {
@@ -207,7 +230,12 @@ for (const block of admin.split(/create\s+or\s+replace\s+function/i).slice(1)) {
 // 응답에 닿는 함수는 definer 여야 하고, search_path 를 고정해야 한다
 for (const block of allFuncs.split(/create\s+or\s+replace\s+function/i).slice(1)) {
   const name = (/^\s*public\.(\w+)/.exec(block) ?? [])[1];
-  if (!name || !name.startsWith('survey')) continue;
+  /**
+   * 예전에는 `survey` 앞머리만 봤다. 여기서 읽는 파일의 함수가 전부 survey 로
+   * 시작하던 동안에는 같은 말이었지만, 갈래가 늘면 조용히 빠진다.
+   * **읽은 파일에 든 함수는 전부 본다** — 넓혀도 기존 함수는 새로 걸리지 않는다.
+   */
+  if (!name) continue;
   /**
    * **표를 한 곳도 안 보는 함수는 definer 가 필요 없다.** 값만 다듬는 것들이다.
    * 예전에는 이름을 하나(survey_respondent_key) 적어 두었는데, 그런 함수가 늘 때마다
@@ -621,6 +649,13 @@ const NOT_CHECKED = new Map([
   ['202608240001c_forget_names.sql', '옛 응답의 이름을 지우는 한 번짜리 (함수·표 없음)'],
   ['202608240002a_culture_content_refresh.sql', '보드 추천 자료만 갱신한다 (함수·표 없음)'],
   ['202608260001a_september_date_poll.sql', '자료만 넣는다 (함수·표 없음)'],
+  ['202608290002a_club_ops_survey.sql', '자료만 넣는다 (함수·표 없음)'],
+  ['202608290003a_seodoho_board_refresh.sql', '보드 자료만 갱신한다 (함수·표 없음)'],
+  ['202608290004a_seodoho_rating_reason.sql', '보드 자료만 갱신한다 (함수·표 없음)'],
+  ['202608300001a_hide_club_ops_survey.sql', '설문 한 건에 deleted_at 만 찍는다 (함수·표 없음)'],
+  // 202608300003a 가 둘이다 — 다른 세션과 같은 번호를 썼다. 파일은 서로 다르다.
+  ['202608300003a_culture_news_row.sql', '보드 소식 한 줄을 넣는 자료 (함수·표 없음)'],
+  ['202608300003a_meal_place_survey.sql', '자료만 넣는다 (함수·표 없음)'],
 ]);
 
 const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));

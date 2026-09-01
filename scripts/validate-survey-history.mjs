@@ -109,6 +109,48 @@ console.log('\n── 목록을 가르고 정렬하나');
   ok('가른 뒤에도 개수가 맞는다', live.length + past.length === list.length);
 }
 
+console.log('\n── 운영자 목록도 같은 답을 내나');
+{
+  /**
+   * 운영자 화면은 `survey_admin_list` 로 목록을 받는데 그 답에는 **opens_at 이 없다.**
+   * 그래서 판정 함수가 따로 있다. 따로 있으면 언젠가 답이 갈리므로,
+   * 알맹이(pastCore)를 나눠 쓰게 해 두고 **여기서 두 답이 같은지 잰다.**
+   * 이 저장소는 화면 둘이 같은 것을 두고 다르게 말한 적이 있다.
+   */
+  const NOW = new Date('2026-08-23T12:00:00+09:00');
+  const ms = [meetup('m1', '2026-08-22', 'conf', ['s1']),
+    meetup('m2', '2026-08-24', 'conf', ['s2']),
+    meetup('m3', '2026-07-31', 'dead', ['s3'])];
+  const A = (id, closesAt) => ({ id, closesAt });
+  const PAST = '2026-08-20T21:00:00+09:00';
+
+  ok('마감 + 모임이 어제 → 지난 관람',
+    lib.isPastAdminSurvey(A('s1', PAST), TODAY, ms, NOW) === true);
+  ok('마감 + 모임이 내일 → 아직 아니다',
+    lib.isPastAdminSurvey(A('s2', PAST), TODAY, ms, NOW) === false,
+    '모임이 남았으면 운영자가 가장 볼 때다');
+  ok('아직 안 마감 → 아니다',
+    lib.isPastAdminSurvey(A('s1', '2026-09-30T21:00:00+09:00'), TODAY, ms, NOW) === false);
+  ok('예매 마감일(dead)은 다녀온 날이 아니다',
+    lib.isPastAdminSurvey(A('s3', PAST), TODAY, ms, NOW) === false);
+  ok('안 이어진 설문은 접지 않는다',
+    lib.isPastAdminSurvey(A('없는설문', PAST), TODAY, ms, NOW) === false);
+  ok('마감을 못 읽으면 접지 않는다',
+    lib.isPastAdminSurvey(A('s1', '알수없음'), TODAY, ms, NOW) === false,
+    '모르면 남기는 쪽으로 넘어진다 — 접으면 고치러 들어올 자리가 사라진다');
+
+  // **두 화면이 같은 답을 내는가.** 이것이 이 묶음의 핵심이다.
+  ok('회원 화면 판정과 답이 같다',
+    ['s1', 's2', 's3'].every((id) =>
+      lib.isPastAdminSurvey(A(id, PAST), TODAY, ms, NOW)
+        === lib.isPastSurvey(survey(id, CLOSED), TODAY, ms)));
+
+  const { live, past } = lib.splitAdminByHistory([A('s2', PAST), A('s1', PAST)], TODAY, ms, NOW);
+  ok('운영자 목록을 둘로 가른다',
+    live.map((x) => x.id).join(',') === 's2' && past.map((x) => x.id).join(',') === 's1',
+    `남김 ${live.map((x) => x.id)} · 접음 ${past.map((x) => x.id)}`);
+}
+
 console.log('\n── 진짜 자료로 연결이 실제로 걸려 있나');
 {
   const MEAL = '5e97b1a0-0000-4000-8000-000000000902';

@@ -58,11 +58,88 @@ let noteBody = '';     // 분석 메모 — 처음에는 비어 있다
  * 뒤에서 이 값을 켜고 결과를 다시 열어, 이름이 생기면 그 문장이 바뀌는지 잰다.
  * 처음부터 켜 두면 옛 문장이 검사 밖으로 나간다.
  */
+/** 화면이 부른 RPC 이름. 「회원 창구가 아니라 운영자 창구로 갔나」 를 재는 데 쓴다. */
+const calls = [];
 let withVoterNames = false;
+/**
+ * 보드 소식 두 줄. `end_date` 가 지난 것과 안 지난 것을 함께 둔다 —
+ * 하나만 두면 「기간이 지나면 안 보인다」 를 한 번도 재지 않는다.
+ */
+let newsRows = [
+  { id: 'nw-1', type: '소식', status: '공유완료', title: '가짜 미술축제 소식',
+    genre: '영상 · 유튜브', venue: '가짜 문화채널', summary: '9월 코엑스',
+    start_date: '2026-08-30', end_date: '2099-01-01',
+    main_url: 'https://www.youtube.com/watch?v=fake' },
+  { id: 'nw-2', type: '소식', status: '공유완료', title: '지나간 가짜 소식',
+    genre: '기사', venue: '가짜신문', summary: null,
+    start_date: '2026-01-01', end_date: '2026-01-31',
+    main_url: 'https://example.com/old' },
+];
+let newsSaved = null;
+let newsDeleted = [];
+/**
+ * 운영진 전용 분석 가이드. **본문은 저장소에 없고 잠긴 표에만 산다** —
+ * 여기서는 서버가 내주는 것을 흉내 낸다.
+ * 회원 화면에 이 글자가 한 번이라도 나오면 그 자체가 사고다(아래에서 잰다).
+ */
+/**
+ * 분석 가이드 목 — **구조화 JSON**. 실제 본문이 JSON 이므로 그 경로를 잰다.
+ * 섹션 타입을 하나씩 넣어 리치 렌더가 다 그려지는지 본다.
+ * 도메인 문구(코어·주변부)를 넣어 두면 회원 화면 누출 검사가 진짜 값으로 돈다.
+ */
+const guideDoc = {
+  schema: 'admin-guide.v1',
+  title: '가짜 1차 분석',
+  sections: [
+    { type: 'headline', title: '한눈에', lead: '가짜 요약.', stats: [
+      { value: '82%', bar: 82, text: '가짜 지표 하나' },
+      { value: '7/17', text: '막대 없는 값' } ] },
+    { type: 'personas', title: '세 사람', items: [
+      { name: '코어', size: '9명', gloss: '가짜.', metrics: [{ value: '78%', bar: 78, text: '가짜' }],
+        callouts: [{ label: '주의', tone: 'caution', text: '가짜 주의' }] },
+      { name: '주변부', size: '8명', metrics: [{ value: '75%', bar: 75, text: '가짜' }] } ] },
+    { type: 'divergence', title: '갈라짐', poles: { a: '코어', b: '주변부' }, items: [
+      { label: '가짜 축', a: 22, b: 75, gap: '53p', note: '가짜 note' } ] },
+    { type: 'directives', variant: 'keep', title: '규칙', items: [
+      { number: '01', title: '가짜 규칙', body: [{ type: 'text', text: '가짜 본문' },
+        { type: 'quote', text: '가짜 인용' }], evidence: '가짜 근거' } ] },
+    { type: 'directives', variant: 'avoid', title: '금지', items: [
+      { number: '01', title: '가짜 금지', body: [{ type: 'text', text: '가짜' }], evidence: '가짜' } ] },
+    { type: 'table', title: '편성', columns: ['시기', '무엇'], rows: [['9월', '가짜 일정']] },
+    { type: 'actions', title: '이번 주', items: ['가짜 할 일'] },
+    { type: 'footer', title: '읽는 법', meta: '가짜 표본', notes: ['가짜 주의'] },
+  ],
+};
+let guideBody = JSON.stringify(guideDoc);
+let guideSaved = null;
+
 let surveys = [{
   id: 'srv-1', title: '9월 정기 관람 전시 추천', closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
   option_count: 4, response_count: 3,
+}, {
+  /**
+   * **운영진용 설문 한 건.** 회원용만 두면 「운영진용」 배지도 「답하기」 단추도
+   * 한 번도 안 그려지고, 그 자리를 통째로 지워도 검사가 통과한다.
+   * 실제로 갈래 목록을 그렇게 놓쳤다 — 운영자가 새 갈래를 못 고르는 채 배포됐다.
+   */
+  id: 'srv-2', title: '운영진끼리 정할 것',
+  closes_at: new Date(Date.now() + 86400e3).toISOString(),
+  created_by: '김하늘', multi_choice: true, results_visible: 'admin', show_names: 'none',
+  audience: 'admins', option_count: 3, response_count: 0,
+}, {
+  /**
+   * **다녀온 모임의 설문 한 건.** 「지난 관람」 으로 접혀야 한다.
+   *
+   * id 를 지어내면 안 된다 — 접는 판정이 meetups.ts 의 surveyIds 를 보고
+   * 「이 설문을 위해 열린 모임이 있었나 · 그 날이 지났나」 를 따지기 때문이다.
+   * 그래서 **진짜로 이어져 있는 id** 를 쓴다 (history-museum · 2026-08-22).
+   * 아무 id 나 쓰면 접히지 않고, 그러면 접는 자리를 통째로 지워도 검사가 통과한다.
+   */
+  id: '5e97b1a0-0000-4000-8000-000000000902', title: '서울역사박물관 저녁식사 장소 추천',
+  closes_at: '2026-08-20T16:00:00+00:00',
+  created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
+  audience: 'members', option_count: 13, response_count: 13,
 }];
 
 const browser = await chromium.launch();
@@ -95,49 +172,85 @@ await ctx.route('**/rest/v1/**', async (route) => {
         info_url: 'https://example.com/perf' },
       // `기타` 는 고르는 목록에 나오면 안 된다 — 전시·공연·영화 셋으로만 나눈다
       { id: 'ev-3', type: '기타', status: '공유완료', title: '가짜 워크숍' },
+      /**
+       * **보드 소식.** 운영자 화면의 「보드 소식」 이 이 길로 읽는다(events select) —
+       * 쓰기만 함수를 거치고 읽기는 보드와 같은 창구다.
+       * 하나는 살아 있고 하나는 기간이 지났다. 지난 것도 목록에 남아야
+       * 운영자가 치울 수 있고, 「보드에 보임」 은 살아 있는 쪽에만 붙어야 한다.
+       */
+      ...newsRows,
     ]);
   }
 
   if (url.includes('/rest/v1/surveys')) {
-    return json([{ id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
-      multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
-      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '김하늘',
-      results_visible: 'always', show_names: 'none', hide_after_days: null,
-      /**
-       * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
-       * 기본값(exhibition)이 아닌 값이어야 한다 — 기본값이면 `toDraft` 가
-       * 갈래를 통째로 잃어버려도 검사가 그대로 통과한다.
-       * 운영자 화면은 갈래로 목록을 가르지 않으므로 다른 검사에는 영향이 없다.
-       */
-      category: 'meal',
-      survey_options: [
-        { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
-          venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
-          note: '얼리버드 예매 8/17~8/26',
-          links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] },
-        { id: 'o2', position: 2, title: '에스 데블린', period: '2026. 8. 20. ~ 2027. 1. 17.',
-          venue: '푸투라서울', hours: null, price: '22,000원', note: null, links: [] },
-        { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
-          venue: '국립현대미술관 덕수궁관', hours: null,
-          price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
-      ].map((o, i) => (withVoterNames
-        // 이름은 가상 명부(docs/fixtures/sample-members.json)에서 가져온다
-        ? { ...o, imported_voters: [['최윤슬', '정다인'], [], ['한도윤']][i] }
-        : o)) }]);
+    return json([mockSurveyRow()]);
   }
+
 
   if (!url.includes('/rpc/')) return route.continue();
   const name = url.split('/rpc/')[1].split('?')[0];
+  calls.push(name);
   let body = {};
   try { body = JSON.parse(route.request().postData() ?? '{}'); } catch { /* 그대로 */ }
 
   // **암호 확인은 진짜처럼 서버가 한다.** 화면이 우회해도 여기서 막혀야 한다.
-  if (name.startsWith('survey_admin') && name !== 'survey_admin_ok') {
+  /**
+   * **`survey_admin` 앞머리로 걸면 새 갈래가 관문 밖으로 나간다.**
+   * news_admin_save 를 더했을 때 실제로 그랬다 — 진짜 함수는 암호를 보는데
+   * 가짜 서버는 안 봐서, 「암호가 틀리면 막힌다」 를 소식에 대해서는
+   * 한 번도 재지 않는 검사가 될 뻔했다. 진짜 규칙과 같은 잣대를 쓴다.
+   */
+  if (name.includes('_admin_') && name !== 'survey_admin_ok') {
     if (body.p_password !== PW) return deny('운영자 암호가 맞지 않습니다.');
+  }
+
+  /**
+   * **진짜 news_admin_save 가 보는 것을 여기서도 본다.**
+   * 가짜가 관대하면 「서버가 막는다」 검사가 막지 않는 서버를 상대로 돈다.
+   */
+  if (name === 'news_admin_save') {
+    const p = body.p_payload ?? {};
+    if (!String(p.title ?? '').trim()) return deny('소식 제목을 적어 주세요.');
+    if (!/^https:\/\//.test(String(p.url ?? ''))) return deny('주소는 https:// 로 시작해야 합니다.');
+    if (!(p.days >= 1 && p.days <= 180)) return deny('보일 기간은 1일에서 180일 사이로 정해 주세요.');
+    newsSaved = p;
+    if (!p.id) {
+      newsRows = [...newsRows, { id: 'nw-new', type: '소식', status: '공유완료',
+        title: p.title, genre: p.genre, venue: p.venue, summary: p.summary,
+        start_date: '2026-08-30',
+        end_date: new Date(Date.now() + p.days * 86400e3).toISOString().slice(0, 10),
+        main_url: p.url }];
+    } else {
+      newsRows = newsRows.map((n) => (n.id === p.id
+        ? { ...n, title: p.title, genre: p.genre, venue: p.venue,
+            summary: p.summary, main_url: p.url }
+        : n));
+    }
+    return json(p.id ?? 'nw-new');            // uuid 를 돌려준다
+  }
+  if (name === 'survey_admin_guide') return json(guideBody);
+  if (name === 'survey_admin_guide_save') {
+    guideSaved = { key: body.p_key, body: body.p_body };
+    guideBody = String(body.p_body ?? '');
+    return noContent();                        // 아무것도 안 돌려준다 → 204 빈 본문
+  }
+  if (name === 'news_admin_delete') {
+    newsDeleted.push(body.p_news);
+    newsRows = newsRows.filter((n) => n.id !== body.p_news);
+    return noContent();                        // 아무것도 안 돌려주는 함수 → 204 빈 본문
   }
 
   if (name === 'survey_admin_names') return json([{ name: '김하늘' }, { name: '박서준' }]);
   if (name === 'survey_admin_list') return json(surveys.filter((s) => !deleted.includes(s.id)));
+  /**
+   * 운영자 화면은 후보와 응답 수를 **이 창구로만** 읽는다 (202608300002a).
+   * 예전에는 REST 로 표를 직접 읽고 survey_response_count 를 따로 불렀는데,
+   * 운영진용 설문은 RLS 가 안 내주고 그 함수도 0 을 주므로 둘 다 못 쓴다.
+   * 모양은 REST 가 주던 것과 같고 response_count 만 얹혀 있다.
+   */
+  if (name === 'survey_admin_get') return json({ ...mockSurveyRow(), response_count: 13 });  // 13 을 그대로 적는다 — MOCK_PEOPLE 은 아래에서 선언되고,
+                                                                     // 이 콜백은 그 줄에 닿기 전(top-level await)에 이미 불린다
+  if (name === 'survey_admin_submit') return noContent();
   if (name === 'survey_admin_save') {
     const p = body.p_payload ?? {};
     if (!String(p.title ?? '').trim()) return deny('설문 제목을 적어 주세요.');
@@ -228,9 +341,43 @@ ok('틀린 암호로는 목록이 안 보인다', (await page.$$('.admin-card'))
 await page.fill('.admin-input', PW);
 await page.click('.survey-who .survey-submit');
 await page.waitForTimeout(800);
-ok('맞는 암호로 들어간다', (await page.$$('.admin-card')).length === 1);
+// 씨앗은 셋 — 회원용(srv-1) · 운영진용(srv-2) · 다녀온 것(902).
+// 마지막 하나는 「지난 관람」 으로 접히므로 **바깥에 보이는 것은 둘**이다.
+ok('맞는 암호로 들어간다',
+  (await page.$$('.admin-card:not(details .admin-card)')).length === 2);
 ok('응답 수가 보인다',
   (await page.$eval('.admin-card', (e) => e.textContent)).includes('3건'));
+
+// **이 묶음은 지우기·고치기보다 앞에 둔다.** 뒤에 두었더니 그때는 씨앗이
+// 이미 지워진 뒤라 접히는 자리가 아예 안 그려졌고, 그걸 「없다」 고 읽었다.
+/* ── 지난 관람 ──────────────────────────────────────────── */
+/**
+ * 다녀온 모임의 설문은 지워지지 않는다(결과가 기록이다). 그래서 쌓인다.
+ * 접어 두지 않으면 **지금 돌려야 할 설문이 끝난 것들에 밀린다.**
+ * 판정은 회원 화면과 같은 규칙을 쓰며, 그 규칙 자체는
+ * validate-survey-history 가 따로 잰다. 여기서는 **화면에 실제로 접히는가**만 본다.
+ */
+{
+  // **.admin-members 만으로는 안 된다** — 회원 명부가 같은 class 를 쓴다.
+  // 처음에 그렇게 잡았다가 명부의 여는 줄을 「지난 관람」 이라고 읽었다.
+  const fold = await page.$('details.admin-past summary');
+  const foldText = fold ? (await fold.textContent()).trim() : '';
+  ok('「지난 관람」 이 접혀 있다', /지난 관람 \d+건/.test(foldText), foldText || '(없음)');
+
+  // 접힌 것 안쪽까지 세면 「위 목록에 없다」 를 잴 수 없다. 바깥만 센다.
+  const topTitles = await page.$$eval('.admin-card:not(details .admin-card) .admin-card-title',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('다녀온 설문이 위 목록에 없다',
+    !topTitles.some((t) => t.includes('서울역사박물관')), topTitles.join(' · '));
+
+  if (fold) { await fold.click(); await page.waitForTimeout(400); }
+  const inFold = await page.$$eval('details.admin-past .admin-card .admin-card-title',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('펴면 그 안에 있다', inFold.some((t) => t.includes('서울역사박물관')),
+    inFold.join(' · ') || '(비어 있음)');
+  ok('접힌 카드에도 단추가 그대로 있다',
+    (await page.$$('details.admin-past .admin-card .admin-mini')).length >= 3);
+}
 
 /* ── 1-2. 결과 보기 ────────────────────────────────────── */
 
@@ -479,7 +626,10 @@ ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.day
  * 값을 안 보내면 서버가 조용히 'exhibition' 으로 채우므로, **보냈는지**를 직접 본다.
  */
 ok('갈래를 함께 보낸다', saved?.category === 'exhibition', String(saved?.category));
-ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 2);
+
+// 바깥에 보이는 씨앗 둘 + 방금 올린 하나 (다녀온 것은 접혀 있다)
+ok('목록으로 돌아왔다',
+  (await page.$$('.admin-card:not(details .admin-card)')).length === 3);
 
 /* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
 /**
@@ -659,6 +809,32 @@ const pickCategory = (v) => page.evaluate((want) => {
   return sel.value;
 }, v);
 
+/**
+ * **고를 수 있는 갈래가 소스의 CATEGORY 와 같은가.**
+ *
+ * 다른 검사들은 「보내는가」·「살아남는가」 만 재고 **「무엇을 고를 수 있는가」** 는 안 쟀다.
+ * 그래서 2026-08-29 에 갈래를 다섯으로 늘렸을 때, 화면·주소·DB 는 늘었는데
+ * 이 `<select>` 의 `<option>` 둘만 옛 목록으로 남은 것을 **못 잡았다** —
+ * 운영자는 새 갈래를 아예 고를 수 없었고 검사는 전부 통과했다.
+ *
+ * 소스를 글자로 읽어 맞춘다 (.ts 는 그냥 import 가 안 된다).
+ * 값과 차례가 하나라도 어긋나면 그 갈래는 운영자 화면에서 만들 길이 없어진다.
+ */
+const SRC = fs.readFileSync(path.join(ROOT, 'app/src/lib/survey.ts'), 'utf8');
+// **POSTABLE_ 쪽을 읽는다.** 화면이 고를 수 있는 갈래는 탭 목록과 하나가 다르다 —
+// 「구글 설문」 은 화면에만 있는 갈래라 DB 가 거절한다 (lib/survey.ts 주석 참고).
+// `[^=]*` 로 타입 표기를 건너뛴다 — `: readonly SurveyCategory[]` 안의 대괄호에
+// 정규식이 걸려 소스를 빈 목록으로 읽었고, 검사가 그대로 실패했다.
+const wantCats = (SRC.match(/POSTABLE_CATEGORY_ORDER[^=]*= \[([^\]]+)\]/)?.[1] ?? '')
+  .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+const gotCats = await page.$$eval('.admin-form select.admin-input', (sels) => {
+  const s = sels.find((x) => [...x.options].some((o) => o.value === 'exhibition'));
+  return s ? [...s.options].map((o) => o.value) : [];
+});
+ok('고를 수 있는 갈래가 소스와 같다',
+  wantCats.length >= 2 && JSON.stringify(gotCats) === JSON.stringify(wantCats),
+  `화면 [${gotCats.join(', ')}] / 소스 [${wantCats.join(', ')}]`);
+
 ok('식사 갈래를 고를 수 있다', (await pickCategory('meal')) === 'meal');
 
 // 첫 흐름과 같은 방식으로 채운다 — 서버가 제목·후보·올린 사람을 다 본다
@@ -684,6 +860,72 @@ console.log('\n── 마무리');
 // 얇은 화면을 재고 「통과」 하면 그게 제일 위험하다.
 // 긴 흐름 끝에 남은 화면은 글자가 얼마 없다(303자). 그래서 **두 자리를 잰다** —
 // 목록 화면과, 색을 실제로 쓰는 결과 화면. 얇은 화면 하나만 재고 「통과」 하면
+/* ── 운영진용 설문 ──────────────────────────────────────── */
+/**
+ * 이 화면의 값어치는 **회원이 못 보는 것을 운영진이 보는 것**이다.
+ * 그러니 「운영진용으로 표시되나 · 답할 자리가 있나 · 회원용에는 안 붙나」 를 잰다.
+ * 자물쇠 자체는 DB 에 있고(202608300002a) 여기서 잴 수 없다 —
+ * 여기서 재는 것은 **운영자가 그 자물쇠를 쓸 수 있는가**다.
+ */
+await go();
+await page.fill('.admin-input', PW);
+await page.click('.survey-who .survey-submit');
+await page.waitForSelector('.admin-card', { timeout: 20000 });
+await page.waitForTimeout(600);
+
+{
+  const cards = await page.$$('.admin-card');
+  const titleOf = async (i) => (await cards[i].$eval('.admin-card-title', (e) => e.textContent)).trim();
+  const t0 = await titleOf(0);
+  const t1 = await titleOf(1);
+  // 목록은 마감 차례라 둘 중 어느 쪽이 먼저일지 고정하지 않는다
+  const adminIdx = t0.includes('운영진끼리') ? 0 : 1;
+  const memberIdx = adminIdx === 0 ? 1 : 0;
+
+  ok('운영진용 설문에 「운영진용」 이 붙는다',
+    (await titleOf(adminIdx)).includes('운영진용'), await titleOf(adminIdx));
+  ok('회원용 설문에는 안 붙는다',
+    !(await titleOf(memberIdx)).includes('운영진용'), await titleOf(memberIdx));
+
+  const btnTexts = async (i) => Promise.all(
+    (await cards[i].$$('.admin-mini')).map(async (b) => (await b.textContent()).trim()));
+  ok('운영진용에는 「답하기」 가 있다', (await btnTexts(adminIdx)).includes('답하기'),
+    (await btnTexts(adminIdx)).join(' · '));
+  ok('회원용에는 「답하기」 가 없다', !(await btnTexts(memberIdx)).includes('답하기'),
+    (await btnTexts(memberIdx)).join(' · '));
+
+  // 펴서 실제로 답하는 자리가 그려지는지
+  await (await cardBtn(adminIdx, '답하기')).click();
+  await page.waitForSelector('.admin-entry .survey-option', { timeout: 20000 });
+  const optN = (await page.$$('.admin-entry .survey-option')).length;
+  ok('후보가 그려진다', optN === 3, `${optN}개`);
+  const fields = await page.$$eval('.admin-entry .survey-field span',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('구역번호와 이름을 받는다',
+    fields.includes('구역번호') && fields.includes('이름'), fields.join(' · '));
+  ok('이름이 저장되지 않는다고 알린다',
+    (await page.$eval('.admin-entry .admin-hint', (e) => e.textContent)).includes('저장되지 않습니다'));
+
+  // 하나 골라 보내고, 운영자 창구로 갔는지 본다
+  await page.click('.admin-entry .survey-option input');
+  await page.click('.admin-entry .survey-submit');
+  await page.waitForTimeout(700);
+  ok('회원 창구가 아니라 운영자 창구로 보낸다',
+    calls.includes('survey_admin_submit') && !calls.includes('survey_submit'),
+    calls.filter((c) => c.includes('submit')).join(' · ') || '(부른 적 없음)');
+}
+
+/* ── 새 설문을 올릴 때 운영진용을 고를 수 있나 ─────────────── */
+{
+  await page.click('.survey-actions .survey-submit');   // 새 설문 올리기
+  await page.waitForSelector('.admin-form', { timeout: 20000 });
+  const opts = await page.$$eval('.admin-form select',
+    (sels) => sels.flatMap((s) => [...s.options].map((o) => o.value)));
+  ok('새 설문 양식에서 운영진용을 고를 수 있다',
+    opts.includes('admins') && opts.includes('members'),
+    `audience 값 ${opts.filter((v) => v === 'admins' || v === 'members').join(' · ')}`);
+}
+
 // 그게 제일 위험하다.
 const spots = [];
 await go();
@@ -692,6 +934,148 @@ await page.click('.survey-who .survey-submit');
 await page.waitForSelector('.admin-card', { timeout: 20000 });
 await page.waitForTimeout(900);
 spots.push(await measureA11y(page));
+
+/* ── 보드 소식 ─────────────────────────────────────────────
+ * 운영자가 영상 주소를 올리고·고치고·지운다. 보드에 나가는 유일한 자유 입력이라
+ * 여기서 막지 못하면 회원 화면에 그대로 걸린다.
+ */
+// 지우기 확인창은 262행에서 이미 받고 있다. 여기서 또 걸면 같은 창을 두 번
+// 받아 「already handled」 로 터진다.
+
+const newsSummary = page.locator('.admin-members > summary', { hasText: '보드 소식' });
+ok('보드 소식 자리가 있다', await newsSummary.count() === 1);
+/**
+ * **먼저 닫는다.** 바로 위 measureA11y 가 `openFolds` 로 페이지의 <details> 를
+ * 전부 열어 두고 간다(a11y-probe.mjs:43). 그 상태에서 누르면 여는 것이 아니라
+ * **닫는** 것이 되어, 아래 검사가 통째로 빈 화면을 상대로 돌았다.
+ * 눌러서 여는 길을 재려면 닫힌 데서 시작해야 한다.
+ */
+await page.evaluate(() => {
+  document.querySelectorAll('details').forEach((d) => { d.open = false; });
+});
+await page.waitForTimeout(300);
+await newsSummary.click();
+await page.waitForSelector('.admin-members[open] .admin-news-card', { timeout: 20000 });
+await page.waitForTimeout(500);
+
+const newsBox = page.locator('.admin-members', { hasText: '보드 소식' }).first();
+const newsText = await newsBox.innerText();
+ok('지난 소식도 목록에 남는다', newsText.includes('지나간 가짜 소식'));
+ok('지난 것은 안 보인다고 알린다', newsText.includes('기간이 지나 보이지 않습니다'));
+/** 「보드에 보임」 은 살아 있는 하나에만 붙어야 한다 — 둘에 붙으면 거짓말이다. */
+ok('보드에 보이는 것을 하나만 짚는다',
+  (newsText.match(/보드에 보임/g) ?? []).length === 1,
+  `${(newsText.match(/보드에 보임/g) ?? []).length}건`);
+
+const newsInputs = newsBox.locator('.admin-input');
+const newsSave = newsBox.locator('.survey-submit');
+/** 칸 차례 — 제목 · 주소 · 갈래 · 출처 · 기간 · 덧붙이는 말 */
+await newsInputs.nth(0).fill('새 가짜 소식');
+await newsInputs.nth(1).fill('http://insecure.example.com');
+await page.waitForTimeout(200);
+ok('https 가 아니면 저장을 막는다', await newsSave.isDisabled());
+ok('https 가 아니면 그 자리에서 알린다',
+  (await newsBox.innerText()).includes('https:// 로 시작해야 합니다'));
+
+await newsInputs.nth(1).fill('https://www.youtube.com/watch?v=new');
+await newsInputs.nth(3).fill('새 채널');
+await page.waitForTimeout(200);
+ok('https 면 저장할 수 있다', await newsSave.isEnabled());
+await newsSave.click();
+await page.waitForTimeout(900);
+ok('소식을 운영자 창구로 보낸다', calls.includes('news_admin_save'));
+ok('보낸 것이 화면에 적은 그대로다',
+  newsSaved?.title === '새 가짜 소식'
+  && newsSaved?.url === 'https://www.youtube.com/watch?v=new'
+  && newsSaved?.venue === '새 채널'
+  && newsSaved?.id === null,
+  JSON.stringify(newsSaved));
+ok('기간을 날짜가 아니라 날수로 보낸다',
+  typeof newsSaved?.days === 'number' && newsSaved.days >= 1 && newsSaved.days <= 180,
+  String(newsSaved?.days));
+
+/** 고치기 — 칸이 채워지고, 저장할 때 id 가 함께 가야 새 줄이 하나 더 생기지 않는다. */
+await newsBox.locator('.admin-news-card', { hasText: '가짜 미술축제 소식' })
+  .locator('button', { hasText: '고치기' }).click();
+await page.waitForTimeout(300);
+ok('고치기가 칸을 채운다', await newsInputs.nth(0).inputValue() === '가짜 미술축제 소식');
+await newsInputs.nth(0).fill('고친 가짜 소식');
+await newsSave.click();
+await page.waitForTimeout(900);
+ok('고칠 때 id 를 함께 보낸다', newsSaved?.id === 'nw-1', String(newsSaved?.id));
+ok('고친 제목이 목록에 반영된다',
+  (await newsBox.innerText()).includes('고친 가짜 소식'));
+
+/** 지우기 */
+await newsBox.locator('.admin-news-card', { hasText: '지나간 가짜 소식' })
+  .locator('button', { hasText: '지우기' }).click();
+await page.waitForTimeout(900);
+ok('지우기가 운영자 창구로 간다', newsDeleted.includes('nw-2'), newsDeleted.join(','));
+ok('지운 것이 목록에서 사라진다',
+  !(await newsBox.innerText()).includes('지나간 가짜 소식'));
+
+/* ── 구글 설문 · 운영진 전용 분석 가이드 ───────────────────
+ * 이 글에는 집단 구분 · 미응답자 수 · 자유서술 인용이 들어간다.
+ * **운영자 화면에만 있어야 하고 회원 화면에는 한 글자도 없어야 한다.**
+ */
+const gBox = page.locator('.admin-members', { hasText: '구글 설문 결과' }).first();
+ok('구글 설문 자리가 있다', await gBox.count() === 1);
+await page.evaluate(() => {
+  document.querySelectorAll('details').forEach((d) => { d.open = false; });
+});
+await page.waitForTimeout(200);
+await gBox.locator('> summary').click();
+await page.waitForSelector('.gsurvey', { timeout: 20000 });
+await page.waitForTimeout(400);
+
+const guideFold = gBox.locator('.admin-guide').first();
+ok('회차마다 분석 가이드가 붙는다', await guideFold.count() === 1);
+await guideFold.locator('> summary').click();
+await page.waitForSelector('.admin-guide[open] .gdoc', { timeout: 20000 });
+await page.waitForTimeout(400);
+
+/* ── JSON 본문이 지표·페르소나·격차·편성으로 그려진다 ────── */
+ok('JSON 을 오류 없이 읽는다', await guideFold.locator('.gdoc-error').count() === 0);
+ok('지표 막대를 그린다', await guideFold.locator('.gdoc-bar-fill').count() >= 3,
+  `${await guideFold.locator('.gdoc-bar-fill').count()}개`);
+/** 막대 폭은 SVG width 속성 = 값 그대로 (인라인 style 아님 → CSP 안전) */
+ok('막대 폭이 값을 따른다',
+  (await guideFold.locator('.gdoc-bar-fill').first().getAttribute('width')) === '82');
+ok('페르소나 카드가 선다', await guideFold.locator('.gdoc-persona').count() === 2);
+ok('격차 차트를 그린다', await guideFold.locator('.gdoc-div-plot').count() === 1);
+ok('규칙·금지 카드가 선다', await guideFold.locator('.gdoc-rule').count() === 2);
+ok('편성을 행-카드로 접는다', await guideFold.locator('.gdoc-sched').count() === 1);
+const gText = await guideFold.innerText();
+ok('값이 글자로 남는다', gText.includes('82%') && gText.includes('차이 53p'));
+ok('어디에만 보이는지 화면이 말한다', gText.includes('운영자 화면에서만'));
+ok('375px 가로 스크롤 없음',
+  await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
+
+/* ── 깨진 JSON 은 화면을 죽이지 않고 막는다 ──────────────── */
+await guideFold.locator('.admin-guide-body .admin-mini', { hasText: '고치기' }).click();
+await page.waitForSelector('.admin-guide textarea', { timeout: 8000 });
+await guideFold.locator('textarea').fill('{ "sections": [ }');   // 문법 오류
+await page.waitForTimeout(300);
+ok('깨진 JSON 에 오류를 보인다', await guideFold.locator('.gdoc-error').count() >= 1);
+ok('깨진 JSON 이면 저장을 막는다',
+  await guideFold.locator('.survey-submit').isDisabled());
+ok('깨져도 화면이 살아 있다', await guideFold.count() === 1);
+
+/* ── 옛 마크다운 본문은 폴백으로 그려진다 (미리보기로 확인) ── */
+await guideFold.locator('textarea').fill('## 옛 제목\n- 옛 목록');
+await page.waitForTimeout(300);
+ok('마크다운 폴백이 산다', await guideFold.locator('.gdoc-preview .guide-h').count() === 1);
+ok('마크다운 미리보기가 제목을 그린다',
+  (await guideFold.locator('.gdoc-preview .guide-h').innerText()) === '옛 제목');
+
+// 편집 원복 — 뒤 검사에 영향 없게 그만두기
+await guideFold.locator('.admin-guide-body .admin-mini', { hasText: '그만두기' }).click();
+await page.waitForTimeout(300);
+
+// 펼친 채로 한 번 더 잰다 — 새로 생긴 칸과 단추의 대비·크기도 같은 잣대로 본다
+spots.push(await measureA11y(page));
+await newsSummary.click();
+await page.waitForTimeout(300);
 await (await cardBtn(0, '결과 보기')).click();
 await page.waitForSelector('.admin-results', { timeout: 20000 });
 await page.waitForTimeout(900);
@@ -716,3 +1100,36 @@ server.close();
 console.log(`\n${fails.length ? `운영자 화면 검사 실패 — ${fails.length}건: ${fails.join(', ')}`
   : '운영자 화면 검사 통과'}`);
 process.exit(fails.length ? 1 : 0);
+
+/**
+ * **가짜 설문 한 건.** REST(`/rest/v1/surveys`)와 운영자 창구(`survey_admin_get`)가
+ * 같은 것을 주어야 한다 — 화면이 둘을 오가며 읽기 때문이다.
+ * 함수 선언이라 호이스팅된다. 위 route 콜백이 요청 때 부르므로 순서를 안 탄다.
+ */
+function mockSurveyRow() {
+  return { id: 'srv-1', title: '9월 정기 관람 전시 추천', intro: '골라 주세요.',
+      multi_choice: true, opens_at: new Date(Date.now() - 3600e3).toISOString(),
+      closes_at: new Date(Date.now() + 86400e3).toISOString(), created_by: '김하늘',
+      results_visible: 'always', show_names: 'none', hide_after_days: null,
+      /**
+       * **일부러 식사 갈래다.** 고치기 흐름에서 갈래가 살아남는지 재려면
+       * 기본값(exhibition)이 아닌 값이어야 한다 — 기본값이면 `toDraft` 가
+       * 갈래를 통째로 잃어버려도 검사가 그대로 통과한다.
+       * 운영자 화면은 갈래로 목록을 가르지 않으므로 다른 검사에는 영향이 없다.
+       */
+      category: 'meal',
+      survey_options: [
+        { id: 'o1', position: 1, title: '서도호 개인전', period: '2026. 8. 27. ~ 2027. 2. 9.',
+          venue: '국립현대미술관 서울', hours: null, price: '8,000원 / 얼리버드 6,400원',
+          note: '얼리버드 예매 8/17~8/26',
+          links: [{ kind: 'video', label: '참고 영상', url: 'https://youtu.be/x' }] },
+        { id: 'o2', position: 2, title: '에스 데블린', period: '2026. 8. 20. ~ 2027. 1. 17.',
+          venue: '푸투라서울', hours: null, price: '22,000원', note: null, links: [] },
+        { id: 'o3', position: 3, title: '이대원', period: '2026. 8. 6. ~ 11. 8.',
+          venue: '국립현대미술관 덕수궁관', hours: null,
+          price: '2,000원 + 덕수궁 입장료 1,000원', note: null, links: [] },
+      ].map((o, i) => (withVoterNames
+        // 이름은 가상 명부(docs/fixtures/sample-members.json)에서 가져온다
+        ? { ...o, imported_voters: [['최윤슬', '정다인'], [], ['한도윤']][i] }
+        : o)) };
+}

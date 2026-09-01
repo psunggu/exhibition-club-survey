@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { isRecentlyCompleted, monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
+import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
 import {
-  COMPLETED_VISIBLE_DAYS, MEETUPS, MONTHS, PAST_MONTHS, TENTATIVE, type Meetup,
+  MEETUPS, MONTHS, PAST_MONTHS, TENTATIVE, type Meetup,
 } from './data/meetups'
 
 /**
@@ -15,22 +15,32 @@ import {
 
 const KO_WEEK = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
 
-/** 옛 notice.html:89-96 의 범례. 색만으로 뜻을 전하지 않게 하는 자리다. */
+/**
+ * 범례는 **색 점 둘**뿐이다. 달력이 색으로 가르는 것은 성격 하나이기 때문이다 —
+ * 정기냐 수시냐. 상태(확정·미정·완료)는 색이 아니라 **채움**이 말한다.
+ *
+ * 옛 범례는 여섯 가지였다. 갈래(영화 모임)와 성격(공식 정기관람)과 상태(완료·확정·
+ * 미정·마감)가 한 줄에 섞여 있어서, 칩 하나를 보고 어느 축을 읽어야 하는지 알 수 없었다.
+ */
 const LEGEND: { cls: string; label: string }[] = [
-  { cls: 'done', label: '완료' },
-  { cls: 'conf', label: '확정' },
-  { cls: 'official', label: '공식 정기관람' },
-  { cls: 'tent', label: '모집중 · 미정' },
-  { cls: 'dead', label: '예매 마감' },
-  { cls: 'movie', label: '영화 모임' },
+  { cls: 'regular', label: '정기' },
+  { cls: 'casual', label: '수시' },
 ]
 
-function DayBlock({ date, official }: { date: string; official: boolean }) {
+/** 색을 못 보는 사람에게는 이 네 줄이 범례의 전부다. 색 점과 함께 늘 붙어 다닌다. */
+const LEGEND_NOTE = ['채움 = 확정', '점선 = 미정', '회색 = 완료', '붉은색 = 예매 마감']
+
+/** 달력 아래 목록의 상태 칩 글자. 달력 칩은 좁아 글자가 몇 자 안 들어가므로 여기서 읽는다. */
+const STATUS_LABEL: Record<string, string> = {
+  conf: '확정', tent: '미정', done: '완료', dead: '예매 마감',
+}
+
+function DayBlock({ date }: { date: string }) {
   const m = Number(date.slice(5, 7))
   const d = Number(date.slice(8, 10))
   const w = KO_WEEK[new Date(`${date}T00:00:00Z`).getUTCDay()] ?? ''
   return (
-    <div className={official ? 'db db-official' : 'db'}>
+    <div className="db">
       <div className="m">{m}월</div>
       <div className="d">{d}</div>
       <div className="w">{w}</div>
@@ -38,9 +48,12 @@ function DayBlock({ date, official }: { date: string; official: boolean }) {
   )
 }
 
+/**
+ * 칩의 두 축. 성격은 `regular|casual` 이 색을 정하고, 상태는 `kind` 가 채움을 정한다.
+ * 갈래(전시·박물관·영화…)는 여기 들어오지 않는다 — 색을 갖지 않기 때문이다.
+ */
 function chipClass(m: Meetup) {
-  return ['chip', m.kind, m.official ? 'official' : '', m.movie ? 'movie' : '', 'event-trigger']
-    .filter(Boolean).join(' ')
+  return ['chip', m.kind, m.regular ? 'regular' : 'casual', 'event-trigger'].join(' ')
 }
 
 export function Calendar() {
@@ -48,7 +61,8 @@ export function Calendar() {
   const [digest, setDigest] = useState<Digest | null>(null)
   const [digestError, setDigestError] = useState(false)
   const [open, setOpen] = useState<Meetup | null>(null)
-  const [showOlder, setShowOlder] = useState(false)
+  /** 완료된 모임에서 보고 있는 해. null 이면 가장 최근 해를 본다. */
+  const [pickedYear, setPickedYear] = useState<number | null>(null)
   const lastTrigger = useRef<HTMLElement | null>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
 
@@ -93,10 +107,85 @@ export function Calendar() {
 
   const upcoming = MEETUPS.filter((m) => m.kind === 'conf' && m.date >= today)
   const done = MEETUPS.filter((m) => m.completedRow).sort((a, b) => b.date.localeCompare(a.date))
-  const recent = done.filter((m) => isRecentlyCompleted(m.date, today, COMPLETED_VISIBLE_DAYS))
-  const older = done.filter((m) => !recent.includes(m))
+
+  /**
+   * 완료된 모임을 **해 → 달**로 묶는다.
+   *
+   * ── 왜 자료에서 뽑나 ──────────────────────────────────────
+   * 해와 달을 손으로 적어 두면 해가 바뀔 때마다 사람이 고쳐야 하고, 고치는 것을
+   * 잊으면 지난 모임이 조용히 사라진다. 날짜에서 뽑으면 2027년 1월에 첫 모임이
+   * 끝나는 순간 「2027년」 탭이 저절로 서고 2026년은 그 옆으로 물러난다 —
+   * 달력 격자를 날짜에서 만드는 것(lib/calendar.ts)과 같은 이유다.
+   *
+   * ── 3일 규칙은 여기서 걷어냈다 ───────────────────────────
+   * 옛 화면은 최근 3일 안에 끝난 것만 보이고 나머지는 「이전 완료 모임 보기」
+   * 뒤에 숨겼다(notice.js 의 setupCompletedMeetings). 그 절은 이제 **지난 기록을
+   * 찾아보는 자리**이므로, 숨기는 것이 목적과 어긋난다.
+   * 가장 최근 달이 펼쳐진 채로 열리므로 방금 끝난 모임은 그대로 먼저 보인다.
+   *
+   * `isRecentlyCompleted` 는 lib 에 그대로 둔다 — scripts/validate-board-parity.mjs
+   * 가 옛 notice.js 와 이 함수를 나란히 돌려 대조한다. 화면이 안 쓴다고 지우면
+   * 그 대조가 통째로 없어진다.
+   */
+  const byYear = useMemo(() => {
+    const years = new Map<number, Map<number, Meetup[]>>()
+    for (const m of done) {
+      const y = Number(m.date.slice(0, 4))
+      const mo = Number(m.date.slice(5, 7))
+      if (!Number.isFinite(y) || !Number.isFinite(mo)) continue
+      const months = years.get(y) ?? new Map<number, Meetup[]>()
+      months.set(mo, [...(months.get(mo) ?? []), m])
+      years.set(y, months)
+    }
+    return [...years.entries()]
+      .sort((a, b) => b[0] - a[0])                    // 최근 해가 앞
+      .map(([year, months]) => ({
+        year,
+        count: [...months.values()].reduce((n, r) => n + r.length, 0),
+        months: [...months.entries()]
+          .sort((a, b) => b[0] - a[0])                // 최근 달이 위
+          .map(([month, rows]) => ({ month, rows })),
+      }))
+  }, [done])
+
+  /** 고른 해가 없거나 그 해가 사라졌으면 가장 최근 해를 본다. */
+  const activeYear = byYear.find((y) => y.year === pickedYear)?.year ?? byYear[0]?.year ?? null
+  const active = byYear.find((y) => y.year === activeYear) ?? null
+
+  /** 고른 해의 지난 달력만. 해를 안 고른 상태(=최근 해)에서는 지금까지와 같다. */
+  const pastCalendars = PAST_MONTHS.filter((p) => activeYear === null || p.year === activeYear)
 
   const openDialog = (m: Meetup, el: HTMLElement) => { lastTrigger.current = el; setOpen(m) }
+
+  /**
+   * 달력 칸은 좁아 칩에 글자가 몇 자 안 들어간다. **갈래는 여기서 읽는다.**
+   * 칩이 「서도호 17:00」 이라고만 말할 때, 이 줄이 「정기 · 전시」 라고 붙여 준다.
+   */
+  const renderMonthList = (year: number, month: number) => {
+    const ym = `${year}-${String(month).padStart(2, '0')}`
+    const rows = MEETUPS.filter((m) => m.date.startsWith(ym))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    if (rows.length === 0) return null
+    return (
+      <ul className="month-list" aria-label={`${year}년 ${month}월 모임 목록`}>
+        {rows.map((m) => (
+          <li key={m.id} className="mrow">
+            <span className="mrow-when">
+              {Number(m.date.slice(5, 7))}월 {Number(m.date.slice(8, 10))}일
+              {' · '}
+              {KO_WEEK[new Date(`${m.date}T00:00:00Z`).getUTCDay()] ?? ''}
+            </span>
+            <span className="mrow-kind">
+              <span className={`mdot ${m.regular ? 'regular' : 'casual'}`} aria-hidden="true" />
+              {m.regular ? '정기' : '수시'}{' · '}{m.venueKind}
+            </span>
+            <span className="mrow-title">{m.title || m.chip}</span>
+            <span className={`mtag mtag-${m.kind}`}>{STATUS_LABEL[m.kind] ?? m.kind}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 
   const renderCal = (year: number, month: number) => (
     <div className="cal" role="group" aria-label={`${year}년 ${month}월 달력`}>
@@ -144,6 +233,28 @@ export function Calendar() {
         {/* 옛 사이트는 별개 파일이라 `./` 였다. 한 앱이 된 지금은 해시 경로다. */}
         <a className="board-jump-link" href="#/">
           문화 콘텐츠 공유 보드 보러가기 <span aria-hidden="true">→</span>
+        </a>
+      </section>
+
+      {/* 8월 운영 설문 결과를 회원에게 돌려주는 페이지.
+          답한 사람이 자기 답이 무엇을 바꿨는지 모르면 다음 설문은 회수가 안 된다.
+          `.board-jump` 를 그대로 입혀 위 카드와 형제로 보이게 둔다.
+          이 문서는 SPA 밖의 정적 파일이라 해시가 아니라 파일 경로다 —
+          vite.config.ts 의 copyLiveAssets 에 올라가 있어야 404 가 안 난다. */}
+      <section className="board-jump result-jump" aria-labelledby="resultJumpTitle">
+        <div>
+          {/* 이 두 줄은 **건너간 페이지가 실제로 담은 것**만 말해야 한다.
+              2026-08-30 까지는 「이렇게 반영했습니다 · 9월부터 무엇이 달라지는지」 였는데,
+              그날 결과 페이지에서 앞일을 말하던 절 셋을 모두 가렸다 (#94 · #97).
+              광고는 남고 물건이 없어진 꼴이라, 눌러 들어간 회원이 없는 것을 찾게 된다.
+              결과 페이지 안에서 같은 종류를 세 번 고쳤는데 이 카드는 다른 화면이라 함께 안 잡혔다.
+              가린 절을 되살릴 때 이 두 줄도 함께 되돌린다. */}
+          <p className="board-jump-kicker">8월 운영 설문</p>
+          <h2 id="resultJumpTitle">답해주신 내용을 정리했습니다</h2>
+          <p>어떤 답이 얼마나 모였는지 숫자로 보여드립니다.</p>
+        </div>
+        <a className="board-jump-link" href="./survey-result.html">
+          설문 결과 보기 <span aria-hidden="true">→</span>
         </a>
       </section>
 
@@ -219,11 +330,11 @@ export function Calendar() {
         <>
           <h2 className="sec"><span className="dot dot-conf" />다가오는 확정 모임</h2>
           {upcoming.map((m) => (
-            <article key={m.id} className={m.official ? 'card card-official' : 'card'}>
-              <DayBlock date={m.date} official={m.official} />
+            <article key={m.id} className={m.regular ? 'card card-regular' : 'card'}>
+              <DayBlock date={m.date} />
               <div>
-                <span className={m.official ? 'tag tag-official' : 'tag'}>
-                  {m.official ? '공식 정기관람' : '확정'}
+                <span className={m.regular ? 'tag tag-regular' : 'tag'}>
+                  {m.regular ? '공식 정기관람' : '확정'}
                 </span>
                 <h3>{m.title || m.chip}</h3>
                 <p className="meta">
@@ -270,6 +381,9 @@ export function Calendar() {
       <h2 className="sec"><span className="dot dot-dark" />한눈에 보는 달력</h2>
       <p className="legend">
         {LEGEND.map((l) => <span key={l.cls} className={`lchip ${l.cls}`}>{l.label}</span>)}
+        <span className="legend-note">
+          {LEGEND_NOTE.map((t) => <span key={t} className="lnote">{t}</span>)}
+        </span>
       </p>
       {MONTHS.map(({ year, month }) => {
         // 빈 달을 말없이 비워 두면 "아직 안 만든 화면"으로 보인다.
@@ -284,41 +398,65 @@ export function Calendar() {
               </p>
             )}
             {renderCal(year, month)}
+            {renderMonthList(year, month)}
           </div>
         )
       })}
 
-      {/* 옛 화면은 최근 3일 안에 끝난 것이 하나도 없으면 이 절 전체를 감췄다
-          (notice.js 의 setupCompletedMeetings — list.hidden · title.hidden).
-          그때는 '이전 완료 모임 보기' 버튼도 함께 사라진다. */}
-      {done.length > 0 && (
+      {active && (
         <>
-          <h2 className="sec" hidden={recent.length === 0}><span className="dot dot-done" />완료된 모임</h2>
-          <div className="completed-list" hidden={recent.length === 0}>
-            {recent.map((m) => (
-              <p key={m.id} className="drow">
-                <span className="ck">✓</span><span>{m.completedRow}</span>
-              </p>
-            ))}
-            {showOlder && older.map((m) => (
-              <p key={m.id} className="drow">
-                <span className="ck">✓</span><span>{m.completedRow}</span>
-              </p>
-            ))}
-          </div>
-          {older.length > 0 && recent.length > 0 && (
-            <button className="completed-toggle" type="button"
-              aria-expanded={showOlder} onClick={() => setShowOlder((v) => !v)}>
-              {showOlder ? '이전 완료 모임 접기' : '이전 완료 모임 보기'}
-            </button>
+          <h2 className="sec"><span className="dot dot-done" />완료된 모임</h2>
+
+          {/**
+            * 해가 하나뿐이면 탭을 그리지 않는다. 고를 것이 없는 탭 한 개는
+            * 누를 수 있는 것처럼 보이면서 아무 일도 하지 않는다.
+            *
+            * `role="tab"` 을 쓰지 않는다 — 그것을 선언하면 화면을 읽어 주는 쪽이
+            * 회원에게 화살표 키를 안내하는데, 눌러도 아무 일이 없으면 안내와 동작이
+            * 어긋난다(보드 탭이 같은 이유로 키 이동을 갖췄다). 여기는 고르는 단추
+            * 몇 개일 뿐이므로 `aria-pressed` 로 눌린 것을 말한다.
+            */}
+          {byYear.length > 1 && (
+            <div className="year-tabs" aria-label="완료된 모임 연도">
+              {byYear.map((y) => (
+                <button key={y.year} type="button"
+                  className={y.year === activeYear ? 'year-tab on' : 'year-tab'}
+                  aria-pressed={y.year === activeYear}
+                  onClick={() => setPickedYear(y.year)}>
+                  {y.year}년 <span className="year-tab-count">{y.count}건</span>
+                </button>
+              ))}
+            </div>
           )}
+
+          {/* 가장 최근 달만 펼쳐 둔다. 전부 펼치면 지난 기록이 화면을 길게 밀어내고,
+              전부 접으면 방금 끝난 모임을 보러 한 번 더 눌러야 한다. */}
+          {active.months.map(({ month, rows }, i) => (
+            <details key={`${active.year}-${month}`} className="completed-month" open={i === 0}>
+              <summary>
+                <span className="completed-month-title">{active.year}년 {month}월</span>
+                <span className="completed-month-count">{rows.length}건</span>
+              </summary>
+              <div className="completed-month-body">
+                <div className="completed-list">
+                  {rows.map((m) => (
+                    <p key={m.id} className="drow">
+                      <span className="ck">✓</span><span>{m.completedRow}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </details>
+          ))}
         </>
       )}
 
-      {PAST_MONTHS.length > 0 && (
+      {/* 위에서 고른 해의 달력만 편다. 탭이 2026년을 가리키는데 아래에 2027년
+          달력이 펼쳐져 있으면 한 화면이 두 해를 말하게 된다. */}
+      {pastCalendars.length > 0 && (
         <section className="completed-calendar">
           <h3 className="completed-calendar-title">완료 일정 달력</h3>
-          {PAST_MONTHS.map(({ year, month }) => (
+          {pastCalendars.map(({ year, month }) => (
             <details key={`${year}-${month}`} className="calendar-fold">
               <summary>
                 <span className="calendar-fold-title">{year}년 {month}월</span>

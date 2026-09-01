@@ -6,19 +6,19 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21733
+    "h": 23274
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
-    "backgroundColor": "rgb(245, 247, 248)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -37,19 +37,19 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 21733
+    "h": 23274
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "14px",
     "paddingRight": "14px",
     "paddingBottom": "14px",
@@ -68,19 +68,19 @@
    "count": 1,
    "box": {
     "w": 347,
-    "h": 211
+    "h": 187
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "22px",
     "paddingRight": "0px",
     "paddingBottom": "18px",
@@ -102,16 +102,16 @@
     "h": 31
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "28px",
     "fontWeight": "700",
     "lineHeight": "31.4px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -133,16 +133,16 @@
     "h": 20
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "800",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -160,20 +160,20 @@
   ".topbar-notice-link": {
    "count": 2,
    "box": {
-    "w": 135,
+    "w": 129,
     "h": 44
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(20, 108, 67)",
+    "borderTopColor": "rgb(15, 110, 86)",
     "borderTopWidth": "1px",
     "borderRadius": "8px",
     "fontSize": "14px",
     "fontWeight": "800",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "10px",
     "paddingRight": "15px",
     "paddingBottom": "10px",
@@ -195,16 +195,16 @@
     "h": 56
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "3px",
+    "borderRadius": "12px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "3px",
     "paddingRight": "3px",
     "paddingBottom": "3px",
@@ -227,15 +227,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -258,15 +258,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -288,16 +288,16 @@
     "h": 116
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "3px",
+    "borderRadius": "12px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "3px",
     "paddingRight": "3px",
     "paddingBottom": "3px",
@@ -320,15 +320,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(52, 64, 84)",
+    "backgroundColor": "rgb(31, 30, 27)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -351,15 +351,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(52, 64, 84)",
+    "backgroundColor": "rgb(31, 30, 27)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -381,16 +381,16 @@
     "h": 58
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "10px",
@@ -408,20 +408,20 @@
   ".recommendation-group-head h3": {
    "count": 4,
    "box": {
-    "w": 237,
+    "w": 223,
     "h": 23
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "18px",
     "fontWeight": "700",
     "lineHeight": "23.4px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -437,22 +437,22 @@
    }
   },
   ".exhibition-card": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 309,
-    "h": 1049
+    "h": 1060
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "8px",
+    "borderRadius": "14px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "16px",
     "paddingRight": "16px",
     "paddingBottom": "16px",
@@ -468,22 +468,22 @@
    }
   },
   ".exhibition-rank": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 36,
     "h": 36
    },
    "style": {
-    "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(15, 81, 50)",
-    "borderTopColor": "rgb(255, 255, 255)",
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(241, 239, 232)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "8px",
     "fontSize": "16px",
     "fontWeight": "900",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -499,22 +499,22 @@
    }
   },
   ".exhibition-venue": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 275,
-    "h": 39
+    "h": 20
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "900",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -530,22 +530,22 @@
    }
   },
   ".exhibition-card h3": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 54
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "20px",
     "fontWeight": "700",
     "lineHeight": "27px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -561,22 +561,22 @@
    }
   },
   ".exhibition-summary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 63
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "400",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -592,22 +592,22 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 275,
     "h": 18
    },
    "style": {
-    "color": "rgb(102, 112, 133)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(102, 112, 133)",
+    "borderTopColor": "rgb(85, 83, 75)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "12px",
     "fontWeight": "900",
     "lineHeight": "18px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -623,22 +623,22 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 275,
     "h": 21
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "400",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -654,22 +654,22 @@
    }
   },
   ".exhibition-reason": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 63
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "800",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -685,22 +685,22 @@
    }
   },
   ".button.primary": {
-   "count": 15,
+   "count": 21,
    "box": {
     "w": 275,
     "h": 44
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgba(0, 0, 0, 0)",
     "borderTopWidth": "1px",
-    "borderRadius": "8px",
+    "borderRadius": "10px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "9px",
     "paddingRight": "14px",
     "paddingBottom": "9px",
@@ -716,22 +716,22 @@
    }
   },
   ".official-info-link": {
-   "count": 5,
+   "count": 6,
    "box": {
-    "w": 91,
+    "w": 84,
     "h": 24
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "900",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -747,22 +747,22 @@
    }
   },
   ".stars": {
-   "count": 15,
+   "count": 16,
    "box": {
-    "w": 70,
+    "w": 43,
     "h": 21
    },
    "style": {
-    "color": "rgb(181, 107, 0)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(181, 107, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "900",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -778,22 +778,22 @@
    }
   },
   ".rating-source": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 275,
     "h": 30
    },
    "style": {
-    "color": "rgb(102, 112, 133)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(102, 112, 133)",
+    "borderTopColor": "rgb(85, 83, 75)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "11px",
     "fontWeight": "700",
     "lineHeight": "14.9px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -829,8 +829,8 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 11401,
-   "cardCount": 20,
+   "textLength": 12979,
+   "cardCount": 21,
    "chipCount": 0
   }
  },
@@ -839,19 +839,19 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10927
+    "h": 11942
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
-    "backgroundColor": "rgb(245, 247, 248)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -870,19 +870,19 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 10927
+    "h": 11942
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "20px",
     "paddingRight": "20px",
     "paddingBottom": "20px",
@@ -904,16 +904,16 @@
     "h": 130
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "22px",
     "paddingRight": "0px",
     "paddingBottom": "18px",
@@ -931,20 +931,20 @@
   ".topbar h1": {
    "count": 1,
    "box": {
-    "w": 938,
+    "w": 952,
     "h": 38
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "34px",
     "fontWeight": "700",
     "lineHeight": "38.1px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -962,20 +962,20 @@
   ".eyebrow": {
    "count": 3,
    "box": {
-    "w": 938,
+    "w": 952,
     "h": 20
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "800",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -993,20 +993,20 @@
   ".topbar-notice-link": {
    "count": 2,
    "box": {
-    "w": 135,
+    "w": 129,
     "h": 44
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(20, 108, 67)",
+    "borderTopColor": "rgb(15, 110, 86)",
     "borderTopWidth": "1px",
     "borderRadius": "8px",
     "fontSize": "14px",
     "fontWeight": "800",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "10px",
     "paddingRight": "15px",
     "paddingBottom": "10px",
@@ -1028,16 +1028,16 @@
     "h": 56
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "3px",
+    "borderRadius": "12px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "3px",
     "paddingRight": "3px",
     "paddingBottom": "3px",
@@ -1060,15 +1060,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -1091,15 +1091,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -1121,16 +1121,16 @@
     "h": 66
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "3px",
+    "borderRadius": "12px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "3px",
     "paddingRight": "3px",
     "paddingBottom": "3px",
@@ -1153,15 +1153,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(52, 64, 84)",
+    "backgroundColor": "rgb(31, 30, 27)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -1184,15 +1184,15 @@
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(52, 64, 84)",
+    "backgroundColor": "rgb(31, 30, 27)",
     "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
-    "borderRadius": "2px",
+    "borderRadius": "9px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "1px",
     "paddingRight": "6px",
     "paddingBottom": "1px",
@@ -1214,16 +1214,16 @@
     "h": 58
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "10px",
@@ -1241,20 +1241,20 @@
   ".recommendation-group-head h3": {
    "count": 4,
    "box": {
-    "w": 237,
+    "w": 223,
     "h": 23
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "18px",
     "fontWeight": "700",
     "lineHeight": "23.4px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1270,22 +1270,22 @@
    }
   },
   ".exhibition-card": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1202,
-    "h": 493
+    "h": 520
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(216, 222, 229)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "8px",
+    "borderRadius": "14px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "16px",
     "paddingRight": "16px",
     "paddingBottom": "16px",
@@ -1301,22 +1301,22 @@
    }
   },
   ".exhibition-rank": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 44,
     "h": 44
    },
    "style": {
-    "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(15, 81, 50)",
-    "borderTopColor": "rgb(255, 255, 255)",
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(241, 239, 232)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "8px",
     "fontSize": "18px",
     "fontWeight": "900",
     "lineHeight": "27px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1332,22 +1332,22 @@
    }
   },
   ".exhibition-venue": {
-   "count": 15,
+   "count": 16,
    "box": {
-    "w": 470,
+    "w": 426,
     "h": 20
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "900",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1363,22 +1363,22 @@
    }
   },
   ".exhibition-card h3": {
-   "count": 20,
+   "count": 21,
    "box": {
-    "w": 470,
+    "w": 426,
     "h": 27
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "20px",
     "fontWeight": "700",
     "lineHeight": "27px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1394,22 +1394,22 @@
    }
   },
   ".exhibition-summary": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1110,
     "h": 21
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "400",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1425,22 +1425,22 @@
    }
   },
   ".exhibition-details dt": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 549,
     "h": 18
    },
    "style": {
-    "color": "rgb(102, 112, 133)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(102, 112, 133)",
+    "borderTopColor": "rgb(85, 83, 75)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "12px",
     "fontWeight": "900",
     "lineHeight": "18px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1456,22 +1456,22 @@
    }
   },
   ".exhibition-details dd": {
-   "count": 135,
+   "count": 142,
    "box": {
     "w": 549,
     "h": 21
    },
    "style": {
-    "color": "rgb(23, 32, 42)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(23, 32, 42)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "400",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1487,22 +1487,22 @@
    }
   },
   ".exhibition-reason": {
-   "count": 20,
+   "count": 21,
    "box": {
     "w": 1110,
     "h": 21
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "800",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1518,22 +1518,22 @@
    }
   },
   ".button.primary": {
-   "count": 15,
+   "count": 21,
    "box": {
-    "w": 89,
+    "w": 85,
     "h": 44
    },
    "style": {
     "color": "rgb(255, 255, 255)",
-    "backgroundColor": "rgb(20, 108, 67)",
+    "backgroundColor": "rgb(15, 110, 86)",
     "borderTopColor": "rgba(0, 0, 0, 0)",
     "borderTopWidth": "1px",
-    "borderRadius": "8px",
+    "borderRadius": "10px",
     "fontSize": "16px",
     "fontWeight": "800",
     "lineHeight": "24px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "9px",
     "paddingRight": "14px",
     "paddingBottom": "9px",
@@ -1549,22 +1549,22 @@
    }
   },
   ".official-info-link": {
-   "count": 5,
+   "count": 6,
    "box": {
-    "w": 91,
+    "w": 84,
     "h": 24
    },
    "style": {
-    "color": "rgb(15, 81, 50)",
+    "color": "rgb(10, 91, 69)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(15, 81, 50)",
+    "borderTopColor": "rgb(10, 91, 69)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
     "fontWeight": "900",
     "lineHeight": "19.5px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1580,22 +1580,22 @@
    }
   },
   ".stars": {
-   "count": 15,
+   "count": 16,
    "box": {
-    "w": 70,
+    "w": 43,
     "h": 21
    },
    "style": {
-    "color": "rgb(181, 107, 0)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(181, 107, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
     "fontWeight": "900",
     "lineHeight": "21px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1611,22 +1611,22 @@
    }
   },
   ".rating-source": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 260,
     "h": 30
    },
    "style": {
-    "color": "rgb(102, 112, 133)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(102, 112, 133)",
+    "borderTopColor": "rgb(85, 83, 75)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "11px",
     "fontWeight": "700",
     "lineHeight": "14.9px",
     "letterSpacing": "normal",
-    "fontFamily": "-apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Segoe UI\", sans-serif",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
     "paddingTop": "0px",
     "paddingRight": "0px",
     "paddingBottom": "0px",
@@ -1662,8 +1662,8 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 11401,
-   "cardCount": 20,
+   "textLength": 12979,
+   "cardCount": 21,
    "chipCount": 0
   }
  },
@@ -1672,7 +1672,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 2888
+    "h": 3815
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1732,10 +1732,10 @@
    },
    "style": {
     "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgb(244, 242, 255)",
-    "borderTopColor": "rgb(215, 210, 251)",
+    "backgroundColor": "rgb(241, 239, 232)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "18px",
+    "borderRadius": "14px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
@@ -1751,7 +1751,7 @@
     "flexDirection": "row",
     "gap": "normal",
     "textAlign": "start",
-    "boxShadow": "rgba(62, 48, 129, 0.08) 0px 12px 30px 0px",
+    "boxShadow": "rgba(31, 30, 27, 0.06) 0px 7px 24px 0px",
     "opacity": "1"
    }
   },
@@ -1793,9 +1793,9 @@
     "h": 29
    },
    "style": {
-    "color": "rgb(47, 36, 92)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(47, 36, 92)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "23px",
@@ -1824,9 +1824,9 @@
     "h": 289
    },
    "style": {
-    "color": "rgb(76, 72, 87)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(221, 215, 247)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
     "borderRadius": "12px",
     "fontSize": "13px",
@@ -1914,7 +1914,7 @@
    "count": 1,
    "box": {
     "w": 343,
-    "h": 312
+    "h": 533
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1937,7 +1937,7 @@
     "flexDirection": "row",
     "gap": "14px",
     "textAlign": "start",
-    "boxShadow": "none",
+    "boxShadow": "rgb(15, 110, 86) 4px 0px 0px 0px inset",
     "opacity": "1"
    }
   },
@@ -2006,13 +2006,13 @@
   ".tag": {
    "count": 1,
    "box": {
-    "w": 41,
+    "w": 85,
     "h": 24
    },
    "style": {
-    "color": "rgb(10, 91, 69)",
-    "backgroundColor": "rgb(225, 245, 238)",
-    "borderTopColor": "rgb(10, 91, 69)",
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(15, 110, 86)",
+    "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
     "borderRadius": "999px",
     "fontSize": "12px",
@@ -2038,7 +2038,7 @@
    "count": 1,
    "box": {
     "w": 227,
-    "h": 98
+    "h": 245
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2069,7 +2069,7 @@
    "count": 1,
    "box": {
     "w": 227,
-    "h": 109
+    "h": 183
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2221,7 +2221,7 @@
    }
   },
   ".chip": {
-   "count": 10,
+   "count": 11,
    "box": {
     "w": 40,
     "h": 36
@@ -2229,7 +2229,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(226, 222, 212)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "11.5px",
@@ -2255,7 +2255,7 @@
    "count": 1,
    "box": {
     "w": 343,
-    "h": 243
+    "h": 280
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2315,9 +2315,9 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1131,
+   "textLength": 1552,
    "cardCount": 0,
-   "chipCount": 10
+   "chipCount": 11
   }
  },
  "일정-1280": {
@@ -2325,7 +2325,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 2639
+    "h": 3328
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2385,10 +2385,10 @@
    },
    "style": {
     "color": "rgb(31, 30, 27)",
-    "backgroundColor": "rgb(244, 242, 255)",
-    "borderTopColor": "rgb(215, 210, 251)",
+    "backgroundColor": "rgb(241, 239, 232)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
-    "borderRadius": "18px",
+    "borderRadius": "14px",
     "fontSize": "16px",
     "fontWeight": "400",
     "lineHeight": "24px",
@@ -2404,7 +2404,7 @@
     "flexDirection": "row",
     "gap": "normal",
     "textAlign": "start",
-    "boxShadow": "rgba(62, 48, 129, 0.08) 0px 12px 30px 0px",
+    "boxShadow": "rgba(31, 30, 27, 0.06) 0px 7px 24px 0px",
     "opacity": "1"
    }
   },
@@ -2446,9 +2446,9 @@
     "h": 29
    },
    "style": {
-    "color": "rgb(47, 36, 92)",
+    "color": "rgb(31, 30, 27)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(47, 36, 92)",
+    "borderTopColor": "rgb(31, 30, 27)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "23px",
@@ -2477,9 +2477,9 @@
     "h": 203
    },
    "style": {
-    "color": "rgb(76, 72, 87)",
+    "color": "rgb(85, 83, 75)",
     "backgroundColor": "rgb(255, 255, 255)",
-    "borderTopColor": "rgb(221, 215, 247)",
+    "borderTopColor": "rgb(232, 229, 222)",
     "borderTopWidth": "1px",
     "borderRadius": "12px",
     "fontSize": "13px",
@@ -2567,7 +2567,7 @@
    "count": 1,
    "box": {
     "w": 520,
-    "h": 250
+    "h": 337
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2590,7 +2590,7 @@
     "flexDirection": "row",
     "gap": "14px",
     "textAlign": "start",
-    "boxShadow": "none",
+    "boxShadow": "rgb(15, 110, 86) 4px 0px 0px 0px inset",
     "opacity": "1"
    }
   },
@@ -2659,13 +2659,13 @@
   ".tag": {
    "count": 1,
    "box": {
-    "w": 41,
+    "w": 85,
     "h": 24
    },
    "style": {
-    "color": "rgb(10, 91, 69)",
-    "backgroundColor": "rgb(225, 245, 238)",
-    "borderTopColor": "rgb(10, 91, 69)",
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(15, 110, 86)",
+    "borderTopColor": "rgb(255, 255, 255)",
     "borderTopWidth": "0px",
     "borderRadius": "999px",
     "fontSize": "12px",
@@ -2691,7 +2691,7 @@
    "count": 1,
    "box": {
     "w": 404,
-    "h": 74
+    "h": 123
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2722,7 +2722,7 @@
    "count": 1,
    "box": {
     "w": 404,
-    "h": 72
+    "h": 109
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2874,7 +2874,7 @@
    }
   },
   ".chip": {
-   "count": 10,
+   "count": 11,
    "box": {
     "w": 65,
     "h": 28
@@ -2882,7 +2882,7 @@
    "style": {
     "color": "rgb(110, 108, 100)",
     "backgroundColor": "rgb(241, 239, 232)",
-    "borderTopColor": "rgb(226, 222, 212)",
+    "borderTopColor": "rgb(110, 108, 100)",
     "borderTopWidth": "0px",
     "borderRadius": "5px",
     "fontSize": "12.5px",
@@ -2908,7 +2908,7 @@
    "count": 1,
    "box": {
     "w": 520,
-    "h": 243
+    "h": 280
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2968,9 +2968,9 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1131,
+   "textLength": 1552,
    "cardCount": 0,
-   "chipCount": 10
+   "chipCount": 11
   }
  }
 }

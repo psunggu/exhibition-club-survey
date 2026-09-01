@@ -3,6 +3,7 @@ import {
   AREAS, CONTENT_TYPES, EventsUnavailable, fetchEvents, filterEvents,
   type Area, type ContentType, type Event,
 } from './lib/events'
+import { pickNews } from './lib/news'
 import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
@@ -36,10 +37,21 @@ const season = (now: Date = new Date()) => {
   return `${m}~${(m % 12) + 1}월`
 }
 
+/** 별점의 노란 별을 숫자로 바꾼다. 뜻은 그대로다 — 5점 만점의 몇 점.
+    색으로 말하던 것을 글자가 말하게 하는 것이라 aria-label 은 손대지 않는다. */
 const stars = (rating: string | null) => {
   const v = Math.max(0, Math.min(5, Number(rating ?? 0)))
-  return v ? '★'.repeat(v) + '☆'.repeat(5 - v) : '-'
+  return v ? `${v.toFixed(1)} / 5` : '-'
 }
+
+/**
+ * 갈래는 색이 아니라 글자가 말한다 — 카드 머리에 붙는 중립 칩의 글자.
+ *
+ * **모르면 아무 말도 하지 않는다.** 예전에는 type 이 비면 '전시' 로 떨어뜨렸는데,
+ * 보드에는 전시·공연·영화 어디에도 안 들어가는 「그 밖에」 묶음이 있다.
+ * 그 카드에 「전시」 라고 적으면 회원이 읽는 것이 틀린 정보가 된다.
+ */
+const kindLabel = (type: string | null) => (type === '공연' ? '음악공연' : type || null)
 
 const dateRange = (e: Event) => {
   const s = e.startDate ?? ''
@@ -136,6 +148,11 @@ function EventCard({ e, index }: { e: Event; index: number }) {
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
+            {kindLabel(e.type) && (
+              <div className="card-kind-line">
+                <span className="card-kind-chip">{kindLabel(e.type)}</span>
+              </div>
+            )}
             <p className="exhibition-venue">
               {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
             </p>
@@ -182,11 +199,8 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
       <div className="exhibition-body">
         <div className="exhibition-head">
           <div>
-            <div className="movie-status-line">
-              <span className={`movie-status-badge${m.releaseStatus.includes('예정') ? ' upcoming' : ''}`}>
-                {m.releaseStatus}
-              </span>
-              <span className="movie-ranking-badge">전국 예매 {m.bookingRank}위</span>
+            <div className="card-kind-line">
+              <span className="card-kind-chip">{`영화 · ${m.releaseStatus} · 전국 예매 ${m.bookingRank}위`}</span>
             </div>
             <h3>{m.title}</h3>
           </div>
@@ -212,7 +226,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
         </p>
 
         <div className="exhibition-actions">
-          <a className="button movie-booking-button" href={MOVIE_BOOKING_URL}
+          <a className="button primary" href={MOVIE_BOOKING_URL}
             target="_blank" rel="noopener noreferrer">영화관 예매</a>
           <a className="button tertiary" href={m.infoUrl}
             target="_blank" rel="noopener noreferrer">KOBIS 영화정보</a>
@@ -221,6 +235,57 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
         </div>
       </div>
     </article>
+  )
+}
+
+/**
+ * 소식 줄 — 문화예술 소식 하나를 목록 머리글 바로 아래에 건다.
+ *
+ * **영상을 페이지 안에서 재생하지 않는다.** 유튜브 iframe 을 넣으려면 CSP 에
+ * `frame-src` 를 열어야 하는데, 그 실수를 잡아 줄 검사기가 없다 —
+ * validate-csp-build.mjs 는 dist 의 .html · .css 만 읽으므로 React 가 만드는
+ * iframe 은 시야 밖이고, CSP meta 가 「있는지」만 보고 내용은 보지 않는다.
+ * frame-src 를 빠뜨려도 `npm run check` 는 통과하고 회원 화면에서만 조용히 죽는다.
+ * 375px 에서 16:9 가 목록을 한 화면 밖으로 미는 문제도 있다.
+ *
+ * 그래서 **바깥으로 나가는 링크**다. `<a href>` 는 부르는 것이 아니라 가는 것이라
+ * CSP 가 막지 않는다(validate-csp-build.mjs 의 FETCHES 정규식도 a · area 를 뺀다).
+ * 유튜브 썸네일은 쓰지 않는다 — 자체 호스팅은 유튜브 약관이 금하고,
+ * i.ytimg.com 직접 참조는 `img-src 'self' data:` 에 막힌다. 아이콘은 인라인 SVG 다.
+ *
+ * 갈래는 색이 아니라 글자가 말한다 — 카드와 같은 규칙이다.
+ */
+function NewsLine({ e }: { e: Event }) {
+  const href = e.mainUrl ?? e.infoUrl
+  if (!href) return null
+  const kind = [e.genre, e.venue, e.summary].filter(Boolean).join(' · ')
+  return (
+    <a className="news-line" href={href} target="_blank" rel="noopener noreferrer">
+      <svg className="news-line-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        aria-hidden="true">
+        <rect x="2.5" y="5" width="19" height="14" rx="3.5" stroke="currentColor" strokeWidth="2" />
+        <path d="M10 9.2v5.6l4.8-2.8L10 9.2z" fill="currentColor" />
+      </svg>
+      {/* 갈래 · 출처 · 덧말을 **한 줄로 잇는다.** 처음에는 갈래를 알약 칩으로 따로
+          세웠는데, 375px 에서 줄 높이가 155px 이 되어 첫 전시 카드를 171px 밀어냈다.
+          그건 임베드를 안 쓰기로 한 이유(목록을 밀어낸다)와 같은 값이라, 칩을 접었다.
+          갈래는 여전히 색이 아니라 **글자**가 말한다 — 「영상 · 유튜브」. */}
+      <span className="news-line-body">
+        <span className="news-line-title">{e.title}</span>
+        {kind && <span className="news-line-meta">{kind}</span>}
+      </span>
+      {/* 새 창으로 나간다는 표시. 화살표 아이콘만으로는 화면을 읽어 주는 쪽에 안 닿는다.
+          **갈래·출처를 여기 다시 적지 않는다** — 바로 위 줄에 이미 보이게 적혀 있어서,
+          넣었더니 스크린리더가 같은 문장을 두 번 읽었다. */}
+      <span className="visually-hidden"> (새 창으로 열림)</span>
+      <svg className="news-line-out" width="15" height="15" viewBox="0 0 24 24" fill="none"
+        aria-hidden="true">
+        <path d="M14 4h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M20 4l-8.5 8.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M18 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4.5"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </a>
   )
 }
 
@@ -282,6 +347,15 @@ export function Board() {
     [events, area, type, search],
   )
 
+  /**
+   * 소식은 **`list` 가 아니라 `events` 원본에서** 뽑는다.
+   * `filterEvents` 를 거치면 `eventArea` 가 지역을 서울로 떨어뜨리므로
+   * 경기 · 인천 탭에서 소식이 통째로 사라진다. 지역을 타는 정보가 아니다.
+   * 고르는 규칙은 `pickNews` 에 있다 — 운영자 화면과 같은 규칙을 써야
+   * 「올렸는데 안 보인다」 가 생기지 않는다.
+   */
+  const news = useMemo(() => (events ? pickNews(events, today()) : null), [events])
+
   const groups = useMemo(() => {
     const out: { key: string; title: string; subtitle: string; nodes: React.ReactNode[] }[] = []
     const add = (key: string, title: string, subtitle: string, nodes: React.ReactNode[]) => {
@@ -299,7 +373,10 @@ export function Board() {
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
         MOVIES.slice(0, type === '영화' ? 10 : 5).map((m) => <MovieCard key={m.id} m={m} area={area} />))
-    const rest = list.filter((e) => e.type !== '전시' && e.type !== '공연')
+    // 소식은 아래 NewsLine 이 맡는다. 빼지 않으면 「그 밖에」 에
+    // 관람료 · 주차 항목이 붙은 전시 카드 모양으로 한 번 더 뜬다.
+    const rest = list.filter((e) =>
+      e.type !== '전시' && e.type !== '공연' && e.type !== '소식')
     if (type === '전체' && rest.length)
       add('기타', '그 밖에', '', rest.map((e, i) => <EventCard key={e.id} e={e} index={i} />))
     return out
@@ -370,6 +447,11 @@ export function Board() {
               : '지역과 유형을 차례로 선택하세요'}
           </p>
         </div>
+        {/* 소식은 목록 **안**에 둔다. `.app-shell` 이 flex column 이고
+            `.exhibition-page` 가 order:1 이라, 밖에 형제로 두면 order 없는 구역이
+            order:0 으로 올라가 목록 위로 튀어 오른다.
+            검색 중에는 감춘다 — 찾는 것과 상관없는 줄이 결과 맨 앞을 차지한다. */}
+        {news && !search && <NewsLine e={news} />}
         {groups.length === 0 ? (
           <div className="empty-state">
             <strong>조건에 맞는 정보가 없습니다.</strong>

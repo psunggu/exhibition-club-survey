@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   adminDelete, adminList, adminMemberDelete, adminMembers, adminMemberSave,
-  adminNames, adminNote, adminNoteSave,
-  adminRespondents, adminResults, adminSave,
-  emptyDraft, emptyOption, fetchResponseCount, fetchSurveys, fromDateInput,
+  adminGet, adminNames, adminNote, adminNoteSave, adminSubmit,
+  CATEGORY,
+  adminRespondents, adminResults, adminSave, POSTABLE_CATEGORY_ORDER,
+  adminGetWithCount, emptyDraft, emptyOption, fromDateInput,
   formatPeriod, koDay, koDeadline, koShort, parsePeriod, SurveyUnavailable, toDateInput, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
   type Draft, type DraftOption, type Member, type SurveyLinkKind,
   type SurveyOption,
 } from './lib/survey'
+import { splitAdminByHistory } from './lib/surveyHistory'
 import { fetchEvents } from './lib/events'
+import { News } from './SurveyAdminNews'
+import { GoogleSurveyRounds } from './GoogleSurveyRounds'
+import { GOOGLE_SURVEYS } from './data/googleSurveys'
 import { boardPicks, type BoardPick } from './lib/pickFromBoard'
 import { MOVIES } from './data/movies'
 import { Analysis, Metrics, ResultChart } from './SurveyChart'
@@ -171,13 +176,16 @@ function Results({ pw, surveyId, multiChoice, onError }: {
     Promise.all([
       adminResults(pw, surveyId, ac.signal),
       adminRespondents(pw, surveyId, ac.signal),
-      fetchSurveys(ac.signal),
-      fetchResponseCount(surveyId, ac.signal),
+      // **회원 창구 둘을 암호 창구 하나로 바꿨다.**
+      // fetchSurveys 는 RLS 를 거치고, fetchResponseCount 가 부르는
+      // survey_response_count 는 운영진용 설문에 0 을 준다. 둔 채로 두면
+      // 운영진용 설문의 결과판이 **후보 없음 · 0명**으로 거짓말을 한다.
+      adminGetWithCount(pw, surveyId, ac.signal),
     ])
-      .then(([r, p, all, n]) => {
+      .then(([r, p, got]) => {
         setRows(r); setPeople(p)
-        setTotal(Number(n) || 0)
-        setOptions(all.find((s) => s.id === surveyId)?.options ?? [])
+        setTotal(got.responseCount)
+        setOptions(got.survey.options)
       })
       .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
     return () => ac.abort()
@@ -307,6 +315,110 @@ function Results({ pw, surveyId, multiChoice, onError }: {
  * 지금은 전부 `41` 로 시작해서 뒤 두 자리만 남기면 짧아지고, 조각 위에 들어간다.
  * 구역 체계가 바뀌어 공통 앞자리가 없어지면 저절로 전체 번호를 쓴다.
  */
+/**
+ * 운영진이 **이 화면에서 바로 답하는** 자리.
+ *
+ * ── 왜 회원 화면을 안 쓰나 ──────────────────────
+ * 운영진용 설문은 RLS 가 회원 쪽으로 행 자체를 안 내준다. 그래야 맞다 —
+ * 그것이 「운영진용」 의 뜻이기 때문이다. 대신 암호를 이미 든 이 화면이
+ * survey_admin_submit 으로 보낸다.
+ *
+ * ── 받는 것은 회원 설문과 같다 ──────────────────
+ * 구역번호와 이름을 받아 명부와 대조한다. **그러나 저장되는 것은 익명 키뿐이다** —
+ * 이름도 구역도 행에 안 남는다 (survey_anon_key · 2026-08-24).
+ * 운영진이라고 다르게 둘 이유가 없고, 서로 눈치 보지 않고 고를 수 있다.
+ * 한 사람이 두 번 답하는 것은 그 키의 유니크 제약이 막는다 (다시 내면 고쳐진다).
+ */
+function AdminVote({ pw, surveyId, onDone, onError }: {
+  pw: string
+  surveyId: string
+  onDone: () => void
+  onError: (e: unknown) => void
+}) {
+  const [opts, setOpts] = useState<SurveyOption[] | null>(null)
+  const [multi, setMulti] = useState(true)
+  const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [zone, setZone] = useState('')
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
+
+  useEffect(() => {
+    const ac = new AbortController()
+    adminGetWithCount(pw, surveyId, ac.signal)
+      .then((got) => { setOpts(got.survey.options); setMulti(got.survey.multiChoice) })
+      .catch((e: unknown) => { if (!ac.signal.aborted) onError(e) })
+    return () => ac.abort()
+  }, [pw, surveyId, onError])
+
+  const toggle = (id: string) => {
+    setPicked((prev) => {
+      // 하나만 고르는 설문이면 앞에 고른 것을 밀어낸다 —
+      // 서버도 둘 이상이면 거절하므로 화면이 먼저 맞춰 준다.
+      if (!multi) return new Set([id])
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const send = async () => {
+    if (!picked.size) { setNote('적어도 하나는 골라 주세요.'); return }
+    setBusy(true); setNote(null)
+    try {
+      await adminSubmit(pw, surveyId, zone.trim(), name.trim(), [...picked])
+      setNote('보냈습니다. 결과 보기로 집계를 확인하세요.')
+      onDone()
+    } catch (e) { onError(e) } finally { setBusy(false) }
+  }
+
+  if (!opts) return <p className="admin-hint" aria-live="polite">후보를 불러오는 중…</p>
+
+  return (
+    <div className="admin-entry">
+      <p className="admin-hint">
+        운영진끼리 정하는 설문입니다. 회원 화면에는 나오지 않습니다.
+        구역번호와 이름은 명부와 맞추는 데만 쓰고 <b>저장되지 않습니다.</b>
+      </p>
+
+      <div className="admin-row">
+        <label className="survey-field zone">
+          <span>구역번호</span>
+          <input className="admin-input" inputMode="numeric" value={zone}
+            onChange={(e) => setZone(e.target.value)} />
+        </label>
+        <label className="survey-field name">
+          <span>이름</span>
+          <input className="admin-input" value={name}
+            onChange={(e) => setName(e.target.value)} />
+        </label>
+      </div>
+
+      {opts.map((o) => (
+        <label key={o.id} className={`survey-option${picked.has(o.id) ? ' picked' : ''}`}>
+          <input
+            type={multi ? 'checkbox' : 'radio'}
+            name={`admin-vote-${surveyId}`}
+            checked={picked.has(o.id)}
+            onChange={() => toggle(o.id)} />
+          <div className="survey-option-body">
+            <div className="survey-option-title">{o.title}</div>
+            {o.note && <p className="survey-note">{o.note}</p>}
+          </div>
+        </label>
+      ))}
+
+      <div className="survey-actions" style={{ marginTop: 10 }}>
+        <button type="button" className="survey-submit"
+          disabled={busy || !picked.size} onClick={() => { void send() }}>
+          {busy ? '보내는 중…' : '내 답 보내기'}
+        </button>
+      </div>
+      {note && <p className="admin-hint" aria-live="polite">{note}</p>}
+    </div>
+  )
+}
+
 function ZoneDonut({ rows, total }: { rows: { zone: string; n: number }[]; total: number }) {
   const R = 54
   const W = 24
@@ -826,6 +938,9 @@ export function SurveyAdmin() {
   const [list, setList] = useState<AdminSurvey[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
   const [open, setOpen] = useState<string | null>(null)   // 결과를 펼친 설문
+  // 운영진이 답하려고 펼친 설문. 결과와 따로 둔다 —
+  // 둘을 한 값으로 묶으면 답하고 바로 집계를 보려할 때 한 쪽이 닫힌다.
+  const [voting, setVoting] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'error' | 'done'; text: string } | null>(null)
 
@@ -857,10 +972,10 @@ export function SurveyAdmin() {
   const startEdit = async (id: string) => {
     setBusy(true); setMsg(null)
     try {
-      const all = await fetchSurveys()
-      const found = all.find((s) => s.id === id)
-      if (!found) { setMsg({ kind: 'error', text: '설문을 찾지 못했습니다.' }); return }
-      setDraft(toDraft(found))
+      // **fetchSurveys 를 안 쓴다.** 그쪽은 REST 로 표를 직접 읽어 RLS 를 거치고,
+      // 그 정책은 audience='members' 만 내준다. 그대로 두면 운영진용 설문은
+      // **올린 운영자 자신도** 「설문을 찾지 못했습니다」 가 된다.
+      setDraft(toDraft(await adminGet(pw, id)))
     } catch (e) { say(e, '불러오지 못했습니다.') } finally { setBusy(false) }
   }
 
@@ -968,15 +1083,23 @@ export function SurveyAdmin() {
             * 화면이 안 보내서, 여기서 만든 설문은 전부 전시 관람으로 떨어졌다.
             * 그래서 식사·티타임 설문을 올리는 길이 SQL 밖에 없었다.
             *
-            * 갈래를 **늘리는 것이 아니라** 있는 둘 중에서 고르게만 한다 —
-            * `surveys.category` 의 CHECK 는 그대로다.
+            * **목록을 손으로 적지 않는다.** 2026-08-29 에 갈래를 다섯으로 늘리면서
+            * 화면·주소·DB 는 늘렸는데 여기 `<option>` 둘만 옛 목록으로 남았고,
+            * 운영자가 새 갈래를 아예 고를 수 없었다. 검사기도 「보내는가」 만 재고
+            * 「무엇을 고를 수 있는가」 는 안 재서 그냥 지나갔다.
+            * CATEGORY 에서 그려 두 곳이 어긋날 수 없게 한다
+            * (validate-survey-admin-ui 가 목록이 같은지도 잰다).
             */}
           <label className="survey-field" style={{ flexGrow: 1 }}>
             <span>어느 화면에</span>
             <select className="admin-input" value={draft.category}
               onChange={(e) => set({ category: e.target.value as Draft['category'] })}>
-              <option value="exhibition">전시 관람 설문</option>
-              <option value="meal">식사 및 Tea Time 설문</option>
+              {/* **CATEGORY_ORDER 가 아니다.** 「구글 설문」 은 화면에만 있는 갈래라
+                  DB 가 그 값을 거절한다 — 고를 수 있게 두면 저장할 때야 막힌다.
+                  이유는 lib/survey.ts 의 POSTABLE_CATEGORY_ORDER 주석에 적었다. */}
+              {POSTABLE_CATEGORY_ORDER.map((c) => (
+                <option key={c} value={c}>{CATEGORY[c].label}</option>
+              ))}
             </select>
           </label>
           <label className="survey-field" style={{ flexGrow: 1 }}>
@@ -997,6 +1120,14 @@ export function SurveyAdmin() {
               <option value="always">응답하면 바로</option>
               <option value="after_close">마감 뒤에</option>
               <option value="admin">운영자만</option>
+            </select>
+          </label>
+          <label className="survey-field" style={{ flexGrow: 1 }}>
+            <span>누가 보나</span>
+            <select className="admin-input" value={draft.audience}
+              onChange={(e) => set({ audience: e.target.value as Draft['audience'] })}>
+              <option value="members">회원 — 설문 화면에 올라간다</option>
+              <option value="admins">운영진 — 이 화면에서만 보이고 여기서 답한다</option>
             </select>
           </label>
           <label className="survey-field" style={{ flexGrow: 1 }}>
@@ -1056,25 +1187,18 @@ export function SurveyAdmin() {
 
   /* ── 목록 ─────────────────────────────────────────────── */
 
-  return (
-    <div>
-      <div className="survey-actions" style={{ marginBottom: 14 }}>
-        <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
-      </div>
+  // 다녀온 모임의 설문을 아래로 접는다. 규칙은 회원 화면과 같은 것을 쓴다.
+  const { live, past } = splitAdminByHistory(list)
 
-      {msg && (
-        <p className={`survey-status survey-message ${msg.kind}`}
-          role={msg.kind === 'error' ? 'alert' : 'status'}
-          style={{ marginBottom: 12 }}>{msg.text}</p>
-      )}
-
-      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
-
-      {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
-
-      {list.map((s) => (
+  // 카드 한 장. **두 묶음이 같은 함수를 쓴다** — 따로 적으면 한쪽만 고쳐진다.
+  const card = (s: AdminSurvey) => (
         <div className="admin-card" key={s.id}>
-          <div className="admin-card-title">{s.title}</div>
+          <div className="admin-card-title">
+            {s.audience === 'admins' && (
+              <span className="tag tag-tent" style={{ marginRight: 6 }}>운영진용</span>
+            )}
+            {s.title}
+          </div>
           <p className="survey-facts" style={{ marginTop: 6 }}>
             <b>마감</b> {koDeadline(s.closesAt)}<br />
             <b>후보</b> {s.optionCount}개 · <b>응답</b> {s.responseCount}건<br />
@@ -1088,17 +1212,79 @@ export function SurveyAdmin() {
               onClick={() => setOpen(open === s.id ? null : s.id)}>
               {open === s.id ? '결과 닫기' : '결과 보기'}
             </button>
+            {s.audience === 'admins' && (
+              <button type="button" className="admin-mini"
+                aria-expanded={voting === s.id}
+                onClick={() => setVoting(voting === s.id ? null : s.id)}>
+                {voting === s.id ? '답하기 닫기' : '답하기'}
+              </button>
+            )}
             <button type="button" className="admin-mini" disabled={busy}
               onClick={() => { void startEdit(s.id) }}>고치기</button>
             <button type="button" className="admin-mini danger" disabled={busy}
               onClick={() => { void remove(s) }}>지우기</button>
           </div>
+          {voting === s.id && (
+            <AdminVote pw={pw} surveyId={s.id}
+              onDone={() => { void reload(pw).catch((e: unknown) => say(e, '목록을 다시 읽지 못했습니다.')) }}
+              onError={(e) => say(e, '보내지 못했습니다.')} />
+          )}
           {open === s.id && (
             <Results pw={pw} surveyId={s.id} multiChoice={s.multiChoice}
               onError={(e) => say(e, '결과를 불러오지 못했습니다.')} />
           )}
         </div>
-      ))}
+  )
+
+  return (
+    <div>
+      <div className="survey-actions" style={{ marginBottom: 14 }}>
+        <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
+      </div>
+
+      {msg && (
+        <p className={`survey-status survey-message ${msg.kind}`}
+          role={msg.kind === 'error' ? 'alert' : 'status'}
+          style={{ marginBottom: 12 }}>{msg.text}</p>
+      )}
+
+      {/* 보드 소식이 명부보다 위다 — 매주 손대는 것이 이쪽이고, 명부는 어쩌다 한 번이다. */}
+      <News pw={pw} onError={(e) => say(e, '소식을 다루지 못했습니다.')} />
+
+      {/* 구글 설문은 **여기서 올리는 것이 아니다.** 회원 화면에 나가 있는 회차를
+          운영진도 같은 자리에서 확인하라고 둔다. 접힌 채로 시작한다 — 매주
+          손대는 것이 아니라 회차가 생길 때만 보는 자리다. */}
+      <details className="admin-members">
+        <summary>구글 설문 결과 ({GOOGLE_SURVEYS.length}회차)</summary>
+        <div className="gsurvey-admin">
+          <GoogleSurveyRounds pw={pw}
+            onError={(e) => say(e, '분석 가이드를 다루지 못했습니다.')} />
+        </div>
+      </details>
+
+      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
+
+      {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
+
+      {live.map(card)}
+
+      {/**
+        * ── 「지난 관람」 을 따로 접어 둔다 ──────────────────────
+        * 다녀온 모임의 설문은 지워지지 않는다 — 결과가 기록이기 때문이다.
+        * 그런데 목록 맨 위에 그대로 두면, 지금 돌려야 할 설문이 끝난 것들에 밀린다.
+        * 8월 설문 넷이 쌓인 지금 이미 그렇다.
+        *
+        * **판정은 회원 화면과 같은 규칙을 쓴다** (surveyHistory.ts 의 pastCore) —
+        * 마감됐고 + 이어진 모임이 지났을 때만 지난 것이다. 마감만으로는 안 접는다.
+        * 모임이 아직인 마감 설문이야말로 운영자가 들여다볼 때다.
+        */}
+      {past.length > 0 && (
+        <details className="admin-members admin-past">
+          <summary>지난 관람 {past.length}건 — 다녀온 모임의 설문입니다</summary>
+          {past.map(card)}
+        </details>
+      )}
+
     </div>
   )
 }

@@ -2,7 +2,8 @@
 /**
  * scope-legacy-css.mjs — 옛 CSS 두 장의 **적용 범위만** 라우트별로 가른다.
  *
- *   node scripts/scope-legacy-css.mjs
+ *   node scripts/scope-legacy-css.mjs           다시 만든다
+ *   node scripts/scope-legacy-css.mjs --check   낡았는지만 본다 (안 고친다)
  *
  * ── 왜 필요한가 ────────────────────────────────────────────
  * 옛 사이트는 index.html(styles.css) 과 notice.html(notice.css) **두 장의 별개 페이지**였다.
@@ -24,7 +25,17 @@
  * 클래스로 시작하는 선택자(.exhibition-card 등)는 건드리지 않는다.
  * 옛 화면에서도 그 클래스는 한 페이지에만 나타났으므로 충돌하지 않는다.
  *
- * 원본(app/public/styles.css · notice.css)은 **손대지 않는다.**
+ * ── tokens.css 는 두 벌로 복사한다 ────────────────────────
+ * 색·모서리·그림자는 app/public/tokens.css 한 장에만 적는다. 그 파일의 `:root` 를
+ * **각 스코프로 한 벌씩** 만들어 생성물 맨 앞에 붙인다. 그래서 보드 화면과
+ * 일정·설문 화면이 같은 값을 서로 다른 이름 없이 나눠 쓴다.
+ *
+ * 맨 앞에 붙이는 이유는 뒤에 오는 규칙이 이기게 하기 위해서다 — 변수를 먼저 세우고,
+ * 그것을 쓰는 규칙이 뒤따른다.
+ *
+ * 옛 정적 페이지 두 장은 tokens.css 를 그대로 <link> 한다. 그쪽은 `:root` 그대로다.
+ *
+ * 원본(app/public/styles.css · notice.css · tokens.css)은 **손대지 않는다.**
  * 이 스크립트가 app/src/styles/legacy-*.css 를 다시 만든다. 손으로 고치지 말 것.
  */
 
@@ -33,6 +44,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/** 세 화면이 나눠 쓰는 값. 스코프마다 한 벌씩 복사해 붙인다. */
+const TOKENS = 'app/public/tokens.css';
+
+/**
+ * 서체 파일 경로를 SPA 용으로 고쳐 쓴다.
+ *
+ * tokens.css 의 `url('fonts/…')` 는 **옛 정적 페이지 기준**이다 —
+ * 그 파일이 app/public/ 에 있으니 app/public/fonts/ 를 가리킨다.
+ * 생성물은 app/src/styles/ 에 놓이므로 같은 상대 경로가 엉뚱한 곳을 가리키고,
+ * Vite 가 자산을 못 찾아 빌드가 선다. 그래서 배포 기준의 절대 경로로 바꾼다.
+ * (vite.config.ts 의 base 와 같아야 한다. 거기서 dist/fonts/ 로 실어 준다.)
+ */
+const FONT_BASE = '/exhibition-club-survey/fonts/';
 
 const JOBS = [
   { from: 'app/public/styles.css', to: 'app/src/styles/legacy-board.css', scope: 'body.board-page' },
@@ -99,13 +124,23 @@ function transform(css, scope) {
     }
 
     if (ch === '{') {
-      const sel = head.trim();
+      /**
+       * 주석은 head 에 그대로 흘려 담기므로, 선택자 **바로 앞**에 주석이 있으면
+       * head.trim() 이 「주석 + 선택자」 가 되어 버린다. 그러면 GLOBALISH 에 안 걸려
+       * `:root` 도 `body` 도 범위가 안 입혀진 채 지나간다 — 조용히.
+       * 실제로 tokens.css 의 머리말 주석 때문에 `:root` 가 그대로 새어 나갔다.
+       * 그래서 마지막 주석 뒤부터를 진짜 선택자로 본다.
+       */
+      const lastComment = head.lastIndexOf('*/');
+      const prefix = lastComment < 0 ? '' : head.slice(0, lastComment + 2);
+      const selRaw = lastComment < 0 ? head : head.slice(lastComment + 2);
+      const sel = selRaw.trim();
       if (sel.startsWith('@')) {          // @media · @supports 등 — 그대로 두고 안으로 들어간다
         out += head + '{';
         stack.push('at');
       } else {
         const scoped = splitSelectors(sel).map((s) => scopeOne(s, scope)).join(', ');
-        out += head.replace(sel, scoped) + '{';
+        out += prefix + selRaw.replace(sel, scoped) + '{';
         stack.push('rule');
         // 선언 블록 안은 건드리지 않는다 — 닫는 } 까지 그대로 복사
         let depth = 1, j = i + 1;
@@ -133,13 +168,35 @@ function transform(css, scope) {
   return out + head;
 }
 
+const tokensSrc = fs.readFileSync(path.join(ROOT, TOKENS), 'utf8');
+
+/**
+ * `--check` 는 **고치지 않고 낡았는지만** 본다.
+ *
+ * 이 생성기는 `npm run check` 에도 CI 에도 없었다. 그런데 실제로 배포되는 것은
+ * 원본이 아니라 생성물(app/src/styles/legacy-*.css)이라, 원본만 고치고 생성기를
+ * 안 돌리면 **낡은 CSS 가 그대로 나간다.** 초록불인 채로.
+ * 실제로 그런 상태였다 — notice.css 의 한 규칙이 범위 접두사를 잃은 채
+ * 커밋돼 있었고, 다음 생성 때에야 드러났다.
+ */
+const checkOnly = process.argv.includes('--check');
+
 let changed = 0;
+const stale = [];
 for (const job of JOBS) {
   const src = fs.readFileSync(path.join(ROOT, job.from), 'utf8');
-  const body = transform(src, job.scope);
+  // 값은 tokens.css 한 곳에만 있고, 여기서는 범위만 입혀 앞에 세운다.
+  let tokens = transform(tokensSrc, job.scope);
+  tokens = tokens.replace(/url\((['"])fonts\//g, (_, q) => `url(${q}${FONT_BASE}`);
+  /**
+   * @font-face 는 범위를 타지 않는다. 두 생성물에 다 넣으면 같은 선언이 번들에
+   * 두 벌로 들어간다 — 첫 파일에만 남기고 나머지에서는 걷어 낸다.
+   */
+  if (job !== JOBS[0]) tokens = tokens.replace(/@font-face\s*\{[^}]*\}\s*/g, () => '');
+  const body = tokens + `\r\n\r\n/* ── 여기부터 ${job.from} ── */\r\n\r\n` + transform(src, job.scope);
   const header = `/* 이 파일은 생성된 것이다. 손으로 고치지 말 것.
  *
- *   원본     ${job.from}   (한 글자도 바꾸지 않는다)
+ *   원본     ${TOKENS} + ${job.from}   (한 글자도 바꾸지 않는다)
  *   생성기   scripts/scope-legacy-css.mjs
  *   범위     ${job.scope}
  *
@@ -154,8 +211,23 @@ for (const job of JOBS) {
   const prev = fs.existsSync(path.join(ROOT, job.to))
     ? fs.readFileSync(path.join(ROOT, job.to), 'utf8') : '';
   const next = header + body;
-  if (prev !== next) { fs.writeFileSync(path.join(ROOT, job.to), next); changed++; }
+  // 줄 끝은 환경마다 다르므로 견줄 때만 맞춘다 (내용이 같은지를 묻는 것이다)
+  const same = prev.replace(/\r\n/g, '\n') === next.replace(/\r\n/g, '\n');
+  if (checkOnly) { if (!same) stale.push(job.to); }
+  else if (prev !== next) { fs.writeFileSync(path.join(ROOT, job.to), next); changed++; }
   const scoped = (body.match(new RegExp(job.scope.replace('.', '\\.'), 'g')) ?? []).length;
   console.log(`${job.to}  ← ${job.from}  · 범위 적용 ${scoped}곳`);
+}
+if (checkOnly) {
+  if (stale.length) {
+    console.log(`\n생성물이 낡았다 — ${stale.length}개\n`);
+    stale.forEach((f) => console.log(`  · ${f}`));
+    console.log('\n원본(app/public/*.css · tokens.css)만 고치고 생성기를 안 돌린 것이다.');
+    console.log('배포되는 것은 생성물 쪽이므로 이대로 나가면 화면이 원본과 다르다.');
+    console.log('  npm run css:scope\n');
+    process.exit(1);
+  }
+  console.log('생성물이 원본과 같다 — 낡지 않았다');
+  process.exit(0);
 }
 console.log(changed ? `${changed}개 파일 갱신` : '변경 없음');

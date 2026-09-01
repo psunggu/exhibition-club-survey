@@ -1,24 +1,6 @@
-:root {
-  --bg: #f5f7f8;
-  --panel: #ffffff;
-  --panel-soft: #eef6f1;
-  --ink: #17202a;
-  --muted: #667085;
-  --line: #d8dee5;
-  --line-soft: #e8edf2;
-  --green: #146c43;
-  --green-dark: #0f5132;
-  --blue: #215a9b;
-  --red: #9f2d44;
-  --amber: #b56b00;
-  --amber-soft: #fff4d8;
-  --purple: #7048a8;
-  --purple-soft: #f0e9fb;
-  --orange: #a54f1f;
-  --orange-dark: #7c3513;
-  --orange-soft: #fff0e7;
-  --shadow: 0 18px 48px rgba(31, 41, 55, 0.08);
-}
+/* 값은 tokens.css 한 장에만 있다. 이 파일은 참조만 한다.
+   옛 정적 페이지는 tokens.css 를 <link> 로 먼저 읽고,
+   SPA 는 scripts/scope-legacy-css.mjs 가 범위를 입혀 앞에 붙인다. */
 
 * {
   box-sizing: border-box;
@@ -30,12 +12,14 @@ html {
 
 body {
   margin: 0;
-  background:
-    linear-gradient(180deg, rgba(20, 108, 67, 0.12), rgba(245, 247, 248, 0) 260px),
-    var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
+  /* 한국어는 낱말 가운데서 끊지 않는다 (AGENTS.md). 이 한 줄이 없어서
+     「서울 전체 추/천」 처럼 끊기고 있었다 — 일정 화면은 스물세 곳에 따로
+     적어 지키고 있었고 보드만 빠져 있었다. */
+  word-break: keep-all;
 }
 
 button,
@@ -75,8 +59,8 @@ a {
   width: min(100%, 760px);
   margin: 0 0 10px;
   border: 1px solid var(--line);
-  border-radius: 3px;
-  background: var(--panel);
+  border-radius: 12px;
+  background: var(--card);
   padding: 3px;
 }
 
@@ -86,22 +70,13 @@ a {
   min-width: 0;
   min-height: 48px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 9px;
   background: transparent;
-  color: var(--muted);
+  color: var(--ink-2);
   font-weight: 800;
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-.area-tab[data-area="경기"] {
-  --area-accent: #355ca8;
-  --area-accent-soft: #edf2fb;
-}
-
-.area-tab[data-area="인천"] {
-  --area-accent: #a04a2a;
-  --area-accent-soft: #fff0ea;
-}
 
 .area-tab:hover {
   background: var(--area-accent-soft);
@@ -124,18 +99,18 @@ a {
   width: min(100%, 760px);
   margin: 0 0 24px;
   border: 1px solid var(--line);
-  border-radius: 3px;
-  background: var(--panel);
+  border-radius: 12px;
+  background: var(--card);
   padding: 3px;
 }
 
 .content-type-tab {
-  --tab-accent: #344054;
-  --tab-accent-soft: #eef1f4;
+  --tab-accent: var(--ink-2);
+  --tab-accent-soft: var(--sunken);
   min-width: 0;
   min-height: 58px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 9px;
   background: transparent;
   color: var(--tab-accent);
   display: flex;
@@ -147,20 +122,6 @@ a {
   transition: background-color 160ms ease, color 160ms ease;
 }
 
-.content-type-tab[data-content-type="전시"] {
-  --tab-accent: var(--green);
-  --tab-accent-soft: #e7f4ed;
-}
-
-.content-type-tab[data-content-type="공연"] {
-  --tab-accent: var(--purple);
-  --tab-accent-soft: var(--purple-soft);
-}
-
-.content-type-tab[data-content-type="영화"] {
-  --tab-accent: var(--red);
-  --tab-accent-soft: #faecef;
-}
 
 .content-type-tab:hover {
   background: var(--tab-accent-soft);
@@ -173,7 +134,7 @@ a {
 }
 
 .content-type-tab.is-active {
-  background: var(--tab-accent);
+  background: var(--ink);
   color: #ffffff;
 }
 
@@ -308,7 +269,7 @@ h3 {
 .board-updated,
 .update-schedule {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 800;
 }
@@ -322,7 +283,7 @@ h3 {
   border: 1px solid var(--green);
   border-radius: 8px;
   padding: 10px 15px;
-  background: var(--panel);
+  background: var(--card);
   color: var(--green-dark);
   font-size: 14px;
   font-weight: 800;
@@ -356,7 +317,7 @@ h3 {
 .icon-button {
   min-height: 40px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--r-control);
   padding: 9px 14px;
   font-weight: 800;
   text-decoration: none;
@@ -369,19 +330,19 @@ h3 {
 }
 
 .button.secondary {
-  background: var(--blue);
+  background: var(--ink);
   color: #ffffff;
 }
 
 .button.tertiary,
 .ghost-link {
   border-color: var(--line);
-  background: var(--panel);
+  background: var(--card);
   color: var(--ink);
 }
 
 .button.danger {
-  background: var(--red);
+  background: var(--stop);
   color: #ffffff;
 }
 
@@ -389,7 +350,7 @@ h3 {
   width: 40px;
   padding: 0;
   border-color: var(--line);
-  background: var(--panel);
+  background: var(--card);
   color: var(--ink);
   font-size: 24px;
   line-height: 1;
@@ -406,14 +367,14 @@ h3 {
   min-height: 92px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--card);
   padding: 16px;
   box-shadow: var(--shadow);
 }
 
 .metric span {
   display: block;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 800;
 }
@@ -433,8 +394,8 @@ h3 {
 .guide-panel,
 .event-area {
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
+  border-radius: var(--r-card);
+  background: var(--card);
   box-shadow: var(--shadow);
 }
 
@@ -459,7 +420,7 @@ h3 {
 
 .verification-panel p:last-child {
   margin-bottom: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -479,7 +440,7 @@ h3 {
   gap: 14px;
   align-items: end;
   justify-content: space-between;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--sunken);
   padding-bottom: 10px;
 }
 
@@ -491,7 +452,7 @@ h3 {
 
 .recommendation-group-head p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 800;
 }
@@ -500,7 +461,7 @@ h3 {
   flex: 0 0 auto;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--panel-soft);
+  background: var(--sunken);
   padding: 5px 10px;
   color: var(--green-dark);
   font-size: 12px;
@@ -517,41 +478,15 @@ h3 {
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 14px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: var(--r-card);
+  background: var(--card);
   padding: 16px;
 }
 
-.performance-card {
-  border-left: 5px solid var(--purple);
-}
 
-.performance-card .exhibition-rank {
-  background: var(--purple);
-}
 
-.performance-card .exhibition-venue,
-.performance-card .exhibition-reason {
-  color: #55317f;
-}
-
-.performance-card .exhibition-reason {
-  border-left-color: var(--purple);
-}
-
-.movie-card {
-  border-left: 5px solid var(--orange);
-}
-
-.movie-card .exhibition-rank {
-  background: var(--orange-dark);
-}
-
-.movie-card .exhibition-venue {
-  color: var(--orange-dark);
-}
-
-.movie-status-line {
+.movie-status-line,
+.card-kind-line {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -559,6 +494,9 @@ h3 {
   margin-bottom: 5px;
 }
 
+/* 갈래는 글자가 말한다 — 전시·공연·영화가 같은 중립 칩을 쓴다.
+   옛 페이지(app/public/index.html)가 아직 배지 두 이름을 쓰므로 함께 둔다. */
+.card-kind-chip,
 .movie-status-badge,
 .movie-ranking-badge {
   display: inline-flex;
@@ -566,24 +504,11 @@ h3 {
   min-height: 26px;
   border-radius: 999px;
   padding: 4px 9px;
+  background: var(--sunken);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
   white-space: nowrap;
-}
-
-.movie-status-badge {
-  background: #e9f8ee;
-  color: var(--green-dark);
-}
-
-.movie-status-badge.upcoming {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
-}
-
-.movie-ranking-badge {
-  background: var(--amber-soft);
-  color: #7b4900;
 }
 
 .movie-booking-box {
@@ -595,26 +520,17 @@ h3 {
 }
 
 .movie-booking-box strong {
-  color: var(--orange-dark);
+  color: var(--ink);
   font-size: 22px;
   line-height: 1;
 }
 
 .movie-booking-box span {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
   font-weight: 800;
 }
 
-.movie-card .exhibition-reason {
-  border-left-color: var(--orange);
-  color: var(--orange-dark);
-}
-
-.button.movie-booking-button {
-  background: var(--orange);
-  color: #ffffff;
-}
 
 .exhibition-rank {
   display: grid;
@@ -622,8 +538,8 @@ h3 {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background: var(--green-dark);
-  color: #ffffff;
+  background: var(--sunken);
+  color: var(--ink);
   font-size: 18px;
   font-weight: 900;
 }
@@ -653,7 +569,7 @@ h3 {
 }
 
 .stars {
-  color: #b56b00;
+  color: var(--ink);
   font-size: 14px;
   font-weight: 900;
   white-space: nowrap;
@@ -668,7 +584,7 @@ h3 {
 }
 
 .rating-source {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
   line-height: 1.35;
   font-weight: 700;
@@ -699,12 +615,12 @@ h3 {
 
 .exhibition-details div {
   min-width: 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 8px;
 }
 
 .exhibition-details dt {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
 }
@@ -743,10 +659,10 @@ h3 {
 .recommendation-inline-body {
   width: 100%;
   box-sizing: border-box;
-  margin-top: 10px;
+  margin-top: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: var(--r-card);
+  background: var(--card);
   box-shadow: var(--shadow);
   padding: 16px;
 }
@@ -765,12 +681,12 @@ h3 {
 }
 
 .recommendation-inline-body dl div {
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 8px;
 }
 
 .recommendation-inline-body dt {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 900;
 }
@@ -810,7 +726,7 @@ h3 {
   cursor: pointer;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
+  background: var(--card);
   padding: 13px 16px;
   box-shadow: var(--shadow);
   color: var(--ink);
@@ -823,7 +739,7 @@ h3 {
 
 .share-meta {
   margin: -4px 0 12px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -858,7 +774,7 @@ label {
 }
 
 label span {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   font-weight: 800;
 }
@@ -868,8 +784,8 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: var(--r-control);
+  background: var(--card);
   color: var(--ink);
 }
 
@@ -890,7 +806,8 @@ select:focus,
 textarea:focus,
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(33, 90, 155, 0.25);
+  /* 옛 --blue(#215a9b)가 rgba 안에 남아 있었다. hex 로만 훑어 못 찾았다. */
+  outline: 3px solid rgba(15, 110, 86, 0.25);
   outline-offset: 2px;
 }
 
@@ -932,14 +849,14 @@ a:focus-visible {
 
 .source-block {
   margin-top: 22px;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--sunken);
   padding-top: 18px;
 }
 
 .source-block a {
   display: block;
   margin-top: 8px;
-  color: var(--blue);
+  color: var(--green);
   font-weight: 800;
   text-decoration: none;
 }
@@ -954,7 +871,7 @@ a:focus-visible {
 
 .result-count {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink-2);
   font-weight: 800;
 }
 
@@ -968,7 +885,7 @@ table {
   width: 100%;
   min-width: 1060px;
   border-collapse: collapse;
-  background: #ffffff;
+  background: var(--card);
 }
 
 thead {
@@ -978,7 +895,7 @@ thead {
 
 th,
 td {
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--sunken);
   padding: 11px 12px;
   text-align: left;
   vertical-align: top;
@@ -1009,14 +926,14 @@ tbody tr:hover {
 .title-cell span {
   display: block;
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
 }
 
 .sub-note {
   display: block;
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 12px;
   line-height: 1.35;
 }
@@ -1035,8 +952,8 @@ tbody tr:hover {
 }
 
 .pill.plan {
-  background: #e8f2ff;
-  color: var(--blue);
+  background: var(--sunken);
+  color: var(--ink);
 }
 
 .pill.done {
@@ -1046,12 +963,12 @@ tbody tr:hover {
 
 .pill.hold {
   background: #f2f4f7;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 .pill.cancel {
   background: #fdecec;
-  color: var(--red);
+  color: var(--stop);
 }
 
 .money {
@@ -1068,8 +985,8 @@ tbody tr:hover {
 .row-actions a {
   min-height: 32px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: var(--r-control);
+  background: var(--card);
   padding: 6px 9px;
   color: var(--ink);
   font-size: 12px;
@@ -1084,7 +1001,7 @@ tbody tr:hover {
 .event-card {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--card);
   padding: 14px;
 }
 
@@ -1110,7 +1027,7 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1124,9 +1041,9 @@ tbody tr:hover {
 .empty-state {
   margin: 18px 0 0;
   border: 1px dashed var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 24px;
-  color: var(--muted);
+  color: var(--ink-2);
   text-align: center;
   font-weight: 800;
 }
@@ -1134,13 +1051,13 @@ tbody tr:hover {
 dialog {
   width: min(920px, calc(100% - 24px));
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 0;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 28px 80px rgba(31, 30, 27, 0.28);
 }
 
 dialog::backdrop {
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(31, 30, 27, 0.45);
 }
 
 #eventForm {

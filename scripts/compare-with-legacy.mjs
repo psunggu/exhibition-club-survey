@@ -66,11 +66,6 @@ const BOARD = ['.app-shell', '.topbar', '.topbar h1', '.eyebrow', '.topbar-notic
   '.button.primary', '.official-info-link', '.stars', '.rating-source',
   '.recommendation-group-head', '.recommendation-group-head h3',
   '.movie-card', '.movie-status-badge', '.movie-ranking-badge'];
-/** 일정 화면 */
-const CAL = ['.digest', '.digest-head', '.digest-title', '.digest-period',
-  '.sec', '.card', '.db', '.db .d', '.db .m', '.tag', '.meta', '.card-alert',
-  '.mon', '.cal', '.wd', '.cell', '.dnum', '.chip', '.legend', '.lchip',
-  '.completed-list', '.drow'];
 
 const PROPS = ['color', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight',
   'lineHeight', 'letterSpacing', 'fontFamily', 'minHeight',
@@ -102,11 +97,32 @@ await freezeClock(page);
 // DB 응답도 떠 둔 것으로 고정한다 — 보드가 갱신되면 이 검사가 거짓으로 실패한다
 await serveFrozenData(page);
 
+/**
+ * ── 일정 화면은 이 대조에서 뺐다 (2026-08-30) ──────────────
+ *
+ * 이 검사의 목적은 **이식이 옛 화면에 충실했나**였고, 그건 끝났다.
+ * 남은 문제는 옛 페이지가 **얼어 있다**는 것이다 — notice.html 은 8월 29일
+ * 가우디를 「다가오는 확정」 으로 손으로 박아 두었고 앞으로도 그대로다.
+ * 이식본은 데이터를 읽으므로 모임이 하나 완료될 때마다 첫 카드가 바뀌고,
+ * `.card` · `.tag` · 보이는 글이 옛 화면과 어긋난다.
+ *
+ * 그때마다 예외를 한 줄씩 적으면 목록이 달마다 길어지고, 결국 아무도 안 읽는다.
+ * **모임이 끝나는 것은 고장이 아니라 정상이다.** 그것을 실패로 부르는 검사는
+ * 수명이 다한 것이다.
+ *
+ * 일정 화면의 디자인은 다른 것들이 지킨다 —
+ *   snapshot-screens.mjs      기준과 견줘 의도치 않은 변화를 잡는다 (일정 두 폭 포함)
+ *   validate-accessibility    대비 · 누르는 크기 · 팝업 안까지
+ *   validate-meetup-taxonomy  분류와 범례
+ *   validate-weekly-digest    notice.html 을 아직 읽는다
+ *
+ * 그래서 app/public/notice.html · notice.css 는 **여전히 지우면 안 된다.**
+ * notice.css 는 legacy-notice.css 의 원본이고, notice.html 은 위 검사기가 읽는다.
+ */
+
 const PAIRS = [
   ['보드', `http://localhost:${PORT_OLD}/index.html`,
            `http://localhost:${PORT_NEW}${BASE}/#/`, [...GLOBAL, ...BOARD]],
-  ['일정', `http://localhost:${PORT_OLD}/notice.html`,
-           `http://localhost:${PORT_NEW}${BASE}/#/calendar`, [...GLOBAL, ...CAL]],
 ];
 
 /**
@@ -120,17 +136,26 @@ const PAIRS = [
  * 적을 때는 좁게 적는다. 선택자 하나, 값 하나까지 맞아야 넘어간다.
  */
 const EXPECTED = [
+
   {
-    screen: '일정', sel: '.drow', prop: 'display', old: 'none', now: 'flex',
-    why: '옛 페이지는 완료된 모임을 통째로 접어 두고 「N개 펼쳐보기」 로만 보여 준다. '
-      + '이식본은 사흘 안에 끝난 것만 펼쳐 두고 그 이전 것을 접는다 '
-      + '(app/src/Calendar.tsx 의 recent/older, COMPLETED_VISIBLE_DAYS=3). '
-      + '다녀온 직후에 「다녀왔습니다」 가 바로 보이는 편이 낫다고 보아 그렇게 두었다.',
+    screen: '보드', sel: '.movie-status-badge', kind: '사라짐',
+    why: '갈래를 색으로 나누지 않기로 하며(디자인 통일 2단계) 영화 카드의 배지 둘을 '
+      + '중립 칩(.card-kind-chip) 하나로 합쳤다. **글자는 그대로 남아 있다** — '
+      + '「영화 · 상영 중 · 전국 예매 1위」 처럼 한 칩에 이어 붙는다. '
+      + '옛 페이지는 아직 배지 둘을 따로 그리므로 여기서만 어긋난다.',
   },
+  {
+    screen: '보드', sel: '.movie-ranking-badge', kind: '사라짐',
+    why: '위와 같은 병합이다. 순위는 같은 칩 뒷부분에 붙어 있다.',
+  },
+
 ];
 
+// kind 를 적은 항목은 「사라짐 · 새로생김」 을, 그렇지 않은 항목은 값 하나를 가리킨다.
 const expectedHit = (r) => EXPECTED.find((e) => e.screen === r.screen && e.sel === r.sel
-  && e.prop === r.prop && e.old === String(r.old) && e.now === String(r.now));
+  && (e.kind
+    ? e.kind === r.kind
+    : e.prop === r.prop && e.old === String(r.old) && e.now === String(r.now)));
 
 const report = [];
 for (const [name, oldUrl, newUrl, sels] of PAIRS) {
@@ -157,7 +182,10 @@ if (known.length) {
   console.log(`알고서 다르게 둔 곳 ${known.length}건 — 실패로 세지 않는다`);
   known.forEach((r) => {
     const e = expectedHit(r);
-    console.log(`  · ${r.screen} ${r.sel}.${r.prop}: ${r.old} → ${r.now}`);
+    // 값다름 은 prop 이 있고, 사라짐/새로생김 은 detail 이 있다
+    console.log(r.prop
+      ? `  · ${r.screen} ${r.sel}.${r.prop}: ${r.old} → ${r.now}`
+      : `  · ${r.screen} ${r.sel}: ${r.kind} — ${r.detail}`);
     console.log(`    ${e.why}`);
   });
   console.log('');

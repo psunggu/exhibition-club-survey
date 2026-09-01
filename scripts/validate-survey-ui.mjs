@@ -727,23 +727,33 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1800);
 const onlyPast = await jumpRows();
-ok('모임까지 끝났으면 「없음」 이라고 적는다',
-  onlyPast.some((t) => t.includes('식사') && t.includes('없음')), onlyPast.join(' / '));
+/**
+ * **2026-08-29 부터 「없음」 줄을 안 그린다.**
+ *
+ * 갈래가 다섯이 되자 「없음」 이 넷까지 붙어 카드가 243px → 392px 로 커졌고,
+ * 달력이 그만큼 아래로 밀렸다. 「없음」 은 읽는 사람에게 아무것도 알려 주지 않는다.
+ * 없는 갈래는 감추고 「설문 갈래 모두 보기」 한 줄이 다섯 갈래 전부를 맡는다.
+ *
+ * 그래도 재는 것은 같다 — **모임까지 끝난 설문은 여기 안 뜬다.**
+ * 예전엔 「없음 이라고 적는가」 로 물었고 지금은 「줄이 사라졌는가」 로 묻는다.
+ */
+ok('모임까지 끝났으면 그 갈래 줄이 사라진다',
+  !onlyPast.some((t) => t.includes('식사')), onlyPast.join(' / ') || '(줄 없음)');
 ok('그때 「마감」 이라고는 안 적는다',
   !onlyPast.some((t) => t.includes('식사') && t.includes('마감')), onlyPast.join(' / '));
 
-/** 「없음」 배지는 「진행 중」 과 **같은 모양**이어야 한다 (운영자가 그렇게 정했다). */
-const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => {
-  const c = getComputedStyle(e);
-  return { t: e.textContent.trim(),
-    css: `${c.backgroundColor}|${c.color}|${c.borderRadius}|${c.fontSize}|${c.fontWeight}` };
-}));
-const run = jumpBadges.find((x) => x.t === '진행 중');
-const none = jumpBadges.find((x) => x.t === '없음');
-ok('「없음」 과 「진행 중」 이 같은 배지 모양이다',
-  !!run && !!none && run.css === none.css,
-  run && none ? `${none.css}${run.css === none.css ? '' : ` ≠ ${run.css}`}`
-    : `배지 ${jumpBadges.map((x) => x.t).join(', ') || '없다'}`);
+/** 감춘 갈래로 가는 길은 **늘 있어야 한다** — 줄이 하나도 없을 때도 그렇다. */
+const moreLink = await page.$eval('.survey-jump-more',
+  (e) => ({ text: e.textContent.trim().replace(/\s+/g, ' '), href: e.getAttribute('href') }))
+  .catch(() => null);
+ok('감춘 갈래로 가는 링크가 있다',
+  !!moreLink && moreLink.href === '#/survey' && moreLink.text.includes('모두 보기'),
+  moreLink ? `${moreLink.text} → ${moreLink.href}` : '링크가 없다');
+
+/** 「없음」 배지를 더는 안 그린다. 하나라도 남아 있으면 옛 동작이 살아 있는 것이다. */
+const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => e.textContent.trim()));
+ok('「없음」 배지는 이제 안 나온다',
+  !jumpBadges.includes('없음'), `배지 ${jumpBadges.join(', ') || '없다'}`);
 
 await page.unroute('**/rest/v1/surveys*');
 /**
@@ -755,6 +765,10 @@ await page.unroute('**/rest/v1/surveys*');
  * 설문 화면에서야 「여기서는 고르실 수 없습니다」 를 만난다.
  *
  * 목에는 둘 다 있다 — OPEN_SURVEY(응답 가능)와 MIRROR_SURVEY(톡방·마감 전).
+ *
+ * 찾는 글자는 **탭의 짧은 이름**이다. 2026-08-29 갈래를 다섯으로 늘리며
+ * exhibition 의 짧은 이름이 「전시 관람」 에서 「관람 장소」 로 바뀌었다
+ * (저장되는 값은 그대로 exhibition 이다).
  */
 const jumpBadgeOf = async (short) => page.$$eval('.survey-jump-list li', (es, s) => {
   const li = es.find((e) => e.textContent.includes(s));
@@ -772,8 +786,8 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1500);
 ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
-  await jumpBadgeOf('전시 관람') === '진행 중',
-  `배지 ${await jumpBadgeOf('전시 관람')} (톡방 것이 사흘 뒤 마감이라 마감순이면 그것이 이긴다)`);
+  await jumpBadgeOf('관람 장소') === '진행 중',
+  `배지 ${await jumpBadgeOf('관람 장소')} (톡방 것이 사흘 뒤 마감이라 마감순이면 그것이 이긴다)`);
 await page.unroute('**/rest/v1/surveys*');
 
 // 톡방 투표만 남기면 그때는 「톡방 투표」 라고 밝혀야 한다
@@ -784,8 +798,8 @@ await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'network
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
 await page.waitForTimeout(1500);
 ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
-  await jumpBadgeOf('전시 관람') === '톡방 투표',
-  `배지 ${await jumpBadgeOf('전시 관람')}`);
+  await jumpBadgeOf('관람 장소') === '톡방 투표',
+  `배지 ${await jumpBadgeOf('관람 장소')}`);
 await page.unroute('**/rest/v1/surveys*');
 
 
@@ -916,8 +930,22 @@ ok('막대가 뜨면 「N명 중 M명」 꼴이다',
 
 const briefText = await page.$eval('.brief', (e) => e.innerText.replace(/\s+/g, ' ').trim())
   .catch(() => '');
-ok('요약에 모임 이름과 상태가 있다',
-  briefText.includes('9월 정기모임') && briefText.includes('확정 발표 전'),
+/**
+ * **상태 글자를 여기 박아 두지 않는다.**
+ *
+ * 예전에는 「확정 발표 전」 이라고 적어 뒀다. 그래서 2026-08-28 에 모임이
+ * 확정됐을 때 **고치면 검사가 깨지고, 안 고치면 아무도 모르는** 상태가 됐다.
+ * 실제로 하루 동안 달력·보드는 「확정」 인데 설문 화면만 「확정 발표 전」 이었다.
+ *
+ * 소스에서 읽어 화면과 맞춰 본다. 무엇이라 적혀 있든 **화면과 같기만 하면** 된다.
+ */
+const briefState = (fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8')
+  .match(/^\s*state: '([^']+)'/m) ?? [])[1];
+ok('요약의 상태 글자가 소스와 같다',
+  !!briefState && briefText.includes(briefState),
+  `소스 '${briefState ?? '(못 읽음)'}' / 화면 '${briefText.slice(0, 40)}'`);
+ok('요약에 모임 이름이 있다',
+  briefText.includes('9월 정기모임'),
   briefText.slice(0, 40) || '카드가 없다');
 
 /**
@@ -1205,6 +1233,50 @@ await serveNamed({
 ok('표를 받은 후보에 이름이 빠지면 아무 이름도 안 그린다', (await chipTexts()).length === 0,
   (await chipTexts()).join(', '));
 await unserveNamed();
+
+/* ── 구글 설문 갈래는 회원에게 무엇을 보여 주나 ────────────
+ *
+ * **운영진 전용 분석 가이드가 여기 오면 안 된다.** 그 글에는 참여 빈도별 집단 구분,
+ * 미응답자 수, 자유서술 인용이 들어간다 — AGENTS.md 가 공개 화면에서 금지한 것들이다.
+ * 화면 코드는 암호가 있을 때만 그리게 돼 있지만(GoogleSurveyRounds 의 pw),
+ * **그 조건을 지우는 것은 한 글자다.** 그래서 여기서 잰다.
+ */
+console.log('\n── 구글 설문 (회원)');
+const rpcSeen = [];
+page.on('request', (r) => {
+  const u = r.url();
+  if (u.includes('/rpc/')) rpcSeen.push(u.split('/rpc/')[1].split('?')[0]);
+});
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/google`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+
+const gRounds = await page.$$('.gsurvey');
+ok('회차 카드가 그려진다', gRounds.length >= 1, `${gRounds.length}건`);
+ok('운영진 전용 가이드가 없다', (await page.$$('.admin-guide')).length === 0);
+ok('가이드 창구를 부르지 않는다', !rpcSeen.includes('survey_admin_guide'),
+  rpcSeen.join(', ') || '(RPC 없음)');
+/** 가이드가 새면 이 글자들이 먼저 보인다 — 화면 글 전체에서 찾는다 */
+const gBody = await page.evaluate(() => document.body.innerText);
+ok('집단 구분·미응답자 수가 회원 화면에 없다',
+  !/코어|주변부|미응답/.test(gBody));
+ok('결과 페이지로 가는 길이 있다',
+  (await page.$$('a.gsurvey-link')).length >= 1);
+
+/**
+ * **진짜 자물쇠: 번들 소스에 도메인 문구가 없어야 한다.**
+ * 위 innerText 검사는 *렌더된* 글만 본다 — 렌더러 TSX 에 「코어」 를 하드코딩하면
+ * 화면엔 안 떠도 공개 번들 assets/*.js 에 실려 암호가 무의미해진다. 그건 이 검사만 잡는다.
+ * (분석 본문은 잠긴 표에만 있어야 하고, 렌더러는 일반 라벨만 가져야 한다.)
+ */
+const distDir = path.join(ROOT, 'dist', 'assets');
+const bundleJs = fs.existsSync(distDir)
+  ? fs.readdirSync(distDir).filter((f) => f.endsWith('.js'))
+    .map((f) => fs.readFileSync(path.join(distDir, f), 'utf8')).join('\n')
+  : '';
+ok('번들 소스에 분석 도메인 문구가 없다',
+  bundleJs.length > 0 && !/코어|주변부|말 없는|미응답/.test(bundleJs),
+  bundleJs.length ? '없음' : 'dist 없음');
 
 await browser.close();
 

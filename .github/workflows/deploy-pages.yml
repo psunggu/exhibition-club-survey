@@ -41,6 +41,12 @@ jobs:
       - name: Build (tsc + vite)
         run: npm run build
 
+      # 배포되는 것은 app/public/*.css 가 아니라 그것으로 만든
+      # app/src/styles/legacy-*.css 다. 원본만 고치고 생성기를 안 돌리면
+      # **낡은 CSS 가 초록불인 채로 나간다** — 실제로 그런 적이 있다.
+      - name: 생성된 CSS 가 원본과 같은가
+        run: node scripts/scope-legacy-css.mjs --check
+
       - name: Validate CSP of build output
         run: node scripts/validate-csp-build.mjs
 

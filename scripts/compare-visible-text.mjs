@@ -58,13 +58,44 @@ await freezeClock(page);
 await serveFrozenData(page);
 await page.setViewportSize({ width: 375, height: 900 });
 
+/**
+ * ── 카드 **속**은 빼고 읽는다 (2026-08-30) ─────────────────
+ *
+ * 이 검사가 실제로 잡아 온 것은 전부 **페이지 뼈대**였다 — 목록 머리글,
+ * 검증 기준 패널, 보드로 가는 안내 카드. 카드 속을 잡은 적은 한 번도 없다.
+ *
+ * 그런데 카드 속은 이제 **비교할 수가 없다.** 옛 app.js 는 DB 결과 위에
+ * 하드코딩 배열을 덮어쓰므로(app/src/lib/events.ts 머리말), 옛 보드의 추천 목록은
+ * 2026-08 에 손으로 박힌 채 **얼어 있다.** 이식본은 DB 를 읽는다.
+ * 그래서 운영진이 추천 순위를 하나 바꾸면 — 정상적인 주간 갱신이다 —
+ * 두 화면의 상위 10건 명단이 갈리고, 밀려난 카드의 글이 「빠진 블록」 으로 잡힌다.
+ *
+ * 실제로 그렇게 걸렸다. 「웨인 티보」 를 추천 6위로 넣자 조숙진(10위)이 11위로
+ * 밀려 이식본의 상위 10에서 빠졌고, 옛 화면은 얼어 있어 그대로 보여 주고 있었다.
+ * **보드 자료가 바뀌는 것은 고장이 아니다.** 그것을 실패로 부르는 검사는 수명이 다한 것이다.
+ * (일정 화면을 이 대조에서 뺀 것과 같은 판단이다. compare-with-legacy.mjs 의 같은 대목 참고.)
+ *
+ * 뼈대 비교는 그대로 살아 있고, 이 검사의 값어치도 거기 있었다.
+ * 카드 **골격**은 다른 것들이 지킨다 —
+ *   compare-with-legacy.mjs   .exhibition-card 계열의 계산된 스타일을 옛 화면과 잰다
+ *   snapshot-screens.mjs      카드 수와 상자를 기준과 잰다
+ *   validate-accessibility    카드 안의 대비 · 누르는 크기
+ *
+ * 몇 장을 뺐는지 **화면에 적는다.** 말없이 줄이면 다음 사람이 「전부 봤다」 고 읽는다.
+ */
 const lines = async (url) => {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);
   return page.evaluate(() => {
     // 스크린리더 전용 글은 눈에 안 보이므로 비교 대상이 아니다
     document.querySelectorAll('.visually-hidden').forEach((e) => e.remove());
-    return document.body.innerText.split('\n').map((s) => s.trim()).filter(Boolean);
+    const cards = document.querySelectorAll('.exhibition-card');
+    const dropped = cards.length;
+    cards.forEach((e) => e.remove());
+    return {
+      dropped,
+      lines: document.body.innerText.split('\n').map((s) => s.trim()).filter(Boolean),
+    };
   });
 };
 
@@ -93,27 +124,91 @@ const volatile = (l) => VOLATILE.some((r) => r.test(l));
  */
 const norm = (l) => l.replace(/[\s·~,.()]/g, '');
 
+/**
+ * **알고서 모양을 바꾼 글.**
+ *
+ * 이 검사는 「이식하며 블록이 빠지지 않았나」 를 본다. 그래서 없어진 줄은 전부 실패로 봐야 맞다.
+ * 다만 디자인 통일 2단계에서 **일부러 모양을 바꾼 글**이 있고,
+ * 그걸 실패로 두면 사람이 검사를 통째로 끄게 된다.
+ * 지우는 대신 여기 적어 두고, 통과할 때도 **화면에 그대로 보여 준다** —
+ * 숨기면 그 다음 사람이 이유를 모른 채 되돌린다.
+ * (compare-with-legacy.mjs 의 EXPECTED 와 같은 방식이다.)
+ *
+ * 적을 때는 좁게 적는다. 정규식 하나가 한 가지 글만 잡아야 한다.
+ *
+ * **2026-08-30 이후로 아래 셋은 걸리지 않는다.** 전부 카드 **속**의 글인데,
+ * 위 `lines()` 가 카드를 통째로 빼고 읽기 때문이다(이유는 그쪽 주석에 있다).
+ * 지우지 않고 둔다 — 카드 속을 다시 견주기로 하면 그날 바로 필요해지고,
+ * 그때 이 세 가지가 왜 달라졌는지 다시 알아내게 하고 싶지 않다.
+ */
+const EXPECTED_GONE = [
+  {
+    re: /^★[★☆]{4}$/,
+    why: '별점의 노란 별을 숫자로 바꿨다 — 「4.0 / 5」. 5점 만점의 몇 점이라는 뜻도, '
+      + '스크린리더가 읽는 aria-label 문구도 그대로다. 색으로 말하던 것을 글자가 말하게 한 것이다.',
+  },
+  {
+    // 데이터에 실제로 있는 네 값을 그대로 적는다 (app/src/data/movies.ts) —
+    // 「재개봉」 하나로 뭉뚱그렸더니 「재개봉 예정」·「재개봉 상영 중」 이 안 걸려,
+    // 보드 자료가 그 상태로 바뀌는 주에 이 검사가 거짓으로 실패할 참이었다.
+    re: /^(상영 중|개봉 예정|재개봉 상영 중|재개봉 예정)$/,
+    why: '영화 카드의 배지 둘을 중립 칩 하나로 합쳤다. **글자는 지워지지 않았다** — '
+      + '「영화 · 상영 중 · 전국 예매 1위」 처럼 한 칩 안에 이어 붙는다. '
+      + '이 검사가 못 알아보는 것은 여덟 자 미만인 조각을 포함으로 봐주지 않기 때문이다.',
+  },
+  {
+    re: /^전국 예매 \d+위$/,
+    why: '위와 같은 병합이다. 순위는 같은 칩 뒷부분에 붙어 있다.',
+  },
+
+]
+const expectedGone = (l) => EXPECTED_GONE.find((e) => e.re.test(l));
+
+/**
+ * ── 일정 화면은 이 대조에서 뺐다 (2026-08-30) ──────────────
+ * 옛 notice.html 은 8월 29일 가우디를 「다가오는 확정」 으로 손으로 박아 둔 채 얼어 있다.
+ * 이식본은 데이터를 읽으므로 모임이 완료될 때마다 그 글이 다른 절로 옮겨 가고,
+ * 이 검사는 그것을 「빠진 블록」 이라 부른다. **모임이 끝나는 것은 고장이 아니다.**
+ * 자세한 사정과 대신 지키는 검사들은 compare-with-legacy.mjs 의 같은 대목에 적었다.
+ */
 const PAIRS = [
   ['보드', `http://localhost:8214/index.html`, `http://localhost:8215${BASE}/#/`],
-  ['일정', `http://localhost:8214/notice.html`, `http://localhost:8215${BASE}/#/calendar`],
 ];
 
 let missing = 0;
 let reworded = 0;
 for (const [name, oldUrl, newUrl] of PAIRS) {
-  const a = await lines(oldUrl);
-  const bLines = await lines(newUrl);
+  const oldRead = await lines(oldUrl);
+  const newRead = await lines(newUrl);
+  console.log(`\n── ${name}: 카드 속은 빼고 뼈대만 견준다 `
+    + `— 옛 화면 ${oldRead.dropped}장 · 이식본 ${newRead.dropped}장 제외`);
+  const a = oldRead.lines;
+  const bLines = newRead.lines;
   const b = new Set(bLines);
   const bNorm = bLines.map(norm);
 
   const gone = [];
   const drift = [];
+  const known = [];
   for (const l of a) {
     if (b.has(l) || volatile(l)) continue;
+    const e = expectedGone(l);
+    if (e) { known.push([l, e]); continue; }
     const n = norm(l);
     // 짧은 조각은 우연히 들어맞기 쉬우니 길이가 있는 줄만 포함으로 봐준다
     if (n.length >= 8 && bNorm.some((x) => x.includes(n) || n.includes(x))) drift.push(l);
     else gone.push(l);
+  }
+
+  if (known.length) {
+    console.log(`\n── ${name}: 알고서 모양을 바꾼 줄 ${known.length}개 — 실패로 세지 않는다`);
+    const seen = new Set();
+    for (const [l, e] of known) {
+      console.log(`  · ${l.slice(0, 72)}`);
+      if (seen.has(e.why)) continue;
+      seen.add(e.why);
+      console.log(`    ${e.why}`);
+    }
   }
 
   reworded += drift.length;

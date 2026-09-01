@@ -16,7 +16,11 @@ export type Route =
   | { name: 'board' }
   | { name: 'calendar' }
   | { name: 'survey' }
+  | { name: 'surveyDatetime' }
   | { name: 'surveyMeal' }
+  | { name: 'surveyClub' }
+  | { name: 'surveyGoogle' }
+  | { name: 'surveyEtc' }
   | { name: 'surveyAdmin' }
   | { name: 'notFound'; path: string }
 
@@ -30,8 +34,16 @@ export function parseHash(hash: string): Route {
       return { name: 'calendar' }
     case '/survey':
       return { name: 'survey' }
+    case '/survey/datetime':
+      return { name: 'surveyDatetime' }
     case '/survey/meal':
       return { name: 'surveyMeal' }
+    case '/survey/club':
+      return { name: 'surveyClub' }
+    case '/survey/google':
+      return { name: 'surveyGoogle' }
+    case '/survey/etc':
+      return { name: 'surveyEtc' }
     case '/survey/admin':
       return { name: 'surveyAdmin' }
     default:

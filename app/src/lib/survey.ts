@@ -52,13 +52,82 @@ export type SurveyOption = {
   importedVoters: string[]
 }
 
-export type SurveyCategory = 'exhibition' | 'meal'
+/**
+ * **DB 에 저장되는 갈래.** `surveys_category_check`(202608290001a) 와 같아야 한다.
+ * 이 목록을 늘리려면 제약과 `survey_admin_save` 를 함께 고쳐야 한다.
+ */
+export type SurveyCategory = 'exhibition' | 'datetime' | 'meal' | 'club' | 'etc'
 
-/** 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다. */
+/**
+ * **화면 탭의 갈래.** DB 갈래에 화면에만 있는 `google` 이 하나 더 붙는다.
+ *
+ * 구글 설문은 구글 폼에서 받은 것을 정리해 보여 주는 자리이지 여기서 투표를
+ * 받지 않는다. 그래서 `surveys` 행으로 존재한 적이 없고 DB 도 그 값을 모른다.
+ * **두 이름을 하나로 합치지 않는다** — 합치면 「저장할 수 있는 값」 과
+ * 「탭에 있는 값」 이 같다고 타입이 말하게 되고, 그건 사실이 아니다.
+ */
+export type TabCategory = SurveyCategory | 'google'
+
+/**
+ * 갈래마다 색과 이름이 다르다. 화면 여러 곳에서 쓰므로 한 곳에 둔다.
+ *
+ * **저장되는 값(`exhibition`)은 바꾸지 않는다.** 처음엔 「전시 관람 설문」 하나였고
+ * 실제로는 장소를 고르는 설문이었다. 이름만 「관람 장소」 로 바꾸고 값은 그대로 둔다 —
+ * 값을 바꾸면 이미 쌓인 설문 행을 전부 고쳐야 하고, 하나라도 놓치면
+ * 그 설문이 어느 탭에도 안 뜬다.
+ *
+ * 차례가 곧 탭 차례다. 모임을 정하는 순서(장소 → 날짜 → 식사)를 따르고,
+ * 그 뒤에 운영과 기타가 온다.
+ */
 export const CATEGORY = {
-  exhibition: { label: '전시 관람 설문', short: '전시 관람', route: '#/survey' },
-  meal:       { label: '식사 및 Tea Time 설문', short: '식사·티타임', route: '#/survey/meal' },
+  exhibition: { label: '전시 관람 장소 설문',      short: '관람 장소',  route: '#/survey' },
+  datetime:   { label: '전시 관람 일자·시간 설문', short: '일자·시간',  route: '#/survey/datetime' },
+  meal:       { label: '관람 후 식사 & Tea 설문',  short: '식사·Tea',   route: '#/survey/meal' },
+  club:       { label: '동아리 운영·요청 사항 설문', short: '운영·요청', route: '#/survey/club' },
+  google:     { label: '구글 설문 결과',           short: '구글 설문',  route: '#/survey/google' },
+  etc:        { label: '기타 설문',                short: '기타',       route: '#/survey/etc' },
 } as const
+
+/** 탭에 그릴 차례. `CATEGORY` 의 키 차례와 같게 둔다. */
+export const CATEGORY_ORDER: readonly TabCategory[]
+  = ['exhibition', 'datetime', 'meal', 'club', 'google', 'etc']
+
+/**
+ * **운영자가 설문을 올릴 수 있는 갈래.** 위 목록과 하나가 다르다.
+ *
+ * `google` 은 화면에만 있는 갈래다 — 구글 폼으로 받아 정리한 결과를 보여 주는
+ * 자리이지 여기서 투표를 받지 않는다. DB 의 `surveys_category_check` 도
+ * 그 값을 모른다(202608290001a 의 다섯 가지뿐).
+ *
+ * **두 목록을 하나로 합치지 않는다.** 합치면 운영자 화면에서 고를 수는 있는데
+ * 저장에서 서버가 거절하고, 어느 쪽이 막았는지 모를 오류가 뜬다 —
+ * 202608290001a 머리말이 「두 곳을 함께 고쳐야 한다」 고 적어 둔 그 사고다.
+ * 나중에 이 갈래로도 투표를 받기로 하면 제약과 survey_admin_save 를 함께 늘리고
+ * 그때 이 목록을 지운다.
+ */
+export const POSTABLE_CATEGORY_ORDER: readonly SurveyCategory[]
+  = ['exhibition', 'datetime', 'meal', 'club', 'etc']
+
+/**
+ * DB 가 준 값을 갈래로 읽는다. **비어 있는 것과 모르는 것을 다르게 다룬다.**
+ *
+ * · 비어 있음(null·빈 글자) → `exhibition`.
+ *   열이 `not null default 'exhibition'` 이라 실제 행은 늘 차 있지만,
+ *   열이 생기기 전의 응답이나 갈래를 안 보내는 옛 경로가 여기로 온다.
+ *   그때는 DB 기본값과 같은 자리에 두는 것이 맞다.
+ *
+ * · 모르는 값 → `etc`.
+ *   나중에 갈래를 더 만들었을 때, 옛 번들을 쓰는 사람의 화면에서 그 설문이
+ *   조용히 전시 탭에 섞이지 않게 한다. 「기타」 에 뜨면 적어도 보이기는 한다.
+ *
+ * 처음엔 둘을 묶어 전부 `etc` 로 보냈더니 갈래 없는 붙박이 설문이 전시 탭에서
+ * 통째로 사라졌다 — validate-survey-ui 가 그걸 잡았다.
+ */
+export const toCategory = (v: unknown): SurveyCategory => {
+  const s = typeof v === 'string' ? v.trim() : ''
+  if (s === '') return 'exhibition'
+  return (CATEGORY_ORDER as readonly string[]).includes(s) ? (s as SurveyCategory) : 'etc'
+}
 
 export type Survey = {
   id: string
@@ -80,6 +149,12 @@ export type Survey = {
   /** 설문 전체에 걸리는 참고 문서 (후보 하나에 붙일 수 없는 것) */
   links: SurveyLink[]
   mirrored: boolean
+  /**
+   * 누가 보는 설문인가. 회원 화면으로 온 것은 **항상 `members`** 다 —
+   * RLS 가 그러지 않은 행을 안 준다. 이 값이 `admins` 일 수 있는 것은
+   * 운영자 창구(survey_admin_get)로 불러왔을 때뿐이다.
+   */
+  audience: 'members' | 'admins'
   options: SurveyOption[]
 }
 
@@ -182,13 +257,14 @@ function toSurvey(r: SurveyRow): Survey {
     resultsVisible: rv === 'always' || rv === 'admin' ? rv : 'after_close',
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
-    category: str(r.category) === 'meal' ? 'meal' : 'exhibition',
+    category: toCategory(str(r.category)),
     /**
      * 설문 전체에 걸리는 참고 문서. 후보 하나에 붙일 수 없는 것이 여기 온다.
      * 열이 없던 때의 응답도 읽어야 하므로 없으면 빈 배열이다.
      */
     links: parseLinks(r.links),
     mirrored: r.imported_respondents !== null && r.imported_respondents !== undefined,
+    audience: str(r.audience) === 'admins' ? 'admins' : 'members',
     options: (r.survey_options ?? []).map(toOption).sort((a, b) => a.position - b.position),
   }
 }
@@ -218,8 +294,11 @@ export async function fetchSurveys(signal?: AbortSignal): Promise<Survey[]> {
   return rows.map(toSurvey)
 }
 
-/** RPC 한 번. 실패하면 서버가 준 메시지를 그대로 올린다 — 사람이 읽을 문장이다. */
-async function rpc<T>(name: string, body: unknown, signal?: AbortSignal): Promise<T> {
+/** RPC 한 번. 실패하면 서버가 준 메시지를 그대로 올린다 — 사람이 읽을 문장이다.
+ *
+ *  **내보내는 이유**: 보드 소식(lib/news.ts)도 같은 창구를 쓴다. 베껴 두면 아래
+ *  204 빈 본문 처리가 한쪽에만 남는다 — 그 실수는 이미 한 번 라이브에서 터졌다. */
+export async function rpc<T>(name: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const { url, headers } = base()
   const res = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: 'POST', headers, signal, body: JSON.stringify(body),
@@ -319,6 +398,15 @@ export type AdminSurvey = {
   multiChoice: boolean
   resultsVisible: string
   showNames: string
+  /**
+   * 누가 보는 설문인가 — `members` 는 회원 화면, `admins` 는 **운영자 화면에서만.**
+   *
+   * 이 값으로 화면을 가르지만 **여기가 자물쇠는 아니다.** 번들은 공개라
+   * 화면 코드는 누구나 읽고 고칠 수 있다. 진짜로 막는 것은 DB 쪽 넷이다 —
+   * RLS 가 행을 안 주고, 회원용 함수 넷이 거절하고, 운영자 함수는 암호를 묻는다
+   * (202608300002a).
+   */
+  audience: 'members' | 'admins'
   optionCount: number
   responseCount: number
 }
@@ -361,6 +449,14 @@ export type Draft = {
    * `surveys.category` 의 CHECK 는 그대로 둔다.
    */
   category: SurveyCategory
+  /**
+   * 회원에게 보일 설문인가, 운영진끼리 정할 설문인가.
+   *
+   * **고칠 때 반드시 지금 값을 실어 보낸다.** 안 보내면 서버가
+   * 지금 값을 지키기는 하지만, 화면이 「회원용」 으로 보이면서 실제로는
+   * 운영진용인 어깼난 상태가 된다.
+   */
+  audience: 'members' | 'admins'
   options: DraftOption[]
 }
 
@@ -373,6 +469,9 @@ export const emptyDraft = (): Draft => ({
   resultsVisible: 'after_close', showNames: 'none',
   // 기본값은 서버와 같게 둔다 (survey_admin_save 도 비면 exhibition 이다)
   category: 'exhibition',
+  // 새 설문은 회원용이 기본이다. 운영진용은 일부러 고르게 한다 —
+  // 기본을 반대로 두면 회원에게 보여야 할 설문이 조용히 안 보이는 쪽으로 넘어진다.
+  audience: 'members',
   options: [emptyOption()],
 })
 
@@ -508,6 +607,9 @@ export const adminList = async (pw: string, signal?: AbortSignal): Promise<Admin
     multiChoice: r.multi_choice !== false,
     resultsVisible: str(r.results_visible) ?? '',
     showNames: str(r.show_names) ?? '',
+    // 서버가 안 주는 옛 판이면 회원용으로 본다 — 없는 값을 운영진용으로 읽으면
+    // 회원 설문이 운영자 화면에만 갇힌다. 모르면 덜 감추는 쪽으로 넘어진다.
+    audience: str(r.audience) === 'admins' ? 'admins' : 'members',
     optionCount: Number(r.option_count) || 0,
     responseCount: Number(r.response_count) || 0,
   }))
@@ -526,6 +628,7 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       results_visible: d.resultsVisible,
       show_names: d.showNames,
       category: d.category,
+      audience: d.audience,
       options: d.options.map((o) => ({
         title: o.title, period: o.period, venue: o.venue,
         hours: o.hours, price: o.price, note: o.note,
@@ -534,6 +637,44 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       })),
     },
   }, signal)
+
+/**
+ * 고칠 · 답할 설문 하나를 후보까지 불러온다. **암호로 열며, RLS 를 안 지난다.**
+ *
+ * fetchSurveys 로는 안 된다 — 그쪽은 REST 로 표를 직접 읽어 RLS 를 거치고,
+ * 그 정책은 audience='members' 만 내준다 (202608300002a).
+ * 예전에는 이 함수 없이 fetchSurveys 로 고칠 설문을 찾았고,
+ * 운영진용 설문을 넣자 운영자에게도 「설문을 찾지 못했습니다」 가 됐다.
+ *
+ * 서버가 REST 와 **같은 모양**으로 돌려주므로 변환기를 다시 쓴다.
+ */
+export const adminGetWithCount = async (
+  pw: string, id: string, signal?: AbortSignal,
+): Promise<{ survey: Survey; responseCount: number }> => {
+  const row = await rpc<SurveyRow>('survey_admin_get', { p_password: pw, p_survey: id }, signal)
+  if (!row || typeof row !== 'object') throw new Error('설문을 불러오지 못했습니다.')
+  // 응답 수를 같이 받는다. 회원 창구인 survey_response_count 는
+  // 운영진용 설문에 0 을 주므로 그것을 쓰면 항상 0명이 된다.
+  return { survey: toSurvey(row), responseCount: Number(row.response_count) || 0 }
+}
+
+export const adminGet = async (pw: string, id: string, signal?: AbortSignal): Promise<Survey> =>
+  (await adminGetWithCount(pw, id, signal)).survey
+
+/**
+ * 운영진이 운영진용 설문에 답한다.
+ *
+ * 받는 것은 회원 설문과 똑같다 — 구역번호와 이름으로 명부와 대조한다.
+ * **그러나 저장되는 것은 익명 키뿐이다.** 이름도 구역도 행에 안 남는다
+ * (survey_anon_key · 2026-08-24). 운영진이라고 다르게 둘 이유가 없다.
+ * 같은 사람이 두 번 답하는 것은 그 키의 유니크 제약이 막는다.
+ */
+export const adminSubmit = (
+  pw: string, id: string, zone: string, name: string, optionIds: string[],
+  signal?: AbortSignal,
+) => rpc<null>('survey_admin_submit', {
+  p_password: pw, p_survey: id, p_zone: zone, p_name: name, p_options: optionIds,
+}, signal)
 
 export const adminDelete = (pw: string, id: string, signal?: AbortSignal) =>
   rpc<null>('survey_admin_delete', { p_password: pw, p_survey: id }, signal)
@@ -552,6 +693,25 @@ export const adminNoteSave = (pw: string, id: string, body: string, signal?: Abo
   rpc<null>('survey_admin_note_save',
     { p_password: pw, p_survey: id, p_body: body }, signal)
 
+/**
+ * 운영진만 읽는 긴 글 (202608310001a).
+ *
+ * `adminNote` 와 구조가 같고 **매다는 자리만 다르다** — 저쪽은 설문 id,
+ * 이쪽은 이름표(구글 설문 회차 id). 구글 설문은 surveys 행이 없어서 저쪽에 못 넣는다.
+ *
+ * 본문은 **저장소에 없다.** 운영자가 화면에서 붙여 넣고 잠긴 표에만 산다 —
+ * 번들이 공개라 화면 코드에 두면 암호가 가림막이 된다.
+ */
+export const adminGuide = async (pw: string, key: string, signal?: AbortSignal): Promise<string> => {
+  const v = await rpc<string | null>('survey_admin_guide',
+    { p_password: pw, p_key: key }, signal)
+  return typeof v === 'string' ? v : ''
+}
+
+export const adminGuideSave = (pw: string, key: string, body: string, signal?: AbortSignal) =>
+  rpc<null>('survey_admin_guide_save',
+    { p_password: pw, p_key: key, p_body: body }, signal)
+
 /** 고칠 설문을 편집용 모양으로 바꾼다 */
 export const toDraft = (s: Survey): Draft => ({
   id: s.id,
@@ -566,6 +726,9 @@ export const toDraft = (s: Survey): Draft => ({
   showNames: s.showNames,
   // 고칠 때 지금 갈래를 그대로 들고 온다. 안 그러면 저장할 때마다 전시로 끌려간다.
   category: s.category,
+  // 고칠 때 지금 값을 그대로 들고 온다 — 제목만 고쳐도
+  // 운영진용 설문이 회원에게 튀어나오면 되돌릴 수 없다.
+  audience: s.audience,
   options: s.options.map((o) => ({
     title: o.title, period: o.period ?? '', venue: o.venue ?? '',
     hours: o.hours ?? '', price: o.price ?? '', note: o.note ?? '',

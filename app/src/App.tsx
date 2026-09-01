@@ -6,8 +6,8 @@ import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { MONTHS } from './data/meetups'
 import {
-  CATEGORY, fetchResponseCount, fetchSurveys, isOpen,
-  type Survey as SurveyT, type SurveyCategory,
+  CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen,
+  type Survey as SurveyT, type SurveyCategory, type TabCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
 
@@ -87,7 +87,7 @@ function SurveyJump() {
    * 그러면 카드 높이가 상태에 따라 달라져 화면 대조 검사가 흔들렸다.
    * 자세한 마감 시각은 설문 화면에 그대로 적혀 있다.
    */
-  const stateOf = (c: SurveyCategory): { badge: string | null; text: string; on: boolean } | null => {
+  const stateOf = (c: TabCategory): { badge: string | null; text: string; on: boolean } | null => {
     if (!rows || failed) return null      // 아직 못 불러왔거나 못 읽었다 — 아무 말도 안 한다
     const r = rows.find((x) => x.category === c)
     // 이 갈래에 지금 참여할 것이 없다. 「마감」 과 다르다 — 마감은 있었는데 닫힌 것이다.
@@ -105,6 +105,19 @@ function SurveyJump() {
     return { badge, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
   }
 
+  /**
+   * 줄로 세울 갈래 — **지금 무언가 있는 것만.**
+   *
+   * 갈래가 다섯이 되자 「없음」 줄이 넷까지 생겼고, 그만큼 달력이 아래로 밀렸다
+   * (카드가 243px → 392px). 「없음」 은 읽는 사람에게 아무것도 알려 주지 않는다.
+   * 없는 갈래는 감추고, 대신 아래 링크로 다섯 갈래 전부에 닿게 한다.
+   *
+   * 아직 못 불러왔거나 못 읽었을 때도 비어 있다. 그편이 낫다 —
+   * 이름 다섯을 먼저 그렸다가 하나로 줄어들면 카드가 눈앞에서 접힌다.
+   * 비었다가 늘어나는 쪽이 덜 튄다.
+   */
+  const active = rows ? CATEGORY_ORDER.filter((c) => rows.some((r) => r.category === c)) : []
+
   return (
     <section className="survey-jump" aria-labelledby="surveyJumpTitle">
       <p className="board-jump-kicker">모임 정하기</p>
@@ -112,10 +125,10 @@ function SurveyJump() {
       {/* 안내문은 **상태에 따라 바뀌지 않는다.** 바꿨더니 줄 수가 달라져
           카드 높이가 흔들렸고, 화면 대조 검사가 그걸 디자인 변화로 읽었다.
           지금 무엇이 열려 있는지는 아래 줄들이 말한다. */}
-      <p>함께 볼 전시와 모임 뒤 식사를 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
+      <p>관람할 곳과 날짜, 모임 뒤 식사까지 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
 
       <ul className="survey-jump-list">
-        {(['exhibition', 'meal'] as const).map((c) => {
+        {active.map((c) => {
           const st = stateOf(c)
           return (
             <li key={c}>
@@ -135,6 +148,17 @@ function SurveyJump() {
           )
         })}
       </ul>
+
+      {/* 불러왔는데 하나도 없을 때만 적는다. 못 불러온 것과 「없다」 는 다르므로
+          아직 읽는 중이거나 실패했을 때는 아무 말도 하지 않는다. */}
+      {rows && !failed && active.length === 0 && (
+        <p className="survey-jump-empty">지금 참여할 수 있는 설문이 없습니다.</p>
+      )}
+
+      {/* 감춘 갈래로 가는 길. **늘 보인다** — 줄이 하나도 없을 때도 여기로 들어간다. */}
+      <a className="survey-jump-more" href="#/survey">
+        설문 갈래 모두 보기 <span aria-hidden="true">→</span>
+      </a>
     </section>
   )
 }
@@ -149,8 +173,10 @@ function SurveyJump() {
 export function App() {
   const route = useRoute()
   const onCalendar = route.name === 'calendar'
-  const onSurvey = route.name === 'survey' || route.name === 'surveyMeal'
-    || route.name === 'surveyAdmin'
+  const onSurvey = route.name === 'survey' || route.name === 'surveyDatetime'
+    || route.name === 'surveyMeal' || route.name === 'surveyClub'
+    || route.name === 'surveyGoogle'
+    || route.name === 'surveyEtc' || route.name === 'surveyAdmin'
 
   /**
    * 옛 CSS 두 장이 각자 `body` · `h1` · `:root` 를 정의한다.
@@ -167,20 +193,27 @@ export function App() {
 
   if (onSurvey) {
     const admin = route.name === 'surveyAdmin'
-    const category: SurveyCategory = route.name === 'surveyMeal' ? 'meal' : 'exhibition'
+    /** 라우트 이름 → 갈래. 어느 쪽도 아니면 첫 갈래(관람 장소)로 본다. */
+    const BY_ROUTE: Partial<Record<typeof route.name, TabCategory>> = {
+      surveyDatetime: 'datetime', surveyMeal: 'meal',
+      surveyClub: 'club', surveyGoogle: 'google', surveyEtc: 'etc',
+    }
+    const category: TabCategory = BY_ROUTE[route.name] ?? 'exhibition'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
         <h1>{admin ? '설문 관리' : CATEGORY[category].label}</h1>
 
-        {/* 갈래를 오갈 수 있게 둘 다 보인다. 지금 보는 쪽이 진하다. */}
+        {/* 갈래 다섯을 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
+            탭에는 **짧은 이름**을 쓴다 — 긴 이름 다섯은 375px 에 안 들어간다.
+            전체 이름은 바로 위 제목이 맡는다. */}
         {!admin && (
           <nav className="survey-tabs" aria-label="설문 갈래">
-            {(['exhibition', 'meal'] as const).map((c) => (
+            {CATEGORY_ORDER.map((c) => (
               <a key={c} href={CATEGORY[c].route}
                 className={`survey-tab ${c}${c === category ? ' on' : ''}`}
                 aria-current={c === category ? 'page' : undefined}>
-                {CATEGORY[c].label}
+                {CATEGORY[c].short}
               </a>
             ))}
           </nav>
