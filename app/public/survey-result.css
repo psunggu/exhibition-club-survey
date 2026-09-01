@@ -242,18 +242,19 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-/* 인라인 style 을 쓸 수 없으므로 너비를 클래스로 둔다 */
-.b18 { width: 18%; }
-.b24 { width: 24%; }
-.b29 { width: 29%; }
-.b35 { width: 35%; }
-.b41 { width: 41%; }
-.b47 { width: 47%; }
-.b59 { width: 59%; }
-.b65 { width: 65%; }
-.b71 { width: 71%; }
-.b76 { width: 76%; }
-.b82 { width: 82%; }
+/* 인라인 style 을 쓸 수 없으므로 너비를 클래스로 둔다 (CSP style-src) */
+.b17 { width: 17%; }
+.b22 { width: 22%; }
+.b28 { width: 28%; }
+.b33 { width: 33%; }
+.b44 { width: 44%; }
+.b50 { width: 50%; }
+.b56 { width: 56%; }
+.b61 { width: 61%; }
+.b67 { width: 67%; }
+.b72 { width: 72%; }
+.b78 { width: 78%; }
+.b83 { width: 83%; }
 
 /* ── 목록 ── */
 .listen {
