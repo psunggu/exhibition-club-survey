@@ -45,12 +45,63 @@ export function isPastSurvey(
   today: string = seoulToday(),
   meetups: Meetup[] = MEETUPS,
 ): boolean {
-  if (isOpen(s)) return false
-  const m = meetupOfSurvey(s.id, meetups)
+  return pastCore(s.id, !isOpen(s), today, meetups)
+}
+
+/**
+ * 판정의 알맹이. **회원 화면과 운영자 화면이 이것 하나를 나눠 쓴다.**
+ *
+ * 운영자 화면은 목록을 `survey_admin_list` 로 받는데, 그 답에는 `opens_at` 이 없어
+ * `isOpen` 을 부를 수 없다. 그렇다고 운영자 화면에 「마감이면 지난 것」 같은
+ * **두 번째 규칙**을 두면, 언젠가 두 화면이 같은 설문을 두고 다르게 말한다.
+ * 이 저장소가 이미 겪은 실패다 — 달력과 설문 화면이 하루 동안 어긋났다.
+ * 그래서 「닫혔나」 만 밖에서 받고 나머지 판단은 여기 한 곳에 둔다.
+ */
+function pastCore(
+  id: string,
+  closed: boolean,
+  today: string,
+  meetups: Meetup[],
+): boolean {
+  if (!closed) return false
+  const m = meetupOfSurvey(id, meetups)
   if (!m) return false
   // 'dead' 는 모임이 아니라 예매 마감일 같은 줄이다. 그 날짜는 영영 「다녀온 날」이 아니다.
   if (m.kind === 'dead') return false
   return m.date < today
+}
+
+/**
+ * 운영자 목록의 한 줄이 「지난 관람」 인가.
+ *
+ * 받는 것이 `Survey` 가 아니라 **id 와 마감뿐**이라 따로 둔다.
+ * 판단은 위 pastCore 가 하므로 회원 화면과 답이 갈리지 않는다.
+ */
+export function isPastAdminSurvey(
+  s: { id: string; closesAt: string },
+  today: string = seoulToday(),
+  meetups: Meetup[] = MEETUPS,
+  now: Date = new Date(),
+): boolean {
+  const c = Date.parse(s.closesAt)
+  // 마감을 못 읽으면 **지난 것으로 보지 않는다.** 접어 버리면 운영자가
+  // 고치러 들어올 자리가 사라진다 — 모르면 남기는 쪽으로 넘어진다.
+  if (Number.isNaN(c)) return false
+  return pastCore(s.id, now.getTime() > c, today, meetups)
+}
+
+/** 운영자 목록을 「지금 것」과 「지난 관람」으로 가른다. 순서는 그대로 둔다. */
+export function splitAdminByHistory<T extends { id: string; closesAt: string }>(
+  list: T[],
+  today: string = seoulToday(),
+  meetups: Meetup[] = MEETUPS,
+  now: Date = new Date(),
+): { live: T[]; past: T[] } {
+  const live: T[] = []
+  const past: T[] = []
+  for (const s of list) (isPastAdminSurvey(s, today, meetups, now) ? past : live).push(s)
+  past.sort((a, b) => (a.closesAt < b.closesAt ? 1 : a.closesAt > b.closesAt ? -1 : 0))
+  return { live, past }
 }
 
 /** 설문 목록을 「지금 볼 것」과 「지난 것」으로 가른다. 순서는 그대로 둔다. */

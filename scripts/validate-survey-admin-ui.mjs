@@ -127,6 +127,19 @@ let surveys = [{
   closes_at: new Date(Date.now() + 86400e3).toISOString(),
   created_by: '김하늘', multi_choice: true, results_visible: 'admin', show_names: 'none',
   audience: 'admins', option_count: 3, response_count: 0,
+}, {
+  /**
+   * **다녀온 모임의 설문 한 건.** 「지난 관람」 으로 접혀야 한다.
+   *
+   * id 를 지어내면 안 된다 — 접는 판정이 meetups.ts 의 surveyIds 를 보고
+   * 「이 설문을 위해 열린 모임이 있었나 · 그 날이 지났나」 를 따지기 때문이다.
+   * 그래서 **진짜로 이어져 있는 id** 를 쓴다 (history-museum · 2026-08-22).
+   * 아무 id 나 쓰면 접히지 않고, 그러면 접는 자리를 통째로 지워도 검사가 통과한다.
+   */
+  id: '5e97b1a0-0000-4000-8000-000000000902', title: '서울역사박물관 저녁식사 장소 추천',
+  closes_at: '2026-08-20T16:00:00+00:00',
+  created_by: '김하늘', multi_choice: true, results_visible: 'always', show_names: 'none',
+  audience: 'members', option_count: 13, response_count: 13,
 }];
 
 const browser = await chromium.launch();
@@ -328,10 +341,43 @@ ok('틀린 암호로는 목록이 안 보인다', (await page.$$('.admin-card'))
 await page.fill('.admin-input', PW);
 await page.click('.survey-who .survey-submit');
 await page.waitForTimeout(800);
-// 씨앗은 둘이다 — 회원용(srv-1) 과 운영진용(srv-2). 운영자에게는 둘 다 보여야 한다.
-ok('맞는 암호로 들어간다', (await page.$$('.admin-card')).length === 2);
+// 씨앗은 셋 — 회원용(srv-1) · 운영진용(srv-2) · 다녀온 것(902).
+// 마지막 하나는 「지난 관람」 으로 접히므로 **바깥에 보이는 것은 둘**이다.
+ok('맞는 암호로 들어간다',
+  (await page.$$('.admin-card:not(details .admin-card)')).length === 2);
 ok('응답 수가 보인다',
   (await page.$eval('.admin-card', (e) => e.textContent)).includes('3건'));
+
+// **이 묶음은 지우기·고치기보다 앞에 둔다.** 뒤에 두었더니 그때는 씨앗이
+// 이미 지워진 뒤라 접히는 자리가 아예 안 그려졌고, 그걸 「없다」 고 읽었다.
+/* ── 지난 관람 ──────────────────────────────────────────── */
+/**
+ * 다녀온 모임의 설문은 지워지지 않는다(결과가 기록이다). 그래서 쌓인다.
+ * 접어 두지 않으면 **지금 돌려야 할 설문이 끝난 것들에 밀린다.**
+ * 판정은 회원 화면과 같은 규칙을 쓰며, 그 규칙 자체는
+ * validate-survey-history 가 따로 잰다. 여기서는 **화면에 실제로 접히는가**만 본다.
+ */
+{
+  // **.admin-members 만으로는 안 된다** — 회원 명부가 같은 class 를 쓴다.
+  // 처음에 그렇게 잡았다가 명부의 여는 줄을 「지난 관람」 이라고 읽었다.
+  const fold = await page.$('details.admin-past summary');
+  const foldText = fold ? (await fold.textContent()).trim() : '';
+  ok('「지난 관람」 이 접혀 있다', /지난 관람 \d+건/.test(foldText), foldText || '(없음)');
+
+  // 접힌 것 안쪽까지 세면 「위 목록에 없다」 를 잴 수 없다. 바깥만 센다.
+  const topTitles = await page.$$eval('.admin-card:not(details .admin-card) .admin-card-title',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('다녀온 설문이 위 목록에 없다',
+    !topTitles.some((t) => t.includes('서울역사박물관')), topTitles.join(' · '));
+
+  if (fold) { await fold.click(); await page.waitForTimeout(400); }
+  const inFold = await page.$$eval('details.admin-past .admin-card .admin-card-title',
+    (es) => es.map((e) => e.textContent.trim()));
+  ok('펴면 그 안에 있다', inFold.some((t) => t.includes('서울역사박물관')),
+    inFold.join(' · ') || '(비어 있음)');
+  ok('접힌 카드에도 단추가 그대로 있다',
+    (await page.$$('details.admin-past .admin-card .admin-mini')).length >= 3);
+}
 
 /* ── 1-2. 결과 보기 ────────────────────────────────────── */
 
@@ -581,8 +627,9 @@ ok('기한을 날수로 보낸다', typeof saved?.days === 'number' && saved.day
  */
 ok('갈래를 함께 보낸다', saved?.category === 'exhibition', String(saved?.category));
 
-// 씨앗 둘 + 방금 올린 하나
-ok('목록으로 돌아왔다', (await page.$$('.admin-card')).length === 3);
+// 바깥에 보이는 씨앗 둘 + 방금 올린 하나 (다녀온 것은 접혀 있다)
+ok('목록으로 돌아왔다',
+  (await page.$$('.admin-card:not(details .admin-card)')).length === 3);
 
 /* ── 보드에서 골라 후보로 넣기 ───────────────────────────── */
 /**

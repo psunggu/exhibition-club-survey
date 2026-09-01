@@ -395,13 +395,20 @@ export const EXTRA_COMPLETED: { date: string; text: string }[] = []
 /** 완료된 모임은 며칠까지 목록 맨 위에 남기나 (notice.js 의 COMPLETED_VISIBLE_DAYS) */
 export const COMPLETED_VISIBLE_DAYS = 3
 
-/** 펼쳐 보이는 달 */
+/**
+ * 펼쳐 보이는 달 — 이번 달과 다음 달.
+ *
+ * 화면 제목(`App.tsx` 의 `monthsLabel()`)이 이 목록에서 나온다. 달이 바뀌면
+ * 여기만 밀면 제목·달력·달별 목록이 함께 따라온다.
+ * 민 달은 버리지 말고 PAST_MONTHS 로 옮긴다 — 완료 일정 달력이 그 목록을 읽는다.
+ */
 export const MONTHS: { year: number; month: number }[] = [
-  { year: 2026, month: 8 },
   { year: 2026, month: 9 },
+  { year: 2026, month: 10 },
 ]
 
 /** 지난 달 — 옛 화면에서 '완료 일정 달력' 안에 접혀 있던 것 */
 export const PAST_MONTHS: { year: number; month: number }[] = [
   { year: 2026, month: 7 },
+  { year: 2026, month: 8 },
 ]

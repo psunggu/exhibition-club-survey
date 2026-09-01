@@ -49,14 +49,23 @@ export const GOOGLE_SURVEYS: GoogleSurveyRound[] = [
     round: 1,
     title: '동아리 운영 설문',
     period: '2026년 8월 23일 ~ 26일',
-    answered: 17,
-    asOf: '2026. 8. 26. 기준',
+    /**
+     * **두 번 늘었다.** 처음 집계한 8월 26일에는 17건이었는데, 운영규정 동의 공지
+     * (마감 8월 31일) 뒤에 8월 31일·9월 1일 한 건씩 더 들어와 19건이 됐다.
+     * 그중 한 사람이 두 번 낸 것을 빼서 **유효 18명**이다.
+     *
+     * 여기 숫자는 운영자 화면의 회차 카드에 그대로 뜬다. 분석 가이드는 18명으로
+     * 세는데 이 카드가 17명이라고 말하면 **같은 화면 안에서 두 값이 어긋난다.**
+     * 아래 백분율도 그때 다시 센 값이다 — 함께 고치지 않으면 카드만 옛말을 한다.
+     */
+    answered: 18,
+    asOf: '2026. 9. 1. 기준 · 중복 1건 제외',
     resultUrl: './survey-result.html',
     highlights: [
-      { question: '언제가 좋은가', answer: '토요일 오후', percent: 82 },
-      { question: '어디가 편한가', answer: '서울 도심 · 종로 · 중구', percent: 82 },
-      { question: '무엇에 관심이 있는가', answer: '미술 전시 · 갤러리', percent: 71 },
-      { question: '고를 때 무엇이 중요한가', answer: '작품 · 전시의 내용과 완성도', percent: 76 },
+      { question: '언제가 좋은가', answer: '토요일 오후', percent: 83 },
+      { question: '어디가 편한가', answer: '서울 도심 · 종로 · 중구', percent: 78 },
+      { question: '무엇에 관심이 있는가', answer: '미술 전시 · 갤러리', percent: 72 },
+      { question: '고를 때 무엇이 중요한가', answer: '작품 · 전시의 내용과 완성도', percent: 72 },
     ],
     outcome: '토요일 오후를 기본 시간대로 고정하고, 도심에서 용산으로 이어지는 축으로 잡았습니다.',
   },
