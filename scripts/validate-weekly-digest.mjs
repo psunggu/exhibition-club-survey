@@ -184,16 +184,26 @@ const tentativeSection = tentativeStart >= 0
   ? noticeHtml.slice(tentativeStart, calendarStart)
   : "";
 // 일정의 확정·완료 상태가 본문과 달력에서 엇갈리는 회귀를 배포 전에 차단한다.
-const confirmedEvents = [
-  // history-museum(8/22)은 2026-08-23 에 완료로 옮겼다. 이제 「다가오는 확정 모임」 이 아니라
-  // 달력의 회색 「관람 완료」 칩과 「완료된 모임」 목록에 있다.
-  // 완료된 모임을 확정으로 요구하면 이 검사가 화면과 반대되는 것을 지키게 된다.
-  {
-    id: "gaudi-visit",
-    titleToken: "8월 29일",
-    digestTokens: ["8월 29일", "확정"]
-  }
-];
+//
+// ── 지금은 비어 있다 (2026-09-02) ────────────────────────────────
+// 이 목록은 **얼려 둔 옛 notice.html** 을 기준으로 정리봇 요약을 견준다.
+// 그래서 모임이 하나 끝날 때마다 한 줄씩 빠져 왔다.
+//
+//   history-museum(8/22)  2026-08-23 완료로 옮기며 제거
+//   gaudi-visit(8/29)     2026-09-02 제거 — 아래
+//
+// gaudi-visit 은 meetups.ts:282 에서 이미 `status: '완료'` 다. 달력에도 회색
+// 「관람 완료」 칩으로 있고 완료 목록에도 있다. 그런데 이 검사는 정리봇 요약이
+// 그 모임을 「확정」 이라고 말하기를 요구했다 — **화면과 반대되는 것을 지키는
+// 상태**다. 요약 구간이 8/29 를 지나가는 순간 정상적인 갱신이 실패로 잡힌다.
+//
+// completedEvents 로 옮기지도 못한다. 그쪽은 옛 notice.html 에서 완료 표시를
+// 찾는데, 그 파일은 gaudi-visit 을 확정으로 박아 둔 채 얼어 있다.
+//
+// **목록이 비었다고 지우지 마라.** 아래 for 문과 함께 두면 다음에 확정 일정을
+// 옛 화면에 새로 박을 때 한 줄만 더하면 된다. 지금 살아 있는 정합성 검사는
+// completedEvents 와 그 아래 《오디세이》 검사다.
+const confirmedEvents = [];
 
 for (const expected of confirmedEvents) {
   const eventMarker = `data-event-id="${expected.id}"`;
