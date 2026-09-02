@@ -1672,7 +1672,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 4359
+    "h": 4374
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2315,7 +2315,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1984,
+   "textLength": 1986,
    "cardCount": 0,
    "chipCount": 13
   }
@@ -2968,7 +2968,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1984,
+   "textLength": 1986,
    "cardCount": 0,
    "chipCount": 13
   }
