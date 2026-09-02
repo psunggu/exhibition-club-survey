@@ -62,7 +62,23 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((r) => server.listen(PORT, r));
 
-/** 화면마다 이 선택자들의 계산된 스타일과 상자를 잰다. */
+/**
+ * 화면마다 이 선택자들의 계산된 스타일과 상자를 잰다.
+ *
+ * ── 왜 `.card-regular` · `.tag-regular` 가 따로 있나 ──────────
+ * 아래 `measure` 는 선택자마다 **첫 요소만**(`els[0]`) 잰다. 개수는 다 세지만
+ * 색·상자는 맨 앞 하나 것이다. 그래서 `.card` 하나만 감시하면 **어느 카드가
+ * 첫 번째인지에 따라 재는 대상이 바뀐다.**
+ *
+ * 2026-09-02 에 실제로 그랬다 — 카르멘(9/12)이 들어오면서 첫 카드가 정기관람
+ * (서도호)에서 수시로 밀렸고, 기준의 `.card` 가 초록 세로선에서 `none` 으로,
+ * `.tag` 가 초록 채움에서 연초록으로 바뀌었다. 디자인은 한 줄도 안 건드렸는데
+ * 기준이 통째로 달라 보였고, 그 뒤로 **정기관람 카드의 초록 표시를 재는 자리가
+ * 하나도 남지 않았다.** 그게 깨져도 이 검사는 초록불이 된다.
+ *
+ * 정기 전용 클래스를 따로 적으면 순서가 어떻게 바뀌든 그 스타일을 계속 잰다.
+ * 같은 성질의 자리가 또 생기면(예: `.chip.regular`) 같은 이유로 여기에 더한다.
+ */
 const WATCH = [
   'body', '.app-shell', '.topbar', '.topbar h1', '.eyebrow', '.topbar-notice-link',
   '.area-tabs', '.area-tab', '.area-tab.is-active',
@@ -73,8 +89,8 @@ const WATCH = [
   '.exhibition-reason', '.button.primary', '.official-info-link',
   '.stars', '.rating-source',
   '.digest', '.digest-head', '.digest-title', '.digest-decisions', '.digest-open-questions',
-  '.sec', '.card', '.db', '.db .d',
-  '.tag', '.meta', '.card-alert',
+  '.sec', '.card', '.card-regular', '.db', '.db .d',
+  '.tag', '.tag-regular', '.meta', '.card-alert',
   '.cal', '.wd', '.cell', '.dnum', '.chip',
   '.survey-jump', '.survey-jump-list li',
 ];
