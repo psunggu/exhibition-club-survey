@@ -62,6 +62,7 @@ const admin = [
   read('202608240001a_anonymous.sql'),
   read('202608270001a_imported_voters.sql'),
   read('202608280002a_my_choices_gate.sql'),
+  read('202608280003a_admin_gate_hardening.sql'),
   read('202608290001a_survey_categories_five.sql'),
   read('202608300002a_admin_audience_surveys.sql'),
   read('202608300004a_news_admin_functions.sql'),
