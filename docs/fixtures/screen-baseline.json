@@ -815,9 +815,11 @@
   ".digest-open-questions": null,
   ".sec": null,
   ".card": null,
+  ".card-regular": null,
   ".db": null,
   ".db .d": null,
   ".tag": null,
+  ".tag-regular": null,
   ".meta": null,
   ".card-alert": null,
   ".cal": null,
@@ -1648,9 +1650,11 @@
   ".digest-open-questions": null,
   ".sec": null,
   ".card": null,
+  ".card-regular": null,
   ".db": null,
   ".db .d": null,
   ".tag": null,
+  ".tag-regular": null,
   ".meta": null,
   ".card-alert": null,
   ".cal": null,
@@ -1672,7 +1676,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 3815
+    "h": 4372
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1821,7 +1825,7 @@
    "count": 1,
    "box": {
     "w": 309,
-    "h": 289
+    "h": 401
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -1852,7 +1856,7 @@
    "count": 1,
    "box": {
     "w": 309,
-    "h": 215
+    "h": 262
    },
    "style": {
     "color": "rgb(88, 73, 31)",
@@ -1911,6 +1915,37 @@
    }
   },
   ".card": {
+   "count": 3,
+   "box": {
+    "w": 343,
+    "h": 360
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(232, 229, 222)",
+    "borderTopWidth": "1px",
+    "borderRadius": "14px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "16px",
+    "paddingRight": "16px",
+    "paddingBottom": "16px",
+    "paddingLeft": "16px",
+    "marginTop": "0px",
+    "marginBottom": "10px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "14px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
+  ".card-regular": {
    "count": 1,
    "box": {
     "w": 343,
@@ -1942,7 +1977,7 @@
    }
   },
   ".db": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 68,
     "h": 82
@@ -1973,7 +2008,7 @@
    }
   },
   ".db .d": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 60,
     "h": 29
@@ -2004,6 +2039,37 @@
    }
   },
   ".tag": {
+   "count": 3,
+   "box": {
+    "w": 41,
+    "h": 24
+   },
+   "style": {
+    "color": "rgb(10, 91, 69)",
+    "backgroundColor": "rgb(225, 245, 238)",
+    "borderTopColor": "rgb(10, 91, 69)",
+    "borderTopWidth": "0px",
+    "borderRadius": "999px",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "18px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "3px",
+    "paddingRight": "10px",
+    "paddingBottom": "3px",
+    "paddingLeft": "10px",
+    "marginTop": "0px",
+    "marginBottom": "6px",
+    "display": "inline-block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
+  ".tag-regular": {
    "count": 1,
    "box": {
     "w": 85,
@@ -2035,10 +2101,10 @@
    }
   },
   ".meta": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 227,
-    "h": 245
+    "h": 123
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2066,10 +2132,10 @@
    }
   },
   ".card-alert": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 227,
-    "h": 183
+    "h": 109
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2097,10 +2163,10 @@
    }
   },
   ".cal": {
-   "count": 3,
+   "count": 4,
    "box": {
     "w": 343,
-    "h": 420
+    "h": 353
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2128,7 +2194,7 @@
    }
   },
   ".wd": {
-   "count": 21,
+   "count": 28,
    "box": {
     "w": 48,
     "h": 34
@@ -2159,10 +2225,10 @@
    }
   },
   ".cell": {
-   "count": 112,
+   "count": 147,
    "box": {
     "w": 48,
-    "h": 48
+    "h": 72
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2190,15 +2256,15 @@
    }
   },
   ".dnum": {
-   "count": 92,
+   "count": 123,
    "box": {
     "w": 6,
     "h": 15
    },
    "style": {
-    "color": "rgb(61, 111, 180)",
+    "color": "rgb(107, 105, 96)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(61, 111, 180)",
+    "borderTopColor": "rgb(107, 105, 96)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
@@ -2221,7 +2287,7 @@
    }
   },
   ".chip": {
-   "count": 11,
+   "count": 14,
    "box": {
     "w": 40,
     "h": 36
@@ -2315,9 +2381,9 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1552,
+   "textLength": 2001,
    "cardCount": 0,
-   "chipCount": 11
+   "chipCount": 14
   }
  },
  "일정-1280": {
@@ -2325,7 +2391,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 3328
+    "h": 3753
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2474,7 +2540,7 @@
    "count": 1,
    "box": {
     "w": 474,
-    "h": 203
+    "h": 294
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2505,7 +2571,7 @@
    "count": 1,
    "box": {
     "w": 474,
-    "h": 129
+    "h": 155
    },
    "style": {
     "color": "rgb(88, 73, 31)",
@@ -2564,6 +2630,37 @@
    }
   },
   ".card": {
+   "count": 3,
+   "box": {
+    "w": 520,
+    "h": 250
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(232, 229, 222)",
+    "borderTopWidth": "1px",
+    "borderRadius": "14px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "16px",
+    "paddingRight": "16px",
+    "paddingBottom": "16px",
+    "paddingLeft": "16px",
+    "marginTop": "0px",
+    "marginBottom": "10px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "14px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
+  ".card-regular": {
    "count": 1,
    "box": {
     "w": 520,
@@ -2595,7 +2692,7 @@
    }
   },
   ".db": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 68,
     "h": 82
@@ -2626,7 +2723,7 @@
    }
   },
   ".db .d": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 60,
     "h": 29
@@ -2657,6 +2754,37 @@
    }
   },
   ".tag": {
+   "count": 3,
+   "box": {
+    "w": 41,
+    "h": 24
+   },
+   "style": {
+    "color": "rgb(10, 91, 69)",
+    "backgroundColor": "rgb(225, 245, 238)",
+    "borderTopColor": "rgb(10, 91, 69)",
+    "borderTopWidth": "0px",
+    "borderRadius": "999px",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "18px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "3px",
+    "paddingRight": "10px",
+    "paddingBottom": "3px",
+    "paddingLeft": "10px",
+    "marginTop": "0px",
+    "marginBottom": "6px",
+    "display": "inline-block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1"
+   }
+  },
+  ".tag-regular": {
    "count": 1,
    "box": {
     "w": 85,
@@ -2688,10 +2816,10 @@
    }
   },
   ".meta": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 404,
-    "h": 123
+    "h": 74
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2719,10 +2847,10 @@
    }
   },
   ".card-alert": {
-   "count": 1,
+   "count": 3,
    "box": {
     "w": 404,
-    "h": 109
+    "h": 72
    },
    "style": {
     "color": "rgb(118, 67, 0)",
@@ -2750,10 +2878,10 @@
    }
   },
   ".cal": {
-   "count": 3,
+   "count": 4,
    "box": {
     "w": 520,
-    "h": 415
+    "h": 362
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2781,7 +2909,7 @@
    }
   },
   ".wd": {
-   "count": 21,
+   "count": 28,
    "box": {
     "w": 73,
     "h": 34
@@ -2812,10 +2940,10 @@
    }
   },
   ".cell": {
-   "count": 112,
+   "count": 147,
    "box": {
     "w": 73,
-    "h": 54
+    "h": 64
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2843,15 +2971,15 @@
    }
   },
   ".dnum": {
-   "count": 92,
+   "count": 123,
    "box": {
     "w": 6,
     "h": 16
    },
    "style": {
-    "color": "rgb(61, 111, 180)",
+    "color": "rgb(107, 105, 96)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(61, 111, 180)",
+    "borderTopColor": "rgb(107, 105, 96)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
@@ -2874,7 +3002,7 @@
    }
   },
   ".chip": {
-   "count": 11,
+   "count": 14,
    "box": {
     "w": 65,
     "h": 28
@@ -2968,9 +3096,9 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1552,
+   "textLength": 2001,
    "cardCount": 0,
-   "chipCount": 11
+   "chipCount": 14
   }
  }
 }
