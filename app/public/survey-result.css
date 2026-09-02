@@ -243,18 +243,19 @@ h1 {
 }
 
 /* 인라인 style 을 쓸 수 없으므로 너비를 클래스로 둔다 (CSP style-src) */
-.b17 { width: 17%; }
-.b22 { width: 22%; }
-.b28 { width: 28%; }
-.b33 { width: 33%; }
-.b44 { width: 44%; }
+.b15 { width: 15%; }
+.b20 { width: 20%; }
+.b25 { width: 25%; }
+.b30 { width: 30%; }
+.b40 { width: 40%; }
+.b45 { width: 45%; }
 .b50 { width: 50%; }
-.b56 { width: 56%; }
-.b61 { width: 61%; }
-.b67 { width: 67%; }
-.b72 { width: 72%; }
-.b78 { width: 78%; }
-.b83 { width: 83%; }
+.b55 { width: 55%; }
+.b60 { width: 60%; }
+.b65 { width: 65%; }
+.b70 { width: 70%; }
+.b75 { width: 75%; }
+.b80 { width: 80%; }
 
 /* ── 목록 ── */
 .listen {

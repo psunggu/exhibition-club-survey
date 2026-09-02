@@ -30,7 +30,7 @@ function Round({ r, pw, onError }: {
           <span className="gsurvey-round">{r.round}차</span>
           <h3 className="gsurvey-title">{r.title}</h3>
         </div>
-        <span className="gsurvey-count">{r.answered}분 응답</span>
+        <span className="gsurvey-count">{r.answered}명 응답</span>
       </div>
 
       <p className="gsurvey-when">{r.period} · {r.asOf}</p>
