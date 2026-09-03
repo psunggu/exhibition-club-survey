@@ -1676,7 +1676,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 4372
+    "h": 5110
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2166,7 +2166,7 @@
    "count": 4,
    "box": {
     "w": 343,
-    "h": 353
+    "h": 420
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2228,7 +2228,7 @@
    "count": 147,
    "box": {
     "w": 48,
-    "h": 72
+    "h": 48
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2262,9 +2262,9 @@
     "h": 15
    },
    "style": {
-    "color": "rgb(107, 105, 96)",
+    "color": "rgb(61, 111, 180)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(107, 105, 96)",
+    "borderTopColor": "rgb(61, 111, 180)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "13px",
@@ -2381,7 +2381,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 2001,
+   "textLength": 2285,
    "cardCount": 0,
    "chipCount": 14
   }
@@ -2391,7 +2391,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 3753
+    "h": 4381
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2881,7 +2881,7 @@
    "count": 4,
    "box": {
     "w": 520,
-    "h": 362
+    "h": 415
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2943,7 +2943,7 @@
    "count": 147,
    "box": {
     "w": 73,
-    "h": 64
+    "h": 54
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2977,9 +2977,9 @@
     "h": 16
    },
    "style": {
-    "color": "rgb(107, 105, 96)",
+    "color": "rgb(61, 111, 180)",
     "backgroundColor": "rgba(0, 0, 0, 0)",
-    "borderTopColor": "rgb(107, 105, 96)",
+    "borderTopColor": "rgb(61, 111, 180)",
     "borderTopWidth": "0px",
     "borderRadius": "0px",
     "fontSize": "14px",
@@ -3096,7 +3096,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 2001,
+   "textLength": 2285,
    "cardCount": 0,
    "chipCount": 14
   }

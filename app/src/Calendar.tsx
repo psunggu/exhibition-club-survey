@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
 import {
-  MEETUPS, MONTHS, PAST_MONTHS, TENTATIVE, type Meetup,
+  MEETUPS, monthsToShow, pastMonthsToShow, TENTATIVE, type Meetup,
 } from './data/meetups'
 
 /**
@@ -152,8 +152,16 @@ export function Calendar() {
   const activeYear = byYear.find((y) => y.year === pickedYear)?.year ?? byYear[0]?.year ?? null
   const active = byYear.find((y) => y.year === activeYear) ?? null
 
+  /**
+   * 펼치는 달과 접어 두는 달은 **오늘에서 뽑는다** — 손으로 적던 목록을 대신한다.
+   * `today` 는 위에서 `seoulToday()` 로 한 번 잡아 둔 값이고, 검사는 시계를 묶어
+   * 같은 값을 넘긴다. 두 자리가 다른 「오늘」 을 보면 달력과 「오늘」 표시가 어긋난다.
+   */
+  const months = useMemo(() => monthsToShow(today), [today])
+  const pastMonths = useMemo(() => pastMonthsToShow(today), [today])
+
   /** 고른 해의 지난 달력만. 해를 안 고른 상태(=최근 해)에서는 지금까지와 같다. */
-  const pastCalendars = PAST_MONTHS.filter((p) => activeYear === null || p.year === activeYear)
+  const pastCalendars = pastMonths.filter((p) => activeYear === null || p.year === activeYear)
 
   const openDialog = (m: Meetup, el: HTMLElement) => { lastTrigger.current = el; setOpen(m) }
 
@@ -394,7 +402,7 @@ export function Calendar() {
           {LEGEND_NOTE.map((t) => <span key={t} className="lnote">{t}</span>)}
         </span>
       </p>
-      {MONTHS.map(({ year, month }) => {
+      {months.map(({ year, month }) => {
         // 빈 달을 말없이 비워 두면 "아직 안 만든 화면"으로 보인다.
         // 옛 화면은 9월에 이 문장을 박아 뒀다 — 여기서는 모임이 없을 때만 뜬다.
         const has = MEETUPS.some((m) => m.date.startsWith(`${year}-${String(month).padStart(2, '0')}`))
