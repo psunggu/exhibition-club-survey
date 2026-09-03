@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useRoute } from './lib/router'
+import { seoulToday } from './lib/calendar'
 import { Board } from './Board'
 import { Calendar } from './Calendar'
 import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
-import { MONTHS } from './data/meetups'
+import { monthsToShow } from './data/meetups'
 import {
   CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen,
   type Survey as SurveyT, type SurveyCategory, type TabCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
 
-/** `8 · 9월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다. */
-const monthsLabel = () =>
-  MONTHS.length ? `${MONTHS.map((m) => m.month).join(' · ')}월` : ''
+/**
+ * `9 · 10월` — 달력이 펼치는 달을 옛 제목과 같은 모양으로 잇는다.
+ *
+ * 달 목록은 `monthsToShow` 가 오늘에서 뽑으므로 제목도 저절로 따라온다.
+ * 예전에는 `MONTHS` 를 손으로 밀 때까지 제목이 지난 달에 멈춰 있었다(#111).
+ */
+const monthsLabel = (today: string) => {
+  const months = monthsToShow(today)
+  return months.length ? `${months.map((m) => m.month).join(' · ')}월` : ''
+}
 
 /**
  * 보드·일정·설문 등 공개 정보를 마지막으로 반영한 날짜.
@@ -247,7 +255,7 @@ export function App() {
         <p className="ov">41교구 전시·박물관 동아리</p>
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
-        <h1>{monthsLabel()} 모임 일정 안내</h1>
+        <h1>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
         <SurveyJump />
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />

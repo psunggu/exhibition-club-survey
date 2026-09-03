@@ -5,7 +5,7 @@
  * **여기가 임시 자리다.** 모임은 R-03-02 에서 `club.meetups` 로 옮긴다.
  *
  * 지울 때 함께 볼 곳
- *   app/src/Calendar.tsx  byDate · upcoming · completed · open · MONTHS · PAST_MONTHS
+ *   app/src/Calendar.tsx  byDate · upcoming · completed · open · monthsToShow · pastMonthsToShow
  *   scripts/validate-weekly-digest.mjs  일정 대조 블록
  *
  * 옛 notice.html 은 달력 칸 42개를 손으로 써 넣었다. 이식본은 날짜에서 격자를
@@ -517,20 +517,66 @@ export const EXTRA_COMPLETED: { date: string; text: string }[] = []
 /** 완료된 모임은 며칠까지 목록 맨 위에 남기나 (notice.js 의 COMPLETED_VISIBLE_DAYS) */
 export const COMPLETED_VISIBLE_DAYS = 3
 
-/**
- * 펼쳐 보이는 달 — 이번 달과 다음 달.
- *
- * 화면 제목(`App.tsx` 의 `monthsLabel()`)이 이 목록에서 나온다. 달이 바뀌면
- * 여기만 밀면 제목·달력·달별 목록이 함께 따라온다.
- * 민 달은 버리지 말고 PAST_MONTHS 로 옮긴다 — 완료 일정 달력이 그 목록을 읽는다.
- */
-export const MONTHS: { year: number; month: number }[] = [
-  { year: 2026, month: 9 },
-  { year: 2026, month: 10 },
-]
+export type YearMonth = { year: number; month: number }
 
-/** 지난 달 — 옛 화면에서 '완료 일정 달력' 안에 접혀 있던 것 */
-export const PAST_MONTHS: { year: number; month: number }[] = [
-  { year: 2026, month: 7 },
-  { year: 2026, month: 8 },
-]
+/**
+ * 달 하나를 정수 하나로 — 해가 바뀌어도 `+1` 이 다음 달이 된다.
+ * 12월(2026-12 → 24323) 다음이 1월(2027-01 → 24324)이다.
+ */
+const monthIndex = (year: number, month: number) => year * 12 + (month - 1)
+const fromIndex = (i: number): YearMonth => ({ year: Math.floor(i / 12), month: (i % 12) + 1 })
+const indexOfDate = (date: string) => monthIndex(Number(date.slice(0, 4)), Number(date.slice(5, 7)))
+
+/**
+ * **펼쳐 보이는 달 — 오늘에서 뽑는다. 손으로 적지 않는다.**
+ *
+ * ── 왜 자동인가 ────────────────────────────────────────────
+ * 2026-08-31 까지 `MONTHS` 가 손으로 박혀 있었다. 그래서 9월이 되었는데 제목이
+ * 「8 · 9월」 로 남아 #111 에서 손으로 밀었고, 10월 모임이 생기자 #112 에서 또 밀었다.
+ * **손으로 미는 한 매달 같은 커밋을 반복한다.** 「완료된 모임」 목록은 이미 날짜에서
+ * 뽑아 자동으로 도니, 격자도 같은 자리에서 뽑는다.
+ *
+ * ── 규칙 ───────────────────────────────────────────────────
+ * 이번 달부터 **다음 달까지**가 기본이다. 다만 그보다 뒤에 잡힌 모임이 있으면
+ * 거기까지 이어서 편다 — 안 그러면 **확정된 모임이 어느 격자에도 없는** 달이 생긴다.
+ * (실제로 그럴 뻔했다: 8월에 10/2 경복궁이 잡혔는데 「이번·다음」 만 펴면 10월이 없다.)
+ * 중간 달을 건너뛰지 않고 이어 펴는 것은, 빈 달 하나 아끼자고 격자가 9월 · 11월처럼
+ * 띄엄띄엄 서면 그게 더 읽기 어렵기 때문이다.
+ *
+ * 화면 제목(`App.tsx` 의 `monthsLabel`)도 이 값에서 나오므로 함께 따라온다.
+ *
+ * `today` 를 인자로 받는다 — 화면은 `seoulToday()` 를 넘기고, 검사는 시계를 묶어
+ * 같은 값을 넘긴다(`scripts/frozen-clock.mjs`). 함수 안에서 `new Date()` 를 부르면
+ * 그 두 길이 갈라진다.
+ */
+export function monthsToShow(today: string, meetups: Meetup[] = MEETUPS): YearMonth[] {
+  const start = indexOfDate(today)
+  if (!Number.isFinite(start)) return []
+  let end = start + 1
+  for (const m of meetups) {
+    if (m.date < today) continue
+    const i = indexOfDate(m.date)
+    if (Number.isFinite(i) && i > end) end = i
+  }
+  const out: YearMonth[] = []
+  for (let i = start; i <= end; i += 1) out.push(fromIndex(i))
+  return out
+}
+
+/**
+ * **접어 두는 지난 달 — 모임이 있었던 달만.**
+ *
+ * 이번 달보다 앞이면서 모임이 하나라도 있는 달을 오래된 것부터 늘어놓는다.
+ * 아무 일도 없던 달을 접어 두는 것은 열어도 빈 격자라 뜻이 없다.
+ * 「완료 일정 달력」 이 이 목록을 읽는다.
+ */
+export function pastMonthsToShow(today: string, meetups: Meetup[] = MEETUPS): YearMonth[] {
+  const start = indexOfDate(today)
+  if (!Number.isFinite(start)) return []
+  const seen = new Set<number>()
+  for (const m of meetups) {
+    const i = indexOfDate(m.date)
+    if (Number.isFinite(i) && i < start) seen.add(i)
+  }
+  return [...seen].sort((a, b) => a - b).map(fromIndex)
+}
