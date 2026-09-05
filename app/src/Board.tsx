@@ -24,53 +24,18 @@ import {
 const today = () => new Date().toISOString().slice(0, 10)
 
 /**
- * **보드에 올리지 않는 것 — 영화·전시·공연 모두에 걸린다.**
+ * **예매 순위는 거르지 않는다 — 있는 그대로 보여 준다.**
  *
- * 여기는 교회 동아리의 **공개** 화면이다. 예매 순위와 전시·공연 목록은 바깥 집계를
- * 그대로 비추는 자리라 우리가 고르지 않지만, 두 가지는 거른다.
+ * 2026-09-05 에 한 번 걸러 봤다. 청소년 관람불가와 공포·호러를 자동으로 막고,
+ * 장르로는 안 잡히는 것(《경주기행》)은 손으로 뺐다. 그런데 빼기 시작하니
+ * 다음 작품, 그 다음 작품이 계속 나왔다 — 어디서 멈출지는 아무도 모른다.
  *
- *   1. 청소년 관람불가 — 회원 중에 청소년이 있을 수 있다
- *   2. 공포·호러 — 무섭거나 혐오스러운 것을 보러 가는 모임이 아니다
+ * 그래서 되돌렸다. **무엇을 볼지는 회원이 정한다.** 보드가 할 일은 영화진흥위원회
+ * 집계를 그대로 비추고, 판단에 필요한 것을 옆에 적어 주는 것이다 —
+ * 관람등급·장르·상영시간·감독·줄거리가 카드에 이미 다 있다.
  *
- * **자료에서 지우지 않고 여기서 거른다.** `movies.ts` 는 순위를 그대로 적는
- * 자리이고 전시·공연은 DB 에서 온다. 손으로 지우면 다음 갱신 때 붙여 넣으며
- * 조용히 되살아난다. 화면에서 거르면 그럴 일이 없다.
- *
- * 순위 번호는 그대로 둔다 — 걸러진 자리에서 번호가 하나 건너뛴다.
- * 다시 매기면 「전국 예매 4위」 라는 말이 거짓이 된다.
- *
- * ── 기계가 못 잡는 것 ──────────────────────────────────────
- * 「혐오스럽다」 는 장르 글자에 안 나온다. 잔혹한 범죄물, 노골적인 폭력,
- * 시신·훼손을 다룬 전시 같은 것은 **자료를 갱신하는 사람이 보고 뺀다.**
- * 아래 목록은 그 판단을 대신하지 않는다 — 확실한 것만 자동으로 막는 그물이다.
+ * 되돌린 것이라 다시 넣기도 쉽다. 그때는 **왜 다시 거르는지**부터 정한다.
  */
-/**
- * **사람이 판단해 뺀 것.** 장르·등급으로는 안 걸리는데 공개 화면에 두지 않기로 한 작품.
- *
- * **왜 뺐는지 함께 적는다.** 이름만 있으면 다음 사람이 「왜 빠졌지」 하며 되돌린다.
- * 작품이 나빠서가 아니라 **이 자리에 맞지 않아서** 빼는 경우가 대부분이다.
- */
-const HIDDEN_TITLES: Record<string, string> = {
-  '경주기행':
-    '수학여행 가던 아이의 피살과, 법원에서 몸을 던지는 아버지가 중심 소재다. '
-    + '잔혹한 묘사는 적다는 평이지만 예고 없이 훑어보는 공개 화면에 두기에는 무겁고, '
-    + '실제 참사를 겪은 회원이 있을 수 있다. 작품이 나빠서가 아니다.',
-}
-
-const hiddenByTitle = (title: string) => title in HIDDEN_TITLES
-
-const HIDDEN_AGE_RATINGS = ['청소년 관람불가']
-const HIDDEN_GENRE_WORDS = ['공포', '호러']
-
-const hiddenByGenre = (genre: string | null | undefined) =>
-  HIDDEN_GENRE_WORDS.some((w) => (genre ?? '').includes(w))
-
-/** 전시·공연은 관람등급이 없다. 장르만 본다. */
-const showableEvent = (e: Event) => !hiddenByGenre(e.genre) && !hiddenByTitle(e.title)
-
-const SHOWABLE_MOVIES = MOVIES.filter(
-  (m) => !HIDDEN_AGE_RATINGS.includes(m.ageRating) && !hiddenByGenre(m.genre)
-    && !hiddenByTitle(m.title))
 
 /**
  * `8~9월` — 이번 달과 다음 달.
@@ -410,8 +375,8 @@ export function Board() {
     const add = (key: string, title: string, subtitle: string, nodes: React.ReactNode[]) => {
       if (nodes.length) out.push({ key, title, subtitle, nodes })
     }
-    const shows = list.filter((e) => e.type === '전시' && showableEvent(e))
-    const gigs = list.filter((e) => e.type === '공연' && showableEvent(e))
+    const shows = list.filter((e) => e.type === '전시')
+    const gigs = list.filter((e) => e.type === '공연')
     if (type === '전체' || type === '전시')
       add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
         shows.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
@@ -421,7 +386,7 @@ export function Board() {
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
-        SHOWABLE_MOVIES.slice(0, type === '영화' ? 10 : 5)
+        MOVIES.slice(0, type === '영화' ? 10 : 5)
           .map((m) => <MovieCard key={m.id} m={m} area={area} />))
     // 소식은 아래 NewsLine 이 맡는다. 빼지 않으면 「그 밖에」 에
     // 관람료 · 주차 항목이 붙은 전시 카드 모양으로 한 번 더 뜬다.
