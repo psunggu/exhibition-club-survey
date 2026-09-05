@@ -100,7 +100,7 @@ export const MOVIES: Movie[] = [
     title: '경주기행',
     releaseStatus: '상영 중',
     releaseDate: '2026-08-26',
-    runtime: 110,
+    runtime: 111,
     genre: '범죄',
     ageRating: '15세 이상 관람가',
     director: '김미조',

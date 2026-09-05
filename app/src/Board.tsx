@@ -44,6 +44,21 @@ const today = () => new Date().toISOString().slice(0, 10)
  * 시신·훼손을 다룬 전시 같은 것은 **자료를 갱신하는 사람이 보고 뺀다.**
  * 아래 목록은 그 판단을 대신하지 않는다 — 확실한 것만 자동으로 막는 그물이다.
  */
+/**
+ * **사람이 판단해 뺀 것.** 장르·등급으로는 안 걸리는데 공개 화면에 두지 않기로 한 작품.
+ *
+ * **왜 뺐는지 함께 적는다.** 이름만 있으면 다음 사람이 「왜 빠졌지」 하며 되돌린다.
+ * 작품이 나빠서가 아니라 **이 자리에 맞지 않아서** 빼는 경우가 대부분이다.
+ */
+const HIDDEN_TITLES: Record<string, string> = {
+  '경주기행':
+    '수학여행 가던 아이의 피살과, 법원에서 몸을 던지는 아버지가 중심 소재다. '
+    + '잔혹한 묘사는 적다는 평이지만 예고 없이 훑어보는 공개 화면에 두기에는 무겁고, '
+    + '실제 참사를 겪은 회원이 있을 수 있다. 작품이 나빠서가 아니다.',
+}
+
+const hiddenByTitle = (title: string) => title in HIDDEN_TITLES
+
 const HIDDEN_AGE_RATINGS = ['청소년 관람불가']
 const HIDDEN_GENRE_WORDS = ['공포', '호러']
 
@@ -51,10 +66,11 @@ const hiddenByGenre = (genre: string | null | undefined) =>
   HIDDEN_GENRE_WORDS.some((w) => (genre ?? '').includes(w))
 
 /** 전시·공연은 관람등급이 없다. 장르만 본다. */
-const showableEvent = (e: Event) => !hiddenByGenre(e.genre)
+const showableEvent = (e: Event) => !hiddenByGenre(e.genre) && !hiddenByTitle(e.title)
 
 const SHOWABLE_MOVIES = MOVIES.filter(
-  (m) => !HIDDEN_AGE_RATINGS.includes(m.ageRating) && !hiddenByGenre(m.genre))
+  (m) => !HIDDEN_AGE_RATINGS.includes(m.ageRating) && !hiddenByGenre(m.genre)
+    && !hiddenByTitle(m.title))
 
 /**
  * `8~9월` — 이번 달과 다음 달.
