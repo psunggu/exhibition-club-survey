@@ -492,6 +492,34 @@ export const memberOk = (zone: string, name: string, signal?: AbortSignal) =>
   rpc<boolean>('survey_member_ok', { p_zone: zone, p_name: name }, signal)
 
 /**
+ * **이 회원이 운영진인가.** 화면에 「장소 추가」 칸을 보여 줄지 정할 때만 쓴다.
+ *
+ * **이것은 쓰기 허가가 아니다.** 구역번호+이름은 암호가 아니라 「명부에 있는 사람인가」
+ * 정도의 확인이고(그래서 서버에 시도 횟수 제한이 붙어 있다), 카톡방에 이름이 다 있는
+ * 21명 동아리에서는 알아내기도 어렵지 않다. 실제로 저장할 때는 `addOption` 이
+ * **운영자 암호**를 따로 받는다. 둘을 섞지 않는다.
+ */
+export const memberIsAdmin = (zone: string, name: string, signal?: AbortSignal) =>
+  rpc<boolean>('survey_member_is_admin', { p_zone: zone, p_name: name }, signal)
+
+/**
+ * 열려 있는 설문에 후보 한 줄을 더한다. **운영자 암호를 받는다.**
+ *
+ * `adminSave` 를 쓰지 않는 이유: 그 함수는 설문 하나를 통째로 다시 쓴다.
+ * 한 줄 더하려고 전체를 덮으면 그 사이 다른 사람이 고친 것이 조용히 사라진다.
+ */
+export const addOption = (
+  pw: string, surveyId: string,
+  place: { title: string; venue: string; price: string; note: string },
+  signal?: AbortSignal,
+) =>
+  rpc<string>('survey_admin_option_add', {
+    p_password: pw, p_survey: surveyId,
+    p_title: place.title, p_venue: place.venue,
+    p_price: place.price, p_note: place.note,
+  }, signal)
+
+/**
  * 명부로 거르고 있나. **인원수는 안 준다.**
  * 숫자를 주면 한 명씩 물어 명부를 캐내는 사람에게 언제 멈출지 알려 주는 셈이 된다.
  */

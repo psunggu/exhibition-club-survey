@@ -1652,3 +1652,44 @@ select.admin-input { cursor: pointer; }
   color: #67645c;
   line-height: 1.6;
 }
+
+
+/* ── 운영진에게만 보이는 「장소 추가」 ──────────────────────
+ *
+ * 새 이름을 쓴다. 기존 `.survey-*` 를 재활용하면 validate-survey-admin-ui 가
+ * 클래스 이름을 차례로 짚어 엉뚱한 것을 누른다 (AGENTS.md 「검사기가 클래스 이름을 짚는다」).
+ *
+ * 색은 tokens.css 의 것만 쓴다. 이 칸은 상태를 말하는 자리가 아니라 **다른 갈래**라서
+ * --warn·--stop 을 쓰지 않고 중립 바탕(--sunken)에 브랜드 초록 테두리만 준다.
+ */
+.survey-addplace {
+  margin: 12px 0 0;
+  border: 1px solid var(--green);
+  border-radius: var(--r-card);
+  background: var(--sunken);
+}
+
+.survey-addplace > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  min-height: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-dark);
+  cursor: pointer;
+}
+
+.survey-addplace-who {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.survey-addplace-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}

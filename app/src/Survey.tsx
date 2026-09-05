@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CATEGORY, fetchMyChoices, fetchResponseCount, fetchSurveys, fetchTally,
-  isOpen, isVisible, koDeadline, memberOk, rosterOn, submitResponse, SurveyUnavailable,
+  addOption, isOpen, isVisible, koDeadline, memberIsAdmin, memberOk, rosterOn,
+  submitResponse, SurveyUnavailable,
   type Survey as SurveyT, type SurveyLink, type SurveyOption, type TabCategory,
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
@@ -110,7 +111,7 @@ function Facts({ o, category }: { o: SurveyOption; category: TabCategory }) {
   )
 }
 
-function OneSurvey({ s }: { s: SurveyT }) {
+function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
   const open = isOpen(s)
   const [zone, setZone] = useState('')
   const [name, setName] = useState('')
@@ -121,6 +122,15 @@ function OneSurvey({ s }: { s: SurveyT }) {
   const [msg, setMsg] = useState<{ kind: 'error' | 'done' | 'info'; text: string } | null>(null)
   const [tally, setTally] = useState<Map<string, number> | null>(null)
   const [total, setTotal] = useState(0)
+
+  /**
+   * **이 회원이 운영진인가 — 칸을 보여 줄지 정하는 데만 쓴다.**
+   * 저장은 아래 `addPlace` 가 운영자 암호를 따로 받는다. 구역번호+이름은 암호가 아니다.
+   */
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [place, setPlace] = useState({ title: '', venue: '', price: '', note: '' })
+  const [placePw, setPlacePw] = useState('')
+  const [adding, setAdding] = useState(false)
   const ac = useRef<AbortController | null>(null)
 
   useEffect(() => () => ac.current?.abort(), [])
@@ -135,6 +145,30 @@ function OneSurvey({ s }: { s: SurveyT }) {
   }, [s.id])
 
   useEffect(() => { void loadTally() }, [loadTally])
+
+  /**
+   * 후보 한 줄 더하기. **운영자 암호를 받는다.**
+   *
+   * 구역+이름은 칸을 보여 줄지만 정했다. 실제로 쓰는 것은 서버의
+   * `survey_admin_option_add` 이고 그 함수가 암호를 검사한다 — 화면이 아니라.
+   */
+  const addPlace = async () => {
+    const title = place.title.trim()
+    if (!title) { setMsg({ kind: 'error', text: '장소 이름을 적어 주세요.' }); return }
+    if (!placePw) { setMsg({ kind: 'error', text: '운영자 암호를 적어 주세요.' }); return }
+    setAdding(true); setMsg(null)
+    try {
+      await addOption(placePw, s.id, { ...place, title })
+      setPlace({ title: '', venue: '', price: '', note: '' })
+      setPlacePw('')
+      setMsg({ kind: 'done', text: `「${title}」 을 후보에 넣었습니다.` })
+      // 목록을 다시 읽어야 방금 넣은 것이 보인다. 부모가 한 곳에서 읽으므로 거기에 알린다.
+      onChanged?.()
+    } catch (e: unknown) {
+      setMsg({ kind: 'error',
+        text: e instanceof SurveyUnavailable ? e.reason : '넣지 못했습니다.' })
+    } finally { setAdding(false) }
+  }
 
   /** 이름을 확정하고 이전 응답을 불러온다 */
   const confirmWho = async () => {
@@ -163,6 +197,13 @@ function OneSurvey({ s }: { s: SurveyT }) {
           text: '등록된 회원이 아닙니다. 구역번호와 이름을 단톡방 프로필과 같게 적어 주세요.' })
         return
       }
+      /**
+       * **운영진인지도 여기서 같이 묻는다.** 이름을 확정하는 순간이 유일하게
+       * 구역+이름이 손에 있는 자리다. 실패해도 그냥 넘어간다 — 칸 하나 안 뜰 뿐이고,
+       * 그것 때문에 투표를 못 하게 만들 이유가 없다.
+       */
+      void memberIsAdmin(z, n).then(setIsAdmin).catch(() => setIsAdmin(false))
+
       const mine = await fetchMyChoices(s.id, z, n)
       setPicked(new Set(mine))
       setHad(mine.length > 0)
@@ -365,7 +406,11 @@ function OneSurvey({ s }: { s: SurveyT }) {
             <div className="survey-actions">
               <button type="button" className="survey-submit"
                 style={{ background: '#fff', color: '#0f6e56', border: '1px solid #0f6e56' }}
-                onClick={() => { setLocked(false); setPicked(new Set()); setHad(false); setMsg(null) }}>
+                onClick={() => {
+                  setLocked(false); setPicked(new Set()); setHad(false); setMsg(null)
+                  // 다른 사람 이름으로 바꿀 수 있다. 운영진 칸을 남겨 두면 안 된다.
+                  setIsAdmin(false); setPlacePw('')
+                }}>
                 이름 고치기
               </button>
               <span className="survey-status">{zone} {name}</span>
@@ -408,6 +453,64 @@ function OneSurvey({ s }: { s: SurveyT }) {
           </label>
         )
       })}
+
+      {/*
+        **운영진에게만 보이는 칸.** 고르는 자리에서 바로 더할 수 있게 둔다 —
+        운영자 화면까지 갔다 오면 「여기 어때요」 를 말하다 만다.
+
+        보여 줄지는 구역+이름으로 정했지만 **저장은 암호로 한다.** 그 둘을 섞지 않는다 —
+        구역번호와 이름은 카톡방에 다 있어서, 그것만으로 열면 아무나 항목을 넣게 된다.
+        `.survey-addplace*` 는 새 이름이다 — 기존 `.survey-*` 를 재활용하면
+        validate-survey-admin-ui 가 엉뚱한 것을 짚는다(AGENTS.md 「검사기가 클래스 이름을 짚는다」).
+      */}
+      {open && locked && isAdmin && (
+        <details className="survey-addplace">
+          <summary>
+            장소 추가
+            <span className="survey-addplace-who">운영진에게만 보입니다</span>
+          </summary>
+          <div className="survey-addplace-body">
+            <p className="survey-note">
+              넣는 즉시 위 후보 목록에 올라갑니다. 저장에는 <b>운영자 암호</b>가 필요합니다.
+            </p>
+            <label className="survey-field">
+              <span>장소 이름</span>
+              <input value={place.title} autoComplete="off"
+                onChange={(e) => setPlace({ ...place, title: e.target.value })} />
+            </label>
+            <label className="survey-field">
+              <span>어디 · 얼마나 걸리나</span>
+              <input value={place.venue} autoComplete="off"
+                placeholder="삼청로 101-1 · 걸어서 10분"
+                onChange={(e) => setPlace({ ...place, venue: e.target.value })} />
+            </label>
+            <label className="survey-field">
+              <span>값</span>
+              <input value={place.price} autoComplete="off"
+                placeholder="1인 15,000원쯤"
+                onChange={(e) => setPlace({ ...place, price: e.target.value })} />
+            </label>
+            <label className="survey-field">
+              <span>한 줄 설명</span>
+              <input value={place.note} autoComplete="off"
+                placeholder="수제비·감자전. 여럿이 앉기 좋습니다"
+                onChange={(e) => setPlace({ ...place, note: e.target.value })} />
+            </label>
+            <label className="survey-field">
+              <span>운영자 암호</span>
+              <input type="password" value={placePw} autoComplete="off"
+                onChange={(e) => setPlacePw(e.target.value)} />
+            </label>
+            <div className="survey-actions">
+              <button type="button" className="survey-submit"
+                disabled={adding || !place.title.trim() || !placePw}
+                onClick={() => { void addPlace() }}>
+                {adding ? '넣는 중…' : '후보에 넣기'}
+              </button>
+            </div>
+          </div>
+        </details>
+      )}
 
       {open && locked && (
         <div className="survey-actions">
@@ -732,17 +835,26 @@ function SurveyBody({ category }: { category: TabCategory }) {
   const [all, setAll] = useState<SurveyT[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const ac = new AbortController()
-    fetchSurveys(ac.signal)
+  /**
+   * **다시 읽을 수 있어야 한다.** 운영진이 식사 화면에서 후보를 더하면
+   * 그 자리에서 보여야 하는데, 한 번만 읽고 마는 구조라 새로 고쳐야 보였다.
+   * 읽는 곳은 여전히 여기 한 곳이고, 자식은 `onChanged` 로 알리기만 한다.
+   */
+  const reload = useCallback((signal?: AbortSignal) => {
+    fetchSurveys(signal)
       // **그냥 넘기면 안 된다** — isVisible(s, now?) 의 둘째 자리에 배열 인덱스가 들어간다
       .then((rows) => setAll(rows.filter((s) => isVisible(s))))
       .catch((e: unknown) => {
-        if (ac.signal.aborted) return
+        if (signal?.aborted) return
         setError(e instanceof SurveyUnavailable ? e.reason : '불러오지 못했습니다.')
       })
-    return () => ac.abort()
   }, [])
+
+  useEffect(() => {
+    const ac = new AbortController()
+    reload(ac.signal)
+    return () => ac.abort()
+  }, [reload])
 
   const surveys = useMemo(
     () => (all ? all.filter((s) => s.category === category) : null),
@@ -793,7 +905,7 @@ function SurveyBody({ category }: { category: TabCategory }) {
   const answerable = live.some((s) => isOpen(s) && !s.mirrored)
   const foldable = BRIEF !== null && live.length > 0 && !answerable
 
-  const liveCards = live.map((s) => <OneSurvey key={s.id} s={s} />)
+  const liveCards = live.map((s) => <OneSurvey key={s.id} s={s} onChanged={() => reload()} />)
 
   return (
     <>
