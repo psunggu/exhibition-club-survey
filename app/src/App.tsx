@@ -27,7 +27,7 @@ const monthsLabel = (today: string) => {
  * 보드·일정·설문 등 공개 정보를 마지막으로 반영한 날짜.
  * 개별 전시의 확인일은 각 카드의 `정보 기준일`에 따로 남긴다.
  */
-const SITE_INFO_UPDATED_ON = '2026.08.27'
+const SITE_INFO_UPDATED_ON = '2026.09.05'
 
 /**
  * 달력 화면의 설문 카드 — **지금 무엇이 열려 있는지 한 줄로 보여 준다.**
