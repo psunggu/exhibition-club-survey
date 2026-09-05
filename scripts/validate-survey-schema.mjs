@@ -656,6 +656,7 @@ const NOT_CHECKED = new Map([
   // 202608300003a 가 둘이다 — 다른 세션과 같은 번호를 썼다. 파일은 서로 다르다.
   ['202608300003a_culture_news_row.sql', '보드 소식 한 줄을 넣는 자료 (함수·표 없음)'],
   ['202608300003a_meal_place_survey.sql', '자료만 넣는다 (함수·표 없음)'],
+  ['202609050001a_meal_survey_extend.sql', '설문 한 건의 closes_at 만 민다 (함수·표 없음)'],
 ]);
 
 const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));
