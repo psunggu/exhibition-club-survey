@@ -167,6 +167,8 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
 
 /** 화면이 보낸 RPC 를 여기에 적어 둔다 */
 let sent = [];
+/** 가짜 서버가 받은 「후보 더하기」 요청들 */
+const addedPlaces = [];
 let stored = [];          // 서버에 저장된 것처럼 굴 목록
 
 await ctx.route('**/rest/v1/**', async (route) => {
@@ -196,6 +198,31 @@ await ctx.route('**/rest/v1/**', async (route) => {
       const n = String(body.p_name ?? '').trim();
       return json(z === '4133' && n === '홍길동');
     }
+    /**
+     * **운영진인가.** 픽스처의 그 사람만 운영진으로 둔다.
+     * 화면은 이 답으로 「장소 추가」 칸을 보여 줄지만 정한다 — 쓰기 허가가 아니다.
+     */
+    if (name === 'survey_member_is_admin') {
+      const z = String(body.p_zone ?? '').replace(/[^0-9]/g, '');
+      const n = String(body.p_name ?? '').trim();
+      return json(z === '4133' && n === '홍길동');
+    }
+
+    /**
+     * **후보 더하기 — 암호를 본다.** 진짜 서버처럼 틀린 암호를 403 으로 거절한다.
+     * 여기서 무조건 성공을 주면, 화면이 암호를 안 보내도 검사가 통과한다.
+     */
+    if (name === 'survey_admin_option_add') {
+      if (body.p_password !== 'FAKE-ADMIN-PW') {
+        return route.fulfill({
+          status: 403, contentType: 'application/json',
+          body: JSON.stringify({ code: '28000', message: '운영자 암호가 맞지 않습니다.' }),
+        });
+      }
+      addedPlaces.push(body);
+      return json('opt-new');
+    }
+
     if (name === 'survey_my_choices') return json(stored.map((id) => ({ option_id: id })));
     if (name === 'survey_submit') {
       stored = [...(body.p_options ?? [])];
@@ -336,6 +363,48 @@ ok('구역번호와 이름을 함께 보냈다',
   JSON.stringify({ z: askedWho.p_zone, n: askedWho.p_name }));
 
 ok('이제 체크할 수 있다', !(await (await page.$('.survey-option input')).isDisabled()));
+
+/* ── 3-2. 운영진에게만 보이는 「장소 추가」 ─────────────── */
+
+console.log('');
+console.log('── 장소 추가 (운영진)');
+
+ok('이름을 확정하니 「장소 추가」 칸이 나왔다', !!(await page.$('.survey-addplace')));
+
+await page.click('.survey-addplace > summary');
+await page.waitForTimeout(200);
+
+/**
+ * **구역+이름만으로는 못 넣는다.** 칸이 보이는 것과 저장되는 것은 다른 문제다.
+ * 틀린 암호로 눌러 보고 서버가 거절하는 것을 화면이 그대로 보여 주는지 잰다.
+ */
+const fields = await page.$$('.survey-addplace-body .survey-field input');
+await fields[0].fill('테스트식당');
+await fields[1].fill('어딘가 · 도보 5분');
+await fields[2].fill('1인 12,000원쯤');
+await fields[3].fill('한 줄 설명');
+await fields[4].fill('WRONG-PW');
+await page.click('.survey-addplace-body .survey-submit');
+await page.waitForTimeout(700);
+
+const addErr = await page.$eval('.survey-message.error', (e) => e.textContent.trim()).catch(() => '');
+ok('틀린 암호는 거절되고 그 문장이 그대로 보인다',
+  addErr.includes('운영자 암호가 맞지 않습니다'), addErr.slice(0, 34));
+ok('틀린 암호로는 아무것도 안 들어갔다', addedPlaces.length === 0);
+
+await fields[4].fill('FAKE-ADMIN-PW');
+await page.click('.survey-addplace-body .survey-submit');
+await page.waitForTimeout(900);
+
+ok('맞는 암호면 후보가 들어간다', addedPlaces.length === 1);
+const added = addedPlaces[0] ?? {};
+ok('장소 이름·설문 id 를 함께 보냈다',
+  added.p_title === '테스트식당' && typeof added.p_survey === 'string',
+  JSON.stringify({ t: added.p_title, s: added.p_survey }));
+ok('암호를 본문으로 보냈다 — URL 이 아니라',
+  added.p_password === 'FAKE-ADMIN-PW');
+ok('넣고 나면 암호 칸을 비운다',
+  await page.$eval('.survey-addplace-body input[type=password]', (e) => e.value === ''));
 
 /* ── 4. 고르고 제출 ─────────────────────────────────────── */
 
