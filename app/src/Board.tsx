@@ -24,6 +24,39 @@ import {
 const today = () => new Date().toISOString().slice(0, 10)
 
 /**
+ * **보드에 올리지 않는 것 — 영화·전시·공연 모두에 걸린다.**
+ *
+ * 여기는 교회 동아리의 **공개** 화면이다. 예매 순위와 전시·공연 목록은 바깥 집계를
+ * 그대로 비추는 자리라 우리가 고르지 않지만, 두 가지는 거른다.
+ *
+ *   1. 청소년 관람불가 — 회원 중에 청소년이 있을 수 있다
+ *   2. 공포·호러 — 무섭거나 혐오스러운 것을 보러 가는 모임이 아니다
+ *
+ * **자료에서 지우지 않고 여기서 거른다.** `movies.ts` 는 순위를 그대로 적는
+ * 자리이고 전시·공연은 DB 에서 온다. 손으로 지우면 다음 갱신 때 붙여 넣으며
+ * 조용히 되살아난다. 화면에서 거르면 그럴 일이 없다.
+ *
+ * 순위 번호는 그대로 둔다 — 걸러진 자리에서 번호가 하나 건너뛴다.
+ * 다시 매기면 「전국 예매 4위」 라는 말이 거짓이 된다.
+ *
+ * ── 기계가 못 잡는 것 ──────────────────────────────────────
+ * 「혐오스럽다」 는 장르 글자에 안 나온다. 잔혹한 범죄물, 노골적인 폭력,
+ * 시신·훼손을 다룬 전시 같은 것은 **자료를 갱신하는 사람이 보고 뺀다.**
+ * 아래 목록은 그 판단을 대신하지 않는다 — 확실한 것만 자동으로 막는 그물이다.
+ */
+const HIDDEN_AGE_RATINGS = ['청소년 관람불가']
+const HIDDEN_GENRE_WORDS = ['공포', '호러']
+
+const hiddenByGenre = (genre: string | null | undefined) =>
+  HIDDEN_GENRE_WORDS.some((w) => (genre ?? '').includes(w))
+
+/** 전시·공연은 관람등급이 없다. 장르만 본다. */
+const showableEvent = (e: Event) => !hiddenByGenre(e.genre)
+
+const SHOWABLE_MOVIES = MOVIES.filter(
+  (m) => !HIDDEN_AGE_RATINGS.includes(m.ageRating) && !hiddenByGenre(m.genre))
+
+/**
  * `8~9월` — 이번 달과 다음 달.
  *
  * 옛 부제는 이 두 글자를 손으로 박아 두었다. 그 뜻은 전시의 기간이 아니라
@@ -361,8 +394,8 @@ export function Board() {
     const add = (key: string, title: string, subtitle: string, nodes: React.ReactNode[]) => {
       if (nodes.length) out.push({ key, title, subtitle, nodes })
     }
-    const shows = list.filter((e) => e.type === '전시')
-    const gigs = list.filter((e) => e.type === '공연')
+    const shows = list.filter((e) => e.type === '전시' && showableEvent(e))
+    const gigs = list.filter((e) => e.type === '공연' && showableEvent(e))
     if (type === '전체' || type === '전시')
       add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
         shows.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
@@ -372,7 +405,8 @@ export function Board() {
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
-        MOVIES.slice(0, type === '영화' ? 10 : 5).map((m) => <MovieCard key={m.id} m={m} area={area} />))
+        SHOWABLE_MOVIES.slice(0, type === '영화' ? 10 : 5)
+          .map((m) => <MovieCard key={m.id} m={m} area={area} />))
     // 소식은 아래 NewsLine 이 맡는다. 빼지 않으면 「그 밖에」 에
     // 관람료 · 주차 항목이 붙은 전시 카드 모양으로 한 번 더 뜬다.
     const rest = list.filter((e) =>
