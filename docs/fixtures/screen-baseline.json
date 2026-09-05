@@ -831,7 +831,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 12839,
+   "textLength": 12855,
    "cardCount": 21,
    "chipCount": 0
   }
@@ -1666,7 +1666,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 12839,
+   "textLength": 12855,
    "cardCount": 21,
    "chipCount": 0
   }
