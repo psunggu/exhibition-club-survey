@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
 import {
-  MEETUPS, monthsToShow, pastMonthsToShow, TENTATIVE, type Meetup,
+  isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, TENTATIVE, type Meetup,
 } from './data/meetups'
 
 /**
@@ -52,8 +52,27 @@ function DayBlock({ date }: { date: string }) {
  * 칩의 두 축. 성격은 `regular|casual` 이 색을 정하고, 상태는 `kind` 가 채움을 정한다.
  * 갈래(전시·박물관·영화…)는 여기 들어오지 않는다 — 색을 갖지 않기 때문이다.
  */
-function chipClass(m: Meetup) {
-  return ['chip', m.kind, m.regular ? 'regular' : 'casual', 'event-trigger'].join(' ')
+/** 칩 색은 **오늘 기준 갈래**를 따른다 — 관람일이 지나면 저절로 흐려진다. */
+function chipClass(m: Meetup, today: string) {
+  return ['chip', shownKind(m, today), m.regular ? 'regular' : 'casual', 'event-trigger'].join(' ')
+}
+
+/**
+ * 완료 목록에 실을 한 줄.
+ *
+ * 손으로 적은 `completedRow` 가 있으면 그것을 쓴다 — 참석 인원처럼 자료에 없는 것이
+ * 거기 들어 있다. 없으면 **날짜에서 짓는다.** 예전에는 없으면 아무 데도 안 떴다.
+ */
+function completedLine(m: Meetup): string {
+  if (m.completedRow) return m.completedRow
+  // 손으로 적은 줄과 같은 모양으로 짓는다 — 「8/29 (토) 가우디 서울전 관람 · 신사하우스」.
+  // 요일은 짧게(KO_WEEK 은 「토요일」 이라 첫 글자만), 장소는 첫 마디만 —
+  // venue 에는 「… · 지하 1층 3·4·5전시실, 2층 …」 처럼 긴 것이 들어 있어 한 줄을 넘긴다.
+  const w = (KO_WEEK[new Date(`${m.date}T00:00:00Z`).getUTCDay()] ?? '').slice(0, 1)
+  const [, mo, d] = m.date.split('-')
+  const head = `${Number(mo)}/${Number(d)}${w ? ` (${w})` : ''}`
+  const where = ((m.venue ?? '').split(' · ')[0] ?? '').trim()
+  return [head, m.title || m.chip, where].filter(Boolean).join(' · ')
 }
 
 export function Calendar() {
@@ -106,7 +125,7 @@ export function Calendar() {
   }, [])
 
   const upcoming = MEETUPS.filter((m) => m.kind === 'conf' && m.date >= today)
-  const done = MEETUPS.filter((m) => m.completedRow).sort((a, b) => b.date.localeCompare(a.date))
+  const done = MEETUPS.filter((m) => isDone(m, today)).sort((a, b) => b.date.localeCompare(a.date))
 
   /**
    * 완료된 모임을 **해 → 달**로 묶는다.
@@ -209,7 +228,7 @@ export function Calendar() {
             <span className={isToday ? 'dnum is-today' : 'dnum'}>{c.day}</span>
             {isToday && <span className="tlab">오늘</span>}
             {list.map((m) => (
-              <button key={m.id} type="button" className={chipClass(m)}
+              <button key={m.id} type="button" className={chipClass(m, today)}
                 aria-haspopup="dialog"
                 aria-label={`${Number(c.date.slice(5, 7))}월 ${c.day}일 ${m.chip} 상세 보기`}
                 onClick={(ev) => openDialog(m, ev.currentTarget)}>
@@ -458,7 +477,7 @@ export function Calendar() {
                 <div className="completed-list">
                   {rows.map((m) => (
                     <p key={m.id} className="drow">
-                      <span className="ck">✓</span><span>{m.completedRow}</span>
+                      <span className="ck">✓</span><span>{completedLine(m)}</span>
                     </p>
                   ))}
                 </div>
