@@ -211,27 +211,41 @@ const todayKst = new Intl.DateTimeFormat('en-CA', {
 const daysSince = (iso) => Math.round(
   (Date.parse(`${todayKst}T00:00:00Z`) - Date.parse(`${iso}T00:00:00Z`)) / 86400000);
 
+/** 화면과 같은 규칙 — meetups.ts 의 isDone 과 짝이다. 'dead'·'tent' 는 다녀올 것이 없다. */
+const isDoneByDate = (m) =>
+  m.kind !== 'dead' && m.kind !== 'tent' && (m.kind === 'done' || daysSince(m.date) > 0);
+
 const stale = [];
 for (const m of meetups) {
   // 'dead' 는 모임이 아니라 예매 마감일 같은 줄이다. 다녀올 것이 없으니 완료도 없다.
   if (m.kind === 'dead') continue;
 
-  if (m.kind === 'done' && !m.completedRow) {
-    fail(`${m.id}: kind 가 'done' 인데 완료 줄(completedRow)이 비어 있다 `
-      + '— 달력의 「완료된 모임」 목록은 완료 줄이 있는 것만 싣는다. 이대로면 어디에도 안 뜬다');
+  /**
+   * **완료는 이제 날짜에서 나온다** (2026-09-05 · meetups.ts 의 `isDone`).
+   * 관람일이 지나면 손대지 않아도 완료 목록에 뜨고, 완료 줄이 없으면
+   * 날짜·제목·장소로 지어 낸다. 그래서 예전의 두 규칙은 잡을 것이 없어졌다 —
+   *
+   *   · 'done' 인데 완료 줄이 없다  → 이제 지어 낸 줄로 뜬다
+   *   · 지난 'conf' 를 안 옮겼다    → 이제 저절로 옮겨진다 (14일 규칙)
+   *
+   * 대신 **지어 낼 거리가 있는지**를 본다. 제목도 칩 글자도 없으면 날짜만 남아
+   * 「9/19 ·」 같은 줄이 뜬다 — 그건 안 뜨는 것만큼 나쁘다.
+   */
+  if (isDoneByDate(m) && !m.completedRow && !m.title && !m.chip) {
+    fail(`${m.id}: 지난 모임(${m.date})인데 완료 줄도 제목도 칩 글자도 없다 `
+      + '— 완료 목록에 날짜만 남는다. title 이나 chip 중 하나는 적는다');
   }
   if (m.completedRow && daysSince(m.date) < 0) {
     fail(`${m.id}: 아직 안 지난 모임(${m.date})에 완료 줄이 적혀 있다 `
       + `— 오늘은 ${todayKst} 다. 다녀오지 않은 일을 다녀왔다고 적으면 안 된다`);
   }
-  if (m.kind === 'conf' && !m.completedRow) {
-    const d = daysSince(m.date);
-    if (d >= STALE_FAIL_DAYS) {
-      fail(`${m.id}: ${m.date} 모임이 ${d}일 지났는데 아직 'conf' 이고 완료 줄이 없다 `
-        + '— 달력에서 완료 목록에도 예정 목록에도 안 뜬다. kind 를 done 으로 옮기고 완료 줄을 적는다');
-    } else if (d >= STALE_WARN_DAYS) {
-      stale.push(`${m.id} (${m.date} · ${d}일 지남)`);
-    }
+  /**
+   * 지난 모임에 **손으로 적은 완료 줄**이 없으면 알려만 준다. 지어 낸 줄에는
+   * 참석 인원처럼 자료에 없는 것이 안 들어간다 — 있으면 더 나은 줄이 된다.
+   * 실패로 세지 않는다. 안 적어도 화면은 멀쩡하다.
+   */
+  if (isDoneByDate(m) && !m.completedRow) {
+    stale.push(`${m.id} (${m.date} · 지어 낸 줄로 뜬다)`);
   }
 }
 
