@@ -197,12 +197,11 @@ for (const m of meetups.filter((x) => x.date >= RULE_FROM)) {
  *
  * ── 셋 가운데 둘만 곧바로 실패로 본다 ───────────────────────
  * 앞의 둘은 **날짜를 안 탄다** — 언제 돌려도 답이 같은 논리 모순이라 바로 실패다.
- * 마지막 하나는 날짜를 타므로 유예를 둔다. 모임 다음 날부터 실패로 처리하면
- * 아직 완료 줄 문구를 못 정한 사이에 관계없는 작업까지 막힌다.
- * 그렇다고 영영 경고로만 두면 아무도 안 본다. 그래서 **알리되, 2주가 지나면 실패**다.
+ * 마지막 하나는 **실패가 아니라 알림이다** (2026-09-05).
+ * 완료 처리가 날짜에서 저절로 되므로(meetups.ts 의 isDone), 손으로 적은 완료 줄이
+ * 없어도 모임은 완료 목록에 뜬다 — 다만 참석 인원처럼 자료에 없는 것이 안 들어간다.
+ * 있으면 더 나은 줄이 될 뿐이라, 막을 일은 아니고 알려만 준다.
  */
-const STALE_WARN_DAYS = 1;    // 이 날부터 알린다
-const STALE_FAIL_DAYS = 14;   // 이 날부터 실패로 본다
 
 /** 오늘(KST). 이 검사만 진짜 날짜를 본다 — 낡았는지를 묻는 검사이기 때문이다. */
 const todayKst = new Intl.DateTimeFormat('en-CA', {
@@ -258,10 +257,12 @@ if (fails.length) {
 }
 
 if (stale.length) {
-  console.log(`\n⚠ 다녀왔는데 완료 표시가 안 된 모임 ${stale.length}건 — 달력에서 안 보인다`);
+  console.log('');
+  console.log(`· 지난 모임 ${stale.length}건은 완료 줄을 지어 내 보여 준다 — 화면은 멀쩡하다`);
   stale.forEach((t) => console.log(`  · ${t}`));
-  console.log("  app/src/data/meetups.ts 에서 kind 를 'done' 으로 옮기고 completedRow 를 적는다.");
-  console.log(`  ${STALE_FAIL_DAYS}일이 지나면 실패로 바뀐다.\n`);
+  console.log('  참석 인원처럼 남기고 싶은 것이 있으면 meetups.ts 에 completedRow 를 적는다.');
+  console.log('  안 적어도 된다 — 실패로 세지 않는다.');
+  console.log('');
 }
 
 const n = (p) => meetups.filter(p).length;
