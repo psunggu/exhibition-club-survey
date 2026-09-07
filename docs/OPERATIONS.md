@@ -34,7 +34,7 @@
 kakao-digest\scripts\weekly_collect.ps1     내보내기 → 누적 → LLM 요약 → output\digest-YYYYMMDD-YYYYMMDD.json
 npm run digest:public -- C:\D\Project\kakao-digest\output\digest-….json
 node scripts/validate-weekly-digest.mjs
-git commit -am "정리봇 M월 D일 ~ M월 D일" && git push
+git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
 ```
 
 - `digest:public` 이 원본(개인정보 포함)을 공개 틀로 옮긴다 — 기간·시각·대화 수·요약·확인사항·결정·확인 중.
@@ -53,7 +53,7 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push
 ```
 npm run board:movies
 npm run check:quick
-git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && git push
+git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
 ```
 
 - `board:movies` 는 KOBIS 실시간 예매율 상위 10편을 받아 `movies.ts` 를 다시 쓰고, `App.tsx` 의 갱신일을 오늘로 올리고,
@@ -97,7 +97,7 @@ git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && 
 
 ```
 npm run build && npm run screens:save && npm run check:quick
-git commit -am "10월 정기관람을 달력에 올린다" && git push
+git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
 ```
 
 ## AI 세션에서 토큰을 아끼는 법
@@ -107,5 +107,9 @@ git commit -am "10월 정기관람을 달력에 올린다" && git push
 - 검사는 `check:quick`(약 15초) 을 기본으로 한다. `check`(약 2분 · 통과 로그 120줄)는 화면·기능 변경과 PR 때만.
   긴 검사 출력은 `| tail -20` 으로 잘라 읽는다.
 - 세션 시작 루틴은 `git fetch` 한 줄이다. `kakao-digest` 저장소는 정리봇을 갱신할 때만 본다.
-- 콘텐츠 커밋은 PR 없이 `main` 에 직접 올린다. PR 본문·리뷰 왕복이 콘텐츠 갱신에는 낭비다.
+- `main` 은 직접 푸시가 막혀 있다(ruleset). 콘텐츠 커밋도 PR 이지만 **본문은 한 줄, CI 통과 즉시 스스로 머지**한다. 리뷰 왕복을 두지 않는다.
+
+```bash
+git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
+```
 - 커밋 메시지는 한 줄이다. 근거를 길게 적을 일이면 코드 주석이 아니라 `docs/HISTORY.md` 에 한 문단으로 적는다.
