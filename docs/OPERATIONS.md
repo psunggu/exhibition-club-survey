@@ -34,7 +34,7 @@
 kakao-digest\scripts\weekly_collect.ps1     내보내기 → 누적 → LLM 요약 → output\digest-YYYYMMDD-YYYYMMDD.json
 npm run digest:public -- C:\D\Project\kakao-digest\output\digest-….json
 node scripts/validate-weekly-digest.mjs
-git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
+git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && gh pr create --fill
 ```
 
 - `digest:public` 이 원본(개인정보 포함)을 공개 틀로 옮긴다 — 기간·시각·대화 수·요약·확인사항·결정·확인 중.
@@ -53,7 +53,7 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
 ```
 npm run board:movies
 npm run check:quick
-git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
+git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && git push -u origin HEAD && gh pr create --fill
 ```
 
 - `board:movies` 는 KOBIS 실시간 예매율 상위 10편을 받아 `movies.ts` 를 다시 쓰고, `App.tsx` 의 갱신일을 오늘로 올리고,
@@ -97,7 +97,7 @@ git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && 
 
 ```
 npm run build && npm run screens:save && npm run check:quick
-git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
+git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin HEAD && gh pr create --fill
 ```
 
 ## AI 세션에서 토큰을 아끼는 법
@@ -110,6 +110,9 @@ git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin
 - `main` 은 직접 푸시가 막혀 있다(ruleset). 콘텐츠 커밋도 PR 이지만 **본문은 한 줄, CI 통과 즉시 스스로 머지**한다. 리뷰 왕복을 두지 않는다.
 
 ```bash
-git push -u origin HEAD && gh pr create --fill && gh pr checks --watch && gh pr merge --squash
+git push -u origin HEAD && gh pr create --fill
+gh pr checks --watch && gh pr merge --squash
 ```
+
+  자동 머지(`--auto`)는 저장소 설정에서 꺼져 있다. PR 을 연 뒤 **한 번 더 푸시하면 앞 검사가 취소되어** `--watch` 가 실패로 끝나니, 그때는 `gh pr checks` 로 새 검사가 통과했는지 보고 머지한다. 머지 뒤 배포 워크플로가 같은 검사를 한 번 더 돌린다 — 거기서 실패하면 배포되지 않는다.
 - 커밋 메시지는 한 줄이다. 근거를 길게 적을 일이면 코드 주석이 아니라 `docs/HISTORY.md` 에 한 문단으로 적는다.
