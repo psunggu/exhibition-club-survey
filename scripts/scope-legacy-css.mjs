@@ -33,7 +33,8 @@
  * 맨 앞에 붙이는 이유는 뒤에 오는 규칙이 이기게 하기 위해서다 — 변수를 먼저 세우고,
  * 그것을 쓰는 규칙이 뒤따른다.
  *
- * 옛 정적 페이지 두 장은 tokens.css 를 그대로 <link> 한다. 그쪽은 `:root` 그대로다.
+ * 옛 정적 페이지 자체는 2026-09-08 에 없앴다. app/public/styles.css · notice.css 는
+ * **이 생성기의 원본으로만** 남아 있고 배포되지 않는다 (vite.config.ts 의 allowlist 에 없다).
  *
  * 원본(app/public/styles.css · notice.css · tokens.css)은 **손대지 않는다.**
  * 이 스크립트가 app/src/styles/legacy-*.css 를 다시 만든다. 손으로 고치지 말 것.

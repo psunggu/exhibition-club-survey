@@ -83,7 +83,59 @@ export type Meetup = {
   surveyIds?: string[]
 }
 
-export const MEETUPS: Meetup[] = [
+/**
+ * **새 항목은 필수 필드만 적는다** (2026-09-08). 나머지는 `withDefaults` 가 채운다.
+ *
+ * 예전에는 항목마다 열일곱 칸을 다 적었다 — 그 가운데 날짜 표기 · 상태 딱지 · 지도 링크는
+ * 다른 칸에서 그대로 나오는 값이라 손으로 적을수록 어긋날 자리만 늘었다.
+ * 기존 항목은 다 적힌 채로 두었다. 적힌 값이 있으면 그것이 이긴다.
+ *
+ * 채워지는 것
+ *   dateLabel   date 에서          '2026. 7. 5. (일)'
+ *   status·tone kind·regular 에서  conf+regular → 공식 정기관람/official · conf → 확정/conf
+ *                                  done → 완료/done · dead → 예매 마감/dead · tent → 조율 중/tent
+ *   mapUrl      venue 로 카카오맵 검색 (원치 않으면 mapUrl: '' 를 적는다)
+ *   description · note · infoUrl · infoLabel · completedRow   빈 문자열
+ */
+export type MeetupInput =
+  Omit<Meetup, 'dateLabel' | 'status' | 'tone' | 'mapUrl' | 'note' | 'infoUrl' | 'infoLabel' | 'completedRow' | 'description'>
+  & Partial<Pick<Meetup, 'dateLabel' | 'status' | 'tone' | 'mapUrl' | 'note' | 'infoUrl' | 'infoLabel' | 'completedRow' | 'description'>>
+
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토']
+
+/** '2026-07-05' → '2026. 7. 5. (일)' — 옛 notice.js 가 쓰던 표기 그대로 */
+export function koDateLabel(iso: string): string {
+  const [y = 0, m = 1, d = 1] = iso.split('-').map(Number)
+  const day = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+  return `${y}. ${m}. ${d}. (${WEEKDAY_KO[day]})`
+}
+
+const DEFAULT_STATUS: Record<MeetupKind, [status: string, tone: string]> = {
+  conf: ['확정', 'conf'],
+  done: ['완료', 'done'],
+  dead: ['예매 마감', 'dead'],
+  tent: ['조율 중', 'tent'],
+}
+
+export function withDefaults(rows: MeetupInput[]): Meetup[] {
+  return rows.map((r) => {
+    const [status, tone] = r.kind === 'conf' && r.regular ? ['공식 정기관람', 'official'] : DEFAULT_STATUS[r.kind]
+    return {
+      dateLabel: koDateLabel(r.date),
+      status,
+      tone,
+      description: '',
+      note: '',
+      infoUrl: '',
+      infoLabel: '',
+      mapUrl: r.venue ? `https://map.kakao.com/?q=${encodeURIComponent(r.venue)}` : '',
+      completedRow: '',
+      ...r,
+    }
+  })
+}
+
+export const MEETUPS: Meetup[] = withDefaults([
   {
     id: 'kickoff',
     date: '2026-07-05',
@@ -464,7 +516,7 @@ export const MEETUPS: Meetup[] = [
     mapUrl: 'https://map.kakao.com/?q=%EA%B2%BD%EB%B3%B5%EA%B6%81',
     completedRow: ''
   }
-]
+])
 
 /**
  * **날짜가 아직 안 정해진 것.**

@@ -91,7 +91,7 @@ for (let m; (m = RE.exec(src)) !== null;) {
   const chunk = src.slice(m.index, next === -1 ? src.length : next);
   const grab = (k) => (new RegExp(`${k}:\\s*'([^']*)'`).exec(chunk) ?? [, ''])[1];
   meetups.push({ id: m[1], date: m[2], chip: m[3], kind: m[4],
-    regular: m[5] === 'true', venueKind: m[6], status: m[7],
+    regular: m[5] === 'true', venueKind: m[6], status: m[7] ?? '',
     title: grab('title'), completedRow: grab('completedRow'),
     description: grab('description') });
 }
