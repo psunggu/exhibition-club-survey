@@ -66,6 +66,8 @@ const dateWithDay = (iso) => `${kDate(iso)}(${WEEKDAY[new Date(`${iso}T12:00:00+
 
 const scrub = (s) => String(s ?? '')
   .replace(/멤버\s*\d+/g, '회원')
+  // LLM 은 날짜를 ISO 로 적는다. 회원 화면은 「9월 19일」 이다.
+  .replace(/\b\d{4}-(\d{2})-(\d{2})\b/g, (_, m, d) => `${Number(m)}월 ${Number(d)}일`)
   .replace(/[<>]/g, '')
   .replace(/\s+/g, ' ')
   .trim();
