@@ -81,7 +81,8 @@ else {
 /* ── 공식 여부는 한 곳에서만 정한다 ──────────────────────── */
 
 const src = fs.readFileSync(path.join(ROOT, 'app/src/data/meetups.ts'), 'utf8');
-const RE = /id:\s*'([\w-]+)',\s*date:\s*'([\d-]+)',\s*chip:\s*'([^']*)',\s*kind:\s*'(\w+)',\s*regular:\s*(\w+),\s*venueKind:\s*'([^']*)',\s*status:\s*'([^']*)'/g;
+// status 는 새 항목(withDefaults 로 채우는 것)에는 없다 — 있으면 읽고 없으면 빈 값
+const RE = /id:\s*'([\w-]+)',\s*date:\s*'([\d-]+)',\s*chip:\s*'([^']*)',\s*kind:\s*'(\w+)',\s*regular:\s*(\w+),\s*venueKind:\s*'([^']*)'(?:,\s*status:\s*'([^']*)')?/g;
 
 const meetups = [];
 for (let m; (m = RE.exec(src)) !== null;) {
