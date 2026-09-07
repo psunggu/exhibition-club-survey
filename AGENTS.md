@@ -25,7 +25,7 @@
 - `app/public/index.html` · `app.js` · `notice.html` · `notice.js` 는 옛 정적 페이지다. 배포되지 않고 2026-09-08 부터 검사기도 읽지 않는다 — **지운다.** `styles.css` · `notice.css` 는 `scope-legacy-css.mjs` 의 원본이라 남긴다.
 - 옛 주소 `notice.html` 은 단톡방에 뿌려져 있어 `vite.config.ts` 가 `#/calendar` 리다이렉트 스텁을 만든다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
-- **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 `main` 에 직접. **화면 · 기능 변경**은 브랜치 + PR + `npm run check`. Supabase · 개인정보 · 인증 · 보안은 반드시 PR.
+- **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
 - `gh` 는 필수가 아니다. `gh-pages` 브랜치는 잔재다.
 
 ## 검사
