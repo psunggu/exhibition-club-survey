@@ -1,20 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+// 공개 요약은 이 JSON 한 파일뿐이다.
+// 옛 notice.js 의 FALLBACK_DIGEST 사본과 notice.html 본문 대조는 2026-09-08 에 없앴다 —
+// 옛 페이지가 배포되지 않게 된 뒤로도 같은 값을 두 곳에 쓰게 만들던 검사였다.
 const digestPath = resolve(
   "app",
   "public",
   "weekly-digest.public.json"
-);
-const noticeScriptPath = resolve(
-  "app",
-  "public",
-  "notice.js"
-);
-const noticeHtmlPath = resolve(
-  "app",
-  "public",
-  "notice.html"
 );
 
 const allowedRootKeys = new Set([
@@ -57,8 +50,6 @@ function assertPublicText(value, path, maxLength) {
 
 const raw = await readFile(digestPath, "utf8");
 const data = JSON.parse(raw);
-const noticeScript = await readFile(noticeScriptPath, "utf8");
-const noticeHtml = await readFile(noticeHtmlPath, "utf8");
 
 if (!data || Array.isArray(data) || typeof data !== "object") {
   fail("최상위 값은 객체여야 합니다.");
@@ -113,6 +104,7 @@ for (const [index, question] of data.open_questions.entries()) {
 
 // 공개 페이지로 나가기 직전의 마지막 방어선이다.
 // 오탐(사람이 한 번 확인)이 미탐(그대로 공개)보다 항상 안전하므로 넉넉하게 잡는다.
+// scripts/digest-to-public.mjs 가 같은 눈으로 먼저 보지만, 손으로 다듬은 뒤를 여기서 다시 본다.
 const sensitivePatterns = [
   { label: "이메일", pattern: /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/u },
   { label: "전화번호", pattern: /(?:01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}/u },
@@ -132,167 +124,12 @@ const sensitivePatterns = [
   { label: "카카오 대화 원문 형식", pattern: /\[[^\]\r\n]+\]\s*\[[^\]\r\n]+\]/u }
 ];
 
-// 게이트를 요약 JSON 한 곳에만 걸면, 사람이 자유 서술로 채우는 notice.html 본문이
-// 검사 밖에 남는다. 개인정보가 섞일 위험은 자동 생성물보다 손으로 쓰는 쪽이 크다.
-const noticeBodyText = noticeHtml
-  .replace(/<script[\s\S]*?<\/script>/gu, " ")
-  .replace(/<style[\s\S]*?<\/style>/gu, " ")
-  .replace(/<[^>]+>/gu, " ")
-  .replace(/\s+/gu, " ");
-
-const scanTargets = [
-  { name: "weekly-digest.public.json", text: JSON.stringify(data) },
-  { name: "notice.html 본문", text: noticeBodyText }
-];
-
-for (const { name, text } of scanTargets) {
-  for (const { label, pattern } of sensitivePatterns) {
-    const hit = text.match(pattern);
-    if (hit) {
-      fail(`${name}에 ${label}로 보이는 값이 있습니다: ${JSON.stringify(hit[0].trim())}`);
-    }
+const text = JSON.stringify(data);
+for (const { label, pattern } of sensitivePatterns) {
+  const hit = text.match(pattern);
+  if (hit) {
+    fail(`weekly-digest.public.json에 ${label}로 보이는 값이 있습니다: ${JSON.stringify(hit[0].trim())}`);
   }
 }
 
-const fallbackMatch = noticeScript.match(/var FALLBACK_DIGEST = (\{[\s\S]*?\n  \});/u);
-if (!fallbackMatch) fail("notice.js에 공개 요약 대체 사본이 없습니다.");
-
-let fallbackData;
-try {
-  fallbackData = JSON.parse(fallbackMatch[1]);
-} catch {
-  fail("notice.js의 공개 요약 대체 사본이 올바른 JSON이 아닙니다.");
-}
-
-if (JSON.stringify(fallbackData) !== JSON.stringify(data)) {
-  fail("notice.js의 공개 요약 대체 사본이 weekly-digest.public.json과 다릅니다.");
-}
-
-const confirmedStart = noticeHtml.indexOf("다가오는 확정 모임");
-const tentativeStart = noticeHtml.indexOf("조율 중 · 미정");
-const calendarStart = noticeHtml.indexOf("한눈에 보는 달력");
-if (!(confirmedStart >= 0 && confirmedStart < calendarStart)) {
-  fail("notice.html의 확정 모임과 달력 영역 순서를 확인할 수 없습니다.");
-}
-if (tentativeStart >= 0 && !(confirmedStart < tentativeStart && tentativeStart < calendarStart)) {
-  fail("notice.html의 조율 중·미정 영역 순서를 확인할 수 없습니다.");
-}
-
-const confirmedEnd = tentativeStart >= 0 ? tentativeStart : calendarStart;
-const confirmedSection = noticeHtml.slice(confirmedStart, confirmedEnd);
-const tentativeSection = tentativeStart >= 0
-  ? noticeHtml.slice(tentativeStart, calendarStart)
-  : "";
-// 일정의 확정·완료 상태가 본문과 달력에서 엇갈리는 회귀를 배포 전에 차단한다.
-//
-// ── 지금은 비어 있다 (2026-09-02) ────────────────────────────────
-// 이 목록은 **얼려 둔 옛 notice.html** 을 기준으로 정리봇 요약을 견준다.
-// 그래서 모임이 하나 끝날 때마다 한 줄씩 빠져 왔다.
-//
-//   history-museum(8/22)  2026-08-23 완료로 옮기며 제거
-//   gaudi-visit(8/29)     2026-09-02 제거 — 아래
-//
-// gaudi-visit 은 meetups.ts:282 에서 이미 `status: '완료'` 다. 달력에도 회색
-// 「관람 완료」 칩으로 있고 완료 목록에도 있다. 그런데 이 검사는 정리봇 요약이
-// 그 모임을 「확정」 이라고 말하기를 요구했다 — **화면과 반대되는 것을 지키는
-// 상태**다. 요약 구간이 8/29 를 지나가는 순간 정상적인 갱신이 실패로 잡힌다.
-//
-// completedEvents 로 옮기지도 못한다. 그쪽은 옛 notice.html 에서 완료 표시를
-// 찾는데, 그 파일은 gaudi-visit 을 확정으로 박아 둔 채 얼어 있다.
-//
-// **목록이 비었다고 지우지 마라.** 아래 for 문과 함께 두면 다음에 확정 일정을
-// 옛 화면에 새로 박을 때 한 줄만 더하면 된다. 지금 살아 있는 정합성 검사는
-// completedEvents 와 그 아래 《오디세이》 검사다.
-const confirmedEvents = [];
-
-for (const expected of confirmedEvents) {
-  const eventMarker = `data-event-id="${expected.id}"`;
-  if (!confirmedSection.includes(eventMarker)) {
-    fail(`${expected.id}가 다가오는 확정 모임 영역에 없습니다.`);
-  }
-  if (tentativeSection.includes(eventMarker)) {
-    fail(`${expected.id}가 조율 중·미정 영역에도 중복되어 있습니다.`);
-  }
-
-  const calendarButton = noticeHtml.match(
-    new RegExp(`<button[^>]*class="[^"]*\\bconf\\b[^"]*"[^>]*${eventMarker}[^>]*>`, "u")
-  );
-  if (!calendarButton) fail(`${expected.id} 달력 표시가 확정 상태가 아닙니다.`);
-
-  if (expected.official) {
-    const officialCard = new RegExp(
-      `<article[^>]*class="[^"]*\\bcard-official\\b[^"]*"[^>]*${eventMarker}`,
-      "u"
-    );
-    if (!officialCard.test(confirmedSection)) {
-      fail(`${expected.id} 카드에 공식 정기관람 표시가 없습니다.`);
-    }
-    if (!calendarButton[0].includes("official")) {
-      fail(`${expected.id} 달력에 공식 정기관람 색상이 없습니다.`);
-    }
-  }
-
-  const detailsStart = noticeScript.indexOf(`"${expected.id}": {`);
-  const detailsEnd = noticeScript.indexOf("\n    }", detailsStart);
-  const detailsBlock = detailsStart >= 0 && detailsEnd > detailsStart
-    ? noticeScript.slice(detailsStart, detailsEnd)
-    : "";
-  const expectedTone = expected.official ? "official" : "conf";
-  if (!detailsBlock.includes(`tone: "${expectedTone}"`)) {
-    fail(`${expected.id} 상세 팝업 상태가 ${expectedTone}이 아닙니다.`);
-  }
-
-  const digestItem = data.highlights.find((item) => item.title.includes(expected.titleToken));
-  if (!digestItem) fail(`${expected.titleToken} 일정이 주간 정리봇에 없습니다.`);
-  const digestText = `${digestItem.label} ${digestItem.title} ${digestItem.text}`;
-  if (expected.official && digestItem.label !== "공식 정기관람") {
-    fail(`${expected.titleToken} 일정이 주간 정리봇에서 공식 정기관람으로 표시되지 않습니다.`);
-  }
-  for (const token of expected.digestTokens) {
-    if (!digestText.includes(token)) {
-      fail(`${expected.titleToken} 일정의 '${token}' 정보가 주간 정리봇과 일치하지 않습니다.`);
-    }
-  }
-}
-
-const completedEvents = [
-  { id: "classic-concert", completedDate: "2026-08-15" },
-  { id: "odyssey-movie", completedDate: "2026-08-16" }
-];
-
-for (const expected of completedEvents) {
-  const eventMarker = `data-event-id="${expected.id}"`;
-  if (confirmedSection.includes(eventMarker)) {
-    fail(`${expected.id}가 완료됐는데 다가오는 확정 모임 영역에 남아 있습니다.`);
-  }
-  if (tentativeSection.includes(eventMarker)) {
-    fail(`${expected.id}가 완료됐는데 조율 중·미정 영역에 있습니다.`);
-  }
-
-  const completedRow = noticeHtml.match(
-    new RegExp(`<p[^>]*${eventMarker}[^>]*>`, "u")
-  );
-  if (!completedRow || !completedRow[0].includes(`data-completed-date="${expected.completedDate}"`)) {
-    fail(`${expected.id}가 완료된 모임 목록에 올바른 날짜로 없습니다.`);
-  }
-
-  const calendarButton = noticeHtml.match(
-    new RegExp(`<button[^>]*class="[^"]*\\bdone\\b[^"]*"[^>]*${eventMarker}[^>]*>`, "u")
-  );
-  if (!calendarButton) fail(`${expected.id} 달력 표시가 완료 상태가 아닙니다.`);
-
-  const detailsStart = noticeScript.indexOf(`"${expected.id}": {`);
-  const detailsEnd = noticeScript.indexOf("\n    }", detailsStart);
-  const detailsBlock = detailsStart >= 0 && detailsEnd > detailsStart
-    ? noticeScript.slice(detailsStart, detailsEnd)
-    : "";
-  if (!detailsBlock.includes('tone: "done"') || !detailsBlock.includes('status: "완료')) {
-    fail(`${expected.id} 상세 팝업 상태가 완료가 아닙니다.`);
-  }
-}
-
-if (tentativeSection.includes("《오디세이》")) {
-  fail("확정된 영화 《오디세이》가 조율 중·미정 영역에 남아 있습니다.");
-}
-
-console.log("주간 정리봇 공개 데이터와 모임 일정 안내 정합성 검증 통과");
+console.log("주간 정리봇 공개 데이터 검증 통과");

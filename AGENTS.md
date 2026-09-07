@@ -1,350 +1,100 @@
-# AGENTS.md — 프로젝트 컨텍스트 (AI 코딩 에이전트용)
+# AGENTS.md — 프로젝트 규칙 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-09-05 (완료 자동 처리 · 운영자 관문 POST 전용 · 보드 갱신 · 달력 격자 자동화)
-> 이 문서는 Codex, Claude Code 등 AI 에이전트가 이어서 개발할 수 있도록 프로젝트 상태를 요약한다.
+> 최종 갱신: 2026-09-08. **여기에는 규칙만 적는다.**
+> 왜 그렇게 정했는지와 무슨 일이 있었는지는 `docs/HISTORY.md`, 정기 갱신 절차는 `docs/OPERATIONS.md`.
+> 이 문서는 세션마다 읽히므로 길어지면 그만큼 매번 비용이 든다 — 근거는 HISTORY 로 보낸다.
 
-## 프로젝트 개요
+## 무엇인가
 
-41교구 전시·박물관 동아리 지원 사이트. 구성 요소는 8개:
+41교구 전시·박물관 동아리 사이트. Vite + React 해시 라우팅 SPA(`app/`), GitHub Pages 배포, Supabase(`public` 스키마).
+라우트는 아홉 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/etc` · `#/survey/admin`.
 
-1. **문화 콘텐츠 공유 보드** — `app/public/index.html` + `app.js` + `styles.css`. 100주년 기념교회 41교구 전시·박물관 동아리에서 사용하는 서울/경기/인천 탭, 추천 전시·음악공연·영화 목록, 카카오톡 공유문 복사 기능. 이벤트 데이터는 `app.js` 안의 배열에 하드코딩되어 있고 매주 수요일·토요일 22시에 갱신함. Supabase 연동 있음(`config.js`).
-2. **모임 일정 화면** — SPA 라우트 `#/calendar` (`app/src/Calendar.tsx`). 2026-08 이식 전에는 `app/public/notice.html` + `notice.css` + `notice.js` 였고, 그 파일들은 지금도 **지우면 안 된다** — `notice.css` 는 `legacy-notice.css` 의 원본이고(생성기가 만든다), `notice.html` · `notice.js` 는 `validate-weekly-digest` · `validate-board-parity` 가 읽는다. 다만 **일정 화면은 2026-08-30 에 `compare-with-legacy` · `compare-visible-text` 대조에서 뺐다** — 옛 페이지는 일정이 손으로 박힌 채 얼어 있어서, 모임이 완료될 때마다 정상적인 변화를 실패로 부르기 때문이다. 이유는 그 스크립트 안에 적어 두었다. 상단 `주간 정리봇`은 `weekly-digest.public.json`을 읽고, 실패 시 동일한 공개용 대체 사본을 표시한다. 두 데이터는 검증 스크립트가 일치 여부를 검사한다. 단톡방에 URL이 공유되어 회원들이 수시로 열람 — 방장이 공지 일정표에 등록함. 아래 "notice 페이지" 절 참고.
-3. **Google Form 설문 패키지** — `apps-script/Code.gs`(Form 2개+Sheet 1개 자동 생성), `docs/`, `sheets/` 샘플. 카톡 톡게시판 투표는 데이터 추출이 불가능해서, 참석 설문을 구글폼으로 대체하기 위한 것. **자동 생성분은 아직 미가동** (config.js에 Form URL 없음). 다만 **구글 폼 자체는 손으로 만들어 이미 한 번 돌렸다** — 2026-08-23~26 운영 설문(17분 응답). 그 결과가 아래 6·8번이다.
-4. **Telegram 업데이트 스크립트** — `scripts/send-telegram-update.js`. `app.js`의 recommendedEvents를 파싱해 텔레그램으로 주간 추천 목록 발송. `--dry-run` 지원.
-5. **설문 결과 회신 페이지(회원용)** — `app/public/survey-result.html` + `survey-result.css`, 정적 파일이며 `#/calendar` 화면의 카드에서 들어간다. 2026-08 운영 설문의 **집계 숫자만** 싣는다. 이름·자유서술 원문·참여 빈도별 집단 구분·미응답자 수는 넣지 않는다 — 공개 페이지라 회원이 자기 얘기로 읽을 수 있는 것은 전부 뺐다.
-6. **보드 소식 한 줄** — 보드 목록 머리글 아래에 문화예술 소식(영상·기사) 하나를 링크로 건다.
-   `public.events` 의 `type = '소식'` 행이고, 운영자 화면에서 올리고·고치고·지운다.
-   아래 「보드 소식」 절 참고.
-7. **구글 설문 결과 갈래** — 설문 화면의 여섯째 탭 `#/survey/google`. 구글 폼으로 받은 회차를
-   모아서 센 숫자로 보여 주고, 자세한 집계는 5번 페이지로 넘긴다. 회차 자료는
-   `app/src/data/googleSurveys.ts`. **이 갈래는 투표를 받지 않는다** — DB 갈래가 아니다.
-   아래 「구글 설문 갈래」 절 참고.
-8. **운영진 전용 분석 가이드** — 구글 설문 회차마다 딸리는 긴 분석 문서. 운영자 화면에서만
-   보이고, 본문은 **저장소가 아니라 잠긴 표 `public.admin_guides`** 에만 산다.
-   아래 「운영진 전용 분석 가이드」 절 참고.
+| 화면 | 코드 | 데이터의 정본 |
+|---|---|---|
+| 보드 `#/` | `Board.tsx` | 전시·공연 `public.events`(운영자가 Supabase 에서) · 영화 `data/movies.ts`(`npm run board:movies`) · 소식 한 줄 `events` 의 `type='소식'`(운영자 화면) |
+| 일정 `#/calendar` | `Calendar.tsx` | 모임 `data/meetups.ts` · 정리봇 `app/public/weekly-digest.public.json`(`npm run digest:public`) |
+| 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | DB 갈래 다섯(exhibition · datetime · meal · club · etc) + `google`(화면만, `data/googleSurveys.ts`). 운영자 화면 `#/survey/admin` 에서 만든다 |
+| 정적 | `survey-result.html` · `meal-review.html` | 회원용 설문 결과 · 운영진 식당 검토. `copyLiveAssets` 목록에 있다 |
 
-## 배포 파이프라인 (중요)
+미가동: `apps-script/Code.gs`(구글폼 자동 생성). 구글 폼은 손으로 만들어 이미 한 번 돌렸다.
 
-- `main` 브랜치에 푸시하면 `.github/workflows/deploy-pages.yml`이 **`npm run build` 산출물인 `dist/`를 GitHub Pages 루트로 배포**한다. (2026-08 이식 완료. 그 전에는 `app/public/`을 그대로 올렸다.)
-- **`app/public/`은 `publicDir`이 아니다.** Vite는 `root: 'app'`으로 돌고, `app/public`의 파일은 `vite.config.ts`의 `copyLiveAssets` **allowlist에 이름을 적은 것만** `dist/`에 실린다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404**가 난다. 선례: `meal-review.html`, `survey-result.html`.
-- 화면은 해시 라우팅 SPA다 (`app/src/lib/router.ts`). 카카오톡 인앱 브라우저 때문에 해시를 쓴다 — 히스토리 API 방식으로 바꾸지 않는다. 라우트는 아홉이다:
-  `#/`(보드) · `#/calendar`(일정) · `#/survey`(관람 장소) · `#/survey/datetime` ·
-  `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/etc` · `#/survey/admin`
-- 옛 주소 `notice.html`은 단톡방에 이미 뿌려져 있어서, 빌드가 `#/calendar`로 넘기는 리다이렉트 스텁을 대신 만들어 둔다. 이 스텁을 지우면 옛 링크가 죽는다.
-- 일정·참여 인원·문구처럼 공개 콘텐츠만 바꾸는 소규모 수정은 검증 후 일반 Git으로 `main`에 직접 커밋·푸시한다.
-- 화면 구조나 기능 변경은 별도 브랜치와 PR을 권장한다. Supabase·개인정보·인증·보안 변경은 반드시 별도 브랜치와 PR로 검토한다.
-- GitHub CLI(`gh`)는 필수가 아니다. PR 또는 Actions를 터미널에서 관리할 때만 선택적으로 사용하며, 기본 배포는 Git Credential Manager와 일반 Git을 사용한다.
-- 라이브 URL:
-  - 보드: https://psunggu.github.io/exhibition-club-survey/
-  - 일정: https://psunggu.github.io/exhibition-club-survey/#/calendar (옛 `notice.html` 주소는 여기로 넘어간다)
-  - 설문 결과 회신(회원용): https://psunggu.github.io/exhibition-club-survey/survey-result.html
-- `gh-pages` 브랜치는 과거 방식의 잔재. 현재는 Actions 배포만 사용.
+## 배포
+
+- `main` 푸시 → `deploy-pages.yml` → `npm run build` 의 `dist/` → Pages. 라이브: https://psunggu.github.io/exhibition-club-survey/ (`#/calendar` · `survey-result.html`).
+- **`app/public/` 은 `publicDir` 이 아니다.** `vite.config.ts` 의 `copyLiveAssets` 목록에 적은 것만 나간다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404** 다.
+- `app/public/index.html` · `app.js` · `notice.html` · `notice.js` 는 옛 정적 페이지다. 배포되지 않고 2026-09-08 부터 검사기도 읽지 않는다 — **지운다.** `styles.css` · `notice.css` 는 `scope-legacy-css.mjs` 의 원본이라 남긴다.
+- 옛 주소 `notice.html` 은 단톡방에 뿌려져 있어 `vite.config.ts` 가 `#/calendar` 리다이렉트 스텁을 만든다. 이 스텁을 지우면 옛 링크가 죽는다.
+- 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
+- **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 `main` 에 직접. **화면 · 기능 변경**은 브랜치 + PR + `npm run check`. Supabase · 개인정보 · 인증 · 보안은 반드시 PR.
+- `gh` 는 필수가 아니다. `gh-pages` 브랜치는 잔재다.
+
+## 검사
+
+- `npm run check:quick` — 빌드 + 정적 검사(약 15초). `npm run check` — 여기에 Playwright 화면 검사(접근성 · 설문 · 운영자 · 화면 대조)까지(약 2분).
+- `screens:check` 는 화면이 **의도치 않게** 바뀌었는지 본다. 화면을 일부러 바꿨으면 `screens:save`. 영화 · 모임처럼 **콘텐츠가 바뀌어도 화면 숫자가 달라지므로** save 가 따라온다(`board:movies` 는 스스로 한다).
+- 검사기가 못 잡는 것: 375px 가로 스크롤 · 캐시 버스팅 `?v=` 누락 · CSP 위반(브라우저 콘솔에만 뜬다) · React 가 만드는 iframe(`frame-src` 없음) · 달력 「오늘」 마커.
+- `validate-survey-admin-ui` 는 `.admin-card` · `.note*` 같은 클래스 이름을 차례로 짚어 「몇 번째 설문」 을 고른다. **새 구역은 새 이름**(`.admin-news-card` · `.admin-guide*` · `.gdoc-*`)을 쓰고, 모양이 같으면 CSS 선택자만 더한다.
+- 새 표 · 함수는 `validate-survey-schema.mjs` 의 `LOCKED` · `CALLABLE` 목록에 함께 적는다. 안 적으면 검사 밖이다.
 
 ## 개발 규칙
 
-- **CSP가 엄격함**: 페이지들이 `<meta http-equiv="Content-Security-Policy">`로 `style-src 'self'`, `script-src 'self'` 등을 선언. **외부 CDN(폰트/JS/CSS), 인라인 `<style>`·`style=` 속성·인라인 `<script>` 사용 금지.** 스타일은 별도 .css, 스크립트는 별도 .js 파일로.
-  - **무엇이 되고 무엇이 안 되는지는 2026-08-31 에 Playwright 로 실측했다** (프로젝트 CSP 문자열 그대로):
-    | 방식 | 결과 |
-    |---|---|
-    | React `style={{}}` (CSSOM 프로퍼티 세터) | **된다** — `SurveyChart` 가 이미 쓰는 길 |
-    | SVG 표현 속성 `<rect width fill>` · `<circle cx r>` | **된다** — style 속성이 아니라 CSP 대상이 아니다 |
-    | HTML `style="…"` 속성 · `setAttribute('style')` | **막힌다** (`style-src-attr 'none'`) |
-    | SVG 내부 `<style>` · 동적 `<style>` 주입 | **막힌다** |
-    지표·차트는 위 두 가지로만 그린다. 반복 스타일은 `.css` 클래스로.
-  - **유튜브 등 iframe 임베드는 안 한다.** `frame-src` 가 없어 `default-src 'self'` 로 폴백되므로
-    막힌다. 열려면 `frame-src https://www.youtube-nocookie.com https://www.youtube.com` 한 줄이면
-    되지만 **그 실수를 잡아 줄 검사기가 없다** — `validate-csp-build` 는 dist 의 `.html`·`.css` 만
-    읽어 React 가 만드는 iframe 을 못 보고, CSP meta 가 「있는지」만 보고 내용은 안 본다.
-    빠뜨려도 `npm run check` 는 초록불이고 회원 화면에서만 죽는다. 바깥으로 **나가는** `<a href>` 는
-    부르는 것이 아니라 가는 것이라 CSP 가 막지 않는다 — 영상은 그 길로 보낸다.
-  - **meta 의 `frame-ancestors` 는 브라우저가 무시한다** (실측 확인). meta 에서 무시되는 것은
-    `report-uri` · `frame-ancestors` · `sandbox` 셋이다. 여섯 파일에 적혀 있지만 전부 무효고,
-    GitHub Pages 는 응답 헤더를 못 붙여 고칠 길이 사실상 없다. **막고 있다고 믿지 말 것.**
-    (같은 meta 에서 `frame-src` 는 정상 동작한다 — 둘을 섞지 않는다.)
-- **캐시 버스팅**: CSS/JS 링크에 `?v=YYYYMMDD-n` 쿼리를 붙이고, 내용 수정 시 버전을 올린다. (예: `notice.css?v=20260721-1`)
-- **모바일 우선**: 회원 대부분이 카톡 링크로 휴대폰에서 열람. 375px 폭에서 가로 스크롤 없어야 함.
-- **한국어 텍스트 줄바꿈**: `word-break: keep-all` 사용 (음절 단위 줄바꿈 방지).
-  `styles.css`·`notice.css` 의 `body` 에 걸어 두었으므로 낱낱의 규칙에 다시 적을 필요는 없다.
-- **색·모서리·그림자·서체는 `app/public/tokens.css` 한 곳에만 적는다.** 다른 CSS 는 `var(--…)` 로
-  참조만 한다. 팔레트는 중립 8 · 브랜드 3 · 상태 4 로 열다섯이고, **여기 없는 색을 새로 만들지 않는다.**
-  - 색이 말하는 것은 **상태**뿐이다. 갈래(전시·공연·영화 / 설문 갈래)는 색으로 나누지 않고 글자로 적는다.
-  - `--warn` 은 「확인 필요」, `--stop` 은 「마감·오류」 전용이다. 다른 뜻에 쓰면 색이 글자를 부정한다.
-  - 세 화면에 닿는 길: 옛 정적 페이지는 `tokens.css` 를 `<link>` 하고, SPA 는
-    `scripts/scope-legacy-css.mjs` 가 두 스코프로 한 벌씩 복사해 생성물 앞에 붙인다.
-    설문 화면의 body 클래스는 `calendar-page` 라 그쪽 한 벌을 같이 쓴다.
-- **여백은 4 · 8 · 12 · 16 · 22 · 32 눈금을 쓴다 — 새로 쓰는 값에만 적용한다.**
-  기존 336곳은 눈금 밖이지만 손대지 않기로 했다 (2026-08-30). 대부분이 `10px`·`14px` 인데,
-  올리면 375px 에서 넘칠 위험이 있고 내리면 화면이 빡빡해진다 — 회원에게 안 보이는 이득을 위해
-  공개 화면 전체를 2px 씩 움직일 이유가 없다고 보았다. 고칠 일이 생긴 자리부터 눈금으로 옮긴다.
-- **서체는 저장소 안에 있다**: `app/public/fonts/` 의 Pretendard 한글 서브셋 woff2 다섯 굵기
-  (400·600·700·800·900 · 합계 1.35MB · SIL OFL 1.1, `OFL.txt` 동봉). CSP 가 CDN 을 막으므로
-  파일을 넣는다. `@font-face` 는 `tokens.css` 에 있다.
-  - **새 정적 파일을 `app/public/` 에 넣으면 `vite.config.ts` 의 `copyLiveAssets` 목록에도 적는다.**
-    안 적으면 빌드는 통과하고 **배포된 사이트에서만 404** 가 난다.
-- **개인정보 최소 수집**: 회원에게 받는 것은 **이름 · 소속 구역** 둘뿐이다.
-  - **연락처 컬럼을 어떤 앱 테이블에도 만들지 않는다** (`email`·`phone` 모두).
-  - 주소·생년월일·계좌번호·주민등록번호는 어떤 경우에도 만들지 않는다.
-  - 항목을 늘리려면 개인정보 처리방침 갱신과 **재동의**까지 함께 계획한다.
-- **이메일은 읽는 경로 자체를 만들지 않는다**: 로그인 수단으로 Supabase Auth(`auth.users`)에
-  남는 것이 전부다. `profiles`에 복사하지 않고, 운영진 화면·명부·내보내기 어디에도 띄우지 않는다.
-  단체 메일 발송 기능은 **만들지 않는다**(R-07-03) — 카톡 오픈방이 그 자리를 대신한다.
-  `auth.users`를 읽는 기능을 새로 만들자는 제안이 나오면 그 자체를 되묻는다.
-- **결제 기능 없음**: 관람료·회비는 **기록만** 한다. 송금은 시스템 밖이다.
-  계좌번호는 어떤 형태로도 저장하지 않는다 (D-21).
-- **회원 식별**: DB 기본키는 `auth.users.id`(UUID)다. 교회 교적부 규칙(동명이인 등록 순 A/B)은
-  **PK가 아니라 유니크 제약**으로 둔다 — `unique (full_name, name_letter)`.
-  교적부가 정정되면 그 컬럼만 고치면 되고 참조는 깨지지 않는다.
-- **이름 표시**: 화면·게시물은 `구역 + 이름`(3구역 홍길동),
-  집계·대조는 `이름 + 문자`(홍길동A). 같은 구역에 동명이인이 있으면 화면에도 문자를 붙이되,
-  판단은 코드가 한다.
-- **인증**: 카카오 OAuth + 이메일 매직링크. **비밀번호는 만들지 않는다.**
-  가입은 운영진 승인제(`status = pending` → `approved`)이고,
-  승인 시 운영진이 교적부와 대조해 구분 문자를 지정한다.
-- **실제 회원 데이터**: 저장소·테스트 픽스처·문서·외부 도구에 넣지 않는다.
-  예시가 필요하면 `docs/fixtures/sample-members.md`를 쓴다.
-- **번들은 공개다**: 로그인 뒤 화면이라도 코드는 누구나 내려받는다.
-  회원 이름, 구역 목록, 운영진 명단, 내부 URL을 소스에 하드코딩하지 않는다.
-  화면에 보일 모든 데이터는 RLS를 통과한 API 응답으로만 온다.
-- **`club` 스키마 규칙은 이 저장소 것이 아니다 (2026-08-31 정정).**
-  원문은 「새로 만드는 것은 전부 `club` 스키마, `public` 에 새 표를 만들지 않는다」였다.
-  **실제로는 이 저장소에 `club` 객체가 하나도 없고 표 열 개가 전부 `public` 에 있다** —
-  `surveys` · `survey_options` · `survey_responses` · `survey_choices` · `survey_admins` ·
-  `survey_notes` · `survey_members` · `survey_probe_log` · `admin_guides` · `events`.
-  규칙과 코드가 정반대였고, 규칙을 믿고 작업하면 매번 어긋난다.
-  - 그 규칙은 **플랫폼 저장소(`exhibition-club-platform`)** 의 회원·모임 스키마에 해당한다.
-    마이그레이션 원본도 거기 `supabase/migrations/` 에 있다.
-  - **이 저장소에서는 새 표도 `public` 에 만든다.** `club` 은 PostgREST 에 노출돼 있지 않아
-    스키마를 새로 여는 설정 변경이 필요하고, 옆의 설문 표들과 갈라 놓을 이유가 없다.
-    **스키마 이름이 아니라 잠그는 방식이 안전을 만든다** — 아래 「잠긴 표」 규칙을 따른다.
-  - **`public.events`**: 보드의 콘텐츠 표이고 회원 개인정보가 아니다. 큐레이션 필드를
-    **nullable 컬럼으로** 더한다 (D-24). 한 전시의 정보를 두 표로 나누면
-    "두 곳에 데이터가 있으면 반드시 어긋난다"가 형태만 바꿔 돌아온다.
-  - 기존 컬럼의 타입·이름을 바꾸거나 지우지 않는다. **더하기만 한다.**
-- **잠긴 표 — 운영진만 볼 것을 담는 방법**: 정책을 **하나도 만들지 않고**
-  `revoke all … from anon, authenticated` 한 뒤, `security definer` 함수가 암호를 보고 내준다.
-  `survey_notes`(설문별 메모) · `admin_guides`(분석 가이드)가 그 꼴이다.
-  - 함수 첫 줄에서 `public.survey_admin_ok(p_password)` 를 부른다. **읽기도 예외가 아니다.**
-    2026-09-05 에 세어 보니 암호를 받는 함수 **열아홉이 모두** 그렇다. 그래서
-    `survey_admin_ok` 하나가 관문이고, **거기 검사를 걸면 열아홉이 함께 걸린다** —
-    열아홉 곳에 복사하면 언젠가 한 곳이 빠지고, 빠진 곳은 조용하다.
-  - **관문은 POST 로만 열린다** (2026-09-05 · `202609050002a`). 첫머리에서
-    `current_setting('request.method', true)` 를 보고 POST 가 아니면 raise 한다.
-    GET·HEAD 는 인자를 URL 에 싣고, URL 은 본문과 달리 로그·브라우저 기록·Referer 에 남는다.
-    `request.method` 가 NULL 이면(SQL Editor·psql·함수 안) 막지 않는다.
-  - `set search_path = pg_catalog, public, extensions` 를 반드시 붙인다.
-  - `grant execute … to anon, authenticated` 를 빠뜨리면 함수가 있어도 앱이 못 부른다
-    (기본 권한이 revoke 돼 있다 — 202608060001).
-  - `validate-survey-schema.mjs` 가 이 넷을 전부 검사한다. 새 표·함수를 만들면
-    거기 `LOCKED` 와 `CALLABLE` 목록에 **함께 적는다** — 안 적으면 검사 밖으로 나간다.
-- **PostgREST 는 휘발성으로 메서드를 가르지 않는다 (2026-09-05 실측).**
-  「volatile 함수는 POST 만 받는다」 는 널리 도는 말인데 **이 배포에서는 사실이 아니다.**
-  `alter function … volatile` 로는 GET 이 막히지 않는다 — 읽기 전용 트랜잭션으로 돌 뿐이다.
-  - 근거: `survey_response_count` 는 휘발성 선언이 없어 기본값 VOLATILE 인데 GET 으로 200 을 낸다.
-    `OPTIONS` 의 `Allow` 도 휘발성과 무관하게 늘 `GET, HEAD, POST, OPTIONS` 다.
-    GET 요청 안에서 `transaction_read_only` 가 `on` 인 것까지 확인했다.
-  - `notify pgrst, 'reload schema'` 도 프로젝트 재시작도 이것을 바꾸지 못한다 —
-    **캐시 문제가 아니다.** 그 둘로 시간을 쓰지 말 것.
-  - 메서드를 가르려면 함수 안에서 `request.method` 를 직접 본다(위 「관문은 POST 로만」).
-- **DB 를 고쳤다고 바깥이 바뀐 것은 아니다.** `pg_proc` 을 보는 확인 질의는
-  「DB 가 바뀌었나」 에만 답한다. #83 은 그 질의가 초록불인 채로 **아무것도 막지 못했다.**
-  API 동작을 바꾸는 마이그레이션은 **바깥에서 실제 요청을 쏴서** 확인한다.
-- **주간 정리 공개 데이터**: GitHub Pages는 운영진 전용이 아니라 공개 페이지다. 원본 `digest-*.json`을 복사하지 말고, 원문·실명·닉네임·구역번호+이름·개인별 평가를 뺀 `weekly-digest.public.json`과 `notice.js`의 `FALLBACK_DIGEST`만 함께 갱신한다. 배포 전 `node scripts/validate-weekly-digest.mjs`를 실행해 두 값의 일치 여부까지 확인한다.
-- 커밋 작성자: `psunggu <psunggu@users.noreply.github.com>`, 커밋 메시지는 영어 또는 한국어 명령형 한 줄.
+- **CSP 엄격.** 외부 CDN · 인라인 `<style>` · `style=` · 인라인 `<script>` 금지. 되는 것: React `style={{}}`, SVG 표현 속성(`<rect width fill>`). 안 되는 것: `style="…"` · `setAttribute('style')` · `<style>` 주입 · iframe. meta 의 `frame-ancestors` 는 브라우저가 무시한다 — 막고 있다고 믿지 말 것.
+- 캐시 버스팅 `?v=YYYYMMDD-n`. 모바일 우선(375px 가로 스크롤 없음). `word-break: keep-all` 은 `body` 에 있다.
+- **색 · 모서리 · 그림자 · 서체는 `app/public/tokens.css` 한 곳.** 다른 CSS 는 `var(--…)` 만. 팔레트 열다섯(중립 8 · 브랜드 3 · 상태 4), 새 색 금지. 색은 **상태**만 말한다 — 갈래는 글자로. `--warn` 은 확인 필요, `--stop` 은 마감 · 오류 전용.
+- 여백은 4 · 8 · 12 · 16 · 22 · 32 눈금 — **새로 쓰는 값에만.** 기존 값은 손대지 않는다.
+- 서체는 `app/public/fonts/` 의 Pretendard 서브셋(OFL). `@font-face` 는 `tokens.css`.
 
-## notice 페이지 (2026-07-21 추가)
+### 개인정보
 
-- **데이터 소스**: 카카오톡 단체방 대화 내보내기 txt. 실제 경로는 `kakao-digest`의 Git 제외 로컬 설정에만 보관하며 이 저장소에는 커밋하지 않음(개인정보 포함).
-- 갱신 프로세스: 새 txt 내보내기 → 모임 일정(확정/완료/미정) 추출 → notice.html 본문 수정 → `?v=` 버전 업 → main 푸시.
-- 상단에 "업데이트 YYYY. M. D. (요일) HH:mm 기준" 배지 필수. PC 내보내기의 최신 날짜 구분선과 해당 날짜의 최신 메시지 시각을 기준으로 한다.
-- 같은 내용의 카톡 공지용 PNG 이미지도 로컬에서 별도 제작함 (헤드리스 크롬 스크린샷, 저장소 외부).
+- 회원에게 받는 것은 **이름 · 소속 구역** 둘뿐. 연락처 컬럼(`email` · `phone`) · 주소 · 생년월일 · 계좌 · 주민번호는 어떤 표에도 만들지 않는다. 항목을 늘리려면 처리방침 갱신과 재동의까지 계획한다.
+- 이메일은 읽는 경로 자체를 만들지 않는다(`auth.users` 에만 남는다). 단체 메일 기능은 만들지 않는다. `auth.users` 를 읽자는 제안은 그 자체를 되묻는다.
+- 결제 없음. 관람료 · 회비는 기록만. 계좌번호는 어떤 형태로도 저장하지 않는다.
+- 실제 회원 데이터를 저장소 · 픽스처 · 문서 · 외부 도구에 넣지 않는다. 예시는 `docs/fixtures/sample-members.md`.
+- **번들은 공개다.** 회원 이름 · 구역 목록 · 운영진 명단 · 내부 URL · 실명이 든 시트 주소를 소스에 적지 않는다. 화면 데이터는 RLS 를 통과한 API 응답으로만.
+- 정리봇: 원본 `digest-*.json` 을 복사하지 않는다. 공개본은 `weekly-digest.public.json` 하나이고 `validate-weekly-digest.mjs` 가 실명 · 구역+이름 · 원문 형식을 막는다.
+- 회원 식별: PK 는 `auth.users.id`, 교적부 규칙(동명이인 A/B)은 `unique (full_name, name_letter)`. 화면은 `구역 + 이름`, 집계는 `이름 + 문자`. 인증은 카카오 OAuth + 매직링크, **비밀번호 없음**, 운영진 승인제.
 
-### 일정의 정본은 `app/src/data/meetups.ts` 다
+### DB
 
-여기 일정 목록을 **베껴 적지 않는다.** 2026-08-31 까지 이 자리에 8월 일정을 손으로 적어 두었는데,
-모임이 끝나도 갱신되지 않아 두 달 가까이 틀린 채로 있었다 —
-"두 곳에 데이터가 있으면 반드시 어긋난다"가 이 문서 안에서 벌어진 것이다.
-**지금 무슨 일정이 있는지는 `MEETUPS` 를 읽는다.**
+- **이 저장소의 표는 전부 `public` 이다.** `club` 스키마 규칙은 플랫폼 저장소 것이다. 새 표도 `public` 에 만든다.
+- `public.events` 에는 nullable 컬럼만 더한다. 기존 컬럼의 타입 · 이름을 바꾸거나 지우지 않는다. `events` 는 anon 에게 select 만 열려 있고 쓰기 정책 · 권한을 만들지 않는다(`validate-supabase-readonly`).
+- **잠긴 표**(`survey_notes` · `admin_guides`): 정책 없이 `revoke all … from anon, authenticated`, `security definer` 함수가 내준다. 함수 첫 줄에서 `public.survey_admin_ok(p_password)` — **읽기도 예외가 아니다.** `set search_path = pg_catalog, public, extensions`. `grant execute … to anon, authenticated` 를 빠뜨리면 앱이 못 부른다.
+- **관문은 POST 로만 열린다** — `survey_admin_ok` 가 `request.method` 를 본다. PostgREST 는 휘발성으로 GET 을 막지 않는다. `notify pgrst` · 재시작으로 시간을 쓰지 말 것.
+- **DB 를 고쳤다고 바깥이 바뀐 것은 아니다.** API 동작을 바꾸는 마이그레이션은 바깥에서 실제 요청을 쏴서 확인한다.
+- 톡방 투표는 **결과만** 옮긴다(`imported_votes` · `imported_voters`). 실명은 SQL 본문에도 주석에도 적지 않는다 — `202608270001b_poll_voters.template.sql` 을 채워 손으로 실행하고 저장하지 않는다.
 
-규칙만 여기 적는다:
+## 일정 — `data/meetups.ts`
 
-- 달력은 전시·공연·영화 모임을 구분해 표시한다. 날짜가 확정되지 않은 것은 `TENTATIVE`
-  (`조율 중 · 미정`)에만 두고, 확정된 뒤에 `MEETUPS` 로 옮겨 달력과 「다가오는 확정 모임」에 넣는다.
-  - **`TENTATIVE` 는 「날짜를 맞추는 중」인 것만 담는다.** 동호회 일정으로 잡지 않고
-    각자 보기로 한 것은 여기 두지 않는다 — 조율할 것이 없는 줄을 「조율 중」 아래 두면
-    회원이 기다리게 된다. 볼 만한 전시라면 **보드**가 그 자리다.
-    (2026-09-05 에 스페인전을 그렇게 뺐다.)
-- **「완료된 모임」은 해 → 달로 자동으로 묶인다** (2026-08-31). 날짜에서 뽑으므로 해가 바뀌면
-  연도 탭이 저절로 생기고, 가장 최근 달만 펼쳐진다. 손으로 적을 것이 없다.
-- **달력 격자도 날짜에서 뽑는다** (2026-09-03). `monthsToShow(today)` 가 펼치는 달을,
-  `pastMonthsToShow(today)` 가 접는 달을 낸다 — 둘 다 `meetups.ts` 에 있다.
-  **손으로 적을 것이 없다.** 화면 제목(`App.tsx` 의 `monthsLabel`)도 같은 값에서 나온다.
-  - 펼치는 달은 **이번 달부터 다음 달까지**가 기본이고, 그보다 뒤에 잡힌 모임이 있으면
-    거기까지 이어서 편다 — 안 그러면 확정된 모임이 어느 격자에도 없는 달이 생긴다.
-  - 접는 달은 **이번 달보다 앞이면서 모임이 있었던 달**만. 빈 달은 접어도 뜻이 없다.
-  - 두 함수 모두 `today` 를 **인자로 받는다.** 화면은 `seoulToday()` 를 넘기고 검사는
-    `scripts/frozen-clock.mjs` 로 시계를 묶는다. 함수 안에서 `new Date()` 를 부르면
-    그 두 길이 갈라지므로 그렇게 고치지 않는다.
-- **관람일이 지나면 저절로 완료가 된다** (2026-09-05). `meetups.ts` 의
-  `isDone(m, today)` · `shownKind(m, today)` 가 낸다. **`kind` 를 손으로 옮기지 않는다.**
-  - 예전에는 사람이 `'conf'` → `'done'` 으로 바꾸고 `completedRow` 를 적어야 했다.
-    잊으면 그 모임이 **완료 목록에도 예정 목록에도 없이 사라졌고**, 검사기가
-    14일 뒤에야 알려 줬다. 그 14일 규칙은 잡을 것이 없어져 뺐다.
-  - **자료의 `kind` 는 그대로 둔다.** 고쳐 쓰면 「손으로 적은 것」 과
-    「날짜에서 나온 것」 이 섞여 다음 사람이 어느 쪽인지 알 수 없게 된다.
-  - `dead`(예매 마감일 같은 줄)와 `tent` 는 제외한다 — **다녀올 것이 없다.**
-  - 완료 줄은 `completedRow` 가 있으면 그것을, 없으면 **날짜·제목·장소로 짓는다.**
-    지어 낸 줄에는 참석 인원처럼 자료에 없는 것이 안 들어가므로, 남기고 싶으면
-    그때 `completedRow` 를 적는다 — 안 적어도 화면은 멀쩡하고 검사도 통과한다.
+- **정본은 `MEETUPS` 다.** 이 문서에 일정을 베껴 적지 않는다.
+- 새 항목은 **필수 필드만** 적는다(`id · date · chip · kind · regular · venueKind · title · time · venue · description`). 날짜 표기 · 상태 딱지 · 지도 링크 · 완료 처리 · 완료 줄 · 달력 격자 · 연도 묶음은 `withDefaults` 와 `isDone` · `monthsToShow` 가 낸다. **`kind` 를 손으로 옮기지 않는다.** 참석 인원처럼 자료에 없는 것을 남길 때만 `completedRow`.
+- `TENTATIVE` 는 **날짜를 맞추는 중**인 것만. 각자 보기로 한 것은 어디에도 두지 않는다 — 보드가 그 자리다.
+- `monthsToShow` · `pastMonthsToShow` · `isDone` 은 `today` 를 인자로 받는다. 함수 안에서 `new Date()` 를 부르지 않는다 — 검사가 `frozen-clock.mjs` 로 시계를 묶는다.
+- `validate-meetup-taxonomy` 는 `id · date · chip · kind · regular · venueKind` 가 붙어 있어야 읽는다. 그 사이에 주석을 끼우지 않는다.
 
-## 보드는 거르지 않는다 (2026-09-05)
+## 보드
 
-**영화 예매 순위와 전시·공연 목록에서 작품을 빼지 않는다.** 영화진흥위원회 집계를
-그대로 비추고, **무엇을 볼지는 회원이 판단한다.** 판단 재료는 카드에 이미 있다 —
-관람등급·장르·상영시간·감독·줄거리.
+- **거르지 않는다.** 영화 순위 · 전시 목록에서 작품을 빼지 않는다. 볼지 말지는 회원이 판단한다.
+- 영화는 `npm run board:movies`(KOBIS → `movies.ts` → 빌드 → 화면 기준 저장). 「최종 정보 업데이트」 는 `App.tsx` 의 `SITE_INFO_UPDATED_ON` **한 곳** — 스크립트가 올린다. 전시만 갈았으면 손으로 올린다. 자료를 안 갈았으면 날짜만 올리지 않는다.
+- 소식 한 줄: 고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳(보드와 운영자 화면이 같이 쓴다). `events` 원본에서 뽑는다(`filterEvents` 를 거치지 않는다). JSX 는 `.exhibition-page` 안. 기한은 며칠(1~180)로. 쓰기는 `news_admin_save` · `news_admin_delete` 만이고 **`type = '소식'` 조건을 빼면 보드 전체가 사정권이다.**
 
-2026-09-05 에 한 번 걸러 봤다. 청소년 관람불가와 공포·호러를 자동으로 막고(#125),
-장르로는 안 잡히는 《경주기행》 을 손으로 뺐다(#126). 그랬더니 다음 작품이 또 걸렸고
-**어디서 멈출지 기준이 서지 않아** 전부 되돌렸다(#127).
+## 설문
 
-다시 거르기로 한다면 **왜 거르는지와 어디서 멈추는지부터** 정하고 시작한다.
-지운 코드는 #125 · #126 에 남아 있다.
+- 설문은 **운영자 화면에서 만든다**(`#/survey/admin` 「새 설문 올리기」). SQL 로 만들지 않는다.
+- `google` 은 화면에만 있는 갈래다. `SurveyCategory`(DB 다섯)와 `TabCategory`(+google)를 **합치지 않는다.** 운영자 화면의 「어느 화면에」 는 `POSTABLE_CATEGORY_ORDER`(다섯).
+- **`etc`(기타)의 이름을 바꾸지 않는다** — `toCategory` 가 모르는 값을 받아 주는 안전망이다.
+- 운영진 전용 분석 가이드: 본문은 저장소에 없고 잠긴 표 `admin_guides` 에만. `GuideDoc.tsx` 에 도메인 문구를 하드코딩하지 않는다(`validate-survey-ui` 가 번들을 grep 한다). 구조화 JSON(`{ "sections": [...] }`), `{` 로 시작하지 않으면 마크다운 폴백. **렌더 중 throw 하지 않는다**(ErrorBoundary 가 없다). 본문 6만 자 제한 — 이미지는 data URI 로 넣지 않는다.
 
-## 보드 소식 (2026-08-30 추가)
+## 커밋
 
-보드 목록 머리글 아래 **한 줄**. `public.events` 의 `type = '소식'` 행 중 기간이 안 지난 것 하나만 뜬다.
+작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-- **고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳에 있다.** 보드와 운영자 화면이 같은 함수를 쓴다 —
-  갈라지면 운영자 화면의 「보드에 보임」이 거짓말을 한다.
-- 지역을 타지 않는다. `filterEvents` 를 거치면 `eventArea` 가 서울로 떨어뜨려
-  경기·인천 탭에서 사라지므로 **`events` 원본에서 뽑는다.**
-- JSX 는 `.exhibition-page` **안**에 둔다. `.app-shell` 이 flex column 이고 그 안이 `order:1` 이라,
-  밖에 형제로 두면 order 없는 구역이 목록 **위로 튀어 오른다.**
-- 기한은 날짜가 아니라 **며칠**로 받는다(1~180). 잊었을 때 사라지는 쪽이 낫다 —
-  실패 모드가 「카드가 없다」이지 「3주 전 소식이 상단에 박혀 있다」가 아니다.
-- 쓰기는 `news_admin_save` · `news_admin_delete` 만. `public.events` 는 anon 에게 select 만
-  열려 있고 쓰기 정책·권한을 만들 수 없다(`validate-supabase-readonly` 가 둘 다 금지로 검사).
-  두 함수 모두 `type = '소식'` 행에만 닿는다 — **이 조건을 빼면 보드 전체가 사정권에 든다.**
+## 다음 작업 후보 (2026-09-08)
 
-## 구글 설문 갈래 (2026-08-30 추가)
+1. **운영자 세 분이 암호를 다시 정한다** — bcrypt 비용 10 은 새로 정한 암호에만 적용된다. `202608200001d_admin_password.template.sql`. 채운 파일은 저장하지 않는다.
+2. **옛 정적 파일 삭제** — `app/public/{index.html,app.js,notice.html,notice.js}`. 검사기는 이미 안 읽는다.
+3. **`kakao-digest` 자동 내보내기 복구** — `last_run.json` 이 `export-failed · 채팅방 창을 찾지 못함`(2026-09-04).
+4. **구글폼 자동 생성**(`apps-script/Code.gs`) — 할지 말지부터 정한다. 손으로 만든 폼이 이미 한 바퀴 돌았다.
 
-`#/survey/google`. 구글 폼으로 받은 회차를 모아서 센 숫자로 보여 준다.
+## AI 에이전트 역할
 
-- **`google` 은 화면에만 있는 갈래다.** 여기서 투표를 받지 않으므로 `surveys` 행으로 존재한 적이 없고
-  DB 의 `surveys_category_check` 도 그 값을 모른다.
-- 그래서 타입이 둘이다 — `SurveyCategory`(DB 다섯: exhibition·datetime·meal·club·etc)와
-  `TabCategory`(= 그 다섯 + google). **합치지 않는다.** 합치면 「저장할 수 있는 값」과
-  「탭에 있는 값」이 같다고 타입이 말하게 되는데 사실이 아니다.
-- 운영자 화면의 「어느 화면에」 목록은 `POSTABLE_CATEGORY_ORDER`(다섯)를 쓴다.
-  `CATEGORY_ORDER`(여섯)를 쓰면 화면에서는 고를 수 있는데 저장에서 서버가 거절한다.
-- **`etc`(기타)의 이름을 바꾸지 않는다.** 그 갈래는 `toCategory` 가 **모르는 값을 받아 주는
-  안전망**이다 — 나중에 갈래를 더 만들면 옛 번들을 쓰는 회원 화면에서 그 설문이 전시 탭에
-  섞이지 않고 「기타」에 뜬다. 이름을 바꾸면 그 설문들이 딴것인 척하게 된다.
-- 회차 자료는 `app/src/data/googleSurveys.ts`. **원본 구글 시트 주소를 여기 적지 않는다** —
-  번들이 공개라 실명이 든 시트로 가는 길을 누구나 갖게 된다.
-
-## 운영진 전용 분석 가이드 (2026-08-31 추가)
-
-구글 설문 회차마다 딸리는 긴 분석 문서. 운영자 화면에서만 보인다.
-
-- **본문은 저장소에 없다.** 참여 빈도별 집단 구분·미응답자 수·자유서술 인용이 들어가는데,
-  그건 공개 화면 금지 항목이다. **번들도 공개 저장소의 `.sql` 도 공개**라 거기 적으면
-  암호가 가림막이 된다. 운영자가 화면에서 붙여 넣고 잠긴 표 `admin_guides` 에만 산다.
-- **렌더러(`GuideDoc.tsx`)에 도메인 문구를 하드코딩하지 않는다.** 「코어」·「주변부」 같은 말을
-  적으면 공개 번들에 실린다. 렌더러는 「규칙」·「근거 —」 같은 **일반 라벨만** 갖고,
-  값·문구는 전부 JSON 에서 온다. `validate-survey-ui` 가 `dist/assets/*.js` 를 grep 해
-  도메인 문구가 없음을 기계로 보증한다 — 화면 글 검사만으로는 못 잡는다.
-- 본문은 **구조화 JSON**(`{ "sections": [...] }`)이고 지표 막대·페르소나 카드·격차 덤벨·편성
-  카드로 그려진다. 첫 글자가 `{` 가 아니면 옛 **마크다운 폴백**(`##`·`-`)으로 간다 — 지우지 않는다.
-- **렌더 중 절대 throw 하지 않는다.** 저장소에 ErrorBoundary 가 하나도 없어
-  던지면 운영자 화면 전체가 하얗게 죽는다. 파싱은 컴포넌트 안 try/catch 로 받아
-  오류 배너를 그리고 저장을 막되 화면은 살린다. 모르는 섹션 타입도 폴백으로 그린다.
-- 저장 함수가 본문을 **6만 자**로 제한한다. 그래서 래스터 이미지를 data URI 로 넣지 않는다
-  (40KB PNG ≈ 54,000자로 예산을 거의 다 삼킨다). 지표는 숫자에서 SVG 로 그린다.
-
-## 검사기가 클래스 이름을 짚는다
-
-`validate-survey-admin-ui` 는 `.admin-card`·`.note*` 같은 이름을 **차례로 짚어** 「몇 번째 설문」을
-고른다. 새 화면이 같은 이름을 쓰면 그 검사가 엉뚱한 것을 누른다 — 실제로 두 번 겪었다
-(`.admin-card` → 소식이 0번이 됨, `.note` → 가이드가 메모로 잡힘).
-**새 구역은 새 이름을 쓰고**(`.admin-news-card`·`.admin-guide*`·`.gdoc-*`),
-모양이 같으면 CSS 규칙에 선택자만 더한다.
-
-## 다음 작업 후보 (우선순위 순 · 2026-09-05 갱신)
-
-1. **운영자 세 분이 암호를 다시 정한다 (보안 · 사람이 해야 한다)**
-
-   bcrypt 비용이 6 → 10 으로 올랐는데(#83) **이미 저장된 해시는 6 그대로다.**
-   검증은 해시에 박힌 비용을 쓰므로, 다시 정해야 10 이 적용된다.
-   `202608200001d_admin_password.template.sql` 의 자리표시자를 채워 돌린다.
-   **채운 파일은 저장소에 저장하지 않는다** — 실명과 암호가 들어간다.
-
-   ── 관문 자체는 2026-09-05 에 닫혔다 ──
-   `202608280003a`(#83)와 `202609050002a`(#129)를 운영 DB 에 적용했고,
-   **바깥에서 실제 요청으로 확인했다** — 암호를 받는 함수에 GET 을 쏘면
-   `401 · 이 함수는 POST 로만 부를 수 있습니다`, POST 는 정상이다.
-
-   #83 만으로는 **닫히지 않았다.** 그 파일은 휘발성을 바꾸면 GET 이 막힌다고 적었는데
-   이 배포에서는 사실이 아니었다(위 「개발 규칙」의 PostgREST 항목).
-   그 자리에서 `notify pgrst` 와 프로젝트 재시작으로 시간을 썼다 — 캐시 문제가 아니었다.
-   실제로 막은 것은 `request.method` 를 직접 보는 `202609050002a` 다.
-2. **보드 갱신 (수요일·토요일 22시, 되풀이)** — 영화 순위는
-   `app/src/data/movies.ts` 를 손으로 갈고(예매순위 열 편 + `MOVIE_RANKING_UPDATED_AT`),
-   전시·공연은 `public.events` 라 **운영자가 Supabase 에서** 넣는다.
-   갈고 나면 「최종 정보 업데이트」 세 곳(`App.tsx` 의 `SITE_INFO_UPDATED_ON` ·
-   `app.js` 의 `boardUpdatedAt` · `index.html` 본문)을 함께 올린다
-   (`validate-board-parity` 가 검사). **자료를 안 갈았으면 날짜만 올리지 않는다** — 거짓말이 된다.
-   최근 갱신: 2026-09-05.
-3. **구글폼 자동 생성 가동** — `apps-script/Code.gs` 를 Apps Script 에서 실행
-   (`setupClubSurveySystem`) → 생성된 Form 응답 URL 을 `public/config.js` 에 추가.
-   질문 구성은 `docs/google_form_questions.md`. 목적: 참석 데이터를 Sheet 로 자동 수집.
-   (설문 자체는 손으로 만들어 이미 한 번 돌렸고, 그 결과는 `#/survey/google` 에 있다.)
-4. **notice 자동 생성** — 카톡 txt 파서(날짜/일정 추출)로 본문 갱신을 자동화.
-   txt 포맷: `[이름] [오전/오후 H:MM] 메시지`, 날짜 구분선
-   `--------------- 2026년 M월 D일 X요일 ---------------`.
-5. ~~index ↔ notice 상호 링크~~ — 완료. 한 앱이 되면서 상단 탭으로 오간다.
-
-## 톡방 투표를 옮겨 올 때 (2026-08-27)
-
-톡방에서 진행한 투표는 사이트에 **결과만** 옮겨 온다. 숫자는
-`survey_options.imported_votes`, 투표자 이름은 `survey_options.imported_voters` 에 담는다.
-
-**실명은 저장소에 커밋하지 않는다.** SQL 본문에도, 머리말 주석에도 적지 않는다
-(머리말에 원본을 글자 그대로 옮기는 관례가 있는데, 그 관례는 **후보 이름**에만 해당한다).
-
-| 하는 일 | 어디서 |
-|---|---|
-| 컬럼·제약·방아쇠 | `202608270001a_imported_voters.sql` — 한 번만 실행 |
-| 이름 넣기 | `202608270001b_poll_voters.template.sql` 을 채워 **운영자가 손으로** 실행 |
-
-지켜지는 것 셋:
-
-- 이름 개수가 `imported_votes` 와 다르면 DB 가 거절한다
-- `show_names` 를 켠 설문에만 담을 수 있다. 담긴 뒤에 도로 끄는 것도 막힌다
-- 표를 받은 후보에 이름이 하나라도 빠지면 화면이 **아무 이름도 안 보여 준다**
-
-검사기 셋이 실명 커밋을 막는다 — `validate-repository-hygiene`(추적 파일의 이름 배열),
-`record-frozen-data`(고정본에서 「회원」 으로 바꿈), `validate-survey-schema`(제약·방아쇠·자리표시자).
-
-## 참고 문서
-
-- `app/README.md` — 배포·설문 세팅 절차 (일부 구버전 설명 포함: config.js 키 구성이 현재와 다름. 현재 config.js는 sheetUrl/supabase 키 사용)
-- `app/docs/CODEX_TASK.md` — v0.1 최초 작업 지시서 (역사적 문서)
-- `app/docs/kakao_notice.md` — 단톡방 공유문 템플릿
-
-## 로컬 환경 (참고)
-
-- 소유자 PC: Windows 11, 로컬 클론 `C:\D\Project\exhibition-club-survey`
-- Node.js 스크립트는 `node scripts/send-telegram-update.js --dry-run`으로 검증
-- 빌드가 있다(Vite + React). 로컬 확인은 `npm run dev` — 일정은 `#/calendar`, 보드는 `#/`. 파일을 브라우저로 직접 여는 방식은 `base` 경로와 해시 라우팅 때문에 더 이상 안 된다.
-- 배포 전 검사는 `npm run check` 하나로 돈다(빌드 · CSP · 화면 대조 · 검증기 전부).
-
-## AI 에이전트 역할 (2026-08-17 변경)
-
-**역할이 뒤바뀌었다.** 이전에는 Codex가 실행, Claude가 리뷰였다.
-
-- **Claude Code가 구현과 배포를 담당한다.** 코드·콘텐츠 수정, 공식 출처 확인,
-  검증 실행, Git 커밋·PR·배포까지.
-- **Codex는 선택적 2차 검토**로만 쓴다. 필요할 때 사용자가 직접 호출한다.
-- 협업 절차와 산출물 형식은 `AI_COLLABORATION.md`를 따르되, **역할이 뒤바뀐 것에 유의**한다.
-- 공식 행사 정보와 배포 여부의 최종 판단은 공식 출처와 저장소 상태를 **다시 확인한 뒤** 수행한다.
-  이 원칙은 담당이 바뀌어도 그대로다.
+**Claude Code 가 구현과 배포를 담당한다** — 코드 · 콘텐츠 수정, 공식 출처 확인, 검증, 커밋 · PR · 배포. **Codex 는 선택적 2차 검토**로 사용자가 직접 부른다. `AI_COLLABORATION.md` 는 역할이 바뀌기 전 문서라 참고만 한다. 공식 행사 정보와 배포 여부의 최종 판단은 공식 출처와 저장소 상태를 다시 확인한 뒤 한다.

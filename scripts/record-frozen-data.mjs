@@ -7,11 +7,8 @@
  * 왜 고정본을 쓰는지는 frozen-data.mjs 에 적었다.
  * 여기서는 **뜨는 방법**만 다룬다.
  *
- * 옛 페이지와 이식본이 **서로 다른 주소로** 같은 표를 읽는다.
- *   옛것   /rest/v1/events?select=*&order=visit_date.asc.nullslast&order=start_date.asc.nullslast
- *   이식본 /rest/v1/events?select=*
- * 둘 다 떠 두지 않으면 옛 화면 대조가 빈 보드를 재게 된다.
- * 그래서 짐작으로 목록을 적지 않고, **실제로 띄워서 오간 것을 그대로 받아 적는다.**
+ * 화면 검사가 여는 자리를 **실제로 띄워서** 오간 요청을 그대로 받아 적는다 —
+ * 짐작으로 목록을 적지 않는다.
  *
  * dist 가 필요하다 — `npm run build` 가 먼저다.
  * 네트워크가 있어야 한다 (이 스크립트만. 이걸 뜬 뒤에는 검사에 네트워크가 필요 없다).
@@ -26,7 +23,6 @@ import { requestKey, FROZEN_DATA_FILE } from './frozen-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
-const OLD = path.join(ROOT, 'app/public');
 const DIST = path.join(ROOT, 'dist');
 
 if (!fs.existsSync(DIST)) {
@@ -55,7 +51,6 @@ const serve = (root, port, spa) => new Promise((done) => {
   s.listen(port, () => done(s));
 });
 
-const sOld = await serve(OLD, 8216, false);
 const sNew = await serve(DIST, 8217, true);
 
 /**
@@ -109,8 +104,6 @@ const VISITS = [
   ['이식 일정', `http://localhost:8217${BASE}/#/calendar`],
   ['이식 설문', `http://localhost:8217${BASE}/#/survey`],
   ['이식 설문·식사', `http://localhost:8217${BASE}/#/survey/meal`],
-  ['옛 보드', 'http://localhost:8216/index.html'],
-  ['옛 일정', 'http://localhost:8216/notice.html'],
 ];
 
 for (const [label, url] of VISITS) {
@@ -145,7 +138,7 @@ for (const [label, url] of VISITS) {
 }
 
 await browser.close();
-sOld.close(); sNew.close();
+sNew.close();
 
 const keys = Object.keys(responses);
 if (!keys.length) {

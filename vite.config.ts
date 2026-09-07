@@ -15,8 +15,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url))
  * **키가 한 파일에만 있는지** 검사한다. 복사본을 만들면 그 검사가 잡는다 —
  * 실제로 잡혔고, 그래서 이렇게 바꿨다.
  *
- * app/public 을 publicDir 로 쓰지 못하는 이유는 그 안에 지금 라이브로 나가는
- * index.html · notice.html 이 있어서다. 이식이 끝나면 정리한다 (R-01-02).
+ * app/public 을 publicDir 로 쓰지 않는 이유: 생성기 원본(styles.css · notice.css)처럼
+ * 배포하면 안 되는 파일이 섞여 있고, 무엇이 나가는지는 아래 목록으로 읽히는 편이 낫다.
  */
 function copyLiveAssets(): Plugin {
   const FILES = [

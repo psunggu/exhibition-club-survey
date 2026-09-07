@@ -9,15 +9,17 @@ const read = (relativePath) =>
 const schemaPath = "app/supabase/schema.sql";
 const migrationPath =
   "app/supabase/migrations/202608050001_lock_down_public_events.sql";
-const appPath = "app/public/app.js";
-const htmlPath = "app/public/index.html";
+// SPA 진입점. 옛 정적 보드(app/public/index.html)는 배포되지 않으므로 보지 않는다.
+const htmlPath = "app/index.html";
 const configPath = "app/public/config.js";
+// 보드가 events 를 읽는 유일한 길. 쓰기 메서드가 여기 생기면 잡는다.
+const eventsClientPath = "app/src/lib/events.ts";
 
 const schema = read(schemaPath);
 const migration = read(migrationPath);
-const app = read(appPath);
 const html = read(htmlPath);
 const config = read(configPath);
+const eventsClient = read(eventsClientPath);
 
 const failures = [];
 
@@ -72,24 +74,14 @@ requireMatch(
 );
 
 forbidMatch(
-  appPath + " HTTP 쓰기 메서드",
-  app,
+  eventsClientPath + " HTTP 쓰기 메서드",
+  eventsClient,
   /method\s*:\s*["'](?:POST|PUT|PATCH|DELETE)["']/i,
 );
 forbidMatch(
-  appPath + " Supabase 쓰기 함수",
-  app,
+  eventsClientPath + " Supabase 쓰기 함수",
+  eventsClient,
   /\.(?:upsert|insert|update|delete|remove)\s*\(/i,
-);
-forbidMatch(
-  appPath + " 공개 편집 UI 연결",
-  app,
-  /\b(?:openDialog|saveFromForm|deleteCurrentEvent|data-edit)\b/i,
-);
-forbidMatch(
-  htmlPath + " 공개 편집 UI",
-  html,
-  /id=["'](?:openFormButton|eventDialog|eventForm|deleteButton|sheetLink)["']/i,
 );
 forbidMatch(
   configPath + " 운영 Sheet 링크",
