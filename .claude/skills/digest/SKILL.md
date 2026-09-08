@@ -7,10 +7,11 @@ description: 주간 정리봇 갱신 — kakao-digest 파이프라인(내보내�
 
 ## 1. 원본 만들기 (이 PC 에서만 된다)
 
-PowerShell 로 돌린다. 카카오톡이 떠 있고 **동호회방이 독립 창으로 열려 있어야** 한다.
+PowerShell 로 돌린다. 카카오톡이 떠 있고 **대상 방이 독립 창으로 열려 있어야** 한다.
+방 이름은 저장소에 적지 않는다(두 저장소 다 공개다) — `kakao-digest\config.local.json` 의 `room` 에서 읽는다.
 
 ```
-Set-Location C:\D\Project\kakao-digest; & .\scripts\weekly_collect.ps1 -Room "41교구 박물관/갤러리 동호회방" -NoOpen; "exit=$LASTEXITCODE"
+Set-Location C:\D\Project\kakao-digest; $room = (Get-Content .\config.local.json -Raw | ConvertFrom-Json).room; if (-not $room) { throw 'config.local.json 에 room 이 없다' }; & .\scripts\weekly_collect.ps1 -Room $room -NoOpen; "exit=$LASTEXITCODE"
 ```
 
 - 종료 코드 11(「채팅방 창을 찾지 못함」)이면 **멈추고** 사용자에게 방을 독립 창으로 띄워 달라고 한다. 다른 것을 시도하지 않는다.
