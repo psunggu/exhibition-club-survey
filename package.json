@@ -17,6 +17,7 @@
     "digest:public": "node scripts/digest-to-public.mjs",
     "recheck": "node scripts/recheck-sources.mjs",
     "notice": "node scripts/weekly-notice.mjs",
+    "scout": "node scripts/scout-exhibitions.mjs",
     "screens:save": "node scripts/snapshot-screens.mjs save",
     "screens:check": "node scripts/snapshot-screens.mjs check",
     "css:scope": "node scripts/scope-legacy-css.mjs",
