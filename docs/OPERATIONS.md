@@ -16,7 +16,7 @@
 |---|---|---|---|---|
 | 1. 관람 장소 설문 | 달마다 | 운영자 | 운영자 화면 `#/survey/admin` | 0 |
 | 2. 주간 정리봇 | 주 1회 | Claude Code `/digest` | kakao-digest → `npm run digest:public` → PR | 적음 |
-| 3. 보드 · 영화 순위 | 수·토 22시 | **이 PC 의 작업 스케줄러** (`ExhibitionClub-Movies`) | `npm run board:movies` → PR → 머지 → 배포 | 0 |
+| 3. 보드 · 영화 순위 | 수·토 05시 | **이 PC 의 작업 스케줄러** (`ExhibitionClub-Movies`) | `npm run board:movies` → PR → 머지 → 배포 | 0 |
 | 3. 보드 · 전시·공연 | 수시 | 운영자 | Supabase SQL Editor (`public.events`) | 안내문 쓸 때만 |
 | 4. 확정 모임 | 확정될 때 | Claude Code `/meetup "한 줄"` | `meetups.ts` 항목 → PR | 적음 |
 
@@ -24,7 +24,7 @@
 
 ### 자동화 구성 (2026-09-08)
 
-- **`scripts/update-movies-task.ps1`** — 이 PC 의 작업 스케줄러가 수·토 22:00 에 돌린다(`scripts/install-movies-task.ps1` 로 등록). `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
+- **`scripts/update-movies-task.ps1`** — 이 PC 의 작업 스케줄러가 수·토 05:00 에 돌린다(`scripts/install-movies-task.ps1` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
   ```
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
   ```
@@ -55,12 +55,11 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
   고쳤으면 검사기를 다시 돌린다.
 - `--dry-run` 을 붙이면 쓰지 않고 보여만 준다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
-- 지금 `kakao-digest` 의 자동 내보내기가 멈춰 있다 — `last_run.json` 이 `export-failed · 채팅방 창을 찾지 못함`(2026-09-04).
-  창 제목(`-Room` 인자)이 실제 방 이름과 같은지 먼저 본다.
+- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 05:00 에 돈다(2026-09-09 부터. 그 전엔 22:00). 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 
-### 영화 예매 순위 (수요일·토요일 22시)
+### 영화 예매 순위 (수요일·토요일 05시)
 
 **이 PC 의 작업 스케줄러가 한다** (`ExhibitionClub-Movies` → `scripts/update-movies-task.ps1`). 손으로 돌릴 일이 생기면:
 
