@@ -15,6 +15,7 @@
     "check:live": "node scripts/verify-survey-live.mjs",
     "board:movies": "node scripts/update-movies.mjs && npm run build && npm run screens:save",
     "digest:public": "node scripts/digest-to-public.mjs",
+    "recheck": "node scripts/recheck-sources.mjs",
     "screens:save": "node scripts/snapshot-screens.mjs save",
     "screens:check": "node scripts/snapshot-screens.mjs check",
     "css:scope": "node scripts/scope-legacy-css.mjs",
