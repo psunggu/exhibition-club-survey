@@ -108,8 +108,8 @@ async function museum() {
       const { start, end } = period(clean(dates));
       if (!title) continue;
       out.push({ source: '국립중앙박물관', id: `nmk-${id}`, title, venue, start, end,
-        // 목록 페이지가 실제로 쓰는 링크 꼴 그대로 (2026-09-09 실측)
-        url: `https://www.museum.go.kr/site/main/exhiSpecialTheme/list/${kind}?schM=view&menuId=${kind}&exhiSpThemId=${id}&listType=list` });
+        // 목록의 상대 링크는 목록 페이지로 되돌아간다(302). 상세를 여는 주소는 이것이다 (2026-09-09 실측)
+        url: `https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?schM=view&menuId=${kind}&exhiSpThemId=${id}` });
     }
   }
   return out;
