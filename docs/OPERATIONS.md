@@ -30,7 +30,7 @@
   ```
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
   ```
-- **`.claude/skills/`** — `/digest` · `/meetup` · `/ops`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
+- **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
 - **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
 
@@ -58,7 +58,7 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
 - `--dry-run` 을 붙이면 쓰지 않고 보여만 준다.
 - 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 열린 설문 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
-- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 22:00 에 돈다. 관리자 권한으로 등록된 작업이라 일반 세션에서는 시각을 못 바꾼다 — 새벽으로 옮기려면 **관리자 PowerShell** 에서 `kakao-digestscriptsinstall_task.ps1 -Room <방 이름> -Day Tuesday,Friday -Time 05:00` 을 돌린다. 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
+- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 22:00 에 돈다. 관리자 권한으로 등록된 작업이라 일반 세션에서는 시각을 못 바꾼다 — 새벽으로 옮기려면 **관리자 PowerShell** 에서 `kakao-digest\scripts\install_task.ps1 -Room <방 이름> -Day Tuesday,Friday -Time 05:00` 을 돌린다. 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 
