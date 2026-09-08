@@ -32,7 +32,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20250654',
     movieCode: '20250654',
     bookingRank: 1,
-    bookingRate: 43.4,
+    bookingRate: 39.4,
     title: '오디세이',
     releaseStatus: '상영 중',
     releaseDate: '2026-08-05',
@@ -47,7 +47,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20255033',
     movieCode: '20255033',
     bookingRank: 2,
-    bookingRate: 10.5,
+    bookingRate: 10,
     title: '암살자(들)',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-23',
@@ -62,7 +62,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20256308',
     movieCode: '20256308',
     bookingRank: 3,
-    bookingRate: 10.1,
+    bookingRate: 9.7,
     title: '인턴',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-16',
@@ -74,25 +74,10 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256308'
   },
   {
-    id: 'movie-20265146',
-    movieCode: '20265146',
-    bookingRank: 4,
-    bookingRate: 4,
-    title: '옵세션',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-02',
-    runtime: 108,
-    genre: '공포(호러)',
-    ageRating: '청소년 관람불가',
-    director: '커리 바커',
-    summary: '“너무 너무 너무 너무 사랑해 사랑해 사랑해 사랑해” ‘니키’를 짝사랑하던 ‘베어’는 골동품 상점에서 구입한 ‘원 위시 윌로우’에 ‘니키’가 자신을 가장 사랑하게 해달라고 소원을 빈다.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20265146'
-  },
-  {
     id: 'movie-20256161',
     movieCode: '20256161',
-    bookingRank: 5,
-    bookingRate: 2.9,
+    bookingRank: 4,
+    bookingRate: 4.2,
     title: '타짜: 벨제붑의 노래',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-23',
@@ -104,25 +89,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
   },
   {
-    id: 'movie-20233219',
-    movieCode: '20233219',
-    bookingRank: 6,
-    bookingRate: 2.9,
-    title: '호프',
+    id: 'movie-20265146',
+    movieCode: '20265146',
+    bookingRank: 5,
+    bookingRate: 4.1,
+    title: '옵세션',
     releaseStatus: '상영 중',
-    releaseDate: '2026-07-15',
-    runtime: 156,
-    genre: 'SF, 스릴러, 액션',
-    ageRating: '15세 이상 관람가',
-    director: '나홍진',
-    summary: '지원해 줄 인력들은 산불을 끄러 갔고, 이젠 통신도 두절됐다.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20233219'
+    releaseDate: '2026-09-02',
+    runtime: 108,
+    genre: '공포(호러)',
+    ageRating: '청소년 관람불가',
+    director: '커리 바커',
+    summary: '“너무 너무 너무 너무 사랑해 사랑해 사랑해 사랑해” ‘니키’를 짝사랑하던 ‘베어’는 골동품 상점에서 구입한 ‘원 위시 윌로우’에 ‘니키’가 자신을 가장 사랑하게 해달라고 소원을 빈다.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20265146'
   },
   {
     id: 'movie-20265423',
     movieCode: '20265423',
-    bookingRank: 7,
-    bookingRate: 2.3,
+    bookingRank: 6,
+    bookingRate: 3.5,
     title: '더 드라마',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-09',
@@ -134,10 +119,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20265423'
   },
   {
+    id: 'movie-20233219',
+    movieCode: '20233219',
+    bookingRank: 7,
+    bookingRate: 3.2,
+    title: '호프',
+    releaseStatus: '상영 중',
+    releaseDate: '2026-07-15',
+    runtime: 156,
+    genre: 'SF, 스릴러, 액션',
+    ageRating: '15세 이상 관람가',
+    director: '나홍진',
+    summary: '지원해 줄 인력들은 산불을 끄러 갔고, 이젠 통신도 두절됐다.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20233219'
+  },
+  {
     id: 'movie-20262770',
     movieCode: '20262770',
     bookingRank: 8,
-    bookingRate: 2.2,
+    bookingRate: 2,
     title: '스파이더맨: 브랜드 뉴 데이',
     releaseStatus: '상영 중',
     releaseDate: '2026-07-29',
@@ -152,7 +152,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20018158',
     movieCode: '20018158',
     bookingRank: 9,
-    bookingRate: 1.6,
+    bookingRate: 1.8,
     title: '이누야샤 극장판: 시대를 초월한 마음',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-09',
@@ -164,23 +164,23 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20018158'
   },
   {
-    id: 'movie-20204641',
-    movieCode: '20204641',
+    id: 'movie-20261707',
+    movieCode: '20261707',
     bookingRank: 10,
-    bookingRate: 1.6,
-    title: '비광',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-02',
-    runtime: 109,
-    genre: '드라마, 가족',
-    ageRating: '15세 이상 관람가',
-    director: '이지원',
-    summary: '한국 야구의 간판스타 중구와 올 타임 레전드 배우 남미 스포트라이트를 받으며 화려한 톱스타 부부의 삶을 살던 두 사람은 갑자기 나타난 중구의 딸 동주로 인해 파경을 맞는다.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20204641'
+    bookingRate: 1.4,
+    title: '연옥: 살인마들의 자치구역',
+    releaseStatus: '개봉 예정',
+    releaseDate: '2026-09-09',
+    runtime: 101,
+    genre: '액션, 스릴러',
+    ageRating: '청소년 관람불가',
+    director: '이현명, 브루스 칸',
+    summary: '"우리를 도와 염왕을 제거해 주시겠소?" 1급 흉악범들조차 살아남기 힘든 수용소 \'연옥\'. 법도 질서도 존재하지 않는 이곳에서는 오직 힘만이 살아남는다.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20261707'
   }
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.09.08 03:08'
+export const MOVIE_RANKING_UPDATED_AT = '2026.09.08 22:00'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
