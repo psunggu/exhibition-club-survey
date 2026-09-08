@@ -30,7 +30,7 @@
   ```
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
   ```
-- **`.claude/skills/`** — `/digest` · `/meetup` · `/ops`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
+- **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
 - **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
 
