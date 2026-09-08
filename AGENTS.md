@@ -26,7 +26,9 @@
 - 옛 주소 `notice.html` 은 단톡방에 뿌려져 있어 `vite.config.ts` 가 `#/calendar` 리다이렉트 스텁을 만든다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
 - **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
-- `gh` 는 필수가 아니다. `gh-pages` 브랜치는 잔재다.
+- Pages 배포 원천은 GitHub Actions 다(2026-09-08). `gh-pages` 브랜치는 없다.
+- 영화 순위는 `update-movies.yml` 크론이 `main` 에 직접 푸시한다 — ruleset 의 우회 대상은 GitHub Actions 앱뿐이다. 사람과 에이전트는 PR 로만 간다.
+- 정기 갱신용 스킬 `/digest` · `/meetup` · `/ops` 와 서브에이전트 `ops` 는 `.claude/skills/` · `.claude/agents/` 에 있고 추적한다.
 
 ## 검사
 

@@ -30,7 +30,11 @@ outputs/
 
 # 에이전트 작업 폴더 — 전역 ignore 하나에 기대고 있었다.
 # 그 규칙은 settings.local.json 한 파일만 막고, 다른 기계·CI 에서는 통째로 추적 대상이다.
-.claude/
+# 스킬(.claude/skills)과 서브에이전트(.claude/agents)는 운영 절차의 일부라 **추적한다.**
+# 나머지(settings.local.json · worktrees)는 그대로 막는다.
+.claude/*
+!.claude/skills/
+!.claude/agents/
 
 # ── 자격증명 ────────────────────────────────────────────────
 # service_role 키는 RLS 를 통째로 우회한다. 어떤 형태로도 커밋하지 않는다.

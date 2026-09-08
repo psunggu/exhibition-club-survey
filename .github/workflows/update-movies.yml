@@ -1,0 +1,69 @@
+name: Update movie ranking
+
+# 보드의 영화 예매 순위를 수·토 22:00 KST 에 KOBIS 에서 받아 main 에 올린다.
+# 사람이 판단할 것이 없는 갱신이라 AI 도 세션도 없이 돈다 (docs/OPERATIONS.md 3).
+#
+# main 은 ruleset 으로 보호돼 있다. 이 워크플로는 GitHub Actions 앱을 우회 대상으로
+# 등록해 두었기에 직접 푸시한다 — 대신 푸시 전에 check:quick 을 같이 돌린다.
+# GITHUB_TOKEN 이 한 푸시는 push 이벤트를 내지 않으므로 배포 워크플로를 직접 깨운다.
+on:
+  schedule:
+    - cron: "0 13 * * 3,6"   # 13:00 UTC = 22:00 KST, 수·토
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: update-movies
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # screens:save 가 화면 기준을 다시 찍는다 — 콘텐츠가 바뀌면 숫자가 달라지는 것이 정상이다.
+      - name: Install Chromium for screen baseline
+        run: npx playwright install --with-deps chromium
+
+      - name: KOBIS → movies.ts → 빌드 → 화면 기준
+        run: npm run board:movies
+
+      - name: 정적 검사
+        run: npm run check:quick
+
+      - name: 바뀐 것이 있으면 main 에 올린다
+        id: push
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "바뀐 것 없음"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "보드 영화 순위를 $(TZ=Asia/Seoul date '+%-m월 %-d일') 기준으로 갱신한다 (자동)"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: 배포 워크플로를 깨운다
+        if: steps.push.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main
