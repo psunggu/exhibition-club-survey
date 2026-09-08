@@ -69,15 +69,16 @@ try {
   }
 
   # 커밋 메시지는 UTF-8 파일로 넘긴다 — cmd /c 를 거치면 한글이 깨진다.
+  # 저장소 밖(temp)에 둔다. 저장소 안에 두면 git add -A 가 같이 집어 간다 — 실제로 한 번 그랬다.
   $stamp = Get-Date -Format 'M월 d일'
-  $msgFile = Join-Path $logDir 'commit-message.txt'
+  $msgFile = Join-Path ([System.IO.Path]::GetTempPath()) 'exhibition-club-movies-commit.txt'
   [System.IO.File]::WriteAllText($msgFile, "보드 영화 순위를 $stamp 기준으로 갱신한다 (자동)`n", (New-Object System.Text.UTF8Encoding $false))
   Run 'git add -A'
   Run "git -c user.name=psunggu -c user.email=psunggu@users.noreply.github.com commit -q -F `"$msgFile`""
   Run "git push -q -u origin $branch"
   Run 'gh pr create --fill --base main'
   Start-Sleep -Seconds 20
-  Run 'gh pr checks --watch'
+  Run 'gh pr checks --watch -i 30'
   Run 'gh pr merge --squash'
 
   Run 'git checkout -q main'

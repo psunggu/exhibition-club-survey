@@ -68,6 +68,9 @@ dist/
 .vite/
 *.tsbuildinfo
 
+# 작업 스케줄러 러너(scripts/update-movies-task.ps1)의 로그
+logs/
+
 # ── 편집기 · OS ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
