@@ -726,3 +726,15 @@
   font-weight: 900;
   letter-spacing: 0.02em;
 }
+
+/* 달력 구독 — 일정 화면 「한눈에 보는 달력」 범례 아래. 링크는 .board-jump-link 를 그대로 입는다. */
+.calendar-subscribe {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.calendar-subscribe .lnote {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

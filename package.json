@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "check": "npm run check:quick && node scripts/validate-accessibility.mjs && node scripts/validate-survey-ui.mjs && node scripts/validate-survey-admin-ui.mjs && npm run screens:check",
-    "check:quick": "npm run build && node scripts/scope-legacy-css.mjs --check && node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-fixtures.mjs && node scripts/validate-meetup-taxonomy.mjs && node scripts/validate-survey-schema.mjs && node scripts/validate-survey-history.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && npm run check:csp",
+    "check:quick": "npm run build && node scripts/scope-legacy-css.mjs --check && node scripts/validate-repository-hygiene.mjs && node scripts/validate-weekly-digest.mjs && node scripts/validate-fixtures.mjs && node scripts/validate-meetup-taxonomy.mjs && node scripts/validate-ics.mjs && node scripts/validate-survey-schema.mjs && node scripts/validate-survey-history.mjs && node scripts/validate-supabase-readonly.mjs && node scripts/validate-supabase-p1.mjs && npm run check:csp",
     "check:csp": "node scripts/validate-csp-build.mjs",
     "check:fixtures": "node scripts/validate-fixtures.mjs",
     "check:live": "node scripts/verify-survey-live.mjs",
