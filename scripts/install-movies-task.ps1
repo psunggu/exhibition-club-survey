@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  update-movies-task.ps1 을 Windows 작업 스케줄러에 수·토 22:00 작업으로 등록한다.
+  update-movies-task.ps1 을 Windows 작업 스케줄러에 수·토 05:00 작업으로 등록한다.
 
 .EXAMPLE
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
@@ -9,7 +9,7 @@
 #>
 param(
   [string]$TaskName = "ExhibitionClub-Movies",
-  [string]$At = "22:00",
+  [string]$At = "05:00",
   [switch]$Replace,
   [switch]$Remove
 )
@@ -38,7 +38,8 @@ $action = New-ScheduledTaskAction `
   -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $runner) `
   -WorkingDirectory (Split-Path $PSScriptRoot -Parent)
 
-# KOBIS 실시간 예매율은 저녁 회차가 잡힌 뒤인 22시가 안정적이다 (docs/OPERATIONS.md 3).
+# 새벽에 돌린다 — 낮·저녁에는 사람이 PC 를 쓰고 있어 자동화가 손과 부딪힌다.
+# PC 가 꺼져 있으면 StartWhenAvailable 로 다음 켤 때 바로 돈다.
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Wednesday, Saturday -At $At
 $settings = New-ScheduledTaskSettingsSet `
   -StartWhenAvailable `

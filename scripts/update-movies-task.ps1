@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  보드 영화 순위를 KOBIS 에서 받아 PR 로 올리고 머지한다 — 이 PC 의 작업 스케줄러가 수·토 22:00 에 돌린다.
+  보드 영화 순위를 KOBIS 에서 받아 PR 로 올리고 머지한다 — 이 PC 의 작업 스케줄러가 수·토 05:00 에 돌린다.
 
 .DESCRIPTION
   GitHub 호스트 러너에서는 KOBIS 접속이 막혀(연결 시간 초과) 크론 워크플로를 쓸 수 없었다.
@@ -79,7 +79,17 @@ try {
   Run 'gh pr create --fill --base main'
   Start-Sleep -Seconds 20
   Run 'gh pr checks --watch -i 30'
-  Run 'gh pr merge --squash'
+
+  # 보호 규칙이 strict 라, 브랜치를 만든 뒤 main 이 움직였으면(정리봇·모임 머지 등)
+  # 「브랜치가 뒤처졌다」 로 머지가 거부된다. 그때는 브랜치를 main 에 맞추고 검사를 다시 기다린다.
+  & cmd /c 'gh pr merge --squash 2>&1' | ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log '머지 거부 — 브랜치를 main 에 맞추고 한 번 더 시도한다'
+    Run 'gh pr update-branch'
+    Start-Sleep -Seconds 30
+    Run 'gh pr checks --watch -i 30'
+    Run 'gh pr merge --squash'
+  }
 
   Run 'git checkout -q main'
   Run 'git pull -q --ff-only origin main'
