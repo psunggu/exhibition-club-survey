@@ -7,6 +7,7 @@ import {
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
 import { meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
+import { MEETUPS } from './data/meetups'
 import { BRIEF } from './data/meetingBrief'
 import { GoogleSurveyRounds } from './GoogleSurveyRounds'
 
@@ -545,7 +546,7 @@ function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
  * 볼 사람도 없는 집계를 매번 불러오게 된다.
  */
 function SurveyHistoryItem({ s }: { s: SurveyT }) {
-  const meet = meetupOfSurvey(s.id)
+  const meet = meetupOfSurvey(s.id, MEETUPS, s.meetupId)
   const [opened, setOpened] = useState(false)
   const [sum, setSum] = useState<{ result: string; people: number } | null>(null)
 
