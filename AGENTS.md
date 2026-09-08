@@ -82,7 +82,7 @@
 
 ## 설문
 
-- 설문은 **운영자 화면에서 만든다**(`#/survey/admin` 「새 설문 올리기」). SQL 로 만들지 않는다.
+- 설문은 **운영자 화면에서 만든다**(`#/survey/admin` 「새 설문 올리기」). SQL 로 만들지 않는다. 모임과 잇는 것도 거기 「이어지는 모임」 이다(설문 행의 `meetup_id`) — `meetups.ts` 의 `surveyIds` 는 옛 길이고 둘 다 읽힌다(`surveyHistory.meetupOfSurvey`).
 - `google` 은 화면에만 있는 갈래다. `SurveyCategory`(DB 다섯)와 `TabCategory`(+google)를 **합치지 않는다.** 운영자 화면의 「어느 화면에」 는 `POSTABLE_CATEGORY_ORDER`(다섯).
 - **`etc`(기타)의 이름을 바꾸지 않는다** — `toCategory` 가 모르는 값을 받아 주는 안전망이다.
 - 운영진 전용 분석 가이드: 본문은 저장소에 없고 잠긴 표 `admin_guides` 에만. `GuideDoc.tsx` 에 도메인 문구를 하드코딩하지 않는다(`validate-survey-ui` 가 번들을 grep 한다). 구조화 JSON(`{ "sections": [...] }`), `{` 로 시작하지 않으면 마크다운 폴백. **렌더 중 throw 하지 않는다**(ErrorBoundary 가 없다). 본문 6만 자 제한 — 이미지는 data URI 로 넣지 않는다.

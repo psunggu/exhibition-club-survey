@@ -69,6 +69,16 @@ ok('마감 + 모임이 오늘 → 아직 지난 설문 아니다',
   lib.isPastSurvey(survey('s1', CLOSED), TODAY, [meetup('m1', '2026-08-23', 'conf', ['s1'])]) === false,
   '모임 당일에는 접지 않는다');
 
+// 새 길 — 설문 행의 meetup_id 로 이어진 것 (운영자 화면에서 고른다, 2026-09-09).
+// surveyIds 가 비어 있어도 meetup_id 만으로 같은 답이 나와야 한다.
+ok('meetup_id 로 이어진 설문도 지난 설문이 된다',
+  lib.isPastSurvey({ ...survey('s9', CLOSED), meetupId: 'm9' }, TODAY, [meetup('m9', '2026-08-22', 'conf', [])]) === true,
+  'surveyIds 없이 meetup_id 만');
+ok('meetup_id 가 없는 모임을 가리키면 잇지 않는다',
+  lib.meetupOfSurvey('s9', [meetup('m1', '2026-08-22', 'conf', [])], 'no-such') === null);
+ok('surveyIds 가 먼저다 — 둘 다 있으면 옛 길이 이긴다',
+  lib.meetupOfSurvey('s1', [meetup('m1', '2026-08-22', 'conf', ['s1']), meetup('m2', '2026-08-30', 'conf', [])], 'm2')?.id === 'm1');
+
 ok('마감 + 모임이 내일 → 아직 지난 설문 아니다',
   lib.isPastSurvey(survey('s1', CLOSED), TODAY, [meetup('m1', '2026-08-24', 'conf', ['s1'])]) === false,
   '「마감이면 무조건」 구현을 여기서 잡는다');

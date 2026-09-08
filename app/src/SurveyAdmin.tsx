@@ -11,6 +11,8 @@ import {
   type SurveyOption,
 } from './lib/survey'
 import { splitAdminByHistory } from './lib/surveyHistory'
+import { MEETUPS } from './data/meetups'
+import { seoulToday } from './lib/calendar'
 import { fetchEvents } from './lib/events'
 import { News } from './SurveyAdminNews'
 import { GoogleSurveyRounds } from './GoogleSurveyRounds'
@@ -1035,6 +1037,31 @@ export function SurveyAdmin() {
 
   if (draft) {
     const set = (patch: Partial<Draft>) => setDraft({ ...draft, ...patch })
+    /**
+     * 이어지는 모임 — 다가오는 모임(오늘 이후, 예매 마감일 줄 제외)만 고를 수 있다.
+     * 고르면 설문 행에 `meetup_id` 로 남고, 회원 화면의 「이어진 모임」 과 지난 설문 판정이
+     * 그것을 읽는다. 예전에는 이 연결을 `meetups.ts` 의 `surveyIds` 에 손으로 적어
+     * 커밋해야 했다 — 설문 하나에 코드 커밋 하나가 따라왔다.
+     */
+    const today = seoulToday()
+    const upcomingMeetups = MEETUPS.filter((m) => m.kind !== 'dead' && m.date >= today)
+    const linkMeetup = (id: string) => {
+      const m = upcomingMeetups.find((x) => x.id === id)
+      const patch: Partial<Draft> = { meetupId: id }
+      // 새 설문이고 아직 아무것도 안 적었으면 식사 장소 설문 꼴로 미리 채운다 —
+      // 「모임에서 설문을 한 번에 연다」 의 알맹이다. 적힌 것은 덮지 않는다.
+      if (m && !draft.id) {
+        if (!draft.title.trim()) patch.title = `${m.title} 식사 장소`
+        if (!draft.intro.trim()) {
+          patch.intro = `${m.dateLabel} ${m.time.split(' · ')[0]} · ${m.venue} 관람 뒤 식사 장소를 골라 주세요. 여러 곳을 고르셔도 됩니다.`
+        }
+        if (!draft.title.trim() && draft.category === 'exhibition') patch.category = 'meal'
+        // 마감은 모임 이틀 전. 하루도 안 남았으면 손대지 않는다
+        const left = Math.floor((Date.parse(`${m.date}T00:00:00+09:00`) - Date.parse(`${today}T00:00:00+09:00`)) / 86_400_000) - 2
+        if (!draft.title.trim() && left >= 1) patch.days = Math.min(90, left)
+      }
+      set(patch)
+    }
     return (
       <div className="admin-form">
         <h3 className="admin-title">{draft.id ? '설문 고치기' : '새 설문 올리기'}</h3>
@@ -1043,6 +1070,26 @@ export function SurveyAdmin() {
           placeholder="9월 정기 관람 전시 추천" />
         <Field label="안내 문구" value={draft.intro} onChange={(v) => set({ intro: v })} area
           placeholder="아래 후보 가운데 함께 보고 싶은 전시를 골라 주세요." />
+
+        {/* 안내 문구 아래에 둔다. validate-survey-admin-ui 가 `.admin-input` 의 첫째를 제목 칸으로
+            집으므로 이 <select> 가 그 앞에 오면 검사가 깨진다. 빈 제목·안내는 모임을 고를 때 채워진다.
+            새 이름(.admin-meetup) 을 쓴다: 검사기가 이름으로 칸을 찾는다. */}
+        <label className="survey-field admin-meetup" style={{ marginTop: 10 }}>
+          <span>이어지는 모임</span>
+          <select className="admin-input" value={draft.meetupId}
+            onChange={(e) => linkMeetup(e.target.value)}>
+            <option value="">없음 — 모임과 잇지 않는다</option>
+            {upcomingMeetups.map((m) => (
+              <option key={m.id} value={m.id}>{m.dateLabel} {m.title}</option>
+            ))}
+          </select>
+        </label>
+        {draft.meetupId && (
+          <p className="admin-hint">
+            이 설문은 그 모임의 설문 카드와 요약 줄에 이어지고, 모임이 지나면 「지난 설문」 으로 접힙니다.
+            제목·안내·마감이 비어 있었으면 모임에 맞춰 채웠습니다 — 고쳐 쓰셔도 됩니다.
+          </p>
+        )}
 
         <div className="admin-row">
           <label className="survey-field" style={{ flexGrow: 1 }}>

@@ -46,6 +46,8 @@ const tables = [
   /** 운영진 전용 긴 글을 담는 잠긴 표 — 아래 LOCKED 가 RLS 를 검사한다 */
   read('202608310001a_admin_guides.sql'),
   read('202609050003a_member_admin_option_add.sql'),
+  /** meetup_id 컬럼을 더하는 파일 — 안 읽으면 그 열에 넣는 함수를 「없는 열」 이라 잡는다 */
+  read('202609090001a_survey_meetup_link.sql'),
 ].join('\n');
 const funcs = read('202608200001b_survey_functions.sql');
 const seed = read('202608200001c_survey_september.sql');
@@ -70,6 +72,7 @@ const admin = [
   read('202608300004a_news_admin_functions.sql'),
   read('202608310001a_admin_guides.sql'),
   read('202609050003a_member_admin_option_add.sql'),
+  read('202609090001a_survey_meetup_link.sql'),
 ].join('\n');
 /** 함수 검사는 두 파일을 합쳐서 본다 — 같은 규칙이 둘 다에 걸린다 */
 const allFuncs = `${funcs}\n${admin}`;

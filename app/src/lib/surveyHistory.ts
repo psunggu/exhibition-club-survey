@@ -29,9 +29,20 @@ import { MEETUPS, type Meetup } from '../data/meetups'
 import { seoulToday } from './calendar'
 import { isOpen, type Survey } from './survey'
 
-/** 이 설문을 위해 열린 모임. 없으면 null — 지어내지 않는다. */
-export function meetupOfSurvey(surveyId: string, meetups: Meetup[] = MEETUPS): Meetup | null {
-  return meetups.find((m) => m.surveyIds?.includes(surveyId)) ?? null
+/**
+ * 이 설문을 위해 열린 모임. 없으면 null — 지어내지 않는다.
+ *
+ * 잇는 길이 둘이다. 옛 길은 `meetups.ts` 의 `surveyIds`(코드에 손으로 적는다),
+ * 새 길은 설문 행의 `meetup_id`(운영자 화면에서 고른다 · 2026-09-09). 둘 다 본다 —
+ * 옛 설문은 전부 옛 길로 이어져 있고, 그것을 옮겨 적을 이유가 없다.
+ */
+export function meetupOfSurvey(
+  surveyId: string,
+  meetups: Meetup[] = MEETUPS,
+  meetupId?: string | null,
+): Meetup | null {
+  return meetups.find((m) => m.surveyIds?.includes(surveyId))
+    ?? (meetupId ? meetups.find((m) => m.id === meetupId) ?? null : null)
 }
 
 /**
@@ -45,7 +56,7 @@ export function isPastSurvey(
   today: string = seoulToday(),
   meetups: Meetup[] = MEETUPS,
 ): boolean {
-  return pastCore(s.id, !isOpen(s), today, meetups)
+  return pastCore(s.id, !isOpen(s), today, meetups, s.meetupId)
 }
 
 /**
@@ -62,9 +73,10 @@ function pastCore(
   closed: boolean,
   today: string,
   meetups: Meetup[],
+  meetupId?: string | null,
 ): boolean {
   if (!closed) return false
-  const m = meetupOfSurvey(id, meetups)
+  const m = meetupOfSurvey(id, meetups, meetupId)
   if (!m) return false
   // 'dead' 는 모임이 아니라 예매 마감일 같은 줄이다. 그 날짜는 영영 「다녀온 날」이 아니다.
   if (m.kind === 'dead') return false
@@ -78,7 +90,7 @@ function pastCore(
  * 판단은 위 pastCore 가 하므로 회원 화면과 답이 갈리지 않는다.
  */
 export function isPastAdminSurvey(
-  s: { id: string; closesAt: string },
+  s: { id: string; closesAt: string; meetupId?: string | null },
   today: string = seoulToday(),
   meetups: Meetup[] = MEETUPS,
   now: Date = new Date(),
@@ -87,11 +99,11 @@ export function isPastAdminSurvey(
   // 마감을 못 읽으면 **지난 것으로 보지 않는다.** 접어 버리면 운영자가
   // 고치러 들어올 자리가 사라진다 — 모르면 남기는 쪽으로 넘어진다.
   if (Number.isNaN(c)) return false
-  return pastCore(s.id, now.getTime() > c, today, meetups)
+  return pastCore(s.id, now.getTime() > c, today, meetups, s.meetupId)
 }
 
 /** 운영자 목록을 「지금 것」과 「지난 관람」으로 가른다. 순서는 그대로 둔다. */
-export function splitAdminByHistory<T extends { id: string; closesAt: string }>(
+export function splitAdminByHistory<T extends { id: string; closesAt: string; meetupId?: string | null }>(
   list: T[],
   today: string = seoulToday(),
   meetups: Meetup[] = MEETUPS,

@@ -142,6 +142,12 @@ export type Survey = {
   hideAfterDays: number | null
   category: SurveyCategory
   /**
+   * 이 설문이 정하는 모임의 id (`meetups.ts` 의 `id`). 운영자 화면에서 고른다.
+   * 없으면 null — `meetups.ts` 의 `surveyIds` 로 잇는 옛 길도 그대로 살아 있다
+   * (surveyHistory.meetupOfSurvey 가 둘 다 본다).
+   */
+  meetupId: string | null
+  /**
    * 밖(톡방)에서 진행된 투표를 옮겨 온 설문인가.
    * 그렇다면 여기서는 **응답을 받지 않고 결과만 보여 준다** —
    * 옮겨 온 숫자가 집계를 덮어써서, 여기서 받은 표는 나타나지 않기 때문이다.
@@ -258,6 +264,7 @@ function toSurvey(r: SurveyRow): Survey {
     showNames: sn === 'participants' ? 'participants' : 'none',
     hideAfterDays: typeof r.hide_after_days === 'number' ? r.hide_after_days : null,
     category: toCategory(str(r.category)),
+    meetupId: str(r.meetup_id),
     /**
      * 설문 전체에 걸리는 참고 문서. 후보 하나에 붙일 수 없는 것이 여기 온다.
      * 열이 없던 때의 응답도 읽어야 하므로 없으면 빈 배열이다.
@@ -407,6 +414,8 @@ export type AdminSurvey = {
    * (202608300002a).
    */
   audience: 'members' | 'admins'
+  /** 이어진 모임 id. 지난 관람 판정(surveyHistory)이 surveyIds 와 함께 본다 */
+  meetupId: string | null
   optionCount: number
   responseCount: number
 }
@@ -457,6 +466,11 @@ export type Draft = {
    * 운영진용인 어깼난 상태가 된다.
    */
   audience: 'members' | 'admins'
+  /**
+   * 이어지는 모임 (`meetups.ts` 의 id). 빈 문자열이면 잇지 않는다.
+   * 이것이 있으면 `meetups.ts` 의 `surveyIds` 를 손으로 적을 필요가 없다.
+   */
+  meetupId: string
   options: DraftOption[]
 }
 
@@ -472,6 +486,7 @@ export const emptyDraft = (): Draft => ({
   // 새 설문은 회원용이 기본이다. 운영진용은 일부러 고르게 한다 —
   // 기본을 반대로 두면 회원에게 보여야 할 설문이 조용히 안 보이는 쪽으로 넘어진다.
   audience: 'members',
+  meetupId: '',
   options: [emptyOption()],
 })
 
@@ -638,6 +653,7 @@ export const adminList = async (pw: string, signal?: AbortSignal): Promise<Admin
     // 서버가 안 주는 옛 판이면 회원용으로 본다 — 없는 값을 운영진용으로 읽으면
     // 회원 설문이 운영자 화면에만 갇힌다. 모르면 덜 감추는 쪽으로 넘어진다.
     audience: str(r.audience) === 'admins' ? 'admins' : 'members',
+    meetupId: str(r.meetup_id),
     optionCount: Number(r.option_count) || 0,
     responseCount: Number(r.response_count) || 0,
   }))
@@ -657,6 +673,7 @@ export const adminSave = (pw: string, d: Draft, signal?: AbortSignal) =>
       show_names: d.showNames,
       category: d.category,
       audience: d.audience,
+      meetup_id: d.meetupId || null,
       options: d.options.map((o) => ({
         title: o.title, period: o.period, venue: o.venue,
         hours: o.hours, price: o.price, note: o.note,
@@ -757,6 +774,7 @@ export const toDraft = (s: Survey): Draft => ({
   // 고칠 때 지금 값을 그대로 들고 온다 — 제목만 고쳐도
   // 운영진용 설문이 회원에게 튀어나오면 되돌릴 수 없다.
   audience: s.audience,
+  meetupId: s.meetupId ?? '',
   options: s.options.map((o) => ({
     title: o.title, period: o.period ?? '', venue: o.venue ?? '',
     hours: o.hours ?? '', price: o.price ?? '', note: o.note ?? '',
