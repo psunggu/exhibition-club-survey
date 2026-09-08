@@ -421,6 +421,21 @@ export function Calendar() {
           {LEGEND_NOTE.map((t) => <span key={t} className="lnote">{t}</span>)}
         </span>
       </p>
+
+      {/* 달력 구독. 링크 하나로 휴대폰 달력에 넣고 나면 새 모임이 저절로 들어간다 —
+          카톡 링크를 다시 찾아 들어오는 일이 준다. 파일은 빌드 때 meetups.ts 에서 만든다
+          (vite.config.ts 의 calendarFeed). webcal:// 은 아이폰·맥이 구독으로 연다.
+          안드로이드·구글 캘린더는 그 방식이 없어 주소를 글자로 보여 준다 —
+          작은 인라인 링크는 누르는 크기 24px 규칙에 걸리므로 링크로 만들지 않는다. */}
+      <div className="calendar-subscribe">
+        <a className="board-jump-link" href={`webcal://${window.location.host}${import.meta.env.BASE_URL}club-calendar.ics`}>
+          휴대폰 달력에 모임 일정 넣기 <span aria-hidden="true">→</span>
+        </a>
+        <p className="lnote">
+          아이폰은 위 링크를 누르고 「구독」 하면 됩니다. 안드로이드·구글 캘린더는 캘린더 설정의
+          「URL로 추가」 에 이 주소를 넣습니다: {`https://${window.location.host}${import.meta.env.BASE_URL}club-calendar.ics`}
+        </p>
+      </div>
       {months.map(({ year, month }) => {
         // 빈 달을 말없이 비워 두면 "아직 안 만든 화면"으로 보인다.
         // 옛 화면은 9월에 이 문장을 박아 뒀다 — 여기서는 모임이 없을 때만 뜬다.

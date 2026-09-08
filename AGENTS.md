@@ -22,6 +22,7 @@
 
 - `main` 푸시 → `deploy-pages.yml` → `npm run build` 의 `dist/` → Pages. 라이브: https://psunggu.github.io/exhibition-club-survey/ (`#/calendar` · `survey-result.html`).
 - **`app/public/` 은 `publicDir` 이 아니다.** `vite.config.ts` 의 `copyLiveAssets` 목록에 적은 것만 나간다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404** 다.
+- `club-calendar.ics`(달력 구독)는 파일이 아니라 빌드 때 `meetups.ts` 에서 만든다(`calendarFeed` · `lib/ics.ts`). `TENTATIVE` 는 넣지 않는다.
 - `app/public/index.html` · `app.js` · `notice.html` · `notice.js` 는 옛 정적 페이지다. 배포되지 않고 2026-09-08 부터 검사기도 읽지 않는다 — **지운다.** `styles.css` · `notice.css` 는 `scope-legacy-css.mjs` 의 원본이라 남긴다.
 - 옛 주소 `notice.html` 은 단톡방에 뿌려져 있어 `vite.config.ts` 가 `#/calendar` 리다이렉트 스텁을 만든다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.

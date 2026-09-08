@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { MEETUPS } from './app/src/data/meetups'
+import { buildIcs } from './app/src/lib/ics'
 
 // package.json 이 type: module 이라 CommonJS 의 __dirname 이 없다.
 // 빌드가 우연히 통과해도 언젠가 undefined 로 터진다.
@@ -84,6 +86,31 @@ const NOTICE_REDIRECT = `<!doctype html>
 </html>
 `
 
+/**
+ * 달력 구독 파일. **저장소에 파일로 두지 않는다** — 빌드 때 meetups.ts 에서 만든다.
+ * 그래야 모임을 하나 더할 때 두 곳을 고칠 일이 없다. dev 서버에서도 같은 값을 내준다.
+ * 주소: <base>club-calendar.ics — 달력 앱은 webcal:// 로 구독한다 (Calendar.tsx).
+ */
+const ICS_NAME = 'club-calendar.ics'
+const SITE_CALENDAR_URL = 'https://psunggu.github.io/exhibition-club-survey/#/calendar'
+const icsSource = () => buildIcs(MEETUPS, { now: new Date(), siteUrl: SITE_CALENDAR_URL })
+
+function calendarFeed(): Plugin {
+  return {
+    name: 'calendar-feed',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: ICS_NAME, source: icsSource() })
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (!(req.url ?? '').endsWith(`/${ICS_NAME}`)) return next()
+        res.setHeader('content-type', 'text/calendar; charset=utf-8')
+        res.end(icsSource())
+      })
+    },
+  }
+}
+
 // dev 서버에서도 같은 파일을 내준다
 function serveLiveAssets(): Plugin {
   return {
@@ -121,7 +148,7 @@ export default defineConfig({
   // GitHub Pages 는 https://psunggu.github.io/exhibition-club-survey/ 에 붙는다.
   // base 가 틀리면 자산 경로가 전부 404 가 된다.
   base: '/exhibition-club-survey/',
-  plugins: [react(), copyLiveAssets(), serveLiveAssets()],
+  plugins: [react(), copyLiveAssets(), serveLiveAssets(), calendarFeed()],
 
   // publicDir 은 쓰지 않는다. 정적 파일은 위 플러그인이 app/public 에서 가져온다.
   publicDir: false,
