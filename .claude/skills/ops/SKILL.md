@@ -13,7 +13,7 @@ cd C:/D/Project/exhibition-club-survey && git fetch -q --prune origin && echo "m
 && echo "조율 중: $(grep -c "^    id: '" <(awk '/^export const TENTATIVE/,/^\]/' app/src/data/meetups.ts))건" \
 && echo "열린 PR: $(gh pr list --state open --json number,title -q '.[] | "#\(.number) \(.title)"' | tr '\n' ' ')" \
 && echo "마지막 배포: $(gh run list --workflow=deploy-pages.yml --limit 1 --json conclusion,createdAt -q '.[0] | "\(.conclusion) \(.createdAt)"')" \
-&& echo "영화 크론: $(gh run list --workflow=update-movies.yml --limit 1 --json conclusion,createdAt -q '.[0] | "\(.conclusion) \(.createdAt)"')"
+&& echo "영화 작업(PC): $(ls -t logs/update-movies-*.log 2>/dev/null | head -1 | xargs -r tail -1)"
 ```
 
 보고는 이렇게 쓴다.
