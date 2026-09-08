@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   update-movies-task.ps1 을 Windows 작업 스케줄러에 수·토 22:00 작업으로 등록한다.
 
