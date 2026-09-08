@@ -55,7 +55,7 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
   고쳤으면 검사기를 다시 돌린다.
 - `--dry-run` 을 붙이면 쓰지 않고 보여만 준다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
-- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 05:00 에 돈다(2026-09-09 부터. 그 전엔 22:00). 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
+- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 22:00 에 돈다. 관리자 권한으로 등록된 작업이라 일반 세션에서는 시각을 못 바꾼다 — 새벽으로 옮기려면 **관리자 PowerShell** 에서 `kakao-digestscriptsinstall_task.ps1 -Room <방 이름> -Day Tuesday,Friday -Time 05:00` 을 돌린다. 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 
