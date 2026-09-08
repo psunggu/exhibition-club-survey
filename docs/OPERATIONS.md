@@ -12,13 +12,22 @@
 
 ## 한눈에
 
-| 항목 | 주기 | 하는 곳 | 명령 | AI 세션 |
+| 항목 | 주기 | 누가 | 어떻게 | AI 토큰 |
 |---|---|---|---|---|
-| 1. 관람 장소 설문 | 달마다 | 운영자 화면 `#/survey/admin` | 없음 | 안 연다 |
-| 2. 주간 정리봇 | 주 1회 | `kakao-digest` → 이 저장소 | `npm run digest:public -- <digest.json>` | 문구 다듬을 때만 |
-| 3. 보드 · 영화 순위 | 수·토 22시 | 이 저장소 | `npm run board:movies` | 안 연다 |
-| 3. 보드 · 전시·공연 | 수시 | Supabase SQL Editor (`public.events`) | 없음 | 안내문 쓸 때만 |
-| 4. 확정 모임 | 확정될 때 | `app/src/data/meetups.ts` | 항목 하나 추가 | 안 연다 |
+| 1. 관람 장소 설문 | 달마다 | 운영자 | 운영자 화면 `#/survey/admin` | 0 |
+| 2. 주간 정리봇 | 주 1회 | Claude Code `/digest` | kakao-digest → `npm run digest:public` → PR | 적음 |
+| 3. 보드 · 영화 순위 | 수·토 22시 | **GitHub Actions 크론** (`update-movies.yml`) | `npm run board:movies` → main 푸시 → 배포 | 0 |
+| 3. 보드 · 전시·공연 | 수시 | 운영자 | Supabase SQL Editor (`public.events`) | 안내문 쓸 때만 |
+| 4. 확정 모임 | 확정될 때 | Claude Code `/meetup "한 줄"` | `meetups.ts` 항목 → PR | 적음 |
+
+세션을 열었을 때 「뭐부터 할까」 는 `/ops` — 넷이 각각 얼마나 오래됐는지 열 줄로 보고한다.
+
+### 자동화 구성 (2026-09-08)
+
+- **`.github/workflows/update-movies.yml`** — 수·토 13:00 UTC 에 `board:movies` + `check:quick` 을 돌리고 `main` 에 직접 푸시한다. 그러려고 `main` 보호 규칙(ruleset)에 GitHub Actions 앱을 우회 대상으로 넣었다 — **사람은 여전히 PR 로만 간다.** GITHUB_TOKEN 의 푸시는 push 이벤트를 내지 않아 워크플로가 배포 워크플로를 직접 깨운다. 손으로 돌리려면 `gh workflow run update-movies.yml`.
+- **`.claude/skills/`** — `/digest` · `/meetup` · `/ops`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
+- **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
+- Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
 
 ## 1. 관람 장소 설문 — `#/survey`
 
@@ -49,6 +58,8 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
 ## 3. 문화 콘텐츠 보드 — `#/`
 
 ### 영화 예매 순위 (수요일·토요일 22시)
+
+**크론이 한다** (`update-movies.yml`). 손으로 돌릴 일이 생기면:
 
 ```
 npm run board:movies
