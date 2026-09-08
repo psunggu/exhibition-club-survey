@@ -27,7 +27,7 @@
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
 - **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
 - Pages 배포 원천은 GitHub Actions 다(2026-09-08). `gh-pages` 브랜치는 없다.
-- 영화 순위는 `update-movies.yml` 크론이 `main` 에 직접 푸시한다 — ruleset 의 우회 대상은 GitHub Actions 앱뿐이다. 사람과 에이전트는 PR 로만 간다.
+- 영화 순위는 소유자 PC 의 작업 스케줄러(`scripts/update-movies-task.ps1`)가 PR 로 올려 머지한다. GitHub 러너는 KOBIS 에 못 붙는다. ruleset 에 우회 대상을 만들지 않는다.
 - 정기 갱신용 스킬 `/digest` · `/meetup` · `/ops` 와 서브에이전트 `ops` 는 `.claude/skills/` · `.claude/agents/` 에 있고 추적한다.
 
 ## 검사
