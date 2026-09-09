@@ -123,7 +123,12 @@ export const BRIEF: MeetingBrief | null = {
        */
       value: '9월 19일(토)',
       dateChip: { big: '9월 19일', small: '토요일' },
-      sub: '17~18시 관람',
+      /**
+       * 투표 항목은 「17-18관람」 이었지만 **16시 회차 예매자**가 있어 집결을 16시로
+       * 당겼다(2026-09-10 운영자 결정, meetups.ts 의 september-regular 와 같은 값).
+       * 아래 `from` 은 날짜의 근거로 그대로 둔다 — 날짜는 투표가 정했고 시각만 옮긴 것이다.
+       */
+      sub: '16시 집결 · 16~18시 관람',
       from: { surveyId: S_SCHEDULE, optionId: '5e97b1a0-0000-4000-8000-000000000948' },
     },
     {
