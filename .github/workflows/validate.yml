@@ -44,7 +44,8 @@ jobs:
           # 러너에 미리 깔린 구글 크롬 apt 저장소가 가끔 색인이 깨져(Hash Sum mismatch)
           # `--with-deps` 의 apt-get update 를 통째로 죽인다(2026-09-10, 세 번 연속).
           # 우리는 그 저장소를 쓰지 않으므로 먼저 치운다.
-          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google*.list
+          sudo grep -rlF 'dl.google.com' /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | xargs -r sudo rm -f
+          sudo rm -f /etc/apt/sources.list.d/google*.list /etc/apt/sources.list.d/google*.sources
           npx playwright install --with-deps chromium
           node scripts/snapshot-screens.mjs check
 

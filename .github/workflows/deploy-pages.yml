@@ -52,7 +52,8 @@ jobs:
       - name: 화면 대조 (디자인 불변)
         run: |
           # validate.yml 과 같은 이유 — 구글 크롬 apt 저장소 색인이 깨지면 여기서 배포가 멈춘다.
-          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google*.list
+          sudo grep -rlF 'dl.google.com' /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | xargs -r sudo rm -f
+          sudo rm -f /etc/apt/sources.list.d/google*.list /etc/apt/sources.list.d/google*.sources
           npx playwright install --with-deps chromium
           node scripts/snapshot-screens.mjs check
 
