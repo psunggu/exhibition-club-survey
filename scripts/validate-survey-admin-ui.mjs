@@ -151,7 +151,11 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
 // 회원 응답 화면 검사와 같은 조건을 두려는 것뿐이다 (scripts/self-survey-config.mjs).
 await serveSelfSurveyConfig(ctx, true);
 
-await ctx.route('**/rest/v1/**', async (route) => {
+/**
+ * 이름을 붙인 이유: 맨 아래 「실설정」 절이 **꺼진 설정의 새 컨텍스트**에 같은 가짜 서버를
+ * 다시 끼워야 해서다. 인라인이면 두 벌을 들고 있게 되고, 하나만 고치는 날이 온다.
+ */
+const handleRest = async (route) => {
   const url = route.request().url();
   const json = (b) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(b) });
   const noContent = () => route.fulfill({ status: 204, body: '' });
@@ -313,7 +317,8 @@ await ctx.route('**/rest/v1/**', async (route) => {
     return json([]);
   }
   return json([]);
-});
+};
+await ctx.route('**/rest/v1/**', handleRest);
 
 const page = await ctx.newPage();
 const errs = [];
@@ -1098,6 +1103,40 @@ const dim = dimTexts(texts);
 ok('글자 대비가 모두 기준 이상', dim.length === 0, dim.join(' | '));
 ok(`대비를 잰 글자 ${texts.length}개`, texts.length >= 30, `${texts.length}개`);
 ok('오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
+
+/* ── 실설정 — 운영자가 실제로 보는 쪽 (selfSurvey 꺼짐 · 2026-09-10) ──────
+ * 투표를 톡방으로 옮기면서 설문 만들기·고치기·지우기도 운영자 화면에서 뺐다.
+ * 위 검사들은 켠 설정으로 그 코드가 살아 있는지 재고, 여기서는 꺼진 설정에서
+ * 단추와 목록이 **없고** 소식·명부·구글 설문은 **그대로인지** 잰다.
+ * 이 절이 없으면 스위치를 켜 둔 검사만 남아, 회원이 보는 화면은 아무도 안 잰다. */
+console.log('\n── 실설정(selfSurvey 꺼짐)');
+{
+  const ctxOff = await browser.newContext({ viewport: { width: 390, height: 900 },
+    locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
+  await serveSelfSurveyConfig(ctxOff, false);
+  await ctxOff.route('**/rest/v1/**', handleRest);
+  const p = await ctxOff.newPage();
+  const offErrs = [];
+  p.on('pageerror', (e) => offErrs.push(String(e)));
+  await p.goto(`http://localhost:8265${BASE}/#/survey/admin`, { waitUntil: 'networkidle' });
+  await p.waitForSelector('.survey-who', { timeout: 20000 });
+  await p.fill('.admin-input', PW);
+  await p.click('.survey-who .survey-submit');
+  await p.waitForSelector('.admin-mode-note', { timeout: 10000 });
+  await p.waitForTimeout(800);
+  const text = await p.$eval('body', (e) => e.innerText);
+  ok('꺼진 설정에서 「새 설문 올리기」 가 없다', !text.includes('새 설문 올리기'));
+  ok('꺼진 설정에서 설문 카드가 없다',
+    (await p.$$('.admin-card:not(details .admin-card)')).length === 0);
+  ok('「지난 관람」 접기도 없다', (await p.$$('details.admin-past')).length === 0);
+  ok('안내가 톡방을 가리킨다',
+    (await p.$eval('.admin-mode-note', (e) => e.textContent)).includes('톡방'));
+  ok('보드 소식은 그대로다', text.includes('보드 소식'));
+  ok('회원 명부는 그대로다', text.includes('회원 명부'));
+  ok('구글 설문 결과는 그대로다', text.includes('구글 설문 결과'));
+  ok('꺼진 설정에서 오류 없음', offErrs.length === 0, offErrs.slice(0, 2).join(' | '));
+  await ctxOff.close();
+}
 
 await browser.close();
 server.close();

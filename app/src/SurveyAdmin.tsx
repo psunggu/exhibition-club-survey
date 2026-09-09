@@ -1288,13 +1288,22 @@ export function SurveyAdmin() {
       {/* 새 이름(.admin-mode-note)이다 — 검사기가 .admin-card 를 차례로 짚으므로 그 이름을 쓰면 안 된다. */}
       {!selfSurveyOn() && (
         <p className="admin-mode-note">
-          투표는 <b>톡방에서</b> 진행합니다. 여기서 만드는 설문은 결과를 옮겨 담는 그릇이고,
-          회원 화면에서는 응답을 받지 않습니다. 표 수는 마감 뒤 SQL 템플릿으로 넣습니다.
+          투표는 <b>톡방에서</b> 올리고 결과도 거기서 나눕니다. 이 화면은 <b>보드 소식 · 회원 명부 ·
+          구글 설문 분석</b>만 다룹니다. 설문을 만들거나 고치는 자리는 두지 않습니다
+          (2026-09-10 운영자 결정).
         </p>
       )}
-      <div className="survey-actions" style={{ marginBottom: 14 }}>
-        <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
-      </div>
+      {/**
+        * **설문 만들기·고치기·지우기는 회원 응답 화면과 같은 스위치로 끈다.**
+        * 투표를 톡방으로 옮기면서(2026-09-09) 운영자 화면의 설문 관리도 필요 없어졌다
+        * (2026-09-10). 코드는 지우지 않는다 — 회원 쪽과 같은 원칙이다. 얼마간 돌려 보고
+        * 필요 없으면 그때 지운다. `selfSurvey: true` 로 켜면 이 단추와 아래 목록이 돌아온다.
+        */}
+      {selfSurveyOn() && (
+        <div className="survey-actions" style={{ marginBottom: 14 }}>
+          <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
+        </div>
+      )}
 
       {msg && (
         <p className={`survey-status survey-message ${msg.kind}`}
@@ -1318,9 +1327,9 @@ export function SurveyAdmin() {
 
       <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
 
-      {!list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
+      {selfSurveyOn() && !list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
 
-      {live.map(card)}
+      {selfSurveyOn() && live.map(card)}
 
       {/**
         * ── 「지난 관람」 을 따로 접어 둔다 ──────────────────────
@@ -1332,7 +1341,7 @@ export function SurveyAdmin() {
         * 마감됐고 + 이어진 모임이 지났을 때만 지난 것이다. 마감만으로는 안 접는다.
         * 모임이 아직인 마감 설문이야말로 운영자가 들여다볼 때다.
         */}
-      {past.length > 0 && (
+      {selfSurveyOn() && past.length > 0 && (
         <details className="admin-members admin-past">
           <summary>지난 관람 {past.length}건 — 다녀온 모임의 설문입니다</summary>
           {past.map(card)}
