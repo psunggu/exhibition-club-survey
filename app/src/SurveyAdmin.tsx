@@ -1288,8 +1288,8 @@ export function SurveyAdmin() {
       {/* 새 이름(.admin-mode-note)이다 — 검사기가 .admin-card 를 차례로 짚으므로 그 이름을 쓰면 안 된다. */}
       {!selfSurveyOn() && (
         <p className="admin-mode-note">
-          투표는 <b>톡방에서</b> 올리고 결과도 거기서 나눕니다. 이 화면은 <b>보드 소식 · 회원 명부 ·
-          구글 설문 분석</b>만 다룹니다. 설문을 만들거나 고치는 자리는 두지 않습니다
+          투표는 <b>톡방에서</b> 올리고 결과도 거기서 나눕니다. 이 화면은 <b>보드 소식 ·
+          구글 설문 분석</b>만 다룹니다. 설문을 만들거나 고치는 자리와 회원 명부는 두지 않습니다
           (2026-09-10 운영자 결정).
         </p>
       )}
@@ -1325,7 +1325,14 @@ export function SurveyAdmin() {
         </div>
       </details>
 
-      <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
+      {/**
+        * **명부도 같은 스위치로 끈다 (2026-09-10).** 명부의 용도는 「사이트 응답 자격 확인」 과
+        * 「운영진 답하기」 였는데 둘 다 껐다. 쓰지 않는 개인정보를 화면에 두지 않는다 —
+        * DB 의 행은 운영자가 SQL 로 지운다(docs/OPERATIONS.md 1번). 다시 켜면 돌아온다.
+        */}
+      {selfSurveyOn() && (
+        <Members pw={pw} onError={(e) => say(e, '명부를 다루지 못했습니다.')} />
+      )}
 
       {selfSurveyOn() && !list.length && <p className="survey-empty">아직 올린 설문이 없습니다.</p>}
 

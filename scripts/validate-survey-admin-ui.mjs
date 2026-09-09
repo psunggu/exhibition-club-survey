@@ -1132,7 +1132,10 @@ console.log('\n── 실설정(selfSurvey 꺼짐)');
   ok('안내가 톡방을 가리킨다',
     (await p.$eval('.admin-mode-note', (e) => e.textContent)).includes('톡방'));
   ok('보드 소식은 그대로다', text.includes('보드 소식'));
-  ok('회원 명부는 그대로다', text.includes('회원 명부'));
+  // 명부는 사이트 응답을 받을 때만 쓰는 것이라 꺼진 설정에서는 화면에 없어야 한다 (2026-09-10).
+  // 글자로 재면 안 된다 — 안내문이 「회원 명부는 두지 않습니다」 라고 그 말을 쓴다. 접는 줄로 잰다.
+  const offFolds = await p.$$eval('details summary', (es) => es.map((e) => e.textContent.trim()));
+  ok('꺼진 설정에서 회원 명부가 없다', !offFolds.some((s) => s.startsWith('회원 명부')), offFolds.join(' · '));
   ok('구글 설문 결과는 그대로다', text.includes('구글 설문 결과'));
   ok('꺼진 설정에서 오류 없음', offErrs.length === 0, offErrs.slice(0, 2).join(' | '));
   await ctxOff.close();

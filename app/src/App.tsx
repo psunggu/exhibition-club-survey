@@ -7,7 +7,8 @@ import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { monthsToShow } from './data/meetups'
 import {
-  CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen, selfSurveyOn,
+  CATEGORY, CATEGORY_ORDER, categoryHeading, fetchResponseCount, fetchSurveys, isOpen, selfSurveyOn,
+  visibleTabs,
   type Survey as SurveyT, type SurveyCategory, type TabCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
@@ -213,18 +214,24 @@ export function App() {
       surveyDatetime: 'datetime', surveyMeal: 'meal',
       surveyClub: 'club', surveyGoogle: 'google',
     }
-    const category: TabCategory = BY_ROUTE[route.name] ?? 'exhibition'
+    const wanted: TabCategory = BY_ROUTE[route.name] ?? 'exhibition'
+    /**
+     * 꺼진 설정에서 숨긴 탭(일자·시간 · 운영·요청)의 옛 주소로 들어오면 첫 갈래를 보여 준다.
+     * 톡방에 공유된 옛 링크가 「그런 화면은 없습니다」 로 떨어지는 것보다 낫다.
+     */
+    const tabs = visibleTabs()
+    const category: TabCategory = tabs.includes(wanted) ? wanted : 'exhibition'
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
-        <h1>{admin ? '설문 관리' : CATEGORY[category].label}</h1>
+        <h1>{admin ? '운영자' : categoryHeading(category)}</h1>
 
         {/* 갈래를 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
             탭에는 **짧은 이름**을 쓴다 — 긴 이름 다섯은 375px 에 안 들어간다.
             전체 이름은 바로 위 제목이 맡는다. */}
         {!admin && (
-          <nav className="survey-tabs" aria-label="설문 갈래">
-            {CATEGORY_ORDER.map((c) => (
+          <nav className="survey-tabs" aria-label={selfSurveyOn() ? '설문 갈래' : '투표 갈래'}>
+            {tabs.map((c) => (
               <a key={c} href={CATEGORY[c].route}
                 className={`survey-tab ${c}${c === category ? ' on' : ''}`}
                 aria-current={c === category ? 'page' : undefined}>
@@ -236,7 +243,7 @@ export function App() {
 
         <a className="board-jump-link" href={admin ? '#/survey' : '#/calendar'}
           style={{ marginBottom: 18 }}>
-          {admin ? '설문 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
+          {admin ? '투표 결과 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
         </a>
         {admin ? <SurveyAdmin /> : <Survey category={category} />}
         {/* 운영자 자리는 눈에 띄게 두지 않는다. 주소를 아는 사람이 들어오고,
