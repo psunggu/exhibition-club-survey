@@ -7,13 +7,13 @@
 ## 무엇인가
 
 41교구 전시·박물관 동아리 사이트. Vite + React 해시 라우팅 SPA(`app/`), GitHub Pages 배포, Supabase(`public` 스키마).
-라우트는 아홉 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/etc` · `#/survey/admin`.
+라우트는 여덟 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/admin`. (`#/survey/etc` 는 2026-09-09 에 뺐다.)
 
 | 화면 | 코드 | 데이터의 정본 |
 |---|---|---|
 | 보드 `#/` | `Board.tsx` | 전시·공연 `public.events`(운영자가 Supabase 에서) · 영화 `data/movies.ts`(`npm run board:movies`) · 소식 한 줄 `events` 의 `type='소식'`(운영자 화면) |
 | 일정 `#/calendar` | `Calendar.tsx` | 모임 `data/meetups.ts` · 정리봇 `app/public/weekly-digest.public.json`(`npm run digest:public`) |
-| 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | DB 갈래 다섯(exhibition · datetime · meal · club · etc) + `google`(화면만, `data/googleSurveys.ts`). 운영자 화면 `#/survey/admin` 에서 만든다 |
+| 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | 회원 탭 넷(exhibition · datetime · meal · club) + `google`(화면만, `data/googleSurveys.ts`). DB 값에는 `etc` 도 있다(탭 없음). 운영자 화면 `#/survey/admin` 에서 만든다. **투표는 톡방에서, 사이트는 결과만**(`config.js` 의 `selfSurvey: false`) |
 | 정적 | `survey-result.html` · `meal-review.html` | 회원용 설문 결과 · 운영진 식당 검토. `copyLiveAssets` 목록에 있다 |
 
 미가동: `apps-script/Code.gs`(구글폼 자동 생성). 구글 폼은 손으로 만들어 이미 한 번 돌렸다.
@@ -82,9 +82,10 @@
 
 ## 설문
 
+- **투표는 톡방에서, 사이트는 결과만**(2026-09-09). `app/public/config.js` 의 `selfSurvey: false` 가 회원 응답을 끈다 — 모든 설문이 `mirrored` 와 같은 결과 화면이 되고 `submitResponse` 는 던진다. 응답 화면 코드는 얼마간 남긴다. 검사기는 `scripts/self-survey-config.mjs` 로 **켠 설정을 끼워** 그 코드를 재고, `validate-survey-ui` 끝에서 꺼진 설정도 잰다. 결과를 옮겨 넣는 길은 아직 SQL 템플릿이다(`docs/OPERATIONS.md` 1번).
 - 설문은 **운영자 화면에서 만든다**(`#/survey/admin` 「새 설문 올리기」). SQL 로 만들지 않는다. 모임과 잇는 것도 거기 「이어지는 모임」 이다(설문 행의 `meetup_id`) — `meetups.ts` 의 `surveyIds` 는 옛 길이고 둘 다 읽힌다(`surveyHistory.meetupOfSurvey`).
-- `google` 은 화면에만 있는 갈래다. `SurveyCategory`(DB 다섯)와 `TabCategory`(+google)를 **합치지 않는다.** 운영자 화면의 「어느 화면에」 는 `POSTABLE_CATEGORY_ORDER`(다섯).
-- **`etc`(기타)의 이름을 바꾸지 않는다** — `toCategory` 가 모르는 값을 받아 주는 안전망이다.
+- `google` 은 화면에만 있는 갈래다. `SurveyCategory`(DB 다섯)와 `TabCategory`(+google)를 **합치지 않는다.** 운영자 화면의 「어느 화면에」 는 `POSTABLE_CATEGORY_ORDER`(넷).
+- **`etc`(기타)는 탭 · 주소 · 운영자 선택지에 없지만 값은 지우지 않는다** — `toCategory` 가 모르는 값을 받아 주는 안전망이고 DB 제약도 그 값을 안다. `CATEGORY.etc.route` 는 첫 갈래로 간다.
 - 운영진 전용 분석 가이드: 본문은 저장소에 없고 잠긴 표 `admin_guides` 에만. `GuideDoc.tsx` 에 도메인 문구를 하드코딩하지 않는다(`validate-survey-ui` 가 번들을 grep 한다). 구조화 JSON(`{ "sections": [...] }`), `{` 로 시작하지 않으면 마크다운 폴백. **렌더 중 throw 하지 않는다**(ErrorBoundary 가 없다). 본문 6만 자 제한 — 이미지는 data URI 로 넣지 않는다.
 
 ## 커밋

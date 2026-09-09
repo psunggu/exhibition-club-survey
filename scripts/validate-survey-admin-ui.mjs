@@ -20,6 +20,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
+import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -145,6 +146,10 @@ let surveys = [{
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
+
+// 운영자 화면은 설정과 무관하게 같아야 한다. 켠 설정으로 재는 이유는
+// 회원 응답 화면 검사와 같은 조건을 두려는 것뿐이다 (scripts/self-survey-config.mjs).
+await serveSelfSurveyConfig(ctx, true);
 
 await ctx.route('**/rest/v1/**', async (route) => {
   const url = route.request().url();

@@ -18,6 +18,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
+import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = '/exhibition-club-survey';
@@ -164,6 +165,13 @@ const MEAL_LOOSE = {
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
+
+/**
+ * **응답 화면을 켠 설정으로 잰다.** 배포 설정은 `selfSurvey: false` 라 이름 확인 ·
+ * 체크 · 제출 흐름이 화면에 없다. 그 코드를 남겨 두는 동안은 여기서 켜서 잰다.
+ * 맨 끝 「실설정」 절에서 꺼진 설정으로 한 번 더 잰다 — 회원이 실제로 보는 쪽이다.
+ */
+await serveSelfSurveyConfig(ctx, true);
 
 /** 화면이 보낸 RPC 를 여기에 적어 둔다 */
 let sent = [];
@@ -1346,6 +1354,78 @@ const bundleJs = fs.existsSync(distDir)
 ok('번들 소스에 분석 도메인 문구가 없다',
   bundleJs.length > 0 && !/코어|주변부|말 없는|미응답/.test(bundleJs),
   bundleJs.length ? '없음' : 'dist 없음');
+
+/* ── 실설정 — 투표는 톡방에서, 여기는 결과만 ─────────────────
+ *
+ * 위까지는 `selfSurvey` 를 켠 설정으로 쟀다(응답 코드를 남겨 두는 동안 계속 재려고).
+ * **배포되는 설정은 꺼져 있다.** 회원이 실제로 보는 것은 이쪽이므로, 그 상태에서
+ * 응답할 길이 정말 없는지 · 톡방에서 한다고 말하는지를 여기서 잰다.
+ * 이 절이 없으면 켠 설정만 통과하고 배포 화면은 아무도 안 본 채로 나간다.
+ */
+console.log('\n── 실설정 (투표는 톡방에서 · 여기는 결과만)');
+await serveSelfSurveyConfig(ctx, false);
+
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, CLOSED_SURVEY, MIRROR_SURVEY]) }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+// 응답할 것이 없으면 설문이 접힌다(foldable). 접힌 <details> 안은 「보임」 대기에 걸리므로
+// 붙어 있는지만 기다리고, 접힌 것은 펼쳐서 잰다. 이 줄이 없어서 첫 실행이 여기서 멈췄다.
+await page.waitForSelector('.survey-head', { state: 'attached', timeout: 20000 });
+const offFold = await page.$eval('.survey-fold-cnt', (e) => e.textContent.replace(/\s+/g, ' ').trim())
+  .catch(() => '');
+ok('접힌 손잡이가 열린 설문을 「마감」 이라고 하지 않는다',
+  offFold === '' || (!offFold.includes('마감') && offFold.includes('진행 중')), offFold || '(접힘 없음)');
+await page.$$eval('details.survey-fold', (ds) => ds.forEach((d) => { d.open = true; }));
+await page.waitForTimeout(800);
+ok('꺼진 설정에서는 이름 칸이 없다', (await page.$$('.survey-who')).length === 0,
+  `${(await page.$$('.survey-who')).length}개`);
+ok('꺼진 설정에서는 체크 칸이 없다', (await page.$$('.survey-option input')).length === 0,
+  `${(await page.$$('.survey-option input')).length}개`);
+const offTags = await page.$$eval('.survey-head .tag', (es) => es.map((e) => e.textContent.trim()));
+ok('열린 설문은 「톡방에서 진행 중」 이다',
+  offTags.filter((t) => t === '톡방에서 진행 중').length === 2 && offTags.includes('마감'),
+  offTags.join(' · '));
+ok('열린 설문마다 톡방 안내가 붙는다', (await page.$$('.survey-mirror-note')).length === 2,
+  `${(await page.$$('.survey-mirror-note')).length}개`);
+const offBody = await page.evaluate(() => document.body.innerText);
+ok('「고르실 수 있습니다」 가 화면 어디에도 없다', !offBody.includes('고르실 수 있습니다'));
+await page.unroute('**/rest/v1/surveys*');
+
+// 달력 카드 — 「설문 참여하기」 가 아니라 「투표 현황」 이고, 배지는 「톡방 투표」 다
+await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
+  contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_SURVEY]) }));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForTimeout(1200);
+ok('달력 카드 제목이 「투표 현황」 이다',
+  (await page.$eval('#surveyJumpTitle', (e) => e.textContent.trim())) === '투표 현황');
+const offBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => e.textContent.trim()));
+ok('배지가 「진행 중」 이 아니라 「톡방 투표」 다',
+  offBadges.length > 0 && offBadges.every((b) => b === '톡방 투표'), offBadges.join(', ') || '배지 없음');
+ok('카드가 응답을 권하지 않는다',
+  !(await page.$eval('.survey-jump', (e) => e.innerText)).includes('응답할 수 있습니다'));
+await page.unroute('**/rest/v1/surveys*');
+
+// 요약 카드 — 「여기서 고르실 수 있습니다」 대신 현황을 볼 길만 준다
+await servePlace({ open: true, votes: [2, 1, 0] });
+const offRow = await placeRow();
+console.log(`  · 꺼진 설정 · 열림: ${offRow}`);
+ok('꺼진 설정에서도 투표 중이라고는 말한다', offRow.includes('투표 중입니다'), offRow);
+ok('「여기서 고르실 수 있습니다」 라고는 안 한다', !offRow.includes('고르실 수'), offRow);
+ok('현황을 볼 길은 준다',
+  (await page.$eval('.brief-go', (e) => e.getAttribute('href')).catch(() => null)) === '#/survey/meal');
+await unservePlace();
+
+// 보드 머리의 링크 — 「설문 참여하기」 가 「투표 결과 보기」 로
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(600);
+const topLinks = await page.$$eval('.topbar-notice-link', (es) => es.map((e) => e.textContent.trim()));
+ok('보드 머리의 설문 링크가 「투표 결과 보기」 다',
+  topLinks.some((t) => t.includes('투표 결과 보기')) && !topLinks.some((t) => t.includes('설문 참여하기')),
+  topLinks.join(' / '));
 
 await browser.close();
 
