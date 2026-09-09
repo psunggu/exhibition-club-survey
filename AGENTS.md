@@ -7,13 +7,13 @@
 ## 무엇인가
 
 41교구 전시·박물관 동아리 사이트. Vite + React 해시 라우팅 SPA(`app/`), GitHub Pages 배포, Supabase(`public` 스키마).
-라우트는 여덟 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/admin`. (`#/survey/etc` 는 2026-09-09 에 뺐다.)
+라우트는 여덟 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/admin`. (`#/survey/etc` 는 2026-09-09 에 뺐다.) 꺼진 설정(`selfSurvey: false`)에서는 `datetime` · `club` 탭을 그리지 않고 그 주소는 관람 장소로 보낸다(2026-09-10, `visibleTabs()`).
 
 | 화면 | 코드 | 데이터의 정본 |
 |---|---|---|
 | 보드 `#/` | `Board.tsx` | 전시·공연 `public.events`(운영자가 Supabase 에서) · 영화 `data/movies.ts`(`npm run board:movies`) · 소식 한 줄 `events` 의 `type='소식'`(운영자 화면) |
 | 일정 `#/calendar` | `Calendar.tsx` | 모임 `data/meetups.ts` · 정리봇 `app/public/weekly-digest.public.json`(`npm run digest:public`) |
-| 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | 회원 탭 넷(exhibition · datetime · meal · club) + `google`(화면만, `data/googleSurveys.ts`). DB 값에는 `etc` 도 있다(탭 없음). **투표는 톡방에서 올리고 결과도 톡방에서**(`config.js` 의 `selfSurvey: false`). 운영자 화면 `#/survey/admin` 은 보드 소식 · 명부 · 구글 설문 분석만 — 설문 만들기·고치기는 같은 스위치로 꺼 두었다(2026-09-10) |
+| 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | 회원 탭 넷(exhibition · datetime · meal · club) + `google`(화면만, `data/googleSurveys.ts`). DB 값에는 `etc` 도 있다(탭 없음). **투표는 톡방에서 올리고 결과도 톡방에서**(`config.js` 의 `selfSurvey: false`). 회원 화면 탭은 꺼진 설정에서 셋(관람 장소 · 식사·Tea · 구글 설문, `visibleTabs()`)이고 제목은 「… 투표 결과」(`categoryHeading()`). 운영자 화면 `#/survey/admin` 은 보드 소식 · 구글 설문 분석만 — 설문 만들기·고치기와 회원 명부는 같은 스위치로 꺼 두었다(2026-09-10) |
 | 정적 | `survey-result.html` · `meal-review.html` | 회원용 설문 결과 · 운영진 식당 검토. `copyLiveAssets` 목록에 있다 |
 
 미가동: `apps-script/Code.gs`(구글폼 자동 생성). 구글 폼은 손으로 만들어 이미 한 번 돌렸다.

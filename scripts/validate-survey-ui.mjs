@@ -1472,6 +1472,27 @@ ok('보드 머리의 설문 링크가 「투표 결과 보기」 다',
   topLinks.some((t) => t.includes('투표 결과 보기')) && !topLinks.some((t) => t.includes('설문 참여하기')),
   topLinks.join(' / '));
 
+/* 탭과 제목 (2026-09-10) — 꺼진 설정에서는 「일자·시간」 「운영·요청」 탭이 없고
+ * 제목은 「… 투표 결과」 다. 숨긴 탭의 옛 주소는 관람 장소로 떨어진다. */
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-tabs', { timeout: 20000 });
+const offTabs = await page.$$eval('.survey-tabs .survey-tab', (es) => es.map((e) => e.textContent.trim()));
+ok('꺼진 설정의 탭은 셋 — 관람 장소 · 식사·Tea · 구글 설문',
+  offTabs.join('|') === '관람 장소|식사·Tea|구글 설문', offTabs.join(' · '));
+const offH1 = await page.$eval('h1', (e) => e.textContent.trim());
+ok('제목이 「… 투표 결과」 다', offH1 === '관람 후 식사 & Tea 투표 결과', offH1);
+ok('「지난 설문」 이 아니라 「지난 투표」 다',
+  !(await page.$eval('body', (e) => e.innerText)).includes('지난 설문'));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/club`, { waitUntil: 'networkidle' });
+await page.waitForSelector('.survey-tabs', { timeout: 20000 });
+ok('숨긴 탭의 옛 주소는 관람 장소로 떨어진다',
+  (await page.$eval('h1', (e) => e.textContent.trim())) === '전시 관람 장소 투표 결과',
+  await page.$eval('h1', (e) => e.textContent.trim()));
+ok('그때도 「그런 화면은 없습니다」 가 아니다',
+  !(await page.$eval('body', (e) => e.innerText)).includes('그런 화면은 없습니다'));
+
 await browser.close();
 
 server.close();

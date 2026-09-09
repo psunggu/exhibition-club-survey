@@ -97,6 +97,30 @@ export const CATEGORY_ORDER: readonly TabCategory[]
   = ['exhibition', 'datetime', 'meal', 'club', 'google']
 
 /**
+ * **회원 화면에 실제로 그릴 탭.** 투표를 톡방에서 하는 동안(`selfSurvey` 꺼짐)에는
+ * 「일자·시간」 「운영·요청」 을 빼고 셋만 그린다 (2026-09-10 운영자 결정).
+ *
+ * 왜: 사이트에서 투표를 안 받으면 그 두 갈래에는 앞으로 새 내용이 생기지 않는다.
+ * 「운영·요청」 은 지금도 빈 화면이고, 「일자·시간」 의 옛 투표는 갈래가 전시라 거기 없다.
+ * 눌러 볼 이유가 없는 탭을 두면 회원이 빈 화면을 보고 사이트가 죽었다고 여긴다.
+ * `CATEGORY_ORDER` 는 그대로 둔다 — 운영자 화면과 검사기가 켠 설정에서 그걸 쓴다.
+ */
+export function visibleTabs(): readonly TabCategory[] {
+  return selfSurveyOn() ? CATEGORY_ORDER : ['exhibition', 'meal', 'google']
+}
+
+/**
+ * 화면 맨 위 제목. 켜진 설정에서는 「… 설문」, 꺼진 설정에서는 「… 투표 결과」.
+ * 달력 카드(「투표 현황」)·보드 머리(「투표 결과 보기」)와 말을 맞춘다 — 들어와서
+ * 「설문」 이라고 하면 세 곳이 세 말을 하게 된다. `구글 설문 결과` 는 끝이 「설문」 이
+ * 아니라 그대로다(구글 폼은 진짜 설문이다).
+ */
+export function categoryHeading(c: TabCategory): string {
+  const label = CATEGORY[c].label
+  return selfSurveyOn() ? label : label.replace(/ 설문$/, ' 투표 결과')
+}
+
+/**
  * **운영자가 설문을 올릴 수 있는 갈래.** 위 목록과 하나가 다르다.
  *
  * `google` 은 화면에만 있는 갈래다 — 구글 폼으로 받아 정리한 결과를 보여 주는

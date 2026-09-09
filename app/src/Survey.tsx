@@ -72,8 +72,8 @@ function OptionDetails({ options, category }: {
       <summary>후보 자세히 보기 ({worth.length}개)</summary>
       <p className="survey-details-hint">
         {category === 'meal'
-          ? '설문은 마감됐지만 가게 정보는 그대로 둡니다. 순서는 톡방 투표 항목 그대로입니다.'
-          : '설문은 마감됐지만 예매와 관람에 필요한 안내는 그대로 둡니다.'}
+          ? '투표는 마감됐지만 가게 정보는 그대로 둡니다. 순서는 톡방 투표 항목 그대로입니다.'
+          : '투표는 마감됐지만 예매와 관람에 필요한 안내는 그대로 둡니다.'}
       </p>
       {worth.map((o) => (
         <div className="survey-details-item" key={o.id}>
@@ -336,7 +336,7 @@ function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
             <p className="survey-empty">
               {open
                 ? '투표는 톡방에서 진행 중입니다. 결과는 마감 뒤 운영진이 이곳에 옮겨 적습니다.'
-                : '마감된 설문입니다. 결과는 운영진이 톡방에 알려 드립니다.'}
+                : '마감된 투표입니다. 결과는 운영진이 톡방에 알려 드립니다.'}
             </p>
           )}
       </section>
@@ -601,7 +601,7 @@ function SurveyHistoryItem({ s }: { s: SurveyT }) {
               이 된다. 지금 자료에 이미 영화·공연 모임이 있다. */}
           <span><b>{meet && meet.venueKind !== '영화' ? '연관 전시 관람' : '연관 모임'}</b>{' '}
             {meet ? `${meet.title} · ${meet.dateLabel}` : '이어진 모임 없음'}</span>
-          <span><b>설문 결과</b>{' '}{sum ? sum.result : '불러오는 중…'}</span>
+          <span><b>투표 결과</b>{' '}{sum ? sum.result : '불러오는 중…'}</span>
           <span><b>종료된 일자</b>{' '}{koDeadline(s.closesAt)}
             {sum && sum.people > 0 ? ` · ${sum.people}명 참여` : ''}</span>
         </span>
@@ -624,9 +624,11 @@ function SurveyHistory({ items }: { items: SurveyT[] }) {
   if (!items.length) return null
   return (
     <section className="survey-history" aria-labelledby="surveyHistoryTitle">
-      <h2 id="surveyHistoryTitle">지난 설문 ({items.length})</h2>
+      {/* 「설문」 이 아니라 「투표」 — 달력·보드·제목과 말을 맞춘다 (2026-09-10).
+          옛 설문 넷은 전부 톡방 투표를 옮겨 온 것이라 「투표」 가 사실에도 맞는다. */}
+      <h2 id="surveyHistoryTitle">지난 투표 ({items.length})</h2>
       <p className="survey-history-hint">
-        모임까지 끝난 설문입니다. 결과는 지우지 않고 그대로 둡니다.
+        모임까지 끝난 투표입니다. 결과는 지우지 않고 그대로 둡니다.
       </p>
       {items.map((s) => <SurveyHistoryItem key={s.id} s={s} />)}
     </section>
