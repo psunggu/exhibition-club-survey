@@ -1015,8 +1015,10 @@ export function SurveyAdmin() {
       <div className="survey-who">
         <p className="survey-facts" style={{ margin: 0 }}><b>운영자 확인</b></p>
         <p className="survey-who-note" style={{ marginTop: 6 }}>
-          설문을 올리거나 고치려면 운영자 암호가 필요합니다. 암호는 저장하지 않고,
-          새로고침하면 다시 물어봅니다.
+          {selfSurveyOn()
+            ? '설문을 올리거나 고치려면 운영자 암호가 필요합니다. '
+            : '보드 소식과 분석 가이드를 다루려면 운영자 암호가 필요합니다. '}
+          암호는 저장하지 않고, 새로고침하면 다시 물어봅니다.
         </p>
         <label className="survey-field" style={{ marginTop: 10 }}>
           <span>운영자 암호</span>
