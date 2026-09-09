@@ -963,10 +963,25 @@ ok('네 갈래 이름이 다 있다',
   ['무엇을', '언제', '식사 시간', '식사 장소'].every((l) => rows.some((r) => r.text.startsWith(l))),
   rows.map((r) => r.text.split(' ')[0]).join(' · '));
 
-/** **안 정한 것이 제자리에서 말한다.** 빈 탭이 못 하는 일이라 이걸 하려고 줄로 바꿨다. */
-ok('안 정한 갈래가 「아직 안 정했습니다」 라고 말한다',
-  rows.some((r) => r.text.includes('식사 장소') && r.text.includes('아직 안 정했습니다')),
-  rows.find((r) => r.text.includes('식사 장소'))?.text ?? '없다');
+/**
+ * **안 정한 것이 제자리에서 말한다.** 빈 탭이 못 하는 일이라 이걸 하려고 줄로 바꿨다.
+ *
+ * 무엇을 기대할지는 **소스에서 읽는다.** 식사 장소 줄이 `value: null` 이면 「아직 안 정했습니다」 가
+ * 맞고, 손으로 값을 적어 두었으면(2026-09-09 부터) 그 값이 그대로 나와야 한다.
+ * 글자를 검사기에 박아 두면 카드를 고칠 때마다 검사가 거짓으로 깨진다 — `state` 에서 한 번 겪었다.
+ */
+const mealSrc0 = fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8');
+const mealRow0 = mealSrc0.slice(mealSrc0.indexOf("key: 'mealPlace'"));
+const mealValue0 = /value:\s*'([^']+)'/.exec(mealRow0)?.[1] ?? null;
+const mealRowText = rows.find((r) => r.text.includes('식사 장소'))?.text ?? '없다';
+if (mealValue0 === null) {
+  ok('안 정한 갈래가 「아직 안 정했습니다」 라고 말한다',
+    rows.some((r) => r.text.includes('식사 장소') && r.text.includes('아직 안 정했습니다')), mealRowText);
+} else {
+  ok('손으로 정한 갈래가 그 값을 그대로 말한다',
+    rows.some((r) => r.text.includes('식사 장소') && r.text.includes(mealValue0)), mealRowText);
+  ok('정한 갈래가 「아직 안 정했습니다」 라고 하지 않는다', !mealRowText.includes('아직 안 정했습니다'), mealRowText);
+}
 
 /**
  * **한 줄이 같은 말을 두 번 하지 않는다.**
@@ -1128,6 +1143,20 @@ const placeRow = () => page.$$eval('.brief-row',
   (es) => es.map((e) => e.innerText.replace(/\s+/g, ' ').trim())
     .find((t) => t.startsWith('식사 장소')) ?? '');
 
+/**
+ * **요약 카드의 식사 장소 줄이 설문으로 정해지는가 — 소스에서 읽는다.**
+ *
+ * 2026-09-09 에 9월 식사 장소가 손으로 확정되면서(`value` 를 적고 `decidedBy` 를 뺐다)
+ * 아래 다섯 상태는 그 줄에서 더는 볼 수 없다. 코드는 남아 있으므로 다음 모임에서
+ * `decidedBy` 를 다시 쓰면 이 검사가 그대로 살아난다. 그때까지는 손으로 정한 값이
+ * 화면에 그대로 나오는지만 잰다 — 손으로 적는 값이라 한 번 어긋난 적이 있는 자리다.
+ */
+const BRIEF_SRC = fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8');
+const mealPlaceSrc = BRIEF_SRC.slice(BRIEF_SRC.indexOf("key: 'mealPlace'"));
+const placeBySurvey = /^\s*decidedBy:/m.test(mealPlaceSrc);
+const placeHandValue = /value:\s*'([^']+)'/.exec(mealPlaceSrc)?.[1] ?? null;
+
+if (placeBySurvey) {
 /* 1) 열려 있으면 — 투표 중 · 갈 길을 알려 준다 */
 await servePlace({ open: true, votes: [2, 1, 0] });
 let row = await placeRow();
@@ -1184,6 +1213,18 @@ console.log(`  · 설문 없음: ${row}`);
 ok('설문이 없으면 아직 안 정했다고 말한다', row.includes('아직 안 정했습니다'), row);
 ok('없는 설문으로 가는 길을 만들지 않는다', (await page.$$('.brief-go')).length === 0);
 await page.unroute('**/rest/v1/surveys*');
+} else {
+  console.log(`  · 식사 장소는 손으로 정했다 (${placeHandValue}) — 설문 상태 다섯 가지는 건너뛴다`);
+  // 설문이 열려 있어도 손으로 정한 값이 이긴다 — 결정은 운영자가 했고, 설문은 그릇일 뿐이다
+  await servePlace({ open: true, votes: [2, 1, 0] });
+  const handRow = await placeRow();
+  console.log(`  · 손으로 정함: ${handRow}`);
+  ok('손으로 정한 식사 장소가 그대로 나온다', !!placeHandValue && handRow.includes(placeHandValue), handRow);
+  ok('정해졌으니 투표 중이라고 하지 않는다', !handRow.includes('투표 중'), handRow);
+  ok('정해졌으니 고르러 갈 길을 만들지 않는다', (await page.$$('.brief-go')).length === 0);
+  ok('인원을 적지 않는다', !/\d+명/.test(handRow), handRow);
+  await unservePlace();
+}
 
 /* ── 옮겨 온 투표의 투표자 이름 ────────────────────────────
  *
@@ -1412,10 +1453,14 @@ await page.unroute('**/rest/v1/surveys*');
 await servePlace({ open: true, votes: [2, 1, 0] });
 const offRow = await placeRow();
 console.log(`  · 꺼진 설정 · 열림: ${offRow}`);
-ok('꺼진 설정에서도 투표 중이라고는 말한다', offRow.includes('투표 중입니다'), offRow);
+if (placeBySurvey) {
+  ok('꺼진 설정에서도 투표 중이라고는 말한다', offRow.includes('투표 중입니다'), offRow);
+  ok('현황을 볼 길은 준다',
+    (await page.$eval('.brief-go', (e) => e.getAttribute('href')).catch(() => null)) === '#/survey/meal');
+} else {
+  ok('손으로 정한 식사 장소가 그대로 나온다', !!placeHandValue && offRow.includes(placeHandValue), offRow);
+}
 ok('「여기서 고르실 수 있습니다」 라고는 안 한다', !offRow.includes('고르실 수'), offRow);
-ok('현황을 볼 길은 준다',
-  (await page.$eval('.brief-go', (e) => e.getAttribute('href')).catch(() => null)) === '#/survey/meal');
 await unservePlace();
 
 // 보드 머리의 링크 — 「설문 참여하기」 가 「투표 결과 보기」 로
