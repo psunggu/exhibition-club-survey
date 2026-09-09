@@ -20,7 +20,6 @@ export type Route =
   | { name: 'surveyMeal' }
   | { name: 'surveyClub' }
   | { name: 'surveyGoogle' }
-  | { name: 'surveyEtc' }
   | { name: 'surveyAdmin' }
   | { name: 'notFound'; path: string }
 
@@ -42,8 +41,7 @@ export function parseHash(hash: string): Route {
       return { name: 'surveyClub' }
     case '/survey/google':
       return { name: 'surveyGoogle' }
-    case '/survey/etc':
-      return { name: 'surveyEtc' }
+    // `/survey/etc` 는 2026-09-09 에 뺐다. 옛 링크는 notFound 로 떨어진다.
     case '/survey/admin':
       return { name: 'surveyAdmin' }
     default:

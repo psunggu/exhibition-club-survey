@@ -77,7 +77,11 @@ export type TabCategory = SurveyCategory | 'google'
  * 그 설문이 어느 탭에도 안 뜬다.
  *
  * 차례가 곧 탭 차례다. 모임을 정하는 순서(장소 → 날짜 → 식사)를 따르고,
- * 그 뒤에 운영과 기타가 온다.
+ * 그 뒤에 운영이 온다.
+ *
+ * `etc` 는 **탭이 없다**(2026-09-09 에 뺐다). 값 자체는 남긴다 — `toCategory` 가
+ * 모르는 값을 받아 주는 안전망이고, DB 제약도 그 값을 안다. 그래서 항목은 두되
+ * 주소는 첫 갈래로 보낸다. 죽은 주소(`#/survey/etc`)로 보내면 「그런 화면은 없습니다」 다.
  */
 export const CATEGORY = {
   exhibition: { label: '전시 관람 장소 설문',      short: '관람 장소',  route: '#/survey' },
@@ -85,12 +89,12 @@ export const CATEGORY = {
   meal:       { label: '관람 후 식사 & Tea 설문',  short: '식사·Tea',   route: '#/survey/meal' },
   club:       { label: '동아리 운영·요청 사항 설문', short: '운영·요청', route: '#/survey/club' },
   google:     { label: '구글 설문 결과',           short: '구글 설문',  route: '#/survey/google' },
-  etc:        { label: '기타 설문',                short: '기타',       route: '#/survey/etc' },
+  etc:        { label: '기타 설문',                short: '기타',       route: '#/survey' },
 } as const
 
-/** 탭에 그릴 차례. `CATEGORY` 의 키 차례와 같게 둔다. */
+/** 탭에 그릴 차례. `etc` 는 탭이 없으므로 여기 없다. */
 export const CATEGORY_ORDER: readonly TabCategory[]
-  = ['exhibition', 'datetime', 'meal', 'club', 'google', 'etc']
+  = ['exhibition', 'datetime', 'meal', 'club', 'google']
 
 /**
  * **운영자가 설문을 올릴 수 있는 갈래.** 위 목록과 하나가 다르다.
@@ -104,9 +108,12 @@ export const CATEGORY_ORDER: readonly TabCategory[]
  * 202608290001a 머리말이 「두 곳을 함께 고쳐야 한다」 고 적어 둔 그 사고다.
  * 나중에 이 갈래로도 투표를 받기로 하면 제약과 survey_admin_save 를 함께 늘리고
  * 그때 이 목록을 지운다.
+ *
+ * `etc` 도 여기 없다 — 탭을 뺐으니 새로 올릴 길도 막는다. DB 제약은 그 값을 아직
+ * 받지만, 운영자가 고를 수 없으면 새로 생기지 않는다. 옛 `etc` 설문은 운영자 목록에는 남는다.
  */
 export const POSTABLE_CATEGORY_ORDER: readonly SurveyCategory[]
-  = ['exhibition', 'datetime', 'meal', 'club', 'etc']
+  = ['exhibition', 'datetime', 'meal', 'club']
 
 /**
  * DB 가 준 값을 갈래로 읽는다. **비어 있는 것과 모르는 것을 다르게 다룬다.**
@@ -118,7 +125,8 @@ export const POSTABLE_CATEGORY_ORDER: readonly SurveyCategory[]
  *
  * · 모르는 값 → `etc`.
  *   나중에 갈래를 더 만들었을 때, 옛 번들을 쓰는 사람의 화면에서 그 설문이
- *   조용히 전시 탭에 섞이지 않게 한다. 「기타」 에 뜨면 적어도 보이기는 한다.
+ *   조용히 전시 탭에 섞이지 않게 한다. 「기타」 는 탭이 없으므로(2026-09-09) 회원 탭에는
+ *   안 뜨지만 운영자 화면에서는 보인다 — 다른 탭에 잘못 섞이는 것보다 낫다.
  *
  * 처음엔 둘을 묶어 전부 `etc` 로 보냈더니 갈래 없는 붙박이 설문이 전시 탭에서
  * 통째로 사라졌다 — validate-survey-ui 가 그걸 잡았다.
@@ -171,9 +179,20 @@ export class SurveyUnavailable extends Error {
   }
 }
 
-type Config = { supabaseUrl?: string; supabaseAnonKey?: string }
+type Config = { supabaseUrl?: string; supabaseAnonKey?: string; selfSurvey?: boolean }
 const readConfig = (): Config =>
   (globalThis as unknown as { CLUB_CONFIG?: Config }).CLUB_CONFIG ?? {}
+
+/**
+ * 이 사이트에서 회원 응답을 받나. **기본은 아니다.**
+ *
+ * 2026-09-09 부터 투표는 톡방에서 하고 여기는 결과만 보여 준다. 응답 화면 코드는
+ * 얼마간 남겨 두므로 `config.js` 의 `selfSurvey: true` 로 되살릴 수 있다 —
+ * 검사기가 그렇게 켜서 그 코드를 계속 잰다(scripts/self-survey-config.mjs).
+ *
+ * 값이 없으면 꺼진 것으로 본다. 설정을 빠뜨렸을 때 응답 폼이 열리는 쪽이 더 나쁘다.
+ */
+export const selfSurveyOn = (): boolean => readConfig().selfSurvey === true
 
 const base = () => {
   const { supabaseUrl, supabaseAnonKey } = readConfig()
@@ -335,8 +354,14 @@ export async function rpc<T>(name: string, body: unknown, signal?: AbortSignal):
 
 export const submitResponse = (
   surveyId: string, zone: string, name: string, optionIds: string[], signal?: AbortSignal,
-) => rpc<null>('survey_submit',
-  { p_survey: surveyId, p_zone: zone, p_name: name, p_options: optionIds }, signal)
+): Promise<null> => {
+  // 화면이 폼을 안 그리지만, 이 함수만 따로 불러도 막혀야 한다.
+  if (!selfSurveyOn()) {
+    return Promise.reject(new SurveyUnavailable('이 사이트에서는 응답을 받지 않습니다. 투표는 톡방에서 합니다.'))
+  }
+  return rpc<null>('survey_submit',
+    { p_survey: surveyId, p_zone: zone, p_name: name, p_options: optionIds }, signal)
+}
 
 export const fetchMyChoices = async (
   surveyId: string, zone: string, name: string, signal?: AbortSignal,

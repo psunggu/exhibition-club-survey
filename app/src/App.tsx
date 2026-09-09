@@ -7,7 +7,7 @@ import { Survey } from './Survey'
 import { SurveyAdmin } from './SurveyAdmin'
 import { monthsToShow } from './data/meetups'
 import {
-  CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen,
+  CATEGORY, CATEGORY_ORDER, fetchResponseCount, fetchSurveys, isOpen, selfSurveyOn,
   type Survey as SurveyT, type SurveyCategory, type TabCategory,
 } from './lib/survey'
 import { isPastSurvey } from './lib/surveyHistory'
@@ -39,8 +39,8 @@ const SITE_INFO_UPDATED_ON = '2026.09.08'
  * 설문을 못 불러와도 갈래 이름과 링크는 그대로 남는다.
  * 달력을 보러 온 사람이 설문 때문에 빈 화면을 보면 안 된다.
  */
-/** 회원이 여기서 실제로 고를 수 있는 설문인가 — 톡방 투표는 아니다. */
-const canAnswer = (s: SurveyT) => isOpen(s) && !s.mirrored
+/** 회원이 여기서 실제로 고를 수 있는 설문인가 — 톡방 투표는 아니고, 사이트가 응답을 안 받으면 전부 아니다. */
+const canAnswer = (s: SurveyT) => selfSurveyOn() && isOpen(s) && !s.mirrored
 
 /** 참여할 수 있는 것을 먼저, 그다음 마감이 늦은 순. */
 const betterPick = (a: SurveyT, b: SurveyT) =>
@@ -109,7 +109,8 @@ function SurveyJump() {
     const g = (t: string) => p.find((x) => x.type === t)?.value ?? ''
     // 톡방에서 도는 투표는 **여기서 못 고른다.** 「진행 중」 이라고만 하면
     // 참여하러 눌러 들어갔다가 설문 화면에서야 「고르실 수 없습니다」 를 만난다.
-    const badge = r.mirrored ? '톡방 투표' : '진행 중'
+    // 사이트가 응답을 안 받는 동안은 모든 열린 설문이 톡방 투표다.
+    const badge = r.mirrored || !selfSurveyOn() ? '톡방 투표' : '진행 중'
     return { badge, text: `${g('month')}/${g('day')}(${g('weekday')})까지${who}`, on: true }
   }
 
@@ -129,11 +130,16 @@ function SurveyJump() {
   return (
     <section className="survey-jump" aria-labelledby="surveyJumpTitle">
       <p className="board-jump-kicker">모임 정하기</p>
-      <h2 id="surveyJumpTitle">설문 참여하기</h2>
+      <h2 id="surveyJumpTitle">{selfSurveyOn() ? '설문 참여하기' : '투표 현황'}</h2>
       {/* 안내문은 **상태에 따라 바뀌지 않는다.** 바꿨더니 줄 수가 달라져
           카드 높이가 흔들렸고, 화면 대조 검사가 그걸 디자인 변화로 읽었다.
-          지금 무엇이 열려 있는지는 아래 줄들이 말한다. */}
-      <p>관람할 곳과 날짜, 모임 뒤 식사까지 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.</p>
+          지금 무엇이 열려 있는지는 아래 줄들이 말한다.
+          (설정에 따라 갈리는 것은 상태가 아니다 — 배포 사이에 바뀌지 않는다.) */}
+      <p>
+        {selfSurveyOn()
+          ? '관람할 곳과 날짜, 모임 뒤 식사까지 회원들이 골라서 정합니다. 명부에 있는 분만 응답할 수 있습니다.'
+          : '관람할 곳과 날짜, 모임 뒤 식사는 톡방 투표로 정합니다. 여기서는 진행 상황과 결과만 보여 드립니다.'}
+      </p>
 
       <ul className="survey-jump-list">
         {active.map((c) => {
@@ -160,12 +166,14 @@ function SurveyJump() {
       {/* 불러왔는데 하나도 없을 때만 적는다. 못 불러온 것과 「없다」 는 다르므로
           아직 읽는 중이거나 실패했을 때는 아무 말도 하지 않는다. */}
       {rows && !failed && active.length === 0 && (
-        <p className="survey-jump-empty">지금 참여할 수 있는 설문이 없습니다.</p>
+        <p className="survey-jump-empty">
+          {selfSurveyOn() ? '지금 참여할 수 있는 설문이 없습니다.' : '지금 진행 중인 톡방 투표가 없습니다.'}
+        </p>
       )}
 
       {/* 감춘 갈래로 가는 길. **늘 보인다** — 줄이 하나도 없을 때도 여기로 들어간다. */}
       <a className="survey-jump-more" href="#/survey">
-        설문 갈래 모두 보기 <span aria-hidden="true">→</span>
+        {selfSurveyOn() ? '설문 갈래 모두 보기' : '투표 결과 모두 보기'} <span aria-hidden="true">→</span>
       </a>
     </section>
   )
@@ -183,8 +191,7 @@ export function App() {
   const onCalendar = route.name === 'calendar'
   const onSurvey = route.name === 'survey' || route.name === 'surveyDatetime'
     || route.name === 'surveyMeal' || route.name === 'surveyClub'
-    || route.name === 'surveyGoogle'
-    || route.name === 'surveyEtc' || route.name === 'surveyAdmin'
+    || route.name === 'surveyGoogle' || route.name === 'surveyAdmin'
 
   /**
    * 옛 CSS 두 장이 각자 `body` · `h1` · `:root` 를 정의한다.
@@ -204,7 +211,7 @@ export function App() {
     /** 라우트 이름 → 갈래. 어느 쪽도 아니면 첫 갈래(관람 장소)로 본다. */
     const BY_ROUTE: Partial<Record<typeof route.name, TabCategory>> = {
       surveyDatetime: 'datetime', surveyMeal: 'meal',
-      surveyClub: 'club', surveyGoogle: 'google', surveyEtc: 'etc',
+      surveyClub: 'club', surveyGoogle: 'google',
     }
     const category: TabCategory = BY_ROUTE[route.name] ?? 'exhibition'
     return (
@@ -212,7 +219,7 @@ export function App() {
         <p className="ov">41교구 전시·박물관 동아리</p>
         <h1>{admin ? '설문 관리' : CATEGORY[category].label}</h1>
 
-        {/* 갈래 다섯을 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
+        {/* 갈래를 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
             탭에는 **짧은 이름**을 쓴다 — 긴 이름 다섯은 375px 에 안 들어간다.
             전체 이름은 바로 위 제목이 맡는다. */}
         {!admin && (
@@ -276,7 +283,7 @@ export function App() {
         </div>
         <div className="topbar-links">
           <a className="topbar-notice-link" href="#/survey">
-            설문 참여하기 <span aria-hidden="true">→</span>
+            {selfSurveyOn() ? '설문 참여하기' : '투표 결과 보기'} <span aria-hidden="true">→</span>
           </a>
           <a className="topbar-notice-link" href="#/calendar">
             모임 일정 보기 <span aria-hidden="true">→</span>

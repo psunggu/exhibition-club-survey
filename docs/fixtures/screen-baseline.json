@@ -160,7 +160,7 @@
   ".topbar-notice-link": {
    "count": 2,
    "box": {
-    "w": 129,
+    "w": 132,
     "h": 44
    },
    "style": {
@@ -831,7 +831,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 12979,
+   "textLength": 12980,
    "cardCount": 21,
    "chipCount": 0
   }
@@ -933,7 +933,7 @@
   ".topbar h1": {
    "count": 1,
    "box": {
-    "w": 952,
+    "w": 948,
     "h": 38
    },
    "style": {
@@ -964,7 +964,7 @@
   ".eyebrow": {
    "count": 3,
    "box": {
-    "w": 952,
+    "w": 948,
     "h": 20
    },
    "style": {
@@ -995,7 +995,7 @@
   ".topbar-notice-link": {
    "count": 2,
    "box": {
-    "w": 129,
+    "w": 132,
     "h": 44
    },
    "style": {
@@ -1666,7 +1666,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 12979,
+   "textLength": 12980,
    "cardCount": 21,
    "chipCount": 0
   }

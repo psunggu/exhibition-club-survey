@@ -3,7 +3,7 @@ import {
   adminDelete, adminList, adminMemberDelete, adminMembers, adminMemberSave,
   adminGet, adminNames, adminNote, adminNoteSave, adminSubmit,
   CATEGORY,
-  adminRespondents, adminResults, adminSave, POSTABLE_CATEGORY_ORDER,
+  adminRespondents, adminResults, adminSave, POSTABLE_CATEGORY_ORDER, selfSurveyOn,
   adminGetWithCount, emptyDraft, emptyOption, fromDateInput,
   formatPeriod, koDay, koDeadline, koShort, parsePeriod, SurveyUnavailable, toDateInput, toDraft,
   type AdminResult, type AdminRespondent, type AdminSurvey,
@@ -1285,6 +1285,13 @@ export function SurveyAdmin() {
 
   return (
     <div>
+      {/* 새 이름(.admin-mode-note)이다 — 검사기가 .admin-card 를 차례로 짚으므로 그 이름을 쓰면 안 된다. */}
+      {!selfSurveyOn() && (
+        <p className="admin-mode-note">
+          투표는 <b>톡방에서</b> 진행합니다. 여기서 만드는 설문은 결과를 옮겨 담는 그릇이고,
+          회원 화면에서는 응답을 받지 않습니다. 표 수는 마감 뒤 SQL 템플릿으로 넣습니다.
+        </p>
+      )}
       <div className="survey-actions" style={{ marginBottom: 14 }}>
         <button type="button" className="survey-submit" onClick={startNew}>새 설문 올리기</button>
       </div>

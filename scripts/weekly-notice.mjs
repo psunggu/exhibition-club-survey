@@ -8,7 +8,8 @@
  * 무엇을 모으나 (전부 이미 공개된 자료다 — 새로 판단하지 않는다)
  *   · 주간 정리봇      app/public/weekly-digest.public.json
  *   · 다가오는 모임    meetups.ts 의 MEETUPS (30일 안)  ·  조율 중 TENTATIVE
- *   · 열린 설문        public.surveys (anon 이 읽을 수 있는 것 = 회원용)
+ *   · 진행 중인 투표   public.surveys (anon 이 읽을 수 있는 것 = 회원용).
+ *                      투표 자체는 톡방에서 하고 사이트는 현황·결과만 보여 준다(config.js 의 selfSurvey).
  *   · 보드             이번 주에 올리거나 고친 전시·공연, 영화 예매 순위 상위 3
  *
  * 하지 않는 것
@@ -43,6 +44,8 @@ const md = (iso) => {
 const config = fs.readFileSync(path.join(ROOT, 'app/public/config.js'), 'utf8');
 const SB_URL = /supabaseUrl:\s*"([^"]+)"/.exec(config)?.[1];
 const SB_KEY = /supabaseAnonKey:\s*"([^"]+)"/.exec(config)?.[1];
+// 사이트가 직접 응답을 받나. 아니면 설문 절은 「사이트에서 답하라」 가 아니라 「톡방에서 투표 중」 이어야 한다.
+const SELF_SURVEY = /selfSurvey:\s*true/.test(config);
 const rest = async (q) => {
   const res = await fetch(`${SB_URL}/rest/v1/${q}`, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
   if (!res.ok) throw new Error(`${q.split('?')[0]} 응답 ${res.status}`);
@@ -69,7 +72,8 @@ try {
   changed = rows.filter((r) => !r.end_date || r.end_date >= TODAY).slice(0, 6);
 } catch (e) { console.error(`보드를 못 읽었다 — ${e.message}. 보드 절은 순위만 싣는다.`); }
 
-const ROUTE = { exhibition: '#/survey', datetime: '#/survey/datetime', meal: '#/survey/meal', club: '#/survey/club', etc: '#/survey/etc' };
+// `etc` 는 탭이 없다(2026-09-09) — 아래 `?? '#/survey'` 로 첫 갈래에 떨어진다
+const ROUTE = { exhibition: '#/survey', datetime: '#/survey/datetime', meal: '#/survey/meal', club: '#/survey/club' };
 const SEV = { urgent: '⚠', check: '✓', planning: '…' };
 
 /* ── 조립 ────────────────────────────────────────────── */
@@ -99,8 +103,10 @@ if (TENTATIVE.length) {
 L.push('');
 
 if (surveys.length) {
-  L.push('■ 지금 답할 수 있는 설문');
-  for (const s of surveys) L.push(`- ${s.title} — ${md(s.closes_at.slice(0, 10))} 마감 → ${SITE}${ROUTE[s.category] ?? '#/survey'}`);
+  L.push(SELF_SURVEY ? '■ 지금 답할 수 있는 설문' : '■ 톡방에서 진행 중인 투표');
+  for (const s of surveys) {
+    L.push(`- ${s.title} — ${md(s.closes_at.slice(0, 10))} 마감 → ${SELF_SURVEY ? '' : '현황 '}${SITE}${ROUTE[s.category] ?? '#/survey'}`);
+  }
   L.push('');
 }
 

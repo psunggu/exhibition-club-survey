@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CATEGORY, fetchMyChoices, fetchResponseCount, fetchSurveys, fetchTally,
   addOption, isOpen, isVisible, koDeadline, memberIsAdmin, memberOk, rosterOn,
-  submitResponse, SurveyUnavailable,
+  selfSurveyOn, submitResponse, SurveyUnavailable,
   type Survey as SurveyT, type SurveyLink, type SurveyOption, type TabCategory,
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
@@ -258,8 +258,12 @@ function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
    * **끝난 설문은 결과만 보여 준다.**
    * 잠긴 체크박스를 늘어놓으면 "왜 눌리지 않지" 를 먼저 겪게 된다.
    * 받는 화면과 결과 화면을 가르는 것이 이 조각이다.
+   *
+   * 사이트가 응답을 안 받는 동안(`selfSurveyOn()` 이 거짓)은 **열려 있어도 결과 화면이다.**
+   * 톡방에서 진행 중인 투표를 옮겨 보여 주는 `mirrored` 와 같은 모양 — 그 흐름을
+   * 모든 설문에 적용한 것이다.
    */
-  if (!open || s.mirrored) {
+  if (!open || s.mirrored || !selfSurveyOn()) {
     /**
      * **이름을 보여 줄 두 가지 조건.**
      *
@@ -292,13 +296,14 @@ function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
       <section className={open ? undefined : 'survey-off'}
         aria-labelledby={`survey-${s.id}`}>
         <div className="survey-head">
-          <span className="tag">{s.mirrored && open ? '톡방에서 진행 중' : '마감'}</span>
+          {/* 이 갈래에서 열려 있다는 것은 곧 톡방에서 돌고 있다는 뜻이다(옮겨 온 것이든, 사이트가 안 받는 것이든). */}
+          <span className="tag">{open ? '톡방에서 진행 중' : '마감'}</span>
           <h3 id={`survey-${s.id}`}>{s.title}</h3>
           {s.intro && <p className="survey-intro">{s.intro}</p>}
           <span className={`survey-deadline${open ? '' : ' closed'}`}>
             {open ? `${koDeadline(s.closesAt)}까지` : `${koDeadline(s.closesAt)} 마감됨`}
           </span>
-          {s.mirrored && (
+          {(s.mirrored || (open && !selfSurveyOn())) && (
             <p className="survey-mirror-note">
               이 투표는 <b>톡방에서 진행합니다.</b> 이 화면은 결과를 옮겨 보여 드리는 곳이라
               여기서는 고르실 수 없습니다.
@@ -329,7 +334,9 @@ function OneSurvey({ s, onChanged }: { s: SurveyT; onChanged?: () => void }) {
           )
           : (
             <p className="survey-empty">
-              마감된 설문입니다. 결과는 운영진이 톡방에 알려 드립니다.
+              {open
+                ? '투표는 톡방에서 진행 중입니다. 결과는 마감 뒤 운영진이 이곳에 옮겨 적습니다.'
+                : '마감된 설문입니다. 결과는 운영진이 톡방에 알려 드립니다.'}
             </p>
           )}
       </section>
@@ -754,9 +761,10 @@ function MeetingBriefCard({ category, surveys }: {
                         <>
                           <b className="brief-big">투표 중입니다</b>
                           <span className="brief-sub">
+                            {selfSurveyOn() ? '' : '톡방에서 진행 중입니다. '}
                             {d.total > 0 ? `지금 ${d.total}명이 참여했습니다. ` : ''}
                             <a className="brief-go" href={d.route}>
-                              여기서 고르실 수 있습니다 <span aria-hidden="true">→</span>
+                              {selfSurveyOn() ? '여기서 고르실 수 있습니다' : '현황 보기'} <span aria-hidden="true">→</span>
                             </a>
                           </span>
                         </>
@@ -769,7 +777,9 @@ function MeetingBriefCard({ category, surveys }: {
                             * (「정해지면 이 줄이 채워집니다」) 정해진 뒤에는 거짓이 된다.
                             * 실제로 그렇게 나왔다 — 채워진 줄이 채워질 거라고 말했다.
                             */}
-                          <span className="brief-sub">이 화면의 설문으로 정했습니다</span>
+                          <span className="brief-sub">
+                            {selfSurveyOn() ? '이 화면의 설문으로 정했습니다' : '톡방 투표로 정했습니다'}
+                          </span>
                           {here && <BriefGauge votes={d.votes} total={d.total} />}
                         </>
                       )}
@@ -884,7 +894,9 @@ function SurveyBody({ category }: { category: TabCategory }) {
       <>
         <MeetingBriefCard category={category} surveys={all ?? []} />
         <p className="survey-empty">
-          지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
+          {selfSurveyOn()
+            ? `지금 ${CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.`
+            : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
         </p>
       </>
     )
@@ -903,7 +915,7 @@ function SurveyBody({ category }: { category: TabCategory }) {
    * 요약 카드가 없으면(아직 요약할 모임이 없으면) 접을 이유도 없다.
    * 접는 근거가 「위에 결론이 있다」 이기 때문이다.
    */
-  const answerable = live.some((s) => isOpen(s) && !s.mirrored)
+  const answerable = selfSurveyOn() && live.some((s) => isOpen(s) && !s.mirrored)
   const foldable = BRIEF !== null && live.length > 0 && !answerable
 
   const liveCards = live.map((s) => <OneSurvey key={s.id} s={s} onChanged={() => reload()} />)
@@ -916,7 +928,10 @@ function SurveyBody({ category }: { category: TabCategory }) {
           <details className="survey-fold">
             <summary>
               <span>투표 자세히 보기</span>
-              <span className="survey-fold-cnt">{live.length}건 · 마감</span>
+              {/* 사이트가 응답을 안 받으면 열린 설문도 접힌다 — 그때 「마감」 이라고 하면 거짓이다. */}
+              <span className="survey-fold-cnt">
+                {live.length}건 · {live.some((s) => isOpen(s)) ? '톡방에서 진행 중' : '마감'}
+              </span>
             </summary>
             {liveCards}
           </details>
@@ -924,7 +939,9 @@ function SurveyBody({ category }: { category: TabCategory }) {
         : liveCards}
       {!live.length && past.length > 0 && (
         <p className="survey-empty">
-          지금 {CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.
+          {selfSurveyOn()
+            ? `지금 ${CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.`
+            : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
         </p>
       )}
       <SurveyHistory items={past} />
