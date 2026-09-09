@@ -485,6 +485,11 @@ if (membersTmpl) {
  *
  * 그리고 **imported_respondents 를 넣으면 안 된다.** 넣는 순간
  * 「톡방에서 진행」 으로 잠겨 회원이 못 고른다 — 이 설문의 존재 이유가 사라진다.
+ *
+ * **요약 카드가 식사 장소를 손으로 정해 두었으면(`decidedBy` 없음) id 대조는 건너뛴다.**
+ * 2026-09-09 에 9월 식사 장소가 운영자 결정으로 정해지면서 그 줄이 `value` 로 바뀌었다.
+ * 그때 「decidedBy 를 찾지 못했다」 로 실패하면 손으로 정한 것을 잘못으로 부르는 셈이다.
+ * 틀은 다음 모임을 위해 남아 있고, `decidedBy` 가 돌아오면 대조도 그대로 살아난다.
  */
 if (mealTmpl) {
   const body = mealTmpl.replace(/--[^\n]*/g, '');
@@ -495,7 +500,9 @@ if (mealTmpl) {
   const wanted = /decidedBy:\s*'([^']+)'/.exec(brief)?.[1] ?? '';
 
   if (!id) fail('식사 장소 틀에서 설문 id 를 찾지 못했다');
-  else if (!wanted) fail('meetingBrief.ts 에서 decidedBy 를 찾지 못했다');
+  else if (!wanted) {
+    console.log('  · 요약 카드가 식사 장소를 손으로 정해 두었다(decidedBy 없음) — 틀과의 id 대조는 건너뛴다');
+  }
   else if (id !== wanted) {
     fail(`식사 장소 설문 id 가 요약 카드와 다르다 — 틀 ${id} · 카드 ${wanted} `
       + '(어긋나면 설문을 올려도 그 줄이 영영 「아직 안 정했습니다」 다)');
