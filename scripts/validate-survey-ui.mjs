@@ -591,8 +591,9 @@ if (pastCards.length === 1) {
   ok('접힌 줄에 설문 제목이 있다', sum.includes('서울역사박물관 저녁식사'), sum.slice(0, 40));
   ok('접힌 줄에 연관 전시 관람이 있다', sum.includes('연관 전시 관람') && sum.includes('8월 정기관람'),
     /연관 전시 관람[^A-Za-z]*?([^\n]{0,34})/.exec(sum)?.[1] ?? '없다');
-  ok('접힌 줄에 설문 결과가 있다', /설문 결과.*\d+명/.test(sum),
-    /설문 결과\s*([^\n]{0,24})/.exec(sum)?.[1] ?? '없다');
+  // 2026-09-10 부터 「설문 결과」 가 아니라 「투표 결과」 다 (제목·달력·보드와 말을 맞췄다)
+  ok('접힌 줄에 투표 결과가 있다', /투표 결과.*\d+명/.test(sum),
+    /투표 결과\s*([^\n]{0,24})/.exec(sum)?.[1] ?? '없다');
   ok('접힌 줄에 종료된 일자가 있다', sum.includes('종료된 일자'));
 
   const before = await page.$$eval('.survey-past-body .survey-result',
