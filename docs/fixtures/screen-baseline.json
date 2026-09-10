@@ -6,7 +6,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 23316
+    "h": 23967
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -37,7 +37,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 23316
+    "h": 23967
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -68,7 +68,7 @@
    "count": 1,
    "box": {
     "w": 347,
-    "h": 187
+    "h": 211
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -160,7 +160,7 @@
   ".topbar-notice-link": {
    "count": 2,
    "box": {
-    "w": 132,
+    "w": 139,
     "h": 44
    },
    "style": {
@@ -408,7 +408,7 @@
   ".recommendation-group-head h3": {
    "count": 4,
    "box": {
-    "w": 223,
+    "w": 237,
     "h": 23
    },
    "style": {
@@ -440,7 +440,7 @@
    "count": 21,
    "box": {
     "w": 309,
-    "h": 1060
+    "h": 1080
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -502,7 +502,7 @@
    "count": 16,
    "box": {
     "w": 275,
-    "h": 20
+    "h": 39
    },
    "style": {
     "color": "rgb(10, 91, 69)",
@@ -718,7 +718,7 @@
   ".official-info-link": {
    "count": 6,
    "box": {
-    "w": 84,
+    "w": 91,
     "h": 24
    },
    "style": {
@@ -749,7 +749,7 @@
   ".stars": {
    "count": 16,
    "box": {
-    "w": 43,
+    "w": 44,
     "h": 21
    },
    "style": {
@@ -831,7 +831,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 12980,
+   "textLength": 12996,
    "cardCount": 21,
    "chipCount": 0
   }
@@ -1666,7 +1666,7 @@
   ".survey-jump-list li": null,
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 12980,
+   "textLength": 12996,
    "cardCount": 21,
    "chipCount": 0
   }
