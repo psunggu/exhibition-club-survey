@@ -126,18 +126,21 @@ try {
     throw ("digest:public 종료 코드 {0} — 공개본을 쓰지 않았다" -f $LASTEXITCODE)
   }
   Run 'node scripts/validate-weekly-digest.mjs'
-  Run 'npm run build'
-  Run 'npm run screens:save'
-  Run 'npm run check:quick'
 
-  $changed = git status --porcelain
+  # 바뀌었는지는 **공개본 JSON 으로만** 판정한다. screens:save 는 같은 내용이어도 기준 파일을
+  # 다시 쓰므로(실측 11줄) git status 전체로 보면 늘 「바뀜」 이 되어 매일 빈 PR 이 열린다.
+  $changed = git status --porcelain -- app/public/weekly-digest.public.json
   if (-not $changed) {
     Log '바뀐 것 없음 — 공개본이 이미 같은 내용이다'
+    Run 'git checkout -q -- .'
     Run 'git checkout -q main'
     Run "git branch -q -D $branch"
     Save-State $newest.Name 'no-change' ''
     exit 0
   }
+  Run 'npm run build'
+  Run 'npm run screens:save'
+  Run 'npm run check:quick'
   if ($NoPr) {
     Log '-NoPr — 변환·검사까지 확인했다. 되돌린다.'
     Run 'git checkout -q -- .'

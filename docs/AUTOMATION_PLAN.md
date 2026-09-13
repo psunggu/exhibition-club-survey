@@ -118,8 +118,8 @@ claude -p --model claude-sonnet-5 --output-format text \
 
 | | 준비물 | 크기 | 어느 단계 |
 |---|---|---|---|
-| 1 | `recheck --diff-only` 종료 코드 + 주 1회 작업 스케줄러 | 반나절 | 4 |
-| 2 | `digest-public-task.ps1` — 영화 배치 틀 복제 | 반나절 | 2 |
+| 1 | `recheck --exit-on-change` 종료 코드 + 주 1회 작업 스케줄러 — **2026-09-14 만듦** (`scripts/recheck-task.ps1`, 등록은 `install-recheck-task.ps1`). 헤드리스 호출은 터미널 CLI 로그인(`claude login`)이 전제 | 반나절 | 4 |
+| 2 | `digest-public-task.ps1` — 영화 배치 틀 복제 — **2026-09-14 만듦** (등록은 `install-digest-task.ps1`, 머지는 사람) | 반나절 | 2 |
 | 3 | 방 창 감시자 (운영자 승인 뒤) | 하루 + 실환경 검증 | 1 |
 | 4 | `add-meetup.mjs` 규칙 파서 | 반나절 | 3 |
 | 5 | kakao-digest K10 | 하루 | 5 |
