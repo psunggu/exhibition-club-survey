@@ -19,13 +19,14 @@
  *
  * ── 하지 않는 것 ────────────────────────────────────────
  * 거르지 않는다. 청불이든 공포든 순위대로 싣는다 — AGENTS.md 「보드는 거르지 않는다」.
- * 재개봉 여부는 KOBIS 표에 없어 알 수 없다. 개봉일이 오늘 이전이면 「상영 중」,
- * 뒤면 「개봉 예정」 으로만 가른다.
+ * 재개봉작은 KOBIS 표가 툴팁으로 「재개봉일」 을 주므로 그 날을 개봉일로 쓴다(pickReleaseDate).
+ * 개봉일이 오늘 이전이면 「상영 중」, 뒤면 「개봉 예정」 으로만 가른다 — 「재개봉」 표시는 따로 없다.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchWithRetry } from './fetch-retry.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MOVIES_TS = path.join(ROOT, 'app/src/data/movies.ts');
@@ -61,9 +62,15 @@ const STAMP = `${TODAY_DOT} ${now.hh}:${now.mm}`;
 
 /* ── 받기 ────────────────────────────────────────────── */
 
+/**
+ * KOBIS 는 낮에 느리다. 2026-09-12 배치가 연결 시간 초과 한 번으로 통째로 죽었다.
+ * 시도마다 30초, 세 번, 사이에 5초·15초 — 그래도 안 되면 그때 실패다 (scripts/fetch-retry.mjs).
+ * 재시도한 사실은 stderr 에 남긴다. 조용히 넘어가면 「가끔 느리다」 가 아무 데도 안 남는다.
+ */
 async function fetchText(url, init) {
-  const res = await fetch(url, { ...init, headers: { 'user-agent': UA, ...(init?.headers ?? {}) } });
-  if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
+  const res = await fetchWithRetry(url, { ...init, headers: { 'user-agent': UA, ...(init?.headers ?? {}) } }, {
+    onRetry: (n, err) => console.error(`  다시 시도 ${n}/2 — ${err.cause?.code ?? err.name}: ${String(err.message).slice(0, 80)}`),
+  });
   return res.text();
 }
 
@@ -75,6 +82,22 @@ const textTokens = (html) => html
   .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
   .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
   .split('|').map((s) => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
+
+/**
+ * 개봉일 칸에서 날짜 하나를 고른다.
+ *
+ * 재개봉작은 칸이 이렇게 온다 (2026-09-13 실측):
+ *   <a class="tooltip"><span class="layer_desc">재개봉일 : 2026-09-16</span></a> 2025-01-24
+ * 태그만 벗기면 「재개봉일 : 2026-09-16 2025-01-24」 가 되어 두 날짜가 붙은 채 movies.ts 에
+ * 들어가고, `<= TODAY` 비교도 그 문자열로 한다. 극장에 다시 걸리는 날은 재개봉일이므로
+ * **재개봉일이 있으면 그것**, 없으면 칸의 첫 날짜, 날짜가 없으면 빈 값.
+ */
+export function pickReleaseDate(cellHtml) {
+  const text = cellHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const re = /재개봉일\s*:\s*(\d{4}-\d{2}-\d{2})/.exec(text);
+  if (re) return re[1];
+  return /\d{4}-\d{2}-\d{2}/.exec(text)?.[0] ?? '';
+}
 
 async function fetchRanking() {
   const html = await fetchText(LIST_URL, {
@@ -91,7 +114,7 @@ async function fetchRanking() {
     const tds = [...tr.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((t) => t[1]);
     const rank = Number(tds[0]?.replace(/<[^>]+>/g, '').trim());
     const title = /title="([^"]*)"/.exec(tr)?.[1]?.trim() ?? '';
-    const releaseDate = tds[2]?.replace(/<[^>]+>/g, '').trim() ?? '';
+    const releaseDate = pickReleaseDate(tds[2] ?? '');
     const rate = Number(tds[3]?.replace(/<[^>]+>/g, '').trim().replace('%', ''));
     if (!Number.isInteger(rank) || !title || Number.isNaN(rate)) continue;
     rows.push({ rank, code, title, releaseDate, rate });

@@ -100,6 +100,25 @@ try {
 }
 catch {
   Log "실패: $_"
-  Log "브랜치 $branch 는 남겨 두었다 — 로그를 보고 손으로 정리한다"
+  # ── 체크아웃을 main 으로 되돌린다 ──────────────────────────────────────
+  # 2026-09-12 실패 뒤 체크아웃이 content/movies-… 에 남아 있었다. 사람이 그 저장소에서
+  # 다음 작업을 시작하면 엉뚱한 브랜치 위에서 하게 되고, 다음 배치는 「작업 트리가
+  # 지저분하다」 로 서지 않아도 브랜치 위에서 돈다. 실패했어도 자리는 원래대로 둔다.
+  # 커밋을 push 한 뒤(PR 이 열린 뒤)라면 브랜치는 남긴다 — PR 이 그 브랜치를 가리킨다.
+  try {
+    $here = (git rev-parse --abbrev-ref HEAD 2>$null)
+    if ($here -eq $branch) {
+      & git checkout -q main 2>&1 | ForEach-Object { Log "  $_" }
+      $pushed = (git ls-remote --heads origin $branch 2>$null)
+      if ($pushed) {
+        Log "브랜치 $branch 는 원격에 있어(PR 열림) 남겨 두었다 — PR 을 보고 손으로 정리한다"
+      } else {
+        & git branch -q -D $branch 2>&1 | ForEach-Object { Log "  $_" }
+        Log "브랜치 $branch 를 지우고 main 으로 돌아왔다 — 다음 배치가 그대로 다시 시도한다"
+      }
+    }
+  } catch {
+    Log "되돌리기 실패(무시): $_"
+  }
   exit 1
 }

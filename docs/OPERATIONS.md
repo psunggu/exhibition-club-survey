@@ -27,7 +27,7 @@
 
 ### 자동화 구성 (2026-09-08)
 
-- **`scripts/update-movies-task.ps1`** — 이 PC 의 작업 스케줄러가 수·토 05:00 에 돌린다(`scripts/install-movies-task.ps1` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
+- **`scripts/update-movies-task.ps1`** — 이 PC 의 작업 스케줄러가 수·토 05:00 에 돌린다(`scripts/install-movies-task.ps1` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. **실제로는 05:00 에 PC 가 자고 있어** `StartWhenAvailable` 로 깨어나는 때(9/11 01:50 · 9/12 13:55 …)에 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키고 싶으면 등록 시 `WakeToRun` 을 켠다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
   ```
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
   ```
