@@ -23,7 +23,7 @@
 
 세션을 열었을 때 「뭐부터 할까」 는 `/ops` — 넷이 각각 얼마나 오래됐는지 열 줄로 보고한다.
 
-**주 1회 `/recheck`** — 보드의 전시·공연과 다가오는 모임의 기간·관람료·휴관·시간이 공식 페이지와 아직 맞는지 본다. `npm run recheck` 가 공식 페이지에서 사실이 적힌 줄만 잘라 `logs/recheck-YYYYMMDD.md` 에 모으고(지난주와 같은 페이지는 본문을 싣지 않는다), 세션이 달라진 것만 표로 보고한다. DB 는 고치지 않는다 — 운영자가 붙여 넣을 `update` 한 줄을 만들어 준다. 여기가 AI 가 매주 조금 쓰는 유일한 자리이고, 그럴 만한 자리다 — 틀린 정보가 회원에게 나가는 것이 이 사이트의 가장 큰 실패다.
+**주 1회 재확인은 배치가 한다** (2026-09-14, `ExhibitionClub-Recheck` → `scripts/recheck-task.ps1`, 월 06:00). `npm run recheck -- --exit-on-change` 로 자료를 모으고 **달라진 페이지가 있을 때만** 헤드리스 `claude -p`(sonnet)에 스킬의 「견주기·보고」 절과 자료를 넣어 `logs/recheck-report-YYYYMMDD.md` 를 받는다 — 저장소는 읽히지 않고, 변화가 없는 주는 토큰 0. 보고서는 메모장으로 열리고 DB 는 사람이 고친다. 터미널 CLI 로그인이 만료되면 AI 호출만 실패하고 자료·알림은 남는다 — `claude login` 을 한 번 해 둔다. 손으로 볼 때는 여전히 `/recheck` — 보드의 전시·공연과 다가오는 모임의 기간·관람료·휴관·시간이 공식 페이지와 아직 맞는지 본다. `npm run recheck` 가 공식 페이지에서 사실이 적힌 줄만 잘라 `logs/recheck-YYYYMMDD.md` 에 모으고(지난주와 같은 페이지는 본문을 싣지 않는다), 세션이 달라진 것만 표로 보고한다. DB 는 고치지 않는다 — 운영자가 붙여 넣을 `update` 한 줄을 만들어 준다. 여기가 AI 가 매주 조금 쓰는 유일한 자리이고, 그럴 만한 자리다 — 틀린 정보가 회원에게 나가는 것이 이 사이트의 가장 큰 실패다.
 
 ### 자동화 구성 (2026-09-08)
 
@@ -31,6 +31,8 @@
   ```
   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
   ```
+- **`scripts/digest-public-task.ps1`** (2026-09-14, `ExhibitionClub-Digest`, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 빨간 풍선. 등록은 `scripts/install-digest-task.ps1`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
+- **`scripts/recheck-task.ps1`** (2026-09-14, `ExhibitionClub-Recheck`, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-recheck-task.ps1`.
 - **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
 - **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.

@@ -5,6 +5,7 @@
  *   node scripts/recheck-sources.mjs             바뀐 페이지만 본문을 담는다 (기본)
  *   node scripts/recheck-sources.mjs --all       안 바뀐 것도 본문을 담는다
  *   node scripts/recheck-sources.mjs --no-cache  이전 기록을 무시한다
+ *   node scripts/recheck-sources.mjs --exit-on-change   바뀐 것이 있으면 종료 코드 3 (배치용)
  *
  * 무엇을 하나
  *   1. public.events(anon 읽기)에서 아직 안 끝난 전시·공연을, meetups.ts 에서 다가오는 모임을 뽑는다.
@@ -189,3 +190,11 @@ console.log(head.trim().split('\n')[2]);
 for (const it of items) { /* 요약만 — 본문은 파일에 */ }
 console.log(blocks.map((b) => b.split('\n').slice(0, 1).concat(b.split('\n').filter((l) => l.startsWith('- 상태'))).join('  ')).join('\n'));
 console.log(`\n자료: ${path.relative(ROOT, out).replace(/\\/g, '/')}`);
+
+/**
+ * `--exit-on-change` — 바뀐/처음 항목이 있으면 종료 코드 3.
+ * 배치(scripts/recheck-task.ps1)가 「AI 를 부를지」 를 이 코드로 가른다 — 변화가 없으면
+ * 세션도 헤드리스 호출도 없이 끝낸다(docs/AUTOMATION_PLAN.md 단계 4). 손으로 돌릴 때는
+ * 이 플래그를 안 쓰므로 npm 이 오류처럼 보이게 찍지 않는다.
+ */
+if (process.argv.includes('--exit-on-change') && counts.changed > 0) process.exit(3);
