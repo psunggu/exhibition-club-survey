@@ -26,6 +26,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchWithRetry } from './fetch-retry.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MOVIES_TS = path.join(ROOT, 'app/src/data/movies.ts');
@@ -61,9 +62,15 @@ const STAMP = `${TODAY_DOT} ${now.hh}:${now.mm}`;
 
 /* ── 받기 ────────────────────────────────────────────── */
 
+/**
+ * KOBIS 는 낮에 느리다. 2026-09-12 배치가 연결 시간 초과 한 번으로 통째로 죽었다.
+ * 시도마다 30초, 세 번, 사이에 5초·15초 — 그래도 안 되면 그때 실패다 (scripts/fetch-retry.mjs).
+ * 재시도한 사실은 stderr 에 남긴다. 조용히 넘어가면 「가끔 느리다」 가 아무 데도 안 남는다.
+ */
 async function fetchText(url, init) {
-  const res = await fetch(url, { ...init, headers: { 'user-agent': UA, ...(init?.headers ?? {}) } });
-  if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
+  const res = await fetchWithRetry(url, { ...init, headers: { 'user-agent': UA, ...(init?.headers ?? {}) } }, {
+    onRetry: (n, err) => console.error(`  다시 시도 ${n}/2 — ${err.cause?.code ?? err.name}: ${String(err.message).slice(0, 80)}`),
+  });
   return res.text();
 }
 
