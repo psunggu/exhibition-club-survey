@@ -6,6 +6,7 @@
  *   node scripts/recheck-sources.mjs --all       안 바뀐 것도 본문을 담는다
  *   node scripts/recheck-sources.mjs --no-cache  이전 기록을 무시한다
  *   node scripts/recheck-sources.mjs --exit-on-change   바뀐 것이 있으면 종료 코드 3 (배치용)
+ *   node scripts/recheck-sources.mjs --no-render        브라우저 렌더링 폴백을 끈다 (빠른 시험용)
  *
  * 무엇을 하나
  *   1. public.events(anon 읽기)에서 아직 안 끝난 전시·공연을, meetups.ts 에서 다가오는 모임을 뽑는다.
@@ -18,7 +19,13 @@
  *
  * 하지 않는 것
  *   DB 를 고치지 않는다. 페이지 글을 저장소에 넣지 않는다(logs/ 는 gitignore).
- *   JS 로만 그려지는 페이지(예매 사이트 등)는 글이 거의 안 잡힌다 — 그런 것은 「확인 못 함」 으로 남긴다.
+ *   그래도 못 읽는 페이지는 「확인 못 함」 으로 남긴다. 봇 차단을 우회하려 들지 않는다.
+ *
+ * 렌더링 폴백 (2026-09-16)
+ *   보통 fetch 로 못 읽은 페이지(403 · JS 로만 그려짐 · 옛 SSL · 시간 초과)만 화면 검사에 쓰는 Playwright
+ *   Chromium 으로 한 번 더 연다. 실측 24건 중 못 읽던 9건이 4건으로 줄었다(예매 사이트 · 시청 · 카드사 ·
+ *   문화재단). 남는 4건: imweb 두 곳은 실제 Chrome 으로도 「접근이 제한되었어요」, 한 곳은 이 네트워크에서
+ *   연결 자체가 안 됨, 영문 기사 한 곳은 공식 페이지가 아니다. 브라우저는 필요할 때 한 번만 띄우고 끝에 닫는다.
  */
 
 import fs from 'node:fs';
@@ -36,6 +43,7 @@ const CACHE = path.join(LOG_DIR, 'recheck-cache.json');
 const args = process.argv.slice(2);
 const ALL = args.includes('--all');
 const NO_CACHE = args.includes('--no-cache');
+const NO_RENDER = args.includes('--no-render');
 // 낯선 UA 는 403 을 받는 곳이 있다(imweb · 일부 미술관). 보통 브라우저처럼 보낸다.
 const HEADERS = {
   'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
@@ -76,7 +84,8 @@ async function loadMeetups() {
 
 /* ── 공식 페이지 ─────────────────────────────────────── */
 
-const KEYWORDS = /(기간|관람|요금|입장료|무료|할인|원\b|휴관|휴무|개장|운영|시간|예매|매진|마감|종료|연장|취소|변경|안내|공지|\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}|\d{1,2}월\s*\d{1,2}일)/;
+// 영문 페이지(해외 매체 기사 등)의 날짜·요금 줄도 잡는다 — 「September 19, 2026」 「until」 「admission」.
+const KEYWORDS = /(기간|관람|요금|입장료|무료|할인|원\b|휴관|휴무|개장|운영|시간|예매|매진|마감|종료|연장|취소|변경|안내|공지|\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}|\d{1,2}월\s*\d{1,2}일|\b(until|through|opens?|closes?|closed|admission|tickets?|free|January|February|March|April|May|June|July|August|September|October|November|December)\b)/i;
 
 const htmlToText = (html) => html
   .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -86,6 +95,7 @@ const htmlToText = (html) => html
   .replace(/<[^>]+>/g, ' ')
   .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
   .split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter((l) => l.length >= 4);
+const textToLines = (txt) => txt.split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter((l) => l.length >= 4);
 
 /**
  * 사실이 적힌 줄만 남긴다 — 1,200자 안에서 끊는다.
@@ -93,7 +103,7 @@ const htmlToText = (html) => html
  * 사실(기간·요금·시간)은 거의 늘 숫자를 품고, 설명문·예매 약관은 길다 — 그래서
  * 숫자나 휴관·무료·매진 같은 낱말이 없는 줄, 200자 넘는 줄, 예매·환불 약관 줄을 버린다.
  */
-const FACT_WORD = /(휴관|휴무|무료|연장|취소|매진|마감|상설)/;
+const FACT_WORD = /(휴관|휴무|무료|연장|취소|매진|마감|상설|\bfree\b|\bclosed\b|sold out)/i;
 // 예술의전당처럼 모든 상세 페이지에 붙는 예매 약관·시설 안내는 사실이 아니다 — 실측으로 모은 낱말들이다.
 const NOISE = /(환불|취소수수료|예매처|콜센터|서비스플라자|관람평|모집|채용|공고|접근성|품질인증|개인정보|저작권|Copyright|배송|결제수단|승인취소|계좌|관람일 \d|부분취소|싹패스|좌석배치도|예매통계|관람가 :|공연시작 \d|취소요청|방문 가능시간|중간휴식|비회원손님|1회 10매|승용차|편의서비스|수정-->|출생자)/;
 function factWindow(lines) {
@@ -109,6 +119,46 @@ function factWindow(lines) {
     if (size > 1200) break;
   }
   return out.join('\n');
+}
+
+/**
+ * 렌더링 폴백 — 보통 fetch 가 실패한 페이지만 Chromium 으로 연다. 브라우저는 처음 필요할 때 한 번 띄운다.
+ * Playwright 가 없거나 못 띄우면 조용히 null 을 돌려주고 원래 실패 사유가 남는다.
+ */
+let browserP = null;
+async function getBrowser() {
+  if (browserP) return browserP;
+  browserP = (async () => {
+    try {
+      const { chromium } = await import('playwright');
+      const browser = await chromium.launch({ headless: true });
+      const ctx = await browser.newContext({ userAgent: HEADERS['user-agent'], locale: 'ko-KR', ignoreHTTPSErrors: true });
+      return { browser, ctx };
+    } catch (e) { console.error(`렌더링 폴백을 못 쓴다: ${e.message.split('\n')[0]}`); return null; }
+  })();
+  return browserP;
+}
+async function closeBrowser() {
+  const b = browserP && await browserP;
+  if (b) await b.browser.close().catch(() => {});
+}
+async function renderFacts(url) {
+  const b = await getBrowser();
+  if (!b) return null;
+  const page = await b.ctx.newPage();
+  try {
+    const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await page.waitForTimeout(2500); // JS 가 본문을 그릴 시간
+    if (res && !res.ok()) return { ok: false, reason: `HTTP ${res.status()}${res.status() === 403 ? ' (봇 차단 — 브라우저로 직접 본다)' : ''}` };
+    const txt = await page.evaluate(() => document.body?.innerText ?? '');
+    const text = factWindow(textToLines(txt));
+    if (text.length < 80) return { ok: false, reason: '렌더링해도 사실이 적힌 글이 없다', text };
+    return { ok: true, text, rendered: true };
+  } catch (e) {
+    return { ok: false, reason: `렌더링 실패 — ${String(e.message ?? e).split('\n')[0].slice(0, 120)}` };
+  } finally {
+    await page.close().catch(() => {});
+  }
 }
 
 async function fetchFacts(url) {
@@ -167,19 +217,26 @@ for (const it of items) {
     // 사이트 첫 페이지는 매번 바뀌고 이 전시의 사실이 없다 — 상세 페이지 링크로 바꿔야 한다.
     status = '링크가 사이트 첫 페이지 — 상세 링크가 필요하다'; counts.nourl++;
   } else {
-    const r = await fetchFacts(it.url);
+    let r = await fetchFacts(it.url);
+    if (!r.ok && !NO_RENDER) {
+      const r2 = await renderFacts(it.url);
+      // 폴백도 실패하면 더 구체적인 쪽을 남긴다 — 원래 사유가 HTTP 상태였으면 그대로(403 은 403 으로 보이는 편이 낫다).
+      if (r2?.ok) r = r2; else if (r2 && !/^HTTP/.test(r.reason)) r = r2;
+    }
     if (!r.ok) { status = `확인 못 함 — ${r.reason}`; counts.failed++; if (r.text && ALL) body = r.text; }
     else {
       const h = hash(r.text);
       const prev = cache[it.url];
-      if (prev && prev.hash === h) { status = `변화 없음 (${prev.checkedAt} 이후)`; counts.unchanged++; if (ALL) body = r.text; }
-      else { status = prev ? `바뀜 (${prev.checkedAt} 이후)` : '처음 확인'; counts.changed++; body = r.text; }
+      const via = r.rendered ? ' · 렌더링' : '';
+      if (prev && prev.hash === h) { status = `변화 없음 (${prev.checkedAt} 이후${via})`; counts.unchanged++; if (ALL) body = r.text; }
+      else { status = prev ? `바뀜 (${prev.checkedAt} 이후${via})` : `처음 확인${via ? ' (렌더링)' : ''}`; counts.changed++; body = r.text; }
       cache[it.url] = { hash: h, checkedAt: TODAY, title: it.title };
     }
   }
   blocks.push(`### [${it.kind}] ${it.title}\n- 우리 정보: ${it.ours.join(' · ')}\n- 링크: ${it.url || '(없음)'}\n- 상태: ${status}` + (body ? `\n\n\`\`\`\n${body}\n\`\`\`` : ''));
 }
 
+await closeBrowser();
 fs.writeFileSync(CACHE, JSON.stringify(cache, null, 1));
 const out = path.join(LOG_DIR, `recheck-${STAMP}.md`);
 const head = `# 공식 출처 재확인 자료 — ${TODAY}\n\n항목 ${items.length} · 바뀜/처음 ${counts.changed} · 변화 없음 ${counts.unchanged} · 확인 못 함 ${counts.failed} · 링크 없음 ${counts.nourl}\n\n`
