@@ -107,7 +107,7 @@ claude -p --model claude-sonnet-5 --output-format text \
 
 ## 6. 전제 — 이것이 무너지면 위 계획도 무너진다
 
-- **PC 하나가 서버다.** 켜져 있고 로그온돼 있어야 A · E · H 가 돈다. 다른 PC 로 옮기면 작업 스케줄러 셋 · 백업 스크립트(저장소 밖) · `config.local.json` 을 같이 옮겨야 한다.
+- **PC 하나가 서버다.** 켜져 있고 로그온돼 있어야 A · E · H 가 돈다. 다른 PC 로 옮기면 작업 스케줄러(등록 스크립트는 전부 두 저장소의 `scripts/` 에 있다) · `config.local.json` · 로컬 백업 폴더(`%LOCALAPPDATA%\ExhibitionClub`, `%LOCALAPPDATA%\KakaoDigest`)를 같이 옮겨야 한다.
 - **방 창.** 단계 1 이 해결하기 전까지 A 는 사람이 방을 열어 둔 날만 돈다.
 - **개인정보.** 대화 저장소(`store/`)와 공개본 변환의 실명 검사(`digest:public` 의 멈춤)는 그대로 둔다. 자동화가 늘어도 이 검사를 건너뛰는 옵션은 만들지 않는다.
 - **자동 게시 금지.** 어느 단계에서도 톡방에 글을 올리는 코드는 없다.
@@ -123,7 +123,7 @@ claude -p --model claude-sonnet-5 --output-format text \
 | 3 | 방 창 감시자 (운영자 승인 뒤) | 하루 + 실환경 검증 | 1 |
 | 4 | `add-meetup.mjs` 규칙 파서 | 반나절 | 3 |
 | 5 | kakao-digest K10 | 하루 | 5 |
-| 6 | 백업 스크립트를 저장소로 · 30일 정리 · `store/` 로컬 사본 | 한 시간 | 전제 |
+| 6 | 백업 스크립트를 저장소로 · 30일 정리 · `store/` 로컬 사본 — **2026-09-16 됨** (`ExhibitionClub-Supabase-Backup` 이 저장소의 `backup-supabase-events.mjs` 를 돌리고 `--keep-days 30` 기본 · kakao-digest `KakaoDigest-StoreBackup` 매일 03:00) | 한 시간 | 전제 |
 
 **추천 착수 순서: 1 → 2 → 6 → (승인 뒤) 3 → 4 → 5.**
 1·2 는 세션 없이 도는 부분을 늘리는 것이라 토큰 효과가 즉시 나고, 실환경 UI 조작이 없어 안전하다.

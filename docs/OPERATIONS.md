@@ -23,6 +23,8 @@
 
 세션을 열었을 때 「뭐부터 할까」 는 `/ops` — 넷이 각각 얼마나 오래됐는지 열 줄로 보고한다.
 
+**DB 백업은 매일 02:30 배치가 한다** (`ExhibitionClub-Supabase-Backup` → `scripts/backup-supabase-events.mjs`, 2026-09-16 부터 저장소 안 스크립트를 돌린다). 공개 `events` 표만 `%LOCALAPPDATA%\ExhibitionClubackups` 에 JSON + SHA-256 으로 남기고, 30일 지난 것은 지운다(최근 5개는 늘 남김, `--keep-days 0` 이면 안 지움). 명부·설문 응답은 백업하지 않는다 — 개인정보를 PC 에 복사하지 않는다. 다시 등록하려면 `scripts/install-supabase-backup-task.ps1 -Replace`.
+
 **주 1회 재확인은 배치가 한다** (2026-09-14, `ExhibitionClub-Recheck` → `scripts/recheck-task.ps1`, 월 06:00). `npm run recheck -- --exit-on-change` 로 자료를 모으고 **달라진 페이지가 있을 때만** 헤드리스 `claude -p`(sonnet)에 스킬의 「견주기·보고」 절과 자료를 넣어 `logs/recheck-report-YYYYMMDD.md` 를 받는다 — 저장소는 읽히지 않고, 변화가 없는 주는 토큰 0. 보고서는 메모장으로 열리고 DB 는 사람이 고친다. 터미널 CLI 로그인이 만료되면 AI 호출만 실패하고 자료·알림은 남는다 — `claude auth login` 을 한 번 해 둔다. 손으로 볼 때는 여전히 `/recheck` — 보드의 전시·공연과 다가오는 모임의 기간·관람료·휴관·시간이 공식 페이지와 아직 맞는지 본다. `npm run recheck` 가 공식 페이지에서 사실이 적힌 줄만 잘라 `logs/recheck-YYYYMMDD.md` 에 모으고(지난주와 같은 페이지는 본문을 싣지 않는다), 세션이 달라진 것만 표로 보고한다. 보통 fetch 로 못 읽는 페이지(403 · JS 로만 그려짐 · 옛 SSL)는 화면 검사용 Playwright Chromium 으로 한 번 더 열어 읽는다(2026-09-16, 못 읽던 9건 → 3건). 그래도 남는 것은 imweb 처럼 실제 브라우저도 막는 곳과 이 네트워크에서 연결이 안 되는 곳뿐이며, 봇 차단을 우회하지는 않는다 — 그런 페이지는 「확인 못 함」 으로 남고 사람이 본다. DB 는 고치지 않는다 — 운영자가 붙여 넣을 `update` 한 줄을 만들어 준다. 여기가 AI 가 매주 조금 쓰는 유일한 자리이고, 그럴 만한 자리다 — 틀린 정보가 회원에게 나가는 것이 이 사이트의 가장 큰 실패다.
 
 ### 자동화 구성 (2026-09-08)
