@@ -15,7 +15,7 @@
     3. 결과를 바탕화면 풍선으로 알린다. DB 는 고치지 않는다 — 보고서의 update 문은 사람이 붙여 넣는다.
 
   헤드리스 호출이 실패해도(로그인 만료 · CLI 없음) 자료 파일과 알림은 남는다.
-  터미널 CLI 는 앱 로그인과 별개다 — 처음 한 번 `claude login` 을 사람이 해 둔다.
+  터미널 CLI 는 앱 로그인과 별개다 — 처음 한 번 `claude auth login` 을 사람이 해 둔다.
 
   로그:   logs/recheck-task-YYYYMM.log
   상태:   logs/recheck-last.json  (언제 · 종료 코드 · 바뀐 수 · 자료 · 보고서)
@@ -149,7 +149,7 @@ $body
     $state.exitCode = 3; $state.ai = 'failed'
     $state.message = ("AI 호출 실패(코드 {0}): {1}" -f $aiRc, (($aiOut | Select-Object -First 2) -join ' / '))
     Log $state.message
-    Log '터미널 CLI 로그인이 만료됐으면 `claude login` 을 한 번 해 둔다. 자료 파일은 남아 있다.'
+    Log '터미널 CLI 로그인이 만료됐으면 `claude auth login` 을 한 번 해 둔다. 자료 파일은 남아 있다.'
     Show-Balloon -Title '공식 출처 재확인 — AI 호출 실패' -Text ("바뀐 페이지 {0}건. 자료: {1}`n{2}" -f $changed, $source, $state.message) -Level Error
     exit 3
   }
