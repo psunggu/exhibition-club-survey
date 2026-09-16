@@ -142,3 +142,26 @@ await fs.writeFile(checksumPath, `${digest}  ${filename}\n`, {
 console.log(`Backup complete: ${events.length} rows`);
 console.log(`File: ${finalPath}`);
 console.log(`SHA-256: ${digest}`);
+
+// 30일 정리 (2026-09-16 운영자 결정). 파일명의 시각으로 판정한다 — 수정 시각은 복사·복원으로 바뀔 수 있다.
+// 새 백업이 방금 성공한 뒤에만 지우고, 최근 5개는 날짜와 무관하게 남긴다. --keep-days 0 이면 정리하지 않는다.
+const keepDays = Number(argumentValue("--keep-days") ?? 30);
+if (Number.isFinite(keepDays) && keepDays > 0) {
+  const cutoff = createdAt.getTime() - keepDays * 86_400_000;
+  const stamps = (await fs.readdir(outputDirectory))
+    .map((name) => /^events-(\d{8}T\d{6}Z)\.json$/.exec(name)?.[1])
+    .filter(Boolean)
+    .sort();
+  const protectedStamps = new Set(stamps.slice(-5));
+  let removed = 0;
+  for (const stamp of stamps) {
+    if (protectedStamps.has(stamp)) continue;
+    const at = Date.parse(stamp.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, "$1-$2-$3T$4:$5:$6Z"));
+    if (!(at < cutoff)) continue;
+    for (const suffix of [".json", ".json.sha256"]) {
+      await fs.rm(path.join(outputDirectory, `events-${stamp}${suffix}`), { force: true });
+    }
+    removed += 1;
+  }
+  console.log(`Pruned: ${removed} backup(s) older than ${keepDays} days`);
+}
