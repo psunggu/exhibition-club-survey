@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
 import {
-  isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, TENTATIVE, type Meetup,
+  isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, shownStatus, TENTATIVE, type Meetup,
 } from './data/meetups'
 
 /**
@@ -207,7 +207,7 @@ export function Calendar() {
               {m.regular ? '정기' : '수시'}{' · '}{m.venueKind}
             </span>
             <span className="mrow-title">{m.title || m.chip}</span>
-            <span className={`mtag mtag-${m.kind}`}>{STATUS_LABEL[m.kind] ?? m.kind}</span>
+            <span className={`mtag mtag-${shownKind(m, today)}`}>{STATUS_LABEL[shownKind(m, today)] ?? m.kind}</span>
           </li>
         ))}
       </ul>
@@ -527,7 +527,7 @@ export function Calendar() {
             <div className="event-dialog-card">
               <div className="event-dialog-head">
                 <div>
-                  <span className="event-dialog-status" data-tone={open.tone}>{open.status}</span>
+                  <span className="event-dialog-status" data-tone={shownStatus(open, today).tone}>{shownStatus(open, today).status}</span>
                   <h2 id="eventDialogTitle">{open.title || open.chip}</h2>
                 </div>
               </div>

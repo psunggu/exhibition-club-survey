@@ -389,7 +389,7 @@ export const MEETUPS: Meetup[] = withDefaults([
     kind: 'conf',
     regular: false,
     venueKind: '공연',
-    status: '확정 · 초대권 2매',
+    status: '확정 · 초대권 2매',   // 지나면 화면은 「완료」 로 보인다 (shownStatus)
     tone: 'conf',
     title: '예술의전당 회원음악회 · 《카르멘》 하이라이트',
     dateLabel: '2026. 9. 12. (토)',
@@ -400,12 +400,11 @@ export const MEETUPS: Meetup[] = withDefaults([
     // 표를 내놓은 분은 가지 않는다. 9월 **공식** 모임은 9/19 서도호전이다.
     // 톡방 원문(2026-08-28)에서 전달은 「다음 주 중 연락」 으로 예고만 됐고
     // 그 뒤 확인 글이 없어, 「완료」 가 아니라 「정해졌다」 로 적는다.
-    note: '동호회 단체 일정이 아니라 개인 참석입니다. 초대권 2매를 쓸 분이 정해졌고 전달은 예정입니다. '
-      + '일부 시야 방해석일 수 있습니다. 개인별 이름은 공개하지 않습니다.',
+    note: '완료된 일정입니다. 동호회 단체 일정이 아니라 초대권 2매로 간 개인 참석 건이었습니다. 개인별 이름은 공개하지 않습니다.',
     infoUrl: 'https://www.sac.or.kr/site/main/show/show_view?SN=74019',
     infoLabel: '공식 공연 정보 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EC%98%88%EC%88%A0%EC%9D%98%EC%A0%84%EB%8B%B9%20%EC%BD%98%EC%84%9C%ED%8A%B8%ED%99%80',
-    completedRow: ''
+    completedRow: '9/12 (토) 17:00 예술의전당 회원음악회 《카르멘》 하이라이트 · 콘서트홀 (개인 참석)'
   },
   {
     id: 'september-regular',
@@ -620,6 +619,15 @@ export function isDone(m: Meetup, today: string): boolean {
  */
 export function shownKind(m: Meetup, today: string): Meetup['kind'] {
   return isDone(m, today) ? 'done' : m.kind
+}
+
+/**
+ * 화면이 쓸 상태 글자와 색. **관람일이 지나면 「완료」 다** — 자료에 「확정 · 초대권 2매」 라
+ * 적혀 있어도 그렇다. 2026-09-17 에 9/12 공연이 닷새 지나도록 목록 딱지와 상세 창이
+ * 「확정」 으로 남아 있었다. 칩 색(`shownKind`)은 이미 날짜를 따르는데 글자만 자료를 따랐다.
+ */
+export function shownStatus(m: Meetup, today: string): { status: string; tone: string } {
+  return shownKind(m, today) === 'done' ? { status: '완료', tone: 'done' } : { status: m.status, tone: m.tone }
 }
 
 export type YearMonth = { year: number; month: number }
