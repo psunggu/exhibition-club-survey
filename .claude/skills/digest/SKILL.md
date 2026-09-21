@@ -9,9 +9,10 @@ description: 주간 정리봇 갱신 — kakao-digest 파이프라인(내보내�
 
 PowerShell 로 돌린다. 카카오톡이 떠 있고 **대상 방이 독립 창으로 열려 있어야** 한다.
 방 이름은 저장소에 적지 않는다(두 저장소 다 공개다) — `kakao-digest\config.local.json` 의 `room` 에서 읽는다.
+`-Encoding UTF8` 을 빼지 않는다 — PowerShell 5.1 은 BOM 없는 파일을 ANSI 로 읽어 방 이름이 깨지고, 창을 못 찾아 종료 코드 11 이 난다(2026-09-22 실측).
 
 ```
-Set-Location C:\D\Project\kakao-digest; $room = (Get-Content .\config.local.json -Raw | ConvertFrom-Json).room; if (-not $room) { throw 'config.local.json 에 room 이 없다' }; & .\scripts\weekly_collect.ps1 -Room $room -NoOpen; "exit=$LASTEXITCODE"
+Set-Location C:\D\Project\kakao-digest; $room = (Get-Content .\config.local.json -Raw -Encoding UTF8 | ConvertFrom-Json).room; if (-not $room) { throw 'config.local.json 에 room 이 없다' }; & .\scripts\weekly_collect.ps1 -Room $room -NoOpen; "exit=$LASTEXITCODE"
 ```
 
 - 종료 코드 11(「채팅방 창을 찾지 못함」)이면 **멈추고** 사용자에게 방을 독립 창으로 띄워 달라고 한다. 다른 것을 시도하지 않는다.
