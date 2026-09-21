@@ -523,6 +523,19 @@ export const MEETUPS: Meetup[] = withDefaults([
     infoLabel: '공식 야간관람 안내 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EA%B2%BD%EB%B3%B5%EA%B6%81',
     completedRow: ''
+  },
+  {
+    id: 'deoksugung-walk',
+    date: '2026-10-17',
+    chip: '덕수궁 15시',
+    kind: 'conf',
+    regular: false,
+    venueKind: '박물관',
+    title: '덕수궁·정동길 관람·산책',
+    time: '오후 3시~6시 · 시청역 1번 출구 오후 2시 50분 집결',
+    venue: '덕수궁 · 서울 중구 세종대로 99',
+    description: '15:00~16:40 덕수궁 관람, 16:40~17:40 정동길 산책, 17:40~18:00 식사·티타임. '
+      + '이후 귀가 또는 청계천 걷기는 자율입니다.',
   }
 ])
 
@@ -580,13 +593,6 @@ export const TENTATIVE: Tentative[] = [
    *
    * 동호회 일정으로 잡기로 바뀌면 날짜와 함께 MEETUPS 로 넣는다.
    */
-  {
-    id: 'deoksugung-walk',
-    tag: '덕수궁',
-    text: '덕수궁 관람과 정동길 산책, 저녁 식사·티타임. 시청역 1번 출구에서 오후 3시 집결. '
-      + '9월 26일(토)과 10월 17일(토) 가운데 투표로 정합니다.',
-    candidates: ['2026-09-26', '2026-10-17'],
-  },
 ]
 
 /** 완료 목록에만 있고 달력 칩이 없는 것 */
