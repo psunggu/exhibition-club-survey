@@ -28,7 +28,14 @@ Verify a backup:
 node scripts/verify-supabase-backup.mjs --file "C:\path\events-YYYYMMDDTHHMMSSZ.json"
 ```
 
-## Windows scheduled task
+## macOS LaunchAgent (since 2026-09-24)
+
+`scripts/install-launchd.sh supabase-backup` installs the user LaunchAgent
+`com.psunggu.exhibition-supabase-backup` at 02:30 each day. launchd runs a
+missed slot once after the Mac wakes. Output:
+`~/Library/Application Support/ExhibitionClub/backups`.
+
+## Windows scheduled task (before 2026-09-24)
 
 The installer creates the user-level task `ExhibitionClub-Supabase-Backup` at
 02:30 each day. `StartWhenAvailable` runs a missed backup after the PC wakes.
