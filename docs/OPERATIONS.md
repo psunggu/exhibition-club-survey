@@ -17,24 +17,27 @@
 |---|---|---|---|---|
 | 1. 톡방 투표 → 결과 | 달마다 | 운영자 | 톡방에서 투표하고 결과도 톡방에서 나눈다. 사이트에는 **정해진 것만** 요약 카드로(`/meetup`) | 0 |
 | 2. 주간 정리봇 | 주 1회 | Claude Code `/digest` | kakao-digest → `npm run digest:public` → PR | 적음 |
-| 3. 보드 · 영화 순위 | 수·토 05시 | **이 PC 의 작업 스케줄러** (`ExhibitionClub-Movies`) | `npm run board:movies` → PR → 머지 → 배포 | 0 |
+| 3. 보드 · 영화 순위 | 수·토 05시 | **맥의 launchd** (`com.psunggu.exhibition-movies`) | `npm run board:movies` → PR → 머지 → 배포 | 0 |
 | 3. 보드 · 전시·공연 | 수시 | 운영자 | Supabase SQL Editor (`public.events`) | 안내문 쓸 때만 |
 | 4. 확정 모임 | 확정될 때 | Claude Code `/meetup "한 줄"` | `meetups.ts` 항목 → PR | 적음 |
 
 세션을 열었을 때 「뭐부터 할까」 는 `/ops` — 넷이 각각 얼마나 오래됐는지 열 줄로 보고한다.
 
-**DB 백업은 매일 02:30 배치가 한다** (`ExhibitionClub-Supabase-Backup` → `scripts/backup-supabase-events.mjs`, 2026-09-16 부터 저장소 안 스크립트를 돌린다). 공개 `events` 표만 `%LOCALAPPDATA%\ExhibitionClubackups` 에 JSON + SHA-256 으로 남기고, 30일 지난 것은 지운다(최근 5개는 늘 남김, `--keep-days 0` 이면 안 지움). 명부·설문 응답은 백업하지 않는다 — 개인정보를 PC 에 복사하지 않는다. 다시 등록하려면 `scripts/install-supabase-backup-task.ps1 -Replace`.
+**DB 백업은 매일 02:30 배치가 한다** (`com.psunggu.exhibition-supabase-backup` → `scripts/backup-supabase-events.mjs`, 2026-09-16 부터 저장소 안 스크립트를 돌린다). 공개 `events` 표만 `~/Library/Application Support/ExhibitionClub/backups` 에 JSON + SHA-256 으로 남기고, 30일 지난 것은 지운다(최근 5개는 늘 남김, `--keep-days 0` 이면 안 지움). 명부·설문 응답은 백업하지 않는다 — 개인정보를 PC 에 복사하지 않는다. 다시 등록하려면 `scripts/install-launchd.sh supabase-backup`.
 
-**주 1회 재확인은 배치가 한다** (2026-09-14, `ExhibitionClub-Recheck` → `scripts/recheck-task.ps1`, 월 06:00). `npm run recheck -- --exit-on-change` 로 자료를 모으고 **달라진 페이지가 있을 때만** 헤드리스 `claude -p`(sonnet)에 스킬의 「견주기·보고」 절과 자료를 넣어 `logs/recheck-report-YYYYMMDD.md` 를 받는다 — 저장소는 읽히지 않고, 변화가 없는 주는 토큰 0. 보고서는 메모장으로 열리고 DB 는 사람이 고친다. 터미널 CLI 로그인이 만료되면 AI 호출만 실패하고 자료·알림은 남는다 — `claude auth login` 을 한 번 해 둔다. 손으로 볼 때는 여전히 `/recheck` — 보드의 전시·공연과 다가오는 모임의 기간·관람료·휴관·시간이 공식 페이지와 아직 맞는지 본다. `npm run recheck` 가 공식 페이지에서 사실이 적힌 줄만 잘라 `logs/recheck-YYYYMMDD.md` 에 모으고(지난주와 같은 페이지는 본문을 싣지 않는다), 세션이 달라진 것만 표로 보고한다. 보통 fetch 로 못 읽는 페이지(403 · JS 로만 그려짐 · 옛 SSL)는 화면 검사용 Playwright Chromium 으로 한 번 더 열어 읽는다(2026-09-16, 못 읽던 9건 → 3건). 그래도 남는 것은 imweb 처럼 실제 브라우저도 막는 곳과 이 네트워크에서 연결이 안 되는 곳뿐이며, 봇 차단을 우회하지는 않는다 — 그런 페이지는 「확인 못 함」 으로 남고 사람이 본다. DB 는 고치지 않는다 — 운영자가 붙여 넣을 `update` 한 줄을 만들어 준다. 여기가 AI 가 매주 조금 쓰는 유일한 자리이고, 그럴 만한 자리다 — 틀린 정보가 회원에게 나가는 것이 이 사이트의 가장 큰 실패다.
+**주 1회 재확인은 배치가 한다** (2026-09-14, 맥 이관 2026-09-24 — `com.psunggu.exhibition-recheck` → `scripts/recheck-task.sh`, 월 06:00). `npm run recheck -- --exit-on-change` 로 자료를 모으고 **달라진 페이지가 있을 때만** 헤드리스 `claude -p`(sonnet)에 스킬의 「견주기·보고」 절과 자료를 넣어 `logs/recheck-report-YYYYMMDD.md` 를 받는다 — 저장소는 읽히지 않고, 변화가 없는 주는 토큰 0. 보고서는 `open` 으로 열리고 DB 는 사람이 고친다. 터미널 CLI 로그인이 만료되면 AI 호출만 실패하고 자료·알림은 남는다 — `claude auth login` 을 한 번 해 둔다. 손으로 볼 때는 여전히 `/recheck` — 보드의 전시·공연과 다가오는 모임의 기간·관람료·휴관·시간이 공식 페이지와 아직 맞는지 본다. `npm run recheck` 가 공식 페이지에서 사실이 적힌 줄만 잘라 `logs/recheck-YYYYMMDD.md` 에 모으고(지난주와 같은 페이지는 본문을 싣지 않는다), 세션이 달라진 것만 표로 보고한다. 보통 fetch 로 못 읽는 페이지(403 · JS 로만 그려짐 · 옛 SSL)는 화면 검사용 Playwright Chromium 으로 한 번 더 열어 읽는다(2026-09-16, 못 읽던 9건 → 3건). 그래도 남는 것은 imweb 처럼 실제 브라우저도 막는 곳과 이 네트워크에서 연결이 안 되는 곳뿐이며, 봇 차단을 우회하지는 않는다 — 그런 페이지는 「확인 못 함」 으로 남고 사람이 본다. DB 는 고치지 않는다 — 운영자가 붙여 넣을 `update` 한 줄을 만들어 준다. 여기가 AI 가 매주 조금 쓰는 유일한 자리이고, 그럴 만한 자리다 — 틀린 정보가 회원에게 나가는 것이 이 사이트의 가장 큰 실패다.
 
-### 자동화 구성 (2026-09-08)
+### 자동화 구성 (2026-09-08, 맥 이관 2026-09-24)
 
-- **`scripts/update-movies-task.ps1`** — 이 PC 의 작업 스케줄러가 수·토 05:00 에 돌린다(`scripts/install-movies-task.ps1` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. **실제로는 05:00 에 PC 가 자고 있어** `StartWhenAvailable` 로 깨어나는 때(9/11 01:50 · 9/12 13:55 …)에 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키고 싶으면 등록 시 `WakeToRun` 을 켠다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
+2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼는 `*.sh` 이고 ps1 과 같은 절차·로그·상태 파일을 쓴다. 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(Windows 의 `StartWhenAvailable` 과 같다). 알림은 맥 알림 센터. 아래 `*.ps1` 설명은 절차의 원본이라 남긴다.
+
+
+- **`scripts/update-movies-task.sh`**(원본 `update-movies-task.ps1`) — 맥의 launchd 가 수·토 05:00 에 돌린다(`scripts/install-launchd.sh movies` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. **실제로는 05:00 에 PC 가 자고 있어** `StartWhenAvailable` 로 깨어나는 때(9/11 01:50 · 9/12 13:55 …)에 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키고 싶으면 등록 시 `WakeToRun` 을 켠다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
   ```
-  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-movies-task.ps1
+  scripts/install-launchd.sh movies
   ```
-- **`scripts/digest-public-task.ps1`** (2026-09-14, `ExhibitionClub-Digest`, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 빨간 풍선. 등록은 `scripts/install-digest-task.ps1`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
-- **`scripts/recheck-task.ps1`** (2026-09-14, `ExhibitionClub-Recheck`, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-recheck-task.ps1`.
+- **`scripts/digest-public-task.sh`**(원본 `digest-public-task.ps1`, 2026-09-14, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 알림. 등록은 `scripts/install-launchd.sh digest`. 시험은 `--no-pr`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
+- **`scripts/recheck-task.sh`**(원본 `recheck-task.ps1`, 2026-09-14, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-launchd.sh recheck`. 시험은 `--no-ai`.
 - **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
 - **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
@@ -73,7 +76,7 @@ git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && g
 
 ### 영화 예매 순위 (수요일·토요일 05시)
 
-**이 PC 의 작업 스케줄러가 한다** (`ExhibitionClub-Movies` → `scripts/update-movies-task.ps1`). 손으로 돌릴 일이 생기면:
+**맥의 launchd 가 한다** (`com.psunggu.exhibition-movies` → `scripts/update-movies-task.sh`). 손으로 돌릴 일이 생기면:
 
 ```
 npm run board:movies
