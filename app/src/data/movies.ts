@@ -29,10 +29,25 @@ export type Movie = {
 
 export const MOVIES: Movie[] = [
   {
+    id: 'movie-20255033',
+    movieCode: '20255033',
+    bookingRank: 1,
+    bookingRate: 30.7,
+    title: '암살자(들)',
+    releaseStatus: '상영 중',
+    releaseDate: '2026-09-23',
+    runtime: 130,
+    genre: '범죄, 드라마',
+    ageRating: '12세 이상 관람가',
+    director: '허진호',
+    summary: '1974년 8월 15일, 대한민국을 충격에 빠뜨린 영부인 저격사건의 의혹과 배후를 추적하는 이야기',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20255033'
+  },
+  {
     id: 'movie-20250654',
     movieCode: '20250654',
-    bookingRank: 1,
-    bookingRate: 25.3,
+    bookingRank: 2,
+    bookingRate: 17,
     title: '오디세이',
     releaseStatus: '상영 중',
     releaseDate: '2026-08-05',
@@ -44,25 +59,40 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20250654'
   },
   {
-    id: 'movie-20255033',
-    movieCode: '20255033',
-    bookingRank: 2,
-    bookingRate: 19.7,
-    title: '암살자(들)',
-    releaseStatus: '개봉 예정',
+    id: 'movie-20256161',
+    movieCode: '20256161',
+    bookingRank: 3,
+    bookingRate: 15.3,
+    title: '타짜: 벨제붑의 노래',
+    releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
-    runtime: 130,
+    runtime: 129,
     genre: '범죄, 드라마',
-    ageRating: '12세 이상 관람가',
-    director: '허진호',
-    summary: '1974년 8월 15일, 대한민국을 충격에 빠뜨린 영부인 저격사건의 의혹과 배후를 추적하는 이야기',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20255033'
+    ageRating: '청소년 관람불가',
+    director: '최국희',
+    summary: '중세 유럽, 종교인들은 카드가 악마의 도구라고 생각했다. 특히 죽음을 뜻하는 스페이드 13장엔 모두 악마의 이름이 들어 있다. 지옥으로 떨어진 추락한 천사 \'루시퍼\'와 지옥의 기존 지배자 \'벨제붑\'.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
+  },
+  {
+    id: 'movie-20261807',
+    movieCode: '20261807',
+    bookingRank: 4,
+    bookingRate: 7.8,
+    title: '극장판 치이카와: 인어 섬의 비밀',
+    releaseStatus: '개봉 예정',
+    releaseDate: '2026-09-30',
+    runtime: 98,
+    genre: '애니메이션',
+    ageRating: '전체 관람가',
+    director: '오이카와 케이',
+    summary: '어느 날, 광장에서 쉬고 있던 치이카와와 가르마 앞에 얼굴에 전단지를 붙인 토끼가 나타난다. 그곳엔 “특별한 섬으로의 초대”라는 글귀가 적혀 있는데...',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20261807'
   },
   {
     id: 'movie-20256308',
     movieCode: '20256308',
-    bookingRank: 3,
-    bookingRate: 12.1,
+    bookingRank: 5,
+    bookingRate: 7.1,
     title: '인턴',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-16',
@@ -74,27 +104,12 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256308'
   },
   {
-    id: 'movie-20256161',
-    movieCode: '20256161',
-    bookingRank: 4,
-    bookingRate: 10.4,
-    title: '타짜: 벨제붑의 노래',
-    releaseStatus: '개봉 예정',
-    releaseDate: '2026-09-23',
-    runtime: 129,
-    genre: '범죄, 드라마',
-    ageRating: '청소년 관람불가',
-    director: '최국희',
-    summary: '중세 유럽, 종교인들은 카드가 악마의 도구라고 생각했다. 특히 죽음을 뜻하는 스페이드 13장엔 모두 악마의 이름이 들어 있다. 지옥으로 떨어진 추락한 천사 \'루시퍼\'와 지옥의 기존 지배자 \'벨제붑\'.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
-  },
-  {
     id: 'movie-20254904',
     movieCode: '20254904',
-    bookingRank: 5,
-    bookingRate: 4.9,
+    bookingRank: 6,
+    bookingRate: 5.4,
     title: '가능한 사랑',
-    releaseStatus: '개봉 예정',
+    releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
     runtime: 164,
     genre: '드라마',
@@ -106,10 +121,10 @@ export const MOVIES: Movie[] = [
   {
     id: 'movie-20266766',
     movieCode: '20266766',
-    bookingRank: 6,
-    bookingRate: 4.3,
+    bookingRank: 7,
+    bookingRate: 5.3,
     title: '어벤져스: 엔드게임 앙코르',
-    releaseStatus: '개봉 예정',
+    releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
     runtime: 183,
     genre: '액션, SF',
@@ -119,10 +134,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20266766'
   },
   {
+    id: 'movie-20224573',
+    movieCode: '20224573',
+    bookingRank: 8,
+    bookingRate: 4.1,
+    title: '부활남: 더 레드',
+    releaseStatus: '개봉 예정',
+    releaseDate: '2026-09-30',
+    runtime: 101,
+    genre: '액션',
+    ageRating: '15세 이상 관람가',
+    director: '백',
+    summary: '절친 ‘영하’(강기영)의 현실적인 쓴소리와 동생 ‘예린’(김시아)의 든든한 지원에도 면접에서 떨어지기 일쑤인 취업 준비생 ‘석환’(구교환).',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20224573'
+  },
+  {
     id: 'movie-20265146',
     movieCode: '20265146',
-    bookingRank: 7,
-    bookingRate: 4.3,
+    bookingRank: 9,
+    bookingRate: 1.5,
     title: '옵세션',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-02',
@@ -136,8 +166,8 @@ export const MOVIES: Movie[] = [
   {
     id: 'movie-20263870',
     movieCode: '20263870',
-    bookingRank: 8,
-    bookingRate: 3.1,
+    bookingRank: 10,
+    bookingRate: 0.9,
     title: '레지던트 이블: 0번째 밤',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-17',
@@ -147,40 +177,10 @@ export const MOVIES: Movie[] = [
     director: '잭 크레거',
     summary: '의료 택배 기사 브라이언(오스틴 에이브람스)은 긴급 배달을 맡아 심야에 라쿤 시티 종합 병원으로 향한다. 눈발을 헤치며 가던 중 갑자기 차로 뛰어든 누군가를 치게 되고, 죽은 줄 알았던 이가 다시 그를 덮쳐온다.',
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20263870'
-  },
-  {
-    id: 'movie-20224573',
-    movieCode: '20224573',
-    bookingRank: 9,
-    bookingRate: 2.3,
-    title: '부활남: 더 레드',
-    releaseStatus: '개봉 예정',
-    releaseDate: '2026-09-30',
-    runtime: 101,
-    genre: '액션',
-    ageRating: '15세 이상 관람가',
-    director: '백',
-    summary: '절친 ‘영하’(강기영)의 현실적인 쓴소리와 동생 ‘예린’(김시아)의 든든한 지원에도 면접에서 떨어지기 일쑤인 취업 준비생 ‘석환’(구교환).',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20224573'
-  },
-  {
-    id: 'movie-20261807',
-    movieCode: '20261807',
-    bookingRank: 10,
-    bookingRate: 2,
-    title: '극장판 치이카와: 인어 섬의 비밀',
-    releaseStatus: '개봉 예정',
-    releaseDate: '2026-09-30',
-    runtime: 98,
-    genre: '애니메이션',
-    ageRating: '전체 관람가',
-    director: '오이카와 케이',
-    summary: '어느 날, 광장에서 쉬고 있던 치이카와와 가르마 앞에 얼굴에 전단지를 붙인 토끼가 나타난다. 그곳엔 “특별한 섬으로의 초대”라는 글귀가 적혀 있는데...',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20261807'
   }
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.09.19 15:28'
+export const MOVIE_RANKING_UPDATED_AT = '2026.09.23 09:19'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
