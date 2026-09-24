@@ -1,5 +1,5 @@
 {
- "_platform": "win32",
+ "_platform": "darwin",
  "_frozenAt": "2026-08-22T10:00:00+09:00",
  "보드-375": {
   "body": {
@@ -1676,7 +1676,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 5669
+    "h": 5259
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2320,7 +2320,7 @@
   ".survey-jump": {
    "count": 1,
    "box": {
-    "w": 343,
+    "w": 321,
     "h": 280
    },
    "style": {
@@ -2351,7 +2351,7 @@
   ".survey-jump-list li": {
    "count": 2,
    "box": {
-    "w": 307,
+    "w": 285,
     "h": 50
    },
    "style": {
@@ -2381,7 +2381,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 2689,
+   "textLength": 2645,
    "cardCount": 0,
    "chipCount": 15
   }
@@ -2391,7 +2391,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 4760
+    "h": 4349
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3035,7 +3035,7 @@
   ".survey-jump": {
    "count": 1,
    "box": {
-    "w": 520,
+    "w": 498,
     "h": 280
    },
    "style": {
@@ -3066,7 +3066,7 @@
   ".survey-jump-list li": {
    "count": 2,
    "box": {
-    "w": 484,
+    "w": 462,
     "h": 50
    },
    "style": {
@@ -3096,7 +3096,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 2689,
+   "textLength": 2645,
    "cardCount": 0,
    "chipCount": 15
   }

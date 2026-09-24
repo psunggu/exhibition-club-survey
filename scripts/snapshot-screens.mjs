@@ -122,6 +122,9 @@ async function measure(page, url, width) {
       const r = el.getBoundingClientRect();
       const style = {};
       for (const p of props) style[p] = round(cs[p]);
+      // 맥 크로미엄은 서체 열의 BlinkMacSystemFont 를 "system-ui" 로 보고한다 — 같은 열이다.
+      // 이름만 다른 것을 디자인 변화로 읽지 않도록 한 이름으로 맞춘다 (2026-09-25, 맥 기준선이 CI 리눅스에서 54곳 어긋났다).
+      if (typeof style.fontFamily === 'string') style.fontFamily = style.fontFamily.replace(/"?system-ui"?/g, 'BlinkMacSystemFont');
       out[sel] = { count: els.length, box: { w: Math.round(r.width), h: Math.round(r.height) }, style };
     }
     /**

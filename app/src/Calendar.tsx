@@ -272,27 +272,8 @@ export function Calendar() {
         </a>
       </section>
 
-      {/* 8월 운영 설문 결과를 회원에게 돌려주는 페이지.
-          답한 사람이 자기 답이 무엇을 바꿨는지 모르면 다음 설문은 회수가 안 된다.
-          `.board-jump` 를 그대로 입혀 위 카드와 형제로 보이게 둔다.
-          이 문서는 SPA 밖의 정적 파일이라 해시가 아니라 파일 경로다 —
-          vite.config.ts 의 copyLiveAssets 에 올라가 있어야 404 가 안 난다. */}
-      <section className="board-jump result-jump" aria-labelledby="resultJumpTitle">
-        <div>
-          {/* 이 두 줄은 **건너간 페이지가 실제로 담은 것**만 말해야 한다.
-              2026-08-30 까지는 「이렇게 반영했습니다 · 9월부터 무엇이 달라지는지」 였는데,
-              그날 결과 페이지에서 앞일을 말하던 절 셋을 모두 가렸다 (#94 · #97).
-              광고는 남고 물건이 없어진 꼴이라, 눌러 들어간 회원이 없는 것을 찾게 된다.
-              결과 페이지 안에서 같은 종류를 세 번 고쳤는데 이 카드는 다른 화면이라 함께 안 잡혔다.
-              가린 절을 되살릴 때 이 두 줄도 함께 되돌린다. */}
-          <p className="board-jump-kicker">8월 운영 설문</p>
-          <h2 id="resultJumpTitle">답해주신 내용을 정리했습니다</h2>
-          <p>어떤 답이 얼마나 모였는지 숫자로 보여드립니다.</p>
-        </div>
-        <a className="board-jump-link" href="./survey-result.html">
-          설문 결과 보기 <span aria-hidden="true">→</span>
-        </a>
-      </section>
+      {/* 8월 운영 설문 결과 카드(`.result-jump`)는 여기 있다가 2026-09-25 에 App.tsx 로 옮겨
+          투표 현황 카드와 함께 화면 맨 아래 「지난 투표 · 설문 결과」 접힘 상자에 들어갔다. */}
 
       <details className="digest">
         <summary className="digest-head">
