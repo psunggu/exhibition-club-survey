@@ -790,7 +790,7 @@ const jumpRows = async () => page.$$eval('.survey-jump-list li',
 // ① 목 그대로 — 식사 갈래에는 「모임이 아직인 마감 설문」(MEAL_LOOSE)이 남아 있다
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 const withLoose = await jumpRows();
 ok('모임이 아직인 마감 설문은 「마감」 이라고 적는다',
@@ -802,7 +802,7 @@ await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MEAL_PAST]) }));
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1800);
 const onlyPast = await jumpRows();
 /**
@@ -861,7 +861,7 @@ await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_LATE]) }));
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
   await jumpBadgeOf('관람 장소') === '진행 중',
@@ -873,7 +873,7 @@ await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([MIRROR_SURVEY, MEAL_LOOSE]) }));
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
   await jumpBadgeOf('관람 장소') === '톡방 투표',
@@ -1439,7 +1439,7 @@ await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_SURVEY]) }));
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.survey-jump-list li', { timeout: 20000 });
+await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1200);
 ok('달력 카드 제목이 「투표 현황」 이다',
   (await page.$eval('#surveyJumpTitle', (e) => e.textContent.trim())) === '투표 현황');

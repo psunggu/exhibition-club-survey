@@ -270,9 +270,36 @@ export function App() {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
-        <SurveyJump />
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
+        {/* 투표 현황 · 8월 운영 설문 결과는 **지난 것**이라 맨 아래에 접어 둔다 (2026-09-25, 운영자 요청).
+            원래는 제목 바로 아래(투표 현황)와 보드 카드 옆(설문 결과)에 펼쳐져 있었다.
+            지운 것이 아니다 — 펼치면 그대로 있고, 카드 안 코드와 검사기도 그대로 잰다.
+            접힘 상자는 지난 달력의 `.calendar-fold` 를 그대로 입는다 — 새 CSS 없음. */}
+        <details className="calendar-fold">
+          <summary>
+            <span className="calendar-fold-title">지난 투표 · 설문 결과</span>
+            <span className="calendar-fold-hint">펼쳐 보기</span>
+          </summary>
+          <div className="calendar-fold-body">
+            <SurveyJump />
+            {/* 8월 운영 설문 결과를 회원에게 돌려주는 페이지.
+                `.board-jump` 를 입혀 보드 카드와 같은 꼴로 보인다.
+                이 문서는 SPA 밖의 정적 파일이라 해시가 아니라 파일 경로다 —
+                vite.config.ts 의 copyLiveAssets 에 올라가 있어야 404 가 안 난다.
+                두 줄은 **건너간 페이지가 실제로 담은 것**만 말한다 (#94 · #97). */}
+            <section className="board-jump result-jump" aria-labelledby="resultJumpTitle">
+              <div>
+                <p className="board-jump-kicker">8월 운영 설문</p>
+                <h2 id="resultJumpTitle">답해주신 내용을 정리했습니다</h2>
+                <p>어떤 답이 얼마나 모였는지 숫자로 보여드립니다.</p>
+              </div>
+              <a className="board-jump-link" href="./survey-result.html">
+                설문 결과 보기 <span aria-hidden="true">→</span>
+              </a>
+            </section>
+          </div>
+        </details>
       </main>
     )
   }
