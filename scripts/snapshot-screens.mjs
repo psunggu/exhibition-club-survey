@@ -93,6 +93,9 @@ const WATCH = [
   '.tag', '.tag-regular', '.meta', '.card-alert',
   '.cal', '.wd', '.cell', '.dnum', '.chip',
   '.survey-jump', '.survey-jump-list li',
+  // 카드 안쪽 — 바깥 상자만 재면 알약 폭 · 안내문 색이 바뀌어도 통과했다(2026-09-25 변이 시험).
+  // `.survey-tab` 만 적으면 위쪽 탭 줄의 알약이 첫 요소가 되므로 카드 안으로 좁힌다.
+  '.survey-jump h2', '.survey-jump p:not(.board-jump-kicker)', '.survey-jump-list .survey-tab',
 ];
 
 /** 색·글자·간격·상자 — 눈에 보이는 것을 정하는 값들 */
@@ -102,6 +105,8 @@ const PROPS = [
   'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
   'marginTop', 'marginBottom', 'display', 'flexDirection', 'gap',
   'textAlign', 'boxShadow', 'opacity',
+  // 상자 크기는 리눅스 CI 에서 건너뛰므로, 폭을 정하는 규칙 값은 계산된 값으로 따로 본다
+  'minWidth',
 ];
 
 async function measure(page, url, width) {
@@ -135,6 +140,7 @@ async function measure(page, url, width) {
      * 응답이 하나 늘어도, 하루가 지나도, 불러오기가 늦어도 값이 바뀐다.
      * 실제로 CI 에서 1222 대 1164 로 갈렸다 — 디자인은 하나도 안 바뀐 채로.
      *
+     * 카드는 2026-09-25 부터 투표 화면(`투표-*`)에만 있다 — 다른 화면에서는 이 값이 0 이다.
      * 카드의 **생김새**는 위 WATCH 의 `.survey-jump` 와 `.survey-jump-list li` 가 지킨다 —
      * 상자와 색은 불러왔든 못 불러왔든 같다는 것을 재서 확인했다.
      * 다만 `.survey-jump-state` 는 넣지 않는다. 못 불러오면 그 조각은 아예 안 그려지고,
@@ -164,6 +170,10 @@ const SCREENS = [
   ['보드-1280', `http://localhost:${PORT}${BASE}/#/`, 1280],
   ['일정-375', `http://localhost:${PORT}${BASE}/#/calendar`, 375],
   ['일정-1280', `http://localhost:${PORT}${BASE}/#/calendar`, 1280],
+  // 투표 현황 카드(`.survey-jump`)는 2026-09-25(#190)부터 투표 화면에만 있다. 이 두 화면이 없으면
+  // 위 WATCH 의 카드 두 줄과 아래 `live` 빼기가 재는 자리를 잃는다.
+  ['투표-375', `http://localhost:${PORT}${BASE}/#/survey`, 375],
+  ['투표-1280', `http://localhost:${PORT}${BASE}/#/survey`, 1280],
 ];
 const now = {};
 for (const [name, url, w] of SCREENS) now[name] = await measure(page, url, w);
@@ -220,6 +230,10 @@ if (!sameEnv) {
 }
 
 const diffs = [];
+// SCREENS 에 더했는데 기준을 안 찍었으면 그 화면은 대조되지 않은 채 통과해 버린다 — 실패로 알린다
+for (const screen of Object.keys(now)) {
+  if (!base[screen]) diffs.push(`${screen}: 기준에 없는 화면이다 — save 로 기준을 찍어야 대조된다`);
+}
 for (const screen of Object.keys(base)) {
   const b = base[screen], c = now[screen];
   if (!c) { diffs.push(`${screen}: 화면이 사라졌다`); continue; }
@@ -250,5 +264,5 @@ if (diffs.length) {
   console.error('\n의도한 변경이면 `node scripts/snapshot-screens.mjs save` 로 기준을 갱신한다.\n');
   process.exit(1);
 }
-console.log(`화면 대조 통과 — 화면 4개 · 측정점 ${points(now)}개가 기준과 같다`
+console.log(`화면 대조 통과 — 화면 ${Object.keys(now).length}개 · 측정점 ${points(now)}개가 기준과 같다`
   + ` (시계는 ${FROZEN_DAY} 에 묶고 쟀다)`);

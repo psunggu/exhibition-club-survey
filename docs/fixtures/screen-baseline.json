@@ -30,7 +30,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".app-shell": {
@@ -61,7 +62,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".topbar": {
@@ -92,7 +94,8 @@
     "gap": "20px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".topbar h1": {
@@ -123,7 +126,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".eyebrow": {
@@ -154,7 +158,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".topbar-notice-link": {
@@ -185,7 +190,8 @@
     "gap": "8px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".area-tabs": {
@@ -216,7 +222,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".area-tab": {
@@ -247,7 +254,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".area-tab.is-active": {
@@ -278,7 +286,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".content-type-tabs": {
@@ -309,7 +318,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".content-type-tab": {
@@ -340,7 +350,8 @@
     "gap": "10px",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".content-type-tab.is-active": {
@@ -371,7 +382,8 @@
     "gap": "10px",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".recommendation-group-head": {
@@ -402,7 +414,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".recommendation-group-head h3": {
@@ -433,7 +446,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-card": {
@@ -464,7 +478,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".exhibition-rank": {
@@ -495,7 +510,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".exhibition-venue": {
@@ -526,7 +542,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-card h3": {
@@ -557,7 +574,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-summary": {
@@ -588,7 +606,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-details dt": {
@@ -619,7 +638,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-details dd": {
@@ -650,7 +670,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-reason": {
@@ -681,7 +702,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".button.primary": {
@@ -712,7 +734,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".official-info-link": {
@@ -743,7 +766,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".stars": {
@@ -774,7 +798,8 @@
     "gap": "normal",
     "textAlign": "left",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".rating-source": {
@@ -805,7 +830,8 @@
     "gap": "normal",
     "textAlign": "left",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".digest": null,
@@ -829,6 +855,9 @@
   ".chip": null,
   ".survey-jump": null,
   ".survey-jump-list li": null,
+  ".survey-jump h2": null,
+  ".survey-jump p:not(.board-jump-kicker)": null,
+  ".survey-jump-list .survey-tab": null,
   "#문서": {
    "scrollWidth": 375,
    "textLength": 12975,
@@ -865,7 +894,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".app-shell": {
@@ -896,7 +926,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".topbar": {
@@ -927,7 +958,8 @@
     "gap": "20px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".topbar h1": {
@@ -958,7 +990,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".eyebrow": {
@@ -989,7 +1022,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".topbar-notice-link": {
@@ -1020,7 +1054,8 @@
     "gap": "8px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".area-tabs": {
@@ -1051,7 +1086,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".area-tab": {
@@ -1082,7 +1118,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".area-tab.is-active": {
@@ -1113,7 +1150,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".content-type-tabs": {
@@ -1144,7 +1182,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".content-type-tab": {
@@ -1175,7 +1214,8 @@
     "gap": "10px",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".content-type-tab.is-active": {
@@ -1206,7 +1246,8 @@
     "gap": "10px",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".recommendation-group-head": {
@@ -1237,7 +1278,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".recommendation-group-head h3": {
@@ -1268,7 +1310,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-card": {
@@ -1299,7 +1342,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".exhibition-rank": {
@@ -1330,7 +1374,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".exhibition-venue": {
@@ -1361,7 +1406,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-card h3": {
@@ -1392,7 +1438,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-summary": {
@@ -1423,7 +1470,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-details dt": {
@@ -1454,7 +1502,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-details dd": {
@@ -1485,7 +1534,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".exhibition-reason": {
@@ -1516,7 +1566,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".button.primary": {
@@ -1547,7 +1598,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".official-info-link": {
@@ -1578,7 +1630,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".stars": {
@@ -1609,7 +1662,8 @@
     "gap": "normal",
     "textAlign": "right",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".rating-source": {
@@ -1640,7 +1694,8 @@
     "gap": "normal",
     "textAlign": "right",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".digest": null,
@@ -1664,6 +1719,9 @@
   ".chip": null,
   ".survey-jump": null,
   ".survey-jump-list li": null,
+  ".survey-jump h2": null,
+  ".survey-jump p:not(.board-jump-kicker)": null,
+  ".survey-jump-list .survey-tab": null,
   "#문서": {
    "scrollWidth": 1280,
    "textLength": 12975,
@@ -1700,7 +1758,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".app-shell": null,
@@ -1756,7 +1815,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "rgba(31, 30, 27, 0.06) 0px 7px 24px 0px",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-head": {
@@ -1787,7 +1847,8 @@
     "gap": "12px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-title": {
@@ -1818,7 +1879,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-decisions": {
@@ -1849,7 +1911,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-open-questions": {
@@ -1880,7 +1943,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".sec": {
@@ -1911,7 +1975,8 @@
     "gap": "8px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card": {
@@ -1942,7 +2007,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card-regular": {
@@ -1973,7 +2039,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "rgb(15, 110, 86) 4px 0px 0px 0px inset",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".db": {
@@ -2004,7 +2071,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "68px"
    }
   },
   ".db .d": {
@@ -2035,7 +2103,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".tag": {
@@ -2066,7 +2135,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".tag-regular": {
@@ -2097,7 +2167,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".meta": {
@@ -2128,7 +2199,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card-alert": {
@@ -2159,7 +2231,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".cal": {
@@ -2190,7 +2263,8 @@
     "gap": "1px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".wd": {
@@ -2221,7 +2295,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".cell": {
@@ -2252,7 +2327,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".dnum": {
@@ -2283,7 +2359,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".chip": {
@@ -2314,11 +2391,15 @@
     "gap": "normal",
     "textAlign": "left",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".survey-jump": null,
   ".survey-jump-list li": null,
+  ".survey-jump h2": null,
+  ".survey-jump p:not(.board-jump-kicker)": null,
+  ".survey-jump-list .survey-tab": null,
   "#문서": {
    "scrollWidth": 375,
    "textLength": 2625,
@@ -2355,7 +2436,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".app-shell": null,
@@ -2411,7 +2493,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "rgba(31, 30, 27, 0.06) 0px 7px 24px 0px",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-head": {
@@ -2442,7 +2525,8 @@
     "gap": "12px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-title": {
@@ -2473,7 +2557,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-decisions": {
@@ -2504,7 +2589,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".digest-open-questions": {
@@ -2535,7 +2621,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".sec": {
@@ -2566,7 +2653,8 @@
     "gap": "8px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card": {
@@ -2597,7 +2685,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card-regular": {
@@ -2628,7 +2717,8 @@
     "gap": "14px",
     "textAlign": "start",
     "boxShadow": "rgb(15, 110, 86) 4px 0px 0px 0px inset",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".db": {
@@ -2659,7 +2749,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "68px"
    }
   },
   ".db .d": {
@@ -2690,7 +2781,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".tag": {
@@ -2721,7 +2813,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".tag-regular": {
@@ -2752,7 +2845,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".meta": {
@@ -2783,7 +2877,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".card-alert": {
@@ -2814,7 +2909,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".cal": {
@@ -2845,7 +2941,8 @@
     "gap": "1px",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".wd": {
@@ -2876,7 +2973,8 @@
     "gap": "normal",
     "textAlign": "center",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".cell": {
@@ -2907,7 +3005,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "auto"
    }
   },
   ".dnum": {
@@ -2938,7 +3037,8 @@
     "gap": "normal",
     "textAlign": "start",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".chip": {
@@ -2969,16 +3069,570 @@
     "gap": "normal",
     "textAlign": "left",
     "boxShadow": "none",
-    "opacity": "1"
+    "opacity": "1",
+    "minWidth": "0px"
    }
   },
   ".survey-jump": null,
   ".survey-jump-list li": null,
+  ".survey-jump h2": null,
+  ".survey-jump p:not(.board-jump-kicker)": null,
+  ".survey-jump-list .survey-tab": null,
   "#문서": {
    "scrollWidth": 1280,
    "textLength": 2625,
    "cardCount": 0,
    "chipCount": 15
+  }
+ },
+ "투표-375": {
+  "body": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 919
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".app-shell": null,
+  ".topbar": null,
+  ".topbar h1": null,
+  ".eyebrow": null,
+  ".topbar-notice-link": null,
+  ".area-tabs": null,
+  ".area-tab": null,
+  ".area-tab.is-active": null,
+  ".content-type-tabs": null,
+  ".content-type-tab": null,
+  ".content-type-tab.is-active": null,
+  ".recommendation-group-head": null,
+  ".recommendation-group-head h3": null,
+  ".exhibition-card": null,
+  ".exhibition-rank": null,
+  ".exhibition-venue": null,
+  ".exhibition-card h3": null,
+  ".exhibition-summary": null,
+  ".exhibition-details dt": null,
+  ".exhibition-details dd": null,
+  ".exhibition-reason": null,
+  ".button.primary": null,
+  ".official-info-link": null,
+  ".stars": null,
+  ".rating-source": null,
+  ".digest": null,
+  ".digest-head": null,
+  ".digest-title": null,
+  ".digest-decisions": null,
+  ".digest-open-questions": null,
+  ".sec": null,
+  ".card": null,
+  ".card-regular": null,
+  ".db": null,
+  ".db .d": null,
+  ".tag": {
+   "count": 2,
+   "box": {
+    "w": 41,
+    "h": 24
+   },
+   "style": {
+    "color": "rgb(74, 72, 64)",
+    "backgroundColor": "rgb(236, 234, 227)",
+    "borderTopColor": "rgb(74, 72, 64)",
+    "borderTopWidth": "0px",
+    "borderRadius": "999px",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "18px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "3px",
+    "paddingRight": "10px",
+    "paddingBottom": "3px",
+    "paddingLeft": "10px",
+    "marginTop": "0px",
+    "marginBottom": "6px",
+    "display": "inline-block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".tag-regular": null,
+  ".meta": null,
+  ".card-alert": null,
+  ".cal": null,
+  ".wd": null,
+  ".cell": null,
+  ".dnum": null,
+  ".chip": null,
+  ".survey-jump": {
+   "count": 1,
+   "box": {
+    "w": 343,
+    "h": 243
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(220, 232, 227)",
+    "borderTopWidth": "1px",
+    "borderRadius": "16px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "17px",
+    "paddingRight": "17px",
+    "paddingBottom": "17px",
+    "paddingLeft": "17px",
+    "marginTop": "0px",
+    "marginBottom": "14px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "rgba(15, 110, 86, 0.08) 0px 7px 24px 0px",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump-list li": {
+   "count": 2,
+   "box": {
+    "w": 307,
+    "h": 50
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "6px",
+    "paddingRight": "0px",
+    "paddingBottom": "6px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "10px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump h2": {
+   "count": 1,
+   "box": {
+    "w": 307,
+    "h": 25
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "18px",
+    "fontWeight": "700",
+    "lineHeight": "25.2px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump p:not(.board-jump-kicker)": {
+   "count": 1,
+   "box": {
+    "w": 307,
+    "h": 43
+   },
+   "style": {
+    "color": "rgb(103, 100, 92)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(103, 100, 92)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "lineHeight": "21.6px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "6px",
+    "marginBottom": "13px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump-list .survey-tab": {
+   "count": 2,
+   "box": {
+    "w": 92,
+    "h": 38
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "1px",
+    "borderRadius": "999px",
+    "fontSize": "13px",
+    "fontWeight": "700",
+    "lineHeight": "19.5px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "8px",
+    "paddingRight": "14px",
+    "paddingBottom": "8px",
+    "paddingLeft": "14px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "92px"
+   }
+  },
+  "#문서": {
+   "scrollWidth": 375,
+   "textLength": 210,
+   "cardCount": 0,
+   "chipCount": 0
+  }
+ },
+ "투표-1280": {
+  "body": {
+   "count": 1,
+   "box": {
+    "w": 1280,
+    "h": 923
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".app-shell": null,
+  ".topbar": null,
+  ".topbar h1": null,
+  ".eyebrow": null,
+  ".topbar-notice-link": null,
+  ".area-tabs": null,
+  ".area-tab": null,
+  ".area-tab.is-active": null,
+  ".content-type-tabs": null,
+  ".content-type-tab": null,
+  ".content-type-tab.is-active": null,
+  ".recommendation-group-head": null,
+  ".recommendation-group-head h3": null,
+  ".exhibition-card": null,
+  ".exhibition-rank": null,
+  ".exhibition-venue": null,
+  ".exhibition-card h3": null,
+  ".exhibition-summary": null,
+  ".exhibition-details dt": null,
+  ".exhibition-details dd": null,
+  ".exhibition-reason": null,
+  ".button.primary": null,
+  ".official-info-link": null,
+  ".stars": null,
+  ".rating-source": null,
+  ".digest": null,
+  ".digest-head": null,
+  ".digest-title": null,
+  ".digest-decisions": null,
+  ".digest-open-questions": null,
+  ".sec": null,
+  ".card": null,
+  ".card-regular": null,
+  ".db": null,
+  ".db .d": null,
+  ".tag": {
+   "count": 2,
+   "box": {
+    "w": 41,
+    "h": 24
+   },
+   "style": {
+    "color": "rgb(74, 72, 64)",
+    "backgroundColor": "rgb(236, 234, 227)",
+    "borderTopColor": "rgb(74, 72, 64)",
+    "borderTopWidth": "0px",
+    "borderRadius": "999px",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "18px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "3px",
+    "paddingRight": "10px",
+    "paddingBottom": "3px",
+    "paddingLeft": "10px",
+    "marginTop": "0px",
+    "marginBottom": "6px",
+    "display": "inline-block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".tag-regular": null,
+  ".meta": null,
+  ".card-alert": null,
+  ".cal": null,
+  ".wd": null,
+  ".cell": null,
+  ".dnum": null,
+  ".chip": null,
+  ".survey-jump": {
+   "count": 1,
+   "box": {
+    "w": 520,
+    "h": 243
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderTopColor": "rgb(220, 232, 227)",
+    "borderTopWidth": "1px",
+    "borderRadius": "16px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "17px",
+    "paddingRight": "17px",
+    "paddingBottom": "17px",
+    "paddingLeft": "17px",
+    "marginTop": "0px",
+    "marginBottom": "14px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "rgba(15, 110, 86, 0.08) 0px 7px 24px 0px",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump-list li": {
+   "count": 2,
+   "box": {
+    "w": 484,
+    "h": 50
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "6px",
+    "paddingRight": "0px",
+    "paddingBottom": "6px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "10px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump h2": {
+   "count": 1,
+   "box": {
+    "w": 484,
+    "h": 25
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "18px",
+    "fontWeight": "700",
+    "lineHeight": "25.2px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump p:not(.board-jump-kicker)": {
+   "count": 1,
+   "box": {
+    "w": 484,
+    "h": 43
+   },
+   "style": {
+    "color": "rgb(103, 100, 92)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(103, 100, 92)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "13.5px",
+    "fontWeight": "400",
+    "lineHeight": "21.6px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "6px",
+    "marginBottom": "13px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".survey-jump-list .survey-tab": {
+   "count": 2,
+   "box": {
+    "w": 92,
+    "h": 38
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "1px",
+    "borderRadius": "999px",
+    "fontSize": "13px",
+    "fontWeight": "700",
+    "lineHeight": "19.5px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "8px",
+    "paddingRight": "14px",
+    "paddingBottom": "8px",
+    "paddingLeft": "14px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "92px"
+   }
+  },
+  "#문서": {
+   "scrollWidth": 1280,
+   "textLength": 210,
+   "cardCount": 0,
+   "chipCount": 0
   }
  }
 }
