@@ -4,7 +4,7 @@
 #
 #   1. <DIGEST_DIR> 에서 가장 새 digest-*.json 을 잡는다. logs/digest-public-last.json 에 적힌
 #      마지막 처리 파일과 같으면 끝(--force 면 다시 한다).
-#   2. git fetch → 깨끗한지 → main → 브랜치 content/digest-<끝날짜>
+#   2. git fetch → origin/main 공개본이 같은 기간이면 상태만 적고 끝 → 깨끗한지 → main → 브랜치 content/digest-<끝날짜>
 #   3. npm run digest:public -- <json>   실명·전화·이메일로 보이는 것이 남으면 이 스크립트가
 #                                        종료 1 로 멈춘다 → 여기서도 멈추고 사람에게 알린다.
 #   4. node scripts/validate-weekly-digest.mjs
@@ -19,7 +19,7 @@
 # 상태:   logs/digest-public-last.json
 # 옵션:
 #   --digest-dir <폴더>  kakao-digest 산출물 폴더. 기본은 <저장소>/../kakao-digest/output.
-#   --force  마지막 처리 파일과 같아도 다시 한다. **시험용이다.** 공개본을 손으로 고친 뒤(문구 다듬기 ·
+#   --force  마지막 처리 파일과 같아도, main 에 같은 기간이 있어도 다시 한다. **시험용이거나, 머지 없이 닫힌 PR 의 기간을 다시 올릴 때만.** 공개본을 손으로 고친 뒤(문구 다듬기 ·
 #            낡은 확인 중 줄 삭제) 같은 원본을 다시 변환하면 그 손질이 되돌아간다 — 2026-09-14 시험에서
 #            실제로 그런 PR 이 열렸고 닫았다. 운영에서는 새 원본이 있을 때만 돌리므로 이 문제가 없다.
 #   --no-pr  푸시·PR 없이 변환·검사까지만 하고 되돌린다. 시험용.
@@ -108,6 +108,18 @@ END_DATE="$(printf '%s' "$NEWEST" | sed -nE 's/^digest-[0-9]{8}-([0-9]{8})\.json
 BRANCH_NAME="content/digest-$END_DATE"
 
 run git fetch -q --prune origin || fail 'git fetch'
+# 같은 기간의 공개본이 이미 main 에 있으면 PR 을 열지 않는다 — 손으로 다듬어 머지한 문구가 되돌아간다(#183).
+# 원본 period_start·period_end 를 digest-to-public.mjs 의 kDate 꼴로 만들어 origin/main 공개본의 period_label 과 견준다.
+# 어느 쪽이든 못 읽으면(빈 값) 예전처럼 진행한다.
+if [ "$FORCE" -eq 0 ]; then
+  NEW_PERIOD="$(node -e 'try { const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); const k = (s) => { const [, m, d] = String(s).split("-").map(Number); return `${m}월 ${d}일`; }; if (r.period_start && r.period_end) process.stdout.write(`${k(r.period_start)} ~ ${k(r.period_end)}`); } catch {}' "$DIGEST_DIR/$NEWEST")"
+  MAIN_PERIOD="$(git show origin/main:app/public/weekly-digest.public.json 2>/dev/null | node -e 'let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => { try { process.stdout.write(JSON.parse(s).period_label || "") } catch {} })')"
+  if [ -n "$NEW_PERIOD" ] && [ "$NEW_PERIOD" = "$MAIN_PERIOD" ]; then
+    log "이미 main 에 있음 — $NEWEST ($NEW_PERIOD) 공개본이 origin/main 에 있다. PR 을 열지 않는다"
+    save_state "$NEWEST" already-on-main ''
+    exit 0
+  fi
+fi
 [ -n "$(git status --porcelain)" ] && fail '작업 트리에 커밋 안 된 변경이 있다 — 손으로 정리한 뒤 다시 돌린다'
 run git checkout -q main || fail 'checkout main'
 run git pull -q --ff-only origin main || fail 'pull main'

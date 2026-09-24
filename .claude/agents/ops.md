@@ -1,6 +1,6 @@
 ---
 name: ops
-description: 정기 갱신(정리봇 · 모임)의 실행 담당. docs/OPERATIONS.md 의 명령을 그대로 돌리고 결과만 짧게 보고한다. 판단이 필요한 것은 하지 않고 부른 쪽에 되돌린다.
+description: 정기 갱신(모임 추가 등)의 실행 담당. docs/OPERATIONS.md 의 명령을 그대로 돌리고 결과만 짧게 보고한다. 판단이 필요한 것은 하지 않고 부른 쪽에 되돌린다.
 tools: Bash, Read, Edit, Grep, Glob
 model: sonnet
 ---

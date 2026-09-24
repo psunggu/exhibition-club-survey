@@ -23,7 +23,7 @@ description: 달력에 모임을 올린다. 「10/17 토 15시 덕수궁·정동
 
 Agent 도구로 `ops` 를 부르고 확정된 항목과 함께 아래를 전달한다.
 
-> 저장소 `C:\D\Project\exhibition-club-survey` 에서 `docs/OPERATIONS.md` 4번 절차를 돌린다.
+> 저장소 `$HOME/D/Project/exhibition-club-survey` 에서 `docs/OPERATIONS.md` 4번 절차를 돌린다.
 > 1. `git fetch origin && git checkout -b content/meetup-<id> origin/main`
 > 2. `app/src/data/meetups.ts` 의 (MEETUPS 배열 끝 | TENTATIVE 배열 끝)에 아래 항목을 그대로 넣는다. 다른 줄은 손대지 않는다.
 > 3. `npm run build && npm run screens:save && npm run check:quick`

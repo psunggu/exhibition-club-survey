@@ -18,14 +18,14 @@ outside Git.
 
 Manual backup:
 
-```powershell
-node scripts/backup-supabase-events.mjs
+```bash
+node scripts/backup-supabase-events.mjs --output-dir "$HOME/Library/Application Support/ExhibitionClub/backups"
 ```
 
 Verify a backup:
 
-```powershell
-node scripts/verify-supabase-backup.mjs --file "C:\path\events-YYYYMMDDTHHMMSSZ.json"
+```bash
+node scripts/verify-supabase-backup.mjs --file "$HOME/Library/Application Support/ExhibitionClub/backups/events-YYYYMMDDTHHMMSSZ.json"
 ```
 
 ## macOS LaunchAgent (since 2026-09-24)
