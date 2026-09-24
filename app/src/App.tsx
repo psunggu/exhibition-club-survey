@@ -47,6 +47,7 @@ const canAnswer = (s: SurveyT) => selfSurveyOn() && isOpen(s) && !s.mirrored
 const betterPick = (a: SurveyT, b: SurveyT) =>
   (canAnswer(a) !== canAnswer(b) ? canAnswer(a) : a.closesAt > b.closesAt)
 
+/** 투표 화면(투표 탭) 위쪽의 「투표 현황」 카드. 2026-09-25 까지는 일정 화면에 있었다. */
 function SurveyJump() {
   const [rows, setRows] = useState<{
     category: SurveyCategory; open: boolean; mirrored: boolean;
@@ -120,7 +121,7 @@ function SurveyJump() {
    *
    * 갈래가 다섯이 되자 「없음」 줄이 넷까지 생겼고, 그만큼 달력이 아래로 밀렸다
    * (카드가 243px → 392px). 「없음」 은 읽는 사람에게 아무것도 알려 주지 않는다.
-   * 없는 갈래는 감추고, 대신 아래 링크로 다섯 갈래 전부에 닿게 한다.
+   * 없는 갈래는 감춘다 — 모든 갈래로 가는 길은 카드 바로 위의 투표 탭이 맡는다.
    *
    * 아직 못 불러왔거나 못 읽었을 때도 비어 있다. 그편이 낫다 —
    * 이름 다섯을 먼저 그렸다가 하나로 줄어들면 카드가 눈앞에서 접힌다.
@@ -172,10 +173,7 @@ function SurveyJump() {
         </p>
       )}
 
-      {/* 감춘 갈래로 가는 길. **늘 보인다** — 줄이 하나도 없을 때도 여기로 들어간다. */}
-      <a className="survey-jump-more" href="#/survey">
-        {selfSurveyOn() ? '설문 갈래 모두 보기' : '투표 결과 모두 보기'} <span aria-hidden="true">→</span>
-      </a>
+      {/* 감춘 갈래로 가는 길은 바로 위 탭이 맡는다 — 예전 「투표 결과 모두 보기」 링크는 일정 화면에 있을 때 것이다. */}
     </section>
   )
 }
@@ -241,6 +239,9 @@ export function App() {
           </nav>
         )}
 
+        {/* 투표 현황은 투표 탭에만 둔다 (2026-09-25, 일정 화면에서 옮겨 옴). 구글 설문 탭은 투표가 아니다. */}
+        {!admin && category !== 'google' && <SurveyJump />}
+
         <a className="board-jump-link" href={admin ? '#/survey' : '#/calendar'}
           style={{ marginBottom: 18 }}>
           {admin ? '투표 결과 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
@@ -272,34 +273,9 @@ export function App() {
         <h1>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
-        {/* 투표 현황 · 8월 운영 설문 결과는 **지난 것**이라 맨 아래에 접어 둔다 (2026-09-25, 운영자 요청).
-            원래는 제목 바로 아래(투표 현황)와 보드 카드 옆(설문 결과)에 펼쳐져 있었다.
-            지운 것이 아니다 — 펼치면 그대로 있고, 카드 안 코드와 검사기도 그대로 잰다.
-            접힘 상자는 지난 달력의 `.calendar-fold` 를 그대로 입는다 — 새 CSS 없음. */}
-        <details className="calendar-fold">
-          <summary>
-            <span className="calendar-fold-title">지난 투표 · 설문 결과</span>
-            <span className="calendar-fold-hint">펼쳐 보기</span>
-          </summary>
-          <div className="calendar-fold-body">
-            <SurveyJump />
-            {/* 8월 운영 설문 결과를 회원에게 돌려주는 페이지.
-                `.board-jump` 를 입혀 보드 카드와 같은 꼴로 보인다.
-                이 문서는 SPA 밖의 정적 파일이라 해시가 아니라 파일 경로다 —
-                vite.config.ts 의 copyLiveAssets 에 올라가 있어야 404 가 안 난다.
-                두 줄은 **건너간 페이지가 실제로 담은 것**만 말한다 (#94 · #97). */}
-            <section className="board-jump result-jump" aria-labelledby="resultJumpTitle">
-              <div>
-                <p className="board-jump-kicker">8월 운영 설문</p>
-                <h2 id="resultJumpTitle">답해주신 내용을 정리했습니다</h2>
-                <p>어떤 답이 얼마나 모였는지 숫자로 보여드립니다.</p>
-              </div>
-              <a className="board-jump-link" href="./survey-result.html">
-                설문 결과 보기 <span aria-hidden="true">→</span>
-              </a>
-            </section>
-          </div>
-        </details>
+        {/* 투표 현황 카드와 8월 운영 설문 카드는 일정 화면에 두지 않는다 (2026-09-25, 운영자 요청).
+            투표 현황은 투표 화면(`#/survey` 의 투표 탭) 위쪽으로 옮겼고, 8월 운영 설문 결과는
+            구글 설문 탭 1회차(`data/googleSurveys.ts` 의 `resultUrl`)가 같은 페이지로 이미 잇는다. */}
       </main>
     )
   }

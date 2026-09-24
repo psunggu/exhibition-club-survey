@@ -272,8 +272,8 @@ export function Calendar() {
         </a>
       </section>
 
-      {/* 8월 운영 설문 결과 카드(`.result-jump`)는 여기 있다가 2026-09-25 에 App.tsx 로 옮겨
-          투표 현황 카드와 함께 화면 맨 아래 「지난 투표 · 설문 결과」 접힘 상자에 들어갔다. */}
+      {/* 8월 운영 설문 결과 카드는 여기 있다가 2026-09-25 에 뺐다 — 구글 설문 탭 1회차가
+          같은 결과 페이지(`survey-result.html`)로 잇는다. 투표 현황 카드는 투표 화면으로 옮겼다. */}
 
       <details className="digest">
         <summary className="digest-head">
