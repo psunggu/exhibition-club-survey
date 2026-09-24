@@ -1,6 +1,6 @@
 # AGENTS.md — 프로젝트 규칙 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-09-08. **여기에는 규칙만 적는다.**
+> 최종 갱신: 2026-09-25. **여기에는 규칙만 적는다.**
 > 왜 그렇게 정했는지와 무슨 일이 있었는지는 `docs/HISTORY.md`, 정기 갱신 절차는 `docs/OPERATIONS.md`.
 > 이 문서는 세션마다 읽히므로 길어지면 그만큼 매번 비용이 든다 — 근거는 HISTORY 로 보낸다.
 
@@ -92,12 +92,14 @@
 
 작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-## 다음 작업 후보 (2026-09-08)
+## 다음 작업 후보 (2026-09-25)
 
-1. **운영자 세 분이 암호를 다시 정한다** — bcrypt 비용 10 은 새로 정한 암호에만 적용된다. `202608200001d_admin_password.template.sql`. 채운 파일은 저장하지 않는다.
-2. **옛 정적 파일 삭제** — `app/public/{index.html,app.js,notice.html,notice.js}`. 검사기는 이미 안 읽는다.
-3. **`kakao-digest` 자동 내보내기 복구** — `last_run.json` 이 `export-failed · 채팅방 창을 찾지 못함`(2026-09-04).
-4. **구글폼 자동 생성**(`apps-script/Code.gs`) — 할지 말지부터 정한다. 손으로 만든 폼이 이미 한 바퀴 돌았다.
+1. **맥 이관 마무리** — 스킬 셋(`/ops` · `/digest` · `/meetup`) · `docs/OPERATIONS.md` 2번 · `docs/AUTOMATION_PLAN.md` · `CLAUDE.md` 의 `C:\` 경로 · PowerShell · 작업 스케줄러 절차를 launchd · `~/KakaoDigest/inbox` 기준으로 바꾼다. 함께: `scripts/weekly-notice.mjs` 가 맥에서도 클립보드에 넣게, `scripts/digest-public-task.sh` 가 이미 `main` 에 올라간 기간으로 PR 을 다시 열지 않게.
+2. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/27 영화 · 9/28 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
+3. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
+4. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
+5. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나 `scripts/update-movies-task.sh` 의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
+6. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
 
 ## AI 에이전트 역할
 
