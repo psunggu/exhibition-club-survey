@@ -131,10 +131,16 @@ fs.mkdirSync(outDir, { recursive: true });
 const out = path.join(outDir, `weekly-notice-${TODAY.replace(/-/g, '')}.txt`);
 fs.writeFileSync(out, `${text}\n`, 'utf8');
 
-if (!NO_CLIP && process.platform === 'win32') {
+const MAC = process.platform === 'darwin';
+if (!NO_CLIP && (MAC || process.platform === 'win32')) {
   try {
-    execFileSync('powershell.exe', ['-NoProfile', '-Command', `Set-Clipboard -Value ([System.IO.File]::ReadAllText('${out.replace(/'/g, "''")}', [System.Text.Encoding]::UTF8))`], { stdio: 'ignore' });
-    console.error('(클립보드에 넣었다 — 톡방에서 Ctrl+V. 올리기 전에 한 번 읽는다)');
+    if (MAC) {
+      // pbcopy 는 로캘로 바이트를 읽는다 — UTF-8 로 못 박지 않으면 LANG 없는 셸에서 한글이 깨진다
+      execFileSync('pbcopy', [], { input: `${text}\n`, stdio: ['pipe', 'ignore', 'ignore'], env: { ...process.env, LC_ALL: 'ko_KR.UTF-8' } });
+    } else {
+      execFileSync('powershell.exe', ['-NoProfile', '-Command', `Set-Clipboard -Value ([System.IO.File]::ReadAllText('${out.replace(/'/g, "''")}', [System.Text.Encoding]::UTF8))`], { stdio: 'ignore' });
+    }
+    console.error(`(클립보드에 넣었다 — 톡방에서 ${MAC ? '⌘V' : 'Ctrl+V'}. 올리기 전에 한 번 읽는다)`);
   } catch { console.error('(클립보드 복사 실패 — 파일에서 복사한다)'); }
 }
 
