@@ -16,14 +16,14 @@
 | 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | 회원 탭 넷(exhibition · datetime · meal · club) + `google`(화면만, `data/googleSurveys.ts`). DB 값에는 `etc` 도 있다(탭 없음). **투표는 톡방에서 올리고 결과도 톡방에서**(`config.js` 의 `selfSurvey: false`). 회원 화면 탭은 꺼진 설정에서 셋(관람 장소 · 식사·Tea · 구글 설문, `visibleTabs()`)이고 제목은 「… 투표 결과」(`categoryHeading()`). 운영자 화면 `#/survey/admin` 은 보드 소식 · 구글 설문 분석만 — 설문 만들기·고치기와 회원 명부는 같은 스위치로 꺼 두었다(2026-09-10) |
 | 정적 | `survey-result.html` · `meal-review.html` | 회원용 설문 결과 · 운영진 식당 검토. `copyLiveAssets` 목록에 있다 |
 
-미가동: `apps-script/Code.gs`(구글폼 자동 생성). 구글 폼은 손으로 만들어 이미 한 번 돌렸다.
+미가동: `app/apps-script/Code.gs`(구글폼 자동 생성). 구글 폼은 손으로 만들어 이미 한 번 돌렸다.
 
 ## 배포
 
 - `main` 푸시 → `deploy-pages.yml` → `npm run build` 의 `dist/` → Pages. 라이브: https://psunggu.github.io/exhibition-club-survey/ (`#/calendar` · `survey-result.html`).
 - **`app/public/` 은 `publicDir` 이 아니다.** `vite.config.ts` 의 `copyLiveAssets` 목록에 적은 것만 나간다. 새 정적 파일을 넣고 목록에 안 적으면 빌드는 통과하고 **배포된 사이트에서만 404** 다.
 - `club-calendar.ics`(달력 구독)는 파일이 아니라 빌드 때 `meetups.ts` 에서 만든다(`calendarFeed` · `lib/ics.ts`). `TENTATIVE` 는 넣지 않는다.
-- `app/public/index.html` · `app.js` · `notice.html` · `notice.js` 는 옛 정적 페이지다. 배포되지 않고 2026-09-08 부터 검사기도 읽지 않는다 — **지운다.** `styles.css` · `notice.css` 는 `scope-legacy-css.mjs` 의 원본이라 남긴다.
+- 옛 정적 페이지 넷은 2026-09-08 에 지웠다. `app/public/styles.css` · `notice.css` 는 `scope-legacy-css.mjs` 의 원본이라 남긴다.
 - 옛 주소 `notice.html` 은 단톡방에 뿌려져 있어 `vite.config.ts` 가 `#/calendar` 리다이렉트 스텁을 만든다. 이 스텁을 지우면 옛 링크가 죽는다.
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
 - **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
@@ -94,12 +94,11 @@
 
 ## 다음 작업 후보 (2026-09-25)
 
-1. **맥 이관 마무리** — 스킬 셋(`/ops` · `/digest` · `/meetup`) · `docs/OPERATIONS.md` 2번 · `docs/AUTOMATION_PLAN.md` · `CLAUDE.md` 의 `C:\` 경로 · PowerShell · 작업 스케줄러 절차를 launchd · `~/KakaoDigest/inbox` 기준으로 바꾼다. 함께: `scripts/weekly-notice.mjs` 가 맥에서도 클립보드에 넣게, `scripts/digest-public-task.sh` 가 이미 `main` 에 올라간 기간으로 PR 을 다시 열지 않게.
-2. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/27 영화 · 9/28 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
-3. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
-4. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
-5. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나 `scripts/update-movies-task.sh` 의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
-6. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
+1. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/27 영화 · 9/28 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
+2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
+3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
+4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나 `scripts/update-movies-task.sh` 의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
+5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
 
 ## AI 에이전트 역할
 

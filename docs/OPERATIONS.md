@@ -16,7 +16,7 @@
 | 항목 | 주기 | 누가 | 어떻게 | AI 토큰 |
 |---|---|---|---|---|
 | 1. 톡방 투표 → 결과 | 달마다 | 운영자 | 톡방에서 투표하고 결과도 톡방에서 나눈다. 사이트에는 **정해진 것만** 요약 카드로(`/meetup`) | 0 |
-| 2. 주간 정리봇 | 주 1회 | Claude Code `/digest` | kakao-digest → `npm run digest:public` → PR | 적음 |
+| 2. 주간 정리봇 | 주 1회 | 사람(카톡 대화 저장 → `~/KakaoDigest/inbox`) + **맥의 launchd** | `kakao-weekly` 병합·요약 → 06:30 `exhibition-digest` 가 공개본 PR → 머지는 사람(또는 `/digest` 를 부른 세션). `/digest` 는 손으로 돌릴 때만 | 0 (손으로 돌리면 적음) |
 | 3. 보드 · 영화 순위 | 수·토 05시 | **맥의 launchd** (`com.psunggu.exhibition-movies`) | `npm run board:movies` → PR → 머지 → 배포 | 0 |
 | 3. 보드 · 전시·공연 | 수시 | 운영자 | Supabase SQL Editor (`public.events`) | 안내문 쓸 때만 |
 | 4. 확정 모임 | 확정될 때 | Claude Code `/meetup "한 줄"` | `meetups.ts` 항목 → PR | 적음 |
@@ -32,14 +32,14 @@
 2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼는 `*.sh` 이고 ps1 과 같은 절차·로그·상태 파일을 쓴다. 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(Windows 의 `StartWhenAvailable` 과 같다). 알림은 맥 알림 센터. 아래 `*.ps1` 설명은 절차의 원본이라 남긴다.
 
 
-- **`scripts/update-movies-task.sh`**(원본 `update-movies-task.ps1`) — 맥의 launchd 가 수·토 05:00 에 돌린다(`scripts/install-launchd.sh movies` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 PC 를 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. **실제로는 05:00 에 PC 가 자고 있어** `StartWhenAvailable` 로 깨어나는 때(9/11 01:50 · 9/12 13:55 …)에 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키고 싶으면 등록 시 `WakeToRun` 을 켠다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs\update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
+- **`scripts/update-movies-task.sh`**(원본 `update-movies-task.ps1`) — 맥의 launchd 가 수·토 05:00 에 돌린다(`scripts/install-launchd.sh movies` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 맥을 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. 05:00 에 맥이 자고 있으면 깨어난 뒤 한 번 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키려면 `sudo pmset repeat wakeorpoweron WS 04:55:00` 으로 맥을 깨운다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs/update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
   ```
   scripts/install-launchd.sh movies
   ```
 - **`scripts/digest-public-task.sh`**(원본 `digest-public-task.ps1`, 2026-09-14, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 알림. 등록은 `scripts/install-launchd.sh digest`. 시험은 `--no-pr`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
 - **`scripts/recheck-task.sh`**(원본 `recheck-task.ps1`, 2026-09-14, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-launchd.sh recheck`. 시험은 `--no-ai`.
 - **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
-- **`.claude/agents/ops.md`** — 위 스킬이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
+- **`.claude/agents/ops.md`** — `/meetup` 이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
 
 ## 1. 톡방 투표와 결과 — `#/survey`
@@ -57,20 +57,25 @@
 ## 2. 주간 정리봇 — `#/calendar` 상단
 
 ```
-kakao-digest\scripts\weekly_collect.ps1     내보내기 → 누적 → LLM 요약 → output\digest-YYYYMMDD-YYYYMMDD.json
-npm run digest:public -- C:\D\Project\kakao-digest\output\digest-….json
-node scripts/validate-weekly-digest.mjs
-git commit -am "정리봇 M월 D일 ~ M월 D일" && git push -u origin HEAD && gh pr create --fill
+사람                       카톡 대화 내보내기 → ~/KakaoDigest/inbox
+launchd kakao-weekly       kakao-digest/scripts/weekly_collect.sh 병합 → LLM 요약 → output/digest-YYYYMMDD-YYYYMMDD.json
+launchd exhibition-digest  매일 06:30 scripts/digest-public-task.sh → PR (머지는 사람 또는 /digest)
 ```
 
-- `digest:public` 이 원본(개인정보 포함)을 공개 틀로 옮긴다 — 기간·시각·대화 수·요약·확인사항·결정·확인 중.
-  익명화 식별자 「멤버 N」 은 「회원」 으로 바꾸고, 이름·전화·이메일로 보이는 것이 남으면 **쓰지 않고 멈춘다.**
-- 결과를 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 JSON 을 직접 고친다.
-  고쳤으면 검사기를 다시 돌린다.
-- `--dry-run` 을 붙이면 쓰지 않고 보여만 준다.
+손으로 돌릴 때(급하면 세션에서 `/digest`):
+
+```bash
+bash scripts/digest-public-task.sh           # 배치와 같다 — 상태 파일을 같이 써서 배치가 같은 기간을 다시 열지 않는다
+bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 되돌린다
+```
+
+- 스크립트 안의 `digest:public` 이 원본(개인정보 포함)을 공개 틀로 옮긴다 — 기간·시각·대화 수·요약·확인사항·결정·확인 중.
+  익명화 식별자 「멤버 N」 은 「회원」 으로 바꾸고, 이름·전화·이메일로 보이는 것이 남으면 **쓰지 않고 멈춘다**(상태 `stopped`).
+- 같은 기간의 공개본이 이미 `main` 에 있으면 PR 을 열지 않는다. `--force` 는 이미 처리한 요약을 다시 올릴 때만 — 손질한 문구가 되돌아간다.
+- PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다.
 - 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
-- `kakao-digest` 의 작업 스케줄러 작업 `KakaoWeeklyDigest` 는 화·금 22:00 에 돈다. 관리자 권한으로 등록된 작업이라 일반 세션에서는 시각을 못 바꾼다 — 새벽으로 옮기려면 **관리자 PowerShell** 에서 `kakao-digest\scripts\install_task.ps1 -Room <방 이름> -Day Tuesday,Friday -Time 05:00` 을 돌린다. 실패는 거의 늘 「채팅방 창을 찾지 못함」(종료 코드 11)이다 — 방을 독립 창으로 띄워 두었는지, 화면이 잠겨 있지 않았는지 본다.
+- `kakao-digest` 의 launchd `com.psunggu.kakao-weekly` 가 `~/KakaoDigest/inbox` 를 지켜보다(WatchPaths) 저장 즉시 병합·요약하고, `com.psunggu.kakao-weekly-remind` 가 화·금 22:00 에 지난 성공이 6일 이상이면 저장 안내 알림을 띄운다. 등록은 `kakao-digest/scripts/install-launchd.sh <weekly|weekly-remind>`, 로그는 `~/Library/Logs/com.psunggu.kakao-<작업>.log`. 종료 2 는 저장 파일이 오래됐다는 뜻이라(맥 CSV 는 저장한 지 36시간) 카톡에서 다시 저장한다. 방이 조용했으면 종료 0 에 새 0건, 8일 넘게 조용하면 종료 3 이다. 종료 1(오류)이면 inbox 파일이 일부러 남는다 — 로그로 원인을 고친 뒤 `launchctl kickstart gui/$(id -u)/com.psunggu.kakao-weekly`. 윈도우 원본(`*.ps1` · AHK)은 kakao-digest 에 남아 있다.
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 

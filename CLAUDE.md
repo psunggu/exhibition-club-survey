@@ -14,7 +14,7 @@
 git fetch origin --prune && git status -sb && git log --oneline main..origin/main
 ```
 
-`C:\D\Project\kakao-digest` 는 **정리봇을 갱신할 때만** 본다. 매 세션 볼 필요 없다.
+`$HOME/D/Project/kakao-digest` 는 **정리봇을 갱신할 때만** 본다.
 
 ## 세션을 여는 일과 안 여는 일
 
@@ -60,8 +60,8 @@ CI 가 통과해도 아래는 사람이 확인한다. 공개 페이지라 되돌
 ## 토큰 효율
 
 - 파일을 고칠 때 결과가 같다면 전체를 다시 쓰지 말고 필요한 부분만 편집한다(`Edit`, 또는 `sed`·짧은 패치 스크립트). Write 도구로 통째로 덮어쓰지 않는다. 특히 `app/src/data/meetups.ts` 처럼 긴 자료 파일은 항목 단위로만 손댄다.
-- 검증용 스크립트와 임시 점검 파일은 저장소 밖의 세션 스크래치 디렉터리(`%TEMP%\claude\...\scratchpad`, 시스템 프롬프트에 경로가 있다)에 두고, 작업이 끝나면 지운다. 저장소 안에 두면 `validate-repository-hygiene` 에 걸리거나 public 저장소에 커밋되는 사고로 이어진다.
-- 패치 스크립트는 stdin heredoc 으로 넘기지 않는다. Windows 에서 stdin 이 cp949 로 읽혀 한국어가 깨진다. 스크래치에 파일로 쓰고 경로로 실행한다.
+- 검증용 스크립트와 임시 점검 파일은 저장소 밖의 세션 스크래치 디렉터리(시스템 프롬프트에 경로가 있다)에 두고, 작업이 끝나면 지운다. 저장소 안에 두면 `validate-repository-hygiene` 에 걸리거나 public 저장소에 커밋되는 사고로 이어진다.
+- 윈도우 세션이면 패치 스크립트를 heredoc 으로 넘기지 말고 스크래치에 파일로 써서 실행한다 — stdin 이 cp949 라 한국어가 깨진다.
 - 요청하지 않은 인접 코드 수정, 최적화, 리팩터링은 하지 않는다. 눈에 띈 것은 요약의 "후속 제안" 으로만 적는다. 다른 세션이 같은 체크아웃에서 작업하므로 손대는 범위가 넓을수록 충돌 위험이 커진다.
 - 검사기(`scripts/validate-*.mjs`)나 화면 기준선은 과제가 요구할 때만 추가·갱신한다. 새 검사기는 기존 검사기의 크기와 형식에 맞추고 `npm run check` 체인에 넣는다. 화면이 바뀐 변경은 `npm run screens:save` 뒤 전체 `npm run check` 가 요구 사항이다(위 "배포 전 검증" 참조).
 
