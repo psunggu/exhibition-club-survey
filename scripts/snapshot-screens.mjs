@@ -96,6 +96,10 @@ const WATCH = [
   // 카드 안쪽 — 바깥 상자만 재면 알약 폭 · 안내문 색이 바뀌어도 통과했다(2026-09-25 변이 시험).
   // `.survey-tab` 만 적으면 위쪽 탭 줄의 알약이 첫 요소가 되므로 카드 안으로 좁힌다.
   '.survey-jump h2', '.survey-jump p:not(.board-jump-kicker)', '.survey-jump-list .survey-tab',
+  // 일정 화면의 「문화 콘텐츠 공유 보드」 카드. 안쪽 클래스(.board-jump-kicker · .board-jump-link)는
+  // 투표 카드 · 투표 화면의 「모임 일정 보기」 링크 · 일정 화면의 달력 구독 링크도 쓰므로 모두 section.board-jump 안으로 좁힌다.
+  '.board-jump', '.board-jump .board-jump-kicker', '.board-jump h2',
+  '.board-jump p:not(.board-jump-kicker)', '.board-jump .board-jump-link',
 ];
 
 /** 색·글자·간격·상자 — 눈에 보이는 것을 정하는 값들 */
