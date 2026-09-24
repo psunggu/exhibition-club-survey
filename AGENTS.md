@@ -94,11 +94,12 @@
 
 ## 다음 작업 후보 (2026-09-25)
 
-1. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/27 영화 · 9/28 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
+1. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/26(토) 영화 · 9/28(월) 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
 2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
-4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나 `scripts/update-movies-task.sh` 의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
+4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `scripts/update-movies-task.sh` 와 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
+6. **화면 대조의 투표 현황 카드** — 카드가 투표 화면으로 옮겨 가 `scripts/snapshot-screens.mjs` 의 WATCH `.survey-jump` 두 줄이 보드 · 일정 네 화면에서 모두 null 로 잰다. `SCREENS` 에 `#/survey`(375 · 1280)를 더해 `screens:save` 하거나, WATCH 두 줄과 `live` 빼기를 걷는다.
 
 ## AI 에이전트 역할
 
