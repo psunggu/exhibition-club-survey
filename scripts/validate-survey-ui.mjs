@@ -772,7 +772,7 @@ const offTag = await page.$eval('.survey-off .tag',
 ok('마감 설문에 「마감」 이라고 적혀 있다', offTag?.t === '마감' && offTag.h > 0,
   offTag ? `${offTag.t} ${offTag.h}px` : '태그가 없다');
 
-/* ── 달력의 「설문 참여하기」 카드 ────────────────────────────
+/* ── 투표 화면의 「투표 현황」 카드 (2026-09-25 까지는 달력에 있었다) ────────────────────────────
  *
  * 여기서 재는 것은 **「마감」 과 「없음」 을 가르는가** 다.
  *   마감 + 모임이 아직   → 「마감 · N명」 (아직 볼 일이 남았다)
@@ -782,14 +782,14 @@ ok('마감 설문에 「마감」 이라고 적혀 있다', offTag?.t === '마�
  * 그날은 모임 당일이라 「없음」 이 아예 안 그려진다. 여기가 유일하게 잴 수 있는 자리다.
  */
 
-console.log('\n── 달력 카드');
+console.log('\n── 투표 현황 카드');
 
 const jumpRows = async () => page.$$eval('.survey-jump-list li',
   (es) => es.map((e) => e.textContent.trim().replace(/\s+/g, ' ')));
 
 // ① 목 그대로 — 식사 갈래에는 「모임이 아직인 마감 설문」(MEAL_LOOSE)이 남아 있다
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 const withLoose = await jumpRows();
@@ -801,7 +801,7 @@ ok('모임이 아직인 마감 설문은 「마감」 이라고 적는다',
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MEAL_PAST]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1800);
 const onlyPast = await jumpRows();
@@ -820,13 +820,12 @@ ok('모임까지 끝났으면 그 갈래 줄이 사라진다',
 ok('그때 「마감」 이라고는 안 적는다',
   !onlyPast.some((t) => t.includes('식사') && t.includes('마감')), onlyPast.join(' / '));
 
-/** 감춘 갈래로 가는 길은 **늘 있어야 한다** — 줄이 하나도 없을 때도 그렇다. */
-const moreLink = await page.$eval('.survey-jump-more',
-  (e) => ({ text: e.textContent.trim().replace(/\s+/g, ' '), href: e.getAttribute('href') }))
-  .catch(() => null);
-ok('감춘 갈래로 가는 링크가 있다',
-  !!moreLink && moreLink.href === '#/survey' && moreLink.text.includes('모두 보기'),
-  moreLink ? `${moreLink.text} → ${moreLink.href}` : '링크가 없다');
+/** 감춘 갈래로 가는 길은 **늘 있어야 한다** — 카드가 투표 화면으로 옮겨 온 뒤로는 바로 위 탭이 그 길이다. */
+const tabRoutes = await page.$$eval('.survey-tabs .survey-tab', (es) => es.map((e) => e.getAttribute('href')));
+ok('감춘 갈래로 가는 길(투표 탭)이 카드 위에 있다',
+  tabRoutes.length > 0 && tabRoutes.every((h) => h?.startsWith('#/survey'))
+    && (await page.$$('.survey-jump-more')).length === 0,
+  tabRoutes.join(' · ') || '탭이 없다');
 
 /** 「없음」 배지를 더는 안 그린다. 하나라도 남아 있으면 옛 동작이 살아 있는 것이다. */
 const jumpBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => e.textContent.trim()));
@@ -860,7 +859,7 @@ const MIRROR_LATE = { ...MIRROR_SURVEY, id: 'srv-mirror-late',
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_LATE]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
@@ -872,7 +871,7 @@ await page.unroute('**/rest/v1/surveys*');
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([MIRROR_SURVEY, MEAL_LOOSE]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
@@ -1434,14 +1433,14 @@ const offBody = await page.evaluate(() => document.body.innerText);
 ok('「고르실 수 있습니다」 가 화면 어디에도 없다', !offBody.includes('고르실 수 있습니다'));
 await page.unroute('**/rest/v1/surveys*');
 
-// 달력 카드 — 「설문 참여하기」 가 아니라 「투표 현황」 이고, 배지는 「톡방 투표」 다
+// 투표 현황 카드 — 「설문 참여하기」 가 아니라 「투표 현황」 이고, 배지는 「톡방 투표」 다
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_SURVEY]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/calendar`, { waitUntil: 'networkidle' });
+await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1200);
-ok('달력 카드 제목이 「투표 현황」 이다',
+ok('투표 현황 카드 제목이 「투표 현황」 이다',
   (await page.$eval('#surveyJumpTitle', (e) => e.textContent.trim())) === '투표 현황');
 const offBadges = await page.$$eval('.survey-jump-state b', (es) => es.map((e) => e.textContent.trim()));
 ok('배지가 「진행 중」 이 아니라 「톡방 투표」 다',

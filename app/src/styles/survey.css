@@ -1617,36 +1617,6 @@ select.admin-input { cursor: pointer; }
   border-radius: 4px;
 }
 
-/* ── 달력 화면의 설문 결과 카드 ────────────────────────────
-   `.board-jump` 을 그대로 입고 자리만 붙인다. 보드 카드와 형제로 보여야
-   「여기서 나가는 길」 묶음으로 읽힌다. 새 값을 만들지 않는 이유는
-   `.survey-jump` 때와 같다 — 셋이 따로 놀면 카드가 아니라 광고로 보인다. */
-.result-jump {
-  margin-top: 10px;
-}
-
-/* ── 카드에서 감춘 갈래로 가는 길 (2026-08-29) ─────────────
-   갈래가 다섯이 되며 「없음」 줄 넷이 달력을 아래로 밀었다.
-   없는 갈래는 감추고 이 한 줄이 다섯 갈래 전부를 맡는다.
-   줄이 하나도 없을 때도 여기로 들어갈 수 있어야 하므로 **늘 보인다.** */
-.survey-jump-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 24px;
-  margin-top: 4px;
-  padding: 6px 2px;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--green-dark);
-  text-decoration: none;
-}
-
-.survey-jump-more:hover,
-.survey-jump-more:focus-visible {
-  text-decoration: underline;
-}
-
 /* 불러왔는데 하나도 없을 때. 못 불러온 것과 구분해서 이때만 적는다. */
 .survey-jump-empty {
   margin: 2px 0 0;
