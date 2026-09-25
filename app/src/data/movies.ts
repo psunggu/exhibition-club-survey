@@ -32,7 +32,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20255033',
     movieCode: '20255033',
     bookingRank: 1,
-    bookingRate: 30.7,
+    bookingRate: 28.7,
     title: '암살자(들)',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -47,7 +47,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20250654',
     movieCode: '20250654',
     bookingRank: 2,
-    bookingRate: 17,
+    bookingRate: 18.2,
     title: '오디세이',
     releaseStatus: '상영 중',
     releaseDate: '2026-08-05',
@@ -59,25 +59,10 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20250654'
   },
   {
-    id: 'movie-20256161',
-    movieCode: '20256161',
-    bookingRank: 3,
-    bookingRate: 15.3,
-    title: '타짜: 벨제붑의 노래',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-23',
-    runtime: 129,
-    genre: '범죄, 드라마',
-    ageRating: '청소년 관람불가',
-    director: '최국희',
-    summary: '중세 유럽, 종교인들은 카드가 악마의 도구라고 생각했다. 특히 죽음을 뜻하는 스페이드 13장엔 모두 악마의 이름이 들어 있다. 지옥으로 떨어진 추락한 천사 \'루시퍼\'와 지옥의 기존 지배자 \'벨제붑\'.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
-  },
-  {
     id: 'movie-20261807',
     movieCode: '20261807',
-    bookingRank: 4,
-    bookingRate: 7.8,
+    bookingRank: 3,
+    bookingRate: 14.4,
     title: '극장판 치이카와: 인어 섬의 비밀',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-09-30',
@@ -89,10 +74,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20261807'
   },
   {
+    id: 'movie-20256161',
+    movieCode: '20256161',
+    bookingRank: 4,
+    bookingRate: 12.5,
+    title: '타짜: 벨제붑의 노래',
+    releaseStatus: '상영 중',
+    releaseDate: '2026-09-23',
+    runtime: 129,
+    genre: '범죄, 드라마',
+    ageRating: '청소년 관람불가',
+    director: '최국희',
+    summary: '중세 유럽, 종교인들은 카드가 악마의 도구라고 생각했다. 특히 죽음을 뜻하는 스페이드 13장엔 모두 악마의 이름이 들어 있다. 지옥으로 떨어진 추락한 천사 \'루시퍼\'와 지옥의 기존 지배자 \'벨제붑\'.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
+  },
+  {
     id: 'movie-20256308',
     movieCode: '20256308',
     bookingRank: 5,
-    bookingRate: 7.1,
+    bookingRate: 6.7,
     title: '인턴',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-16',
@@ -107,7 +107,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20254904',
     movieCode: '20254904',
     bookingRank: 6,
-    bookingRate: 5.4,
+    bookingRate: 4.2,
     title: '가능한 사랑',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -119,24 +119,9 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20254904'
   },
   {
-    id: 'movie-20266766',
-    movieCode: '20266766',
-    bookingRank: 7,
-    bookingRate: 5.3,
-    title: '어벤져스: 엔드게임 앙코르',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-23',
-    runtime: 183,
-    genre: '액션, SF',
-    ageRating: '12세 이상 관람가',
-    director: '안소니 루소, 조 루소',
-    summary: '해당정보없음',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20266766'
-  },
-  {
     id: 'movie-20224573',
     movieCode: '20224573',
-    bookingRank: 8,
+    bookingRank: 7,
     bookingRate: 4.1,
     title: '부활남: 더 레드',
     releaseStatus: '개봉 예정',
@@ -149,10 +134,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20224573'
   },
   {
+    id: 'movie-20266766',
+    movieCode: '20266766',
+    bookingRank: 8,
+    bookingRate: 3.4,
+    title: '어벤져스: 엔드게임 앙코르',
+    releaseStatus: '상영 중',
+    releaseDate: '2026-09-23',
+    runtime: 183,
+    genre: '액션, SF',
+    ageRating: '12세 이상 관람가',
+    director: '안소니 루소, 조 루소',
+    summary: '해당정보없음',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20266766'
+  },
+  {
     id: 'movie-20265146',
     movieCode: '20265146',
     bookingRank: 9,
-    bookingRate: 1.5,
+    bookingRate: 1.6,
     title: '옵세션',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-02',
@@ -167,7 +167,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20263870',
     movieCode: '20263870',
     bookingRank: 10,
-    bookingRate: 0.9,
+    bookingRate: 0.8,
     title: '레지던트 이블: 0번째 밤',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-17',
@@ -181,6 +181,6 @@ export const MOVIES: Movie[] = [
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.09.23 09:19'
+export const MOVIE_RANKING_UPDATED_AT = '2026.09.26 05:03'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
