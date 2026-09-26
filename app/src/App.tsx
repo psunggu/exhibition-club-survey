@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useRoute } from './lib/router'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { parseHash, SECTION_OF, useRoute, type Route, type SiteSection } from './lib/router'
+import { rememberHere, restoreTo, savedHere, takePending, watchScroll } from './lib/scrollMemory'
+import { SiteNav } from './SiteNav'
 import { seoulToday } from './lib/calendar'
 import { Board } from './Board'
 import { Calendar } from './Calendar'
@@ -184,9 +186,12 @@ function SurveyJump() {
  * 옛 사이트는 보드와 일정이 **두 장의 페이지**였고 우상단 링크로 오갔다.
  * 지금은 한 앱 안의 두 화면이지만, 그 링크의 자리와 문구를 유지한다.
  * 회원이 누르던 자리가 그대로여야 이질감이 없다.
+ *
+ * 2026-09-26 부터 화면 사이를 오가는 일은 맨 위 사이트 띠(SiteNav.tsx)가 맡는다.
+ * 우상단 링크 · 일정의 보드 카드 · 투표의 「모임 일정 보기」 는 띠와 겹치지만,
+ * 띠가 실기기에서 자리 잡는 것을 본 뒤에 걷는다.
  */
-export function App() {
-  const route = useRoute()
+function Screen({ route }: { route: Route }) {
   const onCalendar = route.name === 'calendar'
   const onSurvey = route.name === 'survey' || route.name === 'surveyDatetime'
     || route.name === 'surveyMeal' || route.name === 'surveyClub'
@@ -198,8 +203,11 @@ export function App() {
    * (scripts/scope-legacy-css.mjs 가 그 클래스 아래로 범위를 옮겨 뒀다.)
    *
    * 설문은 일정과 같은 좁은 감싸개를 쓴다 — 폼이라 넓으면 읽기 나쁘다.
+   *
+   * 칠하기 전에 붙인다(layout effect). 색 변수가 이 클래스 아래에 있어서, 늦게 붙이면
+   * 첫 화면에서 사이트 띠가 한 순간 바탕 없이 그려진다.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const cls = onCalendar || onSurvey ? 'calendar-page' : 'board-page'
     document.body.classList.add(cls)
     return () => document.body.classList.remove(cls)
@@ -222,7 +230,7 @@ export function App() {
     return (
       <main className="wrap">
         <p className="ov">41교구 전시·박물관 동아리</p>
-        <h1>{admin ? '운영자' : categoryHeading(category)}</h1>
+        <h1 tabIndex={-1}>{admin ? '운영자' : categoryHeading(category)}</h1>
 
         {/* 갈래를 모두 보여 주고 지금 보는 쪽을 진하게 둔다.
             탭에는 **짧은 이름**을 쓴다 — 긴 이름 다섯은 375px 에 안 들어간다.
@@ -270,7 +278,7 @@ export function App() {
         <p className="ov">41교구 전시·박물관 동아리</p>
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
-        <h1>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
+        <h1 tabIndex={-1}>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
         {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
         {/* 투표 현황 카드와 8월 운영 설문 카드는 일정 화면에 두지 않는다 (2026-09-25, 운영자 요청).
@@ -285,7 +293,7 @@ export function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">100주년 기념교회 41교구 전시·박물관 동아리</p>
-          <h1>문화 콘텐츠 공유 보드</h1>
+          <h1 tabIndex={-1}>문화 콘텐츠 공유 보드</h1>
           <div className="board-meta-line">
             <p className="board-updated">최종 정보 업데이트: {SITE_INFO_UPDATED_ON}</p>
             <span className="update-schedule">· 매주 수요일·토요일 22시 업데이트</span>
@@ -308,5 +316,88 @@ export function App() {
         </div>
       )}
     </main>
+  )
+}
+
+/**
+ * 창 제목 — 카톡 인앱 머리줄과 휴대폰 탭 목록에 뜬다. 어느 칸에 있는지 말해 준다.
+ * index.html 의 `<title>` 과 og 태그는 그대로라 카톡 링크 미리보기는 바뀌지 않는다.
+ */
+const TITLE: Record<SiteSection | 'none', string> = {
+  calendar: '모임 일정 · 41교구 전시·박물관 동아리',
+  board: '관람 정보 · 문화 콘텐츠 공유 보드',
+  survey: '투표 · 41교구 전시·박물관 동아리',
+  none: '문화 콘텐츠 공유 보드',
+}
+
+/** 링크를 누른 뒤 이 안에 화면이 바뀌면 「눌러서 옮겼다」 로 본다(ms). */
+const LINK_WINDOW = 1000
+
+/** 투표 갈래끼리(#/survey ↔ #/survey/meal)는 같은 화면으로 본다 — 알약을 눌러도 자리를 지킨다. */
+const screenOf = (r: Route) => SECTION_OF[r.name] ?? (r.name === 'notFound' ? `notFound:${r.path}` : r.name)
+
+export function App() {
+  const route = useRoute()
+  const section = SECTION_OF[route.name]
+  const screen = screenOf(route)
+
+  /**
+   * **눌러서 옮기면 새 화면 맨 위, 뒤로 · 앞으로 가기는 떠날 때의 자리.**
+   * 긴 보드를 보다가 일정에 다녀온 회원이 자리를 잃지 않게 하려는 것이다.
+   * 해시 이동은 둘을 가르지 않으므로, 다른 화면으로 가는 링크를 누른 때를 적어 두고 견준다.
+   * 자리를 기억하고 되살리는 일은 lib/scrollMemory.ts 가 한다 — 새로 고침 · 다른 페이지에서
+   * 돌아오기까지. 브라우저의 되살리기는 이 앱에서 믿을 수 없어 끈다(그 파일 머리말).
+   * 지금 칸 다시 누르기는 SiteNav 가 이동을 막고(preventDefault) 스스로 올리므로 여기서 빠진다.
+   */
+  const linkAt = useRef(Number.NEGATIVE_INFINITY)
+  const shown = useRef(screen)
+
+  useEffect(() => {
+    const unwatch = watchScroll()
+    const onClick = (e: globalThis.MouseEvent) => {
+      // 새 탭으로 여는 누름(가운데 단추 · Ctrl · ⌘ · Shift)은 이 화면을 떠나지 않는다
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      if (!(e.target instanceof Element)) return
+      const a = e.target.closest('a[href^="#/"]')
+      if (!a) return
+      rememberHere()
+      // 같은 화면 안의 링크(투표 갈래 알약 등)는 맨 위로 보내지 않는다 — 적어 두지 않는다
+      if (screenOf(parseHash(a.getAttribute('href') ?? '')) !== screenOf(parseHash(window.location.hash))) {
+        linkAt.current = performance.now()
+      }
+    }
+    window.addEventListener('click', onClick)
+    return () => {
+      unwatch()
+      window.removeEventListener('click', onClick)
+    }
+  }, [])
+
+  // 새로 고침 · 다른 페이지(설문 결과 등)에서 돌아왔으면 그때의 자리로. 처음 온 칸에는 기억이 없다.
+  useLayoutEffect(() => {
+    const y = savedHere()
+    return y === undefined ? undefined : restoreTo(y)
+  }, [])
+
+  useLayoutEffect(() => {
+    const back = takePending()   // 해시가 바뀔 때마다 한 번 쓰고 비운다
+    if (shown.current === screen) return undefined
+    shown.current = screen
+    const byLink = performance.now() - linkAt.current < LINK_WINDOW
+    linkAt.current = Number.NEGATIVE_INFINITY
+    if (!byLink) return back === undefined ? undefined : restoreTo(back)
+    window.scrollTo(0, 0)
+    // 초점도 새 화면 제목으로 옮긴다 — 화면을 읽어 주는 쪽이 옛 화면에 남지 않게.
+    document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true })
+    return undefined
+  }, [route, screen])
+
+  useEffect(() => { document.title = TITLE[section ?? 'none'] }, [section])
+
+  return (
+    <>
+      <SiteNav route={route} />
+      <Screen route={route} />
+    </>
   )
 }

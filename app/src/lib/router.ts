@@ -49,6 +49,27 @@ export function parseHash(hash: string): Route {
   }
 }
 
+/**
+ * 맨 위 사이트 띠(SiteNav.tsx)의 세 칸. 회원 화면의 「관람 정보」 가 코드의 `board` 다.
+ */
+export type SiteSection = 'calendar' | 'board' | 'survey'
+
+/**
+ * 라우트 → 띠의 칸. 운영자 · 없는 주소는 어느 칸도 아니다.
+ * `satisfies` 로 묶어 두어 라우트를 더하고 여기 안 적으면 tsc 가 멈춘다.
+ */
+export const SECTION_OF = {
+  board: 'board',
+  calendar: 'calendar',
+  survey: 'survey',
+  surveyDatetime: 'survey',
+  surveyMeal: 'survey',
+  surveyClub: 'survey',
+  surveyGoogle: 'survey',
+  surveyAdmin: null,
+  notFound: null,
+} as const satisfies Record<Route['name'], SiteSection | null>
+
 export function useRoute(): Route {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash))
 

@@ -738,3 +738,88 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+/* ── 사이트 띠 — 모든 화면 맨 위의 「모임 일정 · 관람 정보 · 투표」 (SiteNav.tsx) ──
+   잉크 바탕에 세 칸. 지금 칸은 종이색으로 칠하고 아랫변을 열어 페이지와 이어 붙인다.
+   보드의 지역 · 유형 탭, 투표의 알약(모두 종이 위의 닫힌 모양)과 층이 갈리게 하려는 것이다.
+
+   **칸 높이를 고정하지 않는다.** 줄은 stretch 로 맞추고 지금 칸은 아래 여백만 4 더 준다.
+   예전 시안처럼 44 · 48 로 박으면 휴대폰 글씨를 키웠을 때 칸마다 줄 수가 달라져
+   지금 칸이 14–24px 가라앉았다(2026-09-26 실측). 줄 높이도 px 로 적지 않는다 — 겹친다.
+
+   z-index 는 일정 팝업 배경(20)보다 아래다. 팝업이 띠를 덮어야 한다. */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ink);
+  /* 칸 글자는 각자 색을 갖지만, li 가 물려받는 색도 맞춰 둔다 — 대비 검사는 li 를 글자 마디로 읽는다 */
+  color: var(--card);
+  font-family: var(--font-sans);
+  /* 일정 · 투표 화면 body 에만 있던 값이라, 띠에 따로 적지 않으면 보드에서만 흰 글자가 굵어 보인다 */
+  -webkit-font-smoothing: antialiased;
+}
+.site-nav-list {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  align-items: stretch;
+  /* 일정 · 투표 본문 폭(520)과 같은 자리에 선다 */
+  max-width: 552px;
+  margin: 0 auto;
+  padding: 4px 16px 0;
+  list-style: none;
+}
+.site-nav-list > li { display: flex; min-width: 0; margin: 0; padding: 0; }
+.site-nav-tab {
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  border-radius: var(--r-control);
+  color: var(--card);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  /* 바탕이 서서히 바뀌게 두지 않는다 — 지금 칸이 옮겨 갈 때 글자색은 바로 바뀌고 바탕만 늦게 따라와
+     두 칸의 글자가 잠깐 사라졌다 */
+}
+.site-nav-tab[aria-current] {
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  border-radius: var(--r-control) var(--r-control) 0 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 800;
+}
+/* 휴대폰에는 hover 가 없다 — 누르는 동안이라도 칸이 반응해야 눌린 줄 안다 */
+.site-nav-tab:not([aria-current]):active { background: var(--ink-2); }
+@media (hover: hover) {
+  .site-nav-tab:not([aria-current]):hover { background: var(--ink-2); }
+}
+.site-nav-tab:focus-visible { outline: 2px solid var(--card); outline-offset: 2px; }
+.site-nav-tab[aria-current]:focus-visible { outline-color: var(--green); outline-offset: -4px; }
+/* 360px 안드로이드에서 글씨를 키우면 칸 글자가 두 줄로 접혀 띠가 80px 가 됐다 — 좁을 때 여백을 줄인다 */
+@media (max-width: 551px) {
+  .site-nav-list { padding-left: 8px; padding-right: 8px; }
+  .site-nav-tab { padding-left: 4px; padding-right: 4px; }
+}
+@media print {
+  .site-nav { display: none; }
+}
+/* 초점이 가는 곳이 띠 밑에 가리지 않게 — 띠의 실제 높이(SiteNav 가 --site-nav-h 로 알려 준다) + 8.
+   html 에 scroll-padding 으로 주면 안 된다. 띠 자신의 칸도 그 띠 안에 들어 「가려졌다」 고 읽혀,
+   칸 사이를 Tab 으로 옮길 때마다 페이지가 360px 씩 굴렀다(2026-09-26 검토) */
+main :is(a, button, input, select, textarea, summary, [tabindex]) {
+  scroll-margin-top: calc(var(--site-nav-h, 52px) + 8px);
+}
+/* 화면을 옮기면 초점을 새 제목에 둔다(App.tsx). 누른 사람에게는 테두리를 그리지 않는다 */
+main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }

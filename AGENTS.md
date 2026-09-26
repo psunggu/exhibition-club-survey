@@ -1,6 +1,6 @@
 # AGENTS.md — 프로젝트 규칙 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-09-25. **여기에는 규칙만 적는다.**
+> 최종 갱신: 2026-09-26. **여기에는 규칙만 적는다.**
 > 왜 그렇게 정했는지와 무슨 일이 있었는지는 `docs/HISTORY.md`, 정기 갱신 절차는 `docs/OPERATIONS.md`.
 > 이 문서는 세션마다 읽히므로 길어지면 그만큼 매번 비용이 든다 — 근거는 HISTORY 로 보낸다.
 
@@ -8,6 +8,7 @@
 
 41교구 전시·박물관 동아리 사이트. Vite + React 해시 라우팅 SPA(`app/`), GitHub Pages 배포, Supabase(`public` 스키마).
 라우트는 여덟 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/admin`. (`#/survey/etc` 는 2026-09-09 에 뺐다.) 꺼진 설정(`selfSurvey: false`)에서는 `datetime` · `club` 탭을 그리지 않고 그 주소는 관람 장소로 보낸다(2026-09-10, `visibleTabs()`).
+모든 화면 맨 위에 **사이트 띠**(`SiteNav.tsx`) — 모임 일정 · 관람 정보 · 투표. 순서 · 문구는 운영자가 정했다. 회원 화면의 「관람 정보」 가 코드의 `board`(보드)다. 라우트를 더하면 `router.ts` 의 `SECTION_OF` 에도 적는다(안 적으면 tsc 가 멈춘다). 칸 높이 · 줄 높이를 px 로 박지 않는다 — 큰 글씨에서 어긋나고 겹친다.
 
 | 화면 | 코드 | 데이터의 정본 |
 |---|---|---|
@@ -33,7 +34,7 @@
 
 ## 검사
 
-- `npm run check:quick` — 빌드 + 정적 검사(약 15초). `npm run check` — 여기에 Playwright 화면 검사(접근성 · 설문 · 운영자 · 화면 대조)까지(약 2분).
+- `npm run check:quick` — 빌드 + 정적 검사(약 15초). `npm run check` — 여기에 Playwright 화면 검사(접근성 · 설문 · 사이트 띠 · 운영자 · 화면 대조)까지(약 2분).
 - `screens:check` 는 화면이 **의도치 않게** 바뀌었는지 본다. 화면을 일부러 바꿨으면 `screens:save`. 영화 · 모임처럼 **콘텐츠가 바뀌어도 화면 숫자가 달라지므로** save 가 따라온다(`board:movies` 는 스스로 한다).
 - 검사기가 못 잡는 것: 375px 가로 스크롤 · 캐시 버스팅 `?v=` 누락 · CSP 위반(브라우저 콘솔에만 뜬다) · React 가 만드는 iframe(`frame-src` 없음) · 달력 「오늘」 마커.
 - `validate-survey-admin-ui` 는 `.admin-card` · `.note*` 같은 클래스 이름을 차례로 짚어 「몇 번째 설문」 을 고른다. **새 구역은 새 이름**(`.admin-news-card` · `.admin-guide*` · `.gdoc-*`)을 쓰고, 모양이 같으면 CSS 선택자만 더한다.

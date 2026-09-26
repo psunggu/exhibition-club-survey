@@ -73,7 +73,7 @@ export async function measureA11y(page, { openFolds = true } = {}) {
      */
     const off = (e) => e.closest(':disabled, [aria-disabled=\"true\"]') !== null;
     const SEL = '.wrap p, .wrap span, .wrap h1, .wrap h2, .wrap h3, .wrap a,'
-      + ' .wrap button, .wrap summary, .wrap label, .wrap div';
+      + ' .wrap button, .wrap summary, .wrap label, .wrap div, .site-nav a';
     return [...document.querySelectorAll(SEL)]
       .filter((e) => e.offsetParent !== null && !off(e)
         && [...e.children].every((c) => INLINE.has(c.tagName.toUpperCase()))

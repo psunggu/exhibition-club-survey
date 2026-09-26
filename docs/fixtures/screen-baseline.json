@@ -6,7 +6,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 23316
+    "h": 23368
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -863,9 +863,137 @@
   ".board-jump h2": null,
   ".board-jump p:not(.board-jump-kicker)": null,
   ".board-jump .board-jump-link": null,
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "0px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 117,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "4px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 117,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "8px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 12978,
+   "textLength": 12993,
    "cardCount": 21,
    "chipCount": 0
   }
@@ -875,7 +1003,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 11942
+    "h": 11994
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -1732,9 +1860,137 @@
   ".board-jump h2": null,
   ".board-jump p:not(.board-jump-kicker)": null,
   ".board-jump .board-jump-link": null,
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 1280,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 552,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "16px",
+    "paddingBottom": "0px",
+    "paddingLeft": "16px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 171,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "4px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 171,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "8px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 12978,
+   "textLength": 12993,
    "cardCount": 21,
    "chipCount": 0
   }
@@ -1744,7 +2000,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 5199
+    "h": 5251
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2570,9 +2826,137 @@
     "minWidth": "0px"
    }
   },
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "0px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 117,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "4px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 117,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "8px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 2625,
+   "textLength": 2640,
    "cardCount": 0,
    "chipCount": 15
   }
@@ -2582,7 +2966,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 4289
+    "h": 4341
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3408,9 +3792,137 @@
     "minWidth": "0px"
    }
   },
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 1280,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 552,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "16px",
+    "paddingBottom": "0px",
+    "paddingLeft": "16px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 171,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "4px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 171,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "8px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 2625,
+   "textLength": 2640,
    "cardCount": 0,
    "chipCount": 15
   }
@@ -3420,7 +3932,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 919
+    "h": 971
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3688,9 +4200,137 @@
   ".board-jump h2": null,
   ".board-jump p:not(.board-jump-kicker)": null,
   ".board-jump .board-jump-link": null,
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 375,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "0px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 117,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "4px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 117,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "4px",
+    "paddingBottom": "8px",
+    "paddingLeft": "4px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 210,
+   "textLength": 225,
    "cardCount": 0,
    "chipCount": 0
   }
@@ -3700,7 +4340,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 923
+    "h": 975
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3968,9 +4608,137 @@
   ".board-jump h2": null,
   ".board-jump p:not(.board-jump-kicker)": null,
   ".board-jump .board-jump-link": null,
+  ".site-nav": {
+   "count": 1,
+   "box": {
+    "w": 1280,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgb(31, 30, 27)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px",
+    "paddingLeft": "0px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "block",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-list": {
+   "count": 1,
+   "box": {
+    "w": 552,
+    "h": 52
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "0px",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "16px",
+    "paddingBottom": "0px",
+    "paddingLeft": "16px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "grid",
+    "flexDirection": "row",
+    "gap": "4px",
+    "textAlign": "start",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "0px"
+   }
+  },
+  ".site-nav-tab:not([aria-current])": {
+   "count": 2,
+   "box": {
+    "w": 171,
+    "h": 44
+   },
+   "style": {
+    "color": "rgb(255, 255, 255)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "borderTopColor": "rgb(255, 255, 255)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "4px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "4px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
+  ".site-nav-tab[aria-current]": {
+   "count": 1,
+   "box": {
+    "w": 171,
+    "h": 48
+   },
+   "style": {
+    "color": "rgb(31, 30, 27)",
+    "backgroundColor": "rgb(246, 244, 239)",
+    "borderTopColor": "rgb(31, 30, 27)",
+    "borderTopWidth": "0px",
+    "borderRadius": "10px",
+    "fontSize": "16px",
+    "fontWeight": "800",
+    "lineHeight": "20px",
+    "letterSpacing": "normal",
+    "fontFamily": "Pretendard, -apple-system, BlinkMacSystemFont, \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Malgun Gothic\", \"Segoe UI\", sans-serif",
+    "paddingTop": "4px",
+    "paddingRight": "8px",
+    "paddingBottom": "8px",
+    "paddingLeft": "8px",
+    "marginTop": "0px",
+    "marginBottom": "0px",
+    "display": "flex",
+    "flexDirection": "row",
+    "gap": "normal",
+    "textAlign": "center",
+    "boxShadow": "none",
+    "opacity": "1",
+    "minWidth": "auto"
+   }
+  },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 210,
+   "textLength": 225,
    "cardCount": 0,
    "chipCount": 0
   }
