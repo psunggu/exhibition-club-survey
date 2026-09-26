@@ -1463,14 +1463,15 @@ if (placeBySurvey) {
 ok('「여기서 고르실 수 있습니다」 라고는 안 한다', !offRow.includes('고르실 수'), offRow);
 await unservePlace();
 
-// 보드 머리의 링크 — 「설문 참여하기」 가 「투표 결과 보기」 로
+// 보드 머리의 옛 링크(「투표 결과 보기」 · 「모임 일정 보기」)는 2026-09-26 에 걷었다 — 사이트 띠가 맡는다.
+// 꺼진 설정에서 「설문 참여하기」 가 어디에도 되살아나지 않는지만 본다.
 await page.goto('about:blank');
 await page.goto(`http://localhost:8261${BASE}/#/`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(600);
-const topLinks = await page.$$eval('.topbar-notice-link', (es) => es.map((e) => e.textContent.trim()));
-ok('보드 머리의 설문 링크가 「투표 결과 보기」 다',
-  topLinks.some((t) => t.includes('투표 결과 보기')) && !topLinks.some((t) => t.includes('설문 참여하기')),
-  topLinks.join(' / '));
+const topLinks = await page.$$eval('.topbar a', (es) => es.map((e) => e.textContent.trim()));
+ok('보드 머리에 다른 화면으로 가는 옛 링크가 없다', topLinks.length === 0, topLinks.join(' / '));
+ok('꺼진 설정의 보드에 「설문 참여하기」 가 없다',
+  !(await page.$eval('body', (e) => e.innerText)).includes('설문 참여하기'));
 
 /* 탭과 제목 (2026-09-10) — 꺼진 설정에서는 「일자·시간」 「운영·요청」 탭이 없고
  * 제목은 「… 투표 결과」 다. 숨긴 탭의 옛 주소는 관람 장소로 떨어진다. */

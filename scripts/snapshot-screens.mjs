@@ -80,7 +80,7 @@ await new Promise((r) => server.listen(PORT, r));
  * 같은 성질의 자리가 또 생기면(예: `.chip.regular`) 같은 이유로 여기에 더한다.
  */
 const WATCH = [
-  'body', '.app-shell', '.topbar', '.topbar h1', '.eyebrow', '.topbar-notice-link',
+  'body', '.app-shell', '.topbar', '.topbar h1', '.eyebrow',
   '.area-tabs', '.area-tab', '.area-tab.is-active',
   '.content-type-tabs', '.content-type-tab', '.content-type-tab.is-active',
   '.recommendation-group-head', '.recommendation-group-head h3',
@@ -96,10 +96,7 @@ const WATCH = [
   // 카드 안쪽 — 바깥 상자만 재면 알약 폭 · 안내문 색이 바뀌어도 통과했다(2026-09-25 변이 시험).
   // `.survey-tab` 만 적으면 위쪽 탭 줄의 알약이 첫 요소가 되므로 카드 안으로 좁힌다.
   '.survey-jump h2', '.survey-jump p:not(.board-jump-kicker)', '.survey-jump-list .survey-tab',
-  // 일정 화면의 「문화 콘텐츠 공유 보드」 카드. 안쪽 클래스(.board-jump-kicker · .board-jump-link)는
-  // 투표 카드 · 투표 화면의 「모임 일정 보기」 링크 · 일정 화면의 달력 구독 링크도 쓰므로 모두 section.board-jump 안으로 좁힌다.
-  '.board-jump', '.board-jump .board-jump-kicker', '.board-jump h2',
-  '.board-jump p:not(.board-jump-kicker)', '.board-jump .board-jump-link',
+  // 일정 화면의 「문화 콘텐츠 공유 보드」 카드(.board-jump)는 2026-09-26 에 걷었다 — 사이트 띠가 맡는다.
   // 맨 위 사이트 띠. `.site-nav-tab` 만 적으면 일정 화면에서는 첫 칸이 지금 칸이라
   // 쉬는 칸의 모양이 기준에 안 남는다 — 둘을 따로 적는다.
   '.site-nav', '.site-nav-list', '.site-nav-tab:not([aria-current])', '.site-nav-tab[aria-current]',

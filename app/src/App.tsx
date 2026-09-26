@@ -183,13 +183,9 @@ function SurveyJump() {
 /**
  * 셸도 옛 화면 그대로다 — `.app-shell` · `.topbar` · `.eyebrow`.
  *
- * 옛 사이트는 보드와 일정이 **두 장의 페이지**였고 우상단 링크로 오갔다.
- * 지금은 한 앱 안의 두 화면이지만, 그 링크의 자리와 문구를 유지한다.
- * 회원이 누르던 자리가 그대로여야 이질감이 없다.
- *
- * 2026-09-26 부터 화면 사이를 오가는 일은 맨 위 사이트 띠(SiteNav.tsx)가 맡는다.
- * 우상단 링크 · 일정의 보드 카드 · 투표의 「모임 일정 보기」 는 띠와 겹치지만,
- * 띠가 실기기에서 자리 잡는 것을 본 뒤에 걷는다.
+ * 화면 사이를 오가는 일은 맨 위 사이트 띠(SiteNav.tsx)가 맡는다. 옛 사이트부터 있던
+ * 보드 우상단 링크 둘 · 일정의 보드 카드 · 투표의 「모임 일정 보기」 는 띠와 겹쳐
+ * 2026-09-26 에 걷었다(운영자 요청). 화면 안에 다른 화면으로 가는 링크를 다시 두지 않는다.
  */
 function Screen({ route }: { route: Route }) {
   const onCalendar = route.name === 'calendar'
@@ -250,10 +246,13 @@ function Screen({ route }: { route: Route }) {
         {/* 투표 현황은 투표 탭에만 둔다 (2026-09-25, 일정 화면에서 옮겨 옴). 구글 설문 탭은 투표가 아니다. */}
         {!admin && category !== 'google' && <SurveyJump />}
 
-        <a className="board-jump-link" href={admin ? '#/survey' : '#/calendar'}
-          style={{ marginBottom: 18 }}>
-          {admin ? '투표 결과 화면으로' : '모임 일정 보기'} <span aria-hidden="true">→</span>
-        </a>
+        {/* 회원 화면의 「모임 일정 보기」 는 띠가 맡아 뺐다. 운영자 화면은 띠에서 켜지는 칸이 없어
+            투표 결과로 돌아가는 길을 그대로 둔다. */}
+        {admin && (
+          <a className="board-jump-link" href="#/survey" style={{ marginBottom: 18 }}>
+            투표 결과 화면으로 <span aria-hidden="true">→</span>
+          </a>
+        )}
         {admin ? <SurveyAdmin /> : <Survey category={category} />}
         {/* 운영자 자리는 눈에 띄게 두지 않는다. 주소를 아는 사람이 들어오고,
             들어와도 암호가 없으면 아무것도 못 한다 — 진짜 자물쇠는 DB 함수 안에 있다. */}
@@ -279,7 +278,6 @@ function Screen({ route }: { route: Route }) {
         {/* 옛 제목은 `8 · 9월 모임 일정 안내` 였다. 손으로 적힌 달이라 10월이 되면
             틀린 제목이 된다. 달력이 펼치는 달에서 뽑으면 문구는 그대로면서 낡지 않는다. */}
         <h1 tabIndex={-1}>{monthsLabel(seoulToday())} 모임 일정 안내</h1>
-        {/* 보드로 가는 길은 Calendar 안의 `.board-jump` 카드가 맡는다 (옛 화면과 같은 자리). */}
         <Calendar />
         {/* 투표 현황 카드와 8월 운영 설문 카드는 일정 화면에 두지 않는다 (2026-09-25, 운영자 요청).
             투표 현황은 투표 화면(`#/survey` 의 투표 탭) 위쪽으로 옮겼고, 8월 운영 설문 결과는
@@ -298,14 +296,6 @@ function Screen({ route }: { route: Route }) {
             <p className="board-updated">최종 정보 업데이트: {SITE_INFO_UPDATED_ON}</p>
             <span className="update-schedule">· 매주 수요일·토요일 22시 업데이트</span>
           </div>
-        </div>
-        <div className="topbar-links">
-          <a className="topbar-notice-link" href="#/survey">
-            {selfSurveyOn() ? '설문 참여하기' : '투표 결과 보기'} <span aria-hidden="true">→</span>
-          </a>
-          <a className="topbar-notice-link" href="#/calendar">
-            모임 일정 보기 <span aria-hidden="true">→</span>
-          </a>
         </div>
       </header>
 

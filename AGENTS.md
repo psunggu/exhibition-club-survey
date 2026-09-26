@@ -8,7 +8,7 @@
 
 41교구 전시·박물관 동아리 사이트. Vite + React 해시 라우팅 SPA(`app/`), GitHub Pages 배포, Supabase(`public` 스키마).
 라우트는 여덟 — `#/`(보드) · `#/calendar`(일정) · `#/survey` · `#/survey/datetime` · `#/survey/meal` · `#/survey/club` · `#/survey/google` · `#/survey/admin`. (`#/survey/etc` 는 2026-09-09 에 뺐다.) 꺼진 설정(`selfSurvey: false`)에서는 `datetime` · `club` 탭을 그리지 않고 그 주소는 관람 장소로 보낸다(2026-09-10, `visibleTabs()`).
-모든 화면 맨 위에 **사이트 띠**(`SiteNav.tsx`) — 모임 일정 · 관람 정보 · 투표. 순서 · 문구는 운영자가 정했다. 회원 화면의 「관람 정보」 가 코드의 `board`(보드)다. 라우트를 더하면 `router.ts` 의 `SECTION_OF` 에도 적는다(안 적으면 tsc 가 멈춘다). 칸 높이 · 줄 높이를 px 로 박지 않는다 — 큰 글씨에서 어긋나고 겹친다.
+모든 화면 맨 위에 **사이트 띠**(`SiteNav.tsx`) — 모임 일정 · 관람 정보 · 투표. 순서 · 문구는 운영자가 정했다. 회원 화면의 「관람 정보」 가 코드의 `board`(보드)다. 라우트를 더하면 `router.ts` 의 `SECTION_OF` 에도 적는다(안 적으면 tsc 가 멈춘다). 칸 높이 · 줄 높이를 px 로 박지 않는다 — 큰 글씨에서 어긋나고 겹친다. 화면 사이 이동은 띠만 맡는다 — 화면 안에 다른 화면으로 가는 링크 · 카드를 다시 두지 않는다.
 
 | 화면 | 코드 | 데이터의 정본 |
 |---|---|---|
