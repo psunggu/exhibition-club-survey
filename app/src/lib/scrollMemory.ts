@@ -97,7 +97,11 @@ export function savedHere(): number | undefined {
 export function restoreTo(y: number) {
   restoring = true
   let ended = false
-  let fontsDone = !document.fonts || document.fonts.status === 'loaded'
+  /**
+   * 글꼴이 다 왔는지는 **멈출 때마다 새로** 본다. 처음 한 번만 보면 틀린다 — 되살리기가 시작될 때는
+   * 글꼴을 아직 부르기 전이라 'loaded' 로 읽히고, 그 뒤에 불러 와 바뀐다(CI 실측: 150ms 에 loading).
+   */
+  const fontsDone = () => !document.fonts || document.fonts.status === 'loaded'
   let quiet = 0
   /** 다시 맞추고, 잠잠한지 600ms 뒤에 본다 */
   const settle = () => {
@@ -105,7 +109,7 @@ export function restoreTo(y: number) {
     window.scrollTo(0, y)
     window.clearTimeout(quiet)
     quiet = window.setTimeout(() => {
-      if (fontsDone && Math.abs(window.scrollY - y) <= 1) stop()
+      if (fontsDone() && Math.abs(window.scrollY - y) <= 1) stop()
     }, 600)
   }
   const grow = new ResizeObserver(settle)
@@ -116,6 +120,7 @@ export function restoreTo(y: number) {
     window.clearTimeout(timer)
     window.clearTimeout(quiet)
     for (const ev of GIVE_UP) window.removeEventListener(ev, stop)
+    document.fonts?.removeEventListener('loadingdone', settle)
     restoring = false
   }
   function stop() {
@@ -126,7 +131,8 @@ export function restoreTo(y: number) {
   }
   grow.observe(document.body)
   for (const ev of GIVE_UP) window.addEventListener(ev, stop, { passive: true })
-  document.fonts?.ready.then(() => { fontsDone = true; settle() }).catch(() => { fontsDone = true })
+  // 글꼴이 바뀌면 글줄이 달라져 위쪽 높이가 변한다 — 그때마다 다시 맞춘다
+  document.fonts?.addEventListener('loadingdone', settle)
   settle()
   return cancel
 }
