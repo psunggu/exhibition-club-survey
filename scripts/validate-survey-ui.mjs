@@ -15,8 +15,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
 import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
@@ -33,19 +33,7 @@ const ok = (label, cond, detail = '') => {
   if (!cond) fails.push(label);
 };
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json' };
-const server = http.createServer((req, res) => {
-  let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-  if (u.startsWith(BASE)) u = u.slice(BASE.length);
-  if (u === '' || u === '/') u = '/index.html';
-  fs.readFile(path.join(ROOT, 'dist', u), (e, d) => {
-    if (e) { res.writeHead(404); res.end('404'); return; }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-    res.end(d);
-  });
-});
-await new Promise((r) => server.listen(8261, r));
+const server = await serveStatic(path.join(ROOT, 'dist'), 8261);
 
 /* ── 가짜 데이터 ─────────────────────────────────────────── */
 
@@ -310,7 +298,7 @@ page.on('pageerror', (e) => errs.push(String(e)));
 
 const go = async () => {
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
   await page.waitForSelector('.survey-head', { timeout: 20000 });
   await page.waitForTimeout(600);
 };
@@ -583,7 +571,7 @@ ok('받는 설문에만 이름 칸이 있다', whoForms.length === 1, `${whoForm
 
 console.log('\n── 지난 설문 (식사)');
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-history, .survey-fold, .survey-head', { timeout: 20000 });
 await page.waitForTimeout(900);
 
@@ -749,7 +737,7 @@ await page.route('**/rpc/survey_response_count', async (route) => {
   return route.fulfill({ status: 200, contentType: 'application/json', body: '2' });
 });
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-past', { timeout: 20000 });
 await page.waitForTimeout(1100);
 const thin = await page.$eval('.survey-past > summary',
@@ -766,7 +754,7 @@ await page.unroute('**/rpc/survey_response_count');
  * 알파 24% 짜리 테두리를 쓰고 있었는데 카드 바탕 위에 합성하면 1.43:1 이었다.
  * 글자 대비 검사는 색의 알파를 버리고 앞 세 숫자만 보므로 이것을 못 잡는다.
  */
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-past', { timeout: 20000 });
 await page.waitForTimeout(700);
 const focusRatio = await page.evaluate(() => {
@@ -814,7 +802,7 @@ const jumpRows = async () => page.$$eval('.survey-jump-list li',
 
 // ① 목 그대로 — 식사 갈래에는 「모임이 아직인 마감 설문」(MEAL_LOOSE)이 남아 있다
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 const withLoose = await jumpRows();
@@ -826,7 +814,7 @@ ok('모임이 아직인 마감 설문은 「마감」 이라고 적는다',
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MEAL_PAST]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1800);
 const onlyPast = await jumpRows();
@@ -884,7 +872,7 @@ const MIRROR_LATE = { ...MIRROR_SURVEY, id: 'srv-mirror-late',
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_LATE]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('응답할 수 있는 설문이 톡방 투표에 안 가린다',
@@ -896,7 +884,7 @@ await page.unroute('**/rest/v1/surveys*');
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([MIRROR_SURVEY, MEAL_LOOSE]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1500);
 ok('톡방에서 도는 투표는 「톡방 투표」 라고 밝힌다',
@@ -921,7 +909,7 @@ console.log('\n── 마무리');
  */
 const measureScreen = async (route) => {
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8261${BASE}${route}`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8261${BASE}${route}`, { waitUntil: 'networkidle' });
   /**
    * **`.brief` 를 먼저 기다린다.** 끝난 투표를 접으면서 첫 `.survey-head` 가
    * 닫힌 <details> 안으로 들어갔고, 그러면 「보일 때까지」 가 영영 안 끝난다.
@@ -974,7 +962,7 @@ const waitFor = (sel, ms = 12000) =>
   page.waitForSelector(sel, { timeout: ms }).then(() => true).catch(() => false);
 
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 const briefUp = await waitFor('.brief');
 ok('모임 요약 카드가 뜬다', briefUp);
 await page.waitForTimeout(1200);
@@ -1076,7 +1064,7 @@ ok('그때도 응답 칸은 그대로 보인다', (await page.$$('.survey-who'))
 
 /* 식사 탭 — 같은 카드인데 진한 줄이 반대다 */
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 ok('식사 탭에도 같은 요약 카드가 뜬다', await waitFor('.brief'));
 await page.waitForTimeout(900);
 
@@ -1121,7 +1109,7 @@ if (folds.length === 1) {
 console.log('\n── 모임이 지난 요약');
 await ctx.clock.setFixedTime(dayNoon(briefMeetupDate, 1));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await waitFor('.survey-history');
 await page.waitForTimeout(900);
 const topBriefs = await page.$$eval('.brief', (es) => es.filter((e) => !e.closest('.survey-history')).length);
@@ -1184,7 +1172,7 @@ const servePlace = async ({ open, votes }) => {
     status: 200, contentType: 'application/json',
     body: String(votes === null ? 0 : votes.reduce((a, b) => a + b, 0)) }));
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
   await page.waitForSelector('.brief', { timeout: 20000 });
   await page.waitForTimeout(1200);
 };
@@ -1259,7 +1247,7 @@ await unservePlace();
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: '[]' }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.brief', { timeout: 20000 });
 await page.waitForTimeout(900);
 row = await placeRow();
@@ -1331,7 +1319,7 @@ const serveNamed = async (survey) => {
   await page.route('**/rpc/survey_response_count', (route) => route.fulfill({
     status: 200, contentType: 'application/json', body: '7' }));
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
   /**
    * 여기 목업은 **마감된 톡방 투표 하나뿐**이라 접기 규칙에 걸린다
    * (응답할 수 있는 설문이 없으면 접는다). 그러면 `.survey-head` 가 안 보여
@@ -1420,7 +1408,7 @@ page.on('request', (r) => {
   if (u.includes('/rpc/')) rpcSeen.push(u.split('/rpc/')[1].split('?')[0]);
 });
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/google`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/google`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1200);
 
 const gRounds = await page.$$('.gsurvey');
@@ -1463,7 +1451,7 @@ await serveSelfSurveyConfig(ctx, false);
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, CLOSED_SURVEY, MIRROR_SURVEY]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 // 응답할 것이 없으면 설문이 접힌다(foldable). 접힌 <details> 안은 「보임」 대기에 걸리므로
 // 붙어 있는지만 기다리고, 접힌 것은 펼쳐서 잰다. 이 줄이 없어서 첫 실행이 여기서 멈췄다.
 await page.waitForSelector('.survey-head', { state: 'attached', timeout: 20000 });
@@ -1491,7 +1479,7 @@ await page.unroute('**/rest/v1/surveys*');
 await page.route('**/rest/v1/surveys*', (route) => route.fulfill({ status: 200,
   contentType: 'application/json', body: JSON.stringify([OPEN_SURVEY, MIRROR_SURVEY]) }));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-jump-list li', { timeout: 20000, state: 'attached' });
 await page.waitForTimeout(1200);
 ok('투표 현황 카드 제목이 「투표 현황」 이다',
@@ -1520,7 +1508,7 @@ await unservePlace();
 // 보드 머리의 옛 링크(「투표 결과 보기」 · 「모임 일정 보기」)는 2026-09-26 에 걷었다 — 사이트 띠가 맡는다.
 // 꺼진 설정에서 「설문 참여하기」 가 어디에도 되살아나지 않는지만 본다.
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(600);
 const topLinks = await page.$$eval('.topbar a', (es) => es.map((e) => e.textContent.trim()));
 ok('보드 머리에 다른 화면으로 가는 옛 링크가 없다', topLinks.length === 0, topLinks.join(' / '));
@@ -1530,7 +1518,7 @@ ok('꺼진 설정의 보드에 「설문 참여하기」 가 없다',
 /* 탭과 제목 (2026-09-10) — 꺼진 설정에서는 「일자·시간」 「운영·요청」 탭이 없고
  * 제목은 「… 투표 결과」 다. 숨긴 탭의 옛 주소는 관람 장소로 떨어진다. */
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-tabs', { timeout: 20000 });
 const offTabs = await page.$$eval('.survey-tabs .survey-tab', (es) => es.map((e) => e.textContent.trim()));
 ok('꺼진 설정의 탭은 셋 — 관람 장소 · 식사·Tea · 구글 설문',
@@ -1540,7 +1528,7 @@ ok('제목이 「… 투표 결과」 다', offH1 === '관람 후 식사 & Tea �
 ok('「지난 설문」 이 아니라 「지난 투표」 다',
   !(await page.$eval('body', (e) => e.innerText)).includes('지난 설문'));
 await page.goto('about:blank');
-await page.goto(`http://localhost:8261${BASE}/#/survey/club`, { waitUntil: 'networkidle' });
+await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/club`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-tabs', { timeout: 20000 });
 ok('숨긴 탭의 옛 주소는 관람 장소로 떨어진다',
   (await page.$eval('h1', (e) => e.textContent.trim())) === '전시 관람 장소 투표 결과',

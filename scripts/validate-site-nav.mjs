@@ -23,8 +23,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -41,20 +41,8 @@ if (!fs.existsSync(path.join(ROOT, 'dist', 'index.html'))) {
   process.exit(1);
 }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => {
-  let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-  if (u.startsWith(BASE)) u = u.slice(BASE.length);
-  if (u === '' || u === '/') u = '/index.html';
-  fs.readFile(path.join(ROOT, 'dist', u), (e, d) => {
-    if (e) { res.writeHead(404); res.end('404'); return; }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-    res.end(d);
-  });
-});
-await new Promise((r) => server.listen(PORT, r));
-const URL0 = `http://localhost:${PORT}${BASE}/`;
+const server = await serveStatic(path.join(ROOT, 'dist'), PORT);
+const URL0 = `http://127.0.0.1:${PORT}${BASE}/`;
 
 const fails = [];
 const ok = (name, cond, detail = '') => {

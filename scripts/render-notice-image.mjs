@@ -20,7 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import http from 'node:http';
+import { serveStatic } from './static-server.mjs';
 import { chromium } from 'playwright';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -40,20 +40,8 @@ let server = null;
 let url = 'https://psunggu.github.io/exhibition-club-survey/#/calendar';
 
 if (local) {
-  const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-    '.js': 'text/javascript', '.json': 'application/json' };
-  server = http.createServer((req, res) => {
-    let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-    if (u.startsWith(BASE_PATH)) u = u.slice(BASE_PATH.length);
-    if (u === '' || u === '/') u = '/index.html';
-    fs.readFile(path.join(ROOT, 'dist', u), (e, d) => {
-      if (e) { res.writeHead(404); res.end('404'); return; }
-      res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-      res.end(d);
-    });
-  });
-  await new Promise((r) => server.listen(8240, r));
-  url = `http://localhost:8240${BASE_PATH}/#/calendar`;
+  server = await serveStatic(path.join(ROOT, 'dist'), 8240, { base: BASE_PATH });
+  url = `http://127.0.0.1:8240${BASE_PATH}/#/calendar`;
 }
 
 const browser = await chromium.launch();
