@@ -45,7 +45,9 @@ const lib = await import(`file://${out.replace(/\\/g, '/')}`);
 fs.rmSync(out, { force: true });
 
 const fails = [];
+let checked = 0;
 const ok = (label, cond, detail = '') => {
+  checked += 1;
   console.log(`${cond ? '  ✓' : '  ✗'} ${label}${detail ? ` — ${detail}` : ''}`);
   if (!cond) fails.push(label);
 };
@@ -86,15 +88,24 @@ ok('마감 + 모임이 내일 → 아직 지난 설문 아니다',
 ok('열린 설문은 모임이 지났어도 지난 설문이 아니다',
   lib.isPastSurvey(survey('s1', OPEN), TODAY, [meetup('m1', '2026-08-01', 'conf', ['s1'])]) === false);
 
-ok('이어진 모임이 없으면 지난 설문이 아니다',
-  lib.isPastSurvey(survey('s1', CLOSED), TODAY, [meetup('m1', '2026-08-01', 'conf', ['다른설문'])]) === false,
-  '추측하지 않는다');
+// 이어진 모임이 없으면 모임 날짜 대신 마감일에서 한 달을 센다(2026-09-26 운영자 요청 —
+// 「일정이 지난 투표는 지난 것으로」). 예전에는 영영 남겨 두었다. 짝은 여전히 지어내지 않는다.
+const RECENT = { opensAt: '2026-08-01T00:00:00+09:00', closesAt: '2026-08-13T21:00:00+09:00' };   // TODAY 열흘 전
+ok('이어진 모임이 없고 마감한 지 한 달이 넘었으면 지난 설문이다',
+  lib.isPastSurvey(survey('s1', CLOSED), TODAY, [meetup('m1', '2026-08-01', 'conf', ['다른설문'])]) === true,
+  '추측하지 않는다 — 다른 모임에 짝을 짓지 않고 마감일만 본다');
+ok('이어진 모임이 없어도 마감 직후(열흘)는 아직 지난 설문이 아니다',
+  lib.isPastSurvey(survey('s1', RECENT), TODAY, [meetup('m1', '2026-08-01', 'conf', ['다른설문'])]) === false,
+  '결과를 보러 오는 때다');
+ok('마감 서른 날째까지는 남고 서른하루째부터 지난 것',
+  lib.isPastSurvey(survey('s1', { ...RECENT, closesAt: '2026-07-24T21:00:00+09:00' }), TODAY, []) === false
+    && lib.isPastSurvey(survey('s1', { ...RECENT, closesAt: '2026-07-23T21:00:00+09:00' }), TODAY, []) === true);
 
 ok('모임 목록이 비어도 터지지 않는다',
-  lib.isPastSurvey(survey('s1', CLOSED), TODAY, []) === false);
+  typeof lib.isPastSurvey(survey('s1', CLOSED), TODAY, []) === 'boolean');
 
-ok("kind 'dead'(예매 마감일 같은 줄)는 모임으로 치지 않는다",
-  lib.isPastSurvey(survey('s1', CLOSED), TODAY, [meetup('m1', '2026-07-31', 'dead', ['s1'])]) === false);
+ok("kind 'dead'(예매 마감일 같은 줄)는 모임으로 치지 않는다 — 그 날짜로 접지 않는다",
+  lib.isPastSurvey(survey('s1', RECENT), TODAY, [meetup('m1', '2026-07-31', 'dead', ['s1'])]) === false);
 
 ok('한 모임에 설문이 둘 붙어도 둘 다 잡는다', (() => {
   const ms = [meetup('m1', '2026-08-22', 'conf', ['s1', 's2'])];
@@ -109,13 +120,14 @@ console.log('\n── 목록을 가르고 정렬하나');
     survey('live', OPEN),
     survey('older', { opensAt: '2020-01-01T00:00:00+09:00', closesAt: '2020-01-02T00:00:00+09:00' }),
     survey('old', { opensAt: '2020-01-01T00:00:00+09:00', closesAt: '2020-06-02T00:00:00+09:00' }),
-    survey('unlinked', CLOSED),
+    survey('unlinked', { opensAt: '2020-01-01T00:00:00+09:00', closesAt: '2020-03-01T00:00:00+09:00' }),
+    survey('unlinkedRecent', RECENT),
   ];
   const { live, past } = lib.splitByHistory(list, TODAY, ms);
-  ok('진행 중과 안 이어진 마감 설문은 그대로 남는다',
-    live.map((s) => s.id).join(',') === 'live,unlinked', live.map((s) => s.id).join(','));
-  ok('지난 설문은 최근에 끝난 것부터',
-    past.map((s) => s.id).join(',') === 'old,older', past.map((s) => s.id).join(','));
+  ok('진행 중과 마감 직후의 안 이어진 설문은 남는다',
+    live.map((s) => s.id).join(',') === 'live,unlinkedRecent', live.map((s) => s.id).join(','));
+  ok('지난 설문은 최근에 끝난 것부터 — 마감 한 달 넘은 안 이어진 설문도 함께',
+    past.map((s) => s.id).join(',') === 'old,unlinked,older', past.map((s) => s.id).join(','));
   ok('가른 뒤에도 개수가 맞는다', live.length + past.length === list.length);
 }
 
@@ -143,7 +155,7 @@ console.log('\n── 운영자 목록도 같은 답을 내나');
     lib.isPastAdminSurvey(A('s1', '2026-09-30T21:00:00+09:00'), TODAY, ms, NOW) === false);
   ok('예매 마감일(dead)은 다녀온 날이 아니다',
     lib.isPastAdminSurvey(A('s3', PAST), TODAY, ms, NOW) === false);
-  ok('안 이어진 설문은 접지 않는다',
+  ok('안 이어진 설문은 마감 직후에는 접지 않는다',
     lib.isPastAdminSurvey(A('없는설문', PAST), TODAY, ms, NOW) === false);
   ok('마감을 못 읽으면 접지 않는다',
     lib.isPastAdminSurvey(A('s1', '알수없음'), TODAY, ms, NOW) === false,
@@ -151,14 +163,29 @@ console.log('\n── 운영자 목록도 같은 답을 내나');
 
   // **두 화면이 같은 답을 내는가.** 이것이 이 묶음의 핵심이다.
   ok('회원 화면 판정과 답이 같다',
-    ['s1', 's2', 's3'].every((id) =>
+    ['s1', 's2', 's3', '없는설문'].every((id) =>
       lib.isPastAdminSurvey(A(id, PAST), TODAY, ms, NOW)
-        === lib.isPastSurvey(survey(id, CLOSED), TODAY, ms)));
+        === lib.isPastSurvey(survey(id, { opensAt: '2020-01-01T00:00:00+09:00', closesAt: PAST }), TODAY, ms)));
+  ok('안 이어진 설문도 마감 한 달이 지나면 운영자 목록에서 접힌다',
+    lib.isPastAdminSurvey(A('없는설문', '2026-07-01T21:00:00+09:00'), TODAY, ms, NOW) === true);
 
   const { live, past } = lib.splitAdminByHistory([A('s2', PAST), A('s1', PAST)], TODAY, ms, NOW);
   ok('운영자 목록을 둘로 가른다',
     live.map((x) => x.id).join(',') === 's2' && past.map((x) => x.id).join(',') === 's1',
     `남김 ${live.map((x) => x.id)} · 접음 ${past.map((x) => x.id)}`);
+}
+
+console.log('\n── 모임 요약 카드도 날짜로 내려가나 (2026-09-26)');
+{
+  const ms = [meetup('m1', '2026-08-22', 'conf', []), meetup('m2', '2026-08-23', 'conf', []),
+    meetup('m3', '2026-07-31', 'dead', [])];
+  ok('요약한 모임이 어제 → 지난 것(「지난 투표」 로)', lib.isPastBrief({ meetupId: 'm1' }, TODAY, ms) === true);
+  ok('요약한 모임이 오늘 → 아직 맨 위', lib.isPastBrief({ meetupId: 'm2' }, TODAY, ms) === false,
+    '모임 당일에는 내리지 않는다');
+  ok('모임을 안 적은 요약은 내리지 않는다', lib.isPastBrief({}, TODAY, ms) === false, '추측하지 않는다');
+  ok('없는 모임을 가리키면 내리지 않는다', lib.isPastBrief({ meetupId: 'no-such' }, TODAY, ms) === false);
+  ok("예매 마감일(dead)은 다녀온 날이 아니다", lib.isPastBrief({ meetupId: 'm3' }, TODAY, ms) === false);
+  ok('요약이 없어도 터지지 않는다', lib.isPastBrief(null, TODAY, ms) === false);
 }
 
 console.log('\n── 진짜 자료로 연결이 실제로 걸려 있나');
@@ -184,4 +211,4 @@ if (fails.length) {
   fails.forEach((f) => console.log(`  · ${f}`));
   process.exit(1);
 }
-console.log('\n지난 설문 판정 검사 통과 — 14가지');
+console.log(`\n지난 설문 판정 검사 통과 — ${checked}가지`);

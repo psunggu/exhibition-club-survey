@@ -20,8 +20,10 @@
  *   · 마감 뒤 첫 모임 — 7/31 은 모임이 아니라 예매 마감일(kind 'dead')인데 그것을 집는다.
  *     한 날짜에 모임이 둘인 날(7/29)도 있어 배열 순서가 답을 정해 버린다.
  *
- * 그래서 **이어진 모임이 없으면 지난 설문으로 보지 않는다.** 틀린 짝을 지어
- * 「8월 22일 모임 끝남」 이라고 적느니, 접지 않고 그대로 두는 편이 낫다.
+ * 그래서 **짝을 지어내지 않는다.** 이어진 모임이 없으면 모임 날짜 대신 마감일을 본다 —
+ * 마감한 지 한 달(UNLINKED_GRACE_DAYS)이 지나면 지난 설문이다(2026-09-26 운영자 요청
+ * 「일정이 지난 투표는 지난 것으로」). 예전에는 영영 남겨 두었다. 마감 직후는 결과를 보러
+ * 오는 때라 바로 접지 않는다.
  * 연결은 app/src/data/meetups.ts 의 `surveyIds` 가 사람 손으로 적는다.
  */
 
@@ -56,7 +58,22 @@ export function isPastSurvey(
   today: string = seoulToday(),
   meetups: Meetup[] = MEETUPS,
 ): boolean {
-  return pastCore(s.id, !isOpen(s), today, meetups, s.meetupId)
+  return pastCore(s.id, !isOpen(s), s.closesAt, today, meetups, s.meetupId)
+}
+
+/** 이어진 모임이 없는 설문은 마감 뒤 이만큼(일) 지나면 지난 것으로 본다. */
+export const UNLINKED_GRACE_DAYS = 30
+
+/** ISO 시각 → 서울 날짜(YYYY-MM-DD). 못 읽으면 먼 미래 — 모르면 접지 않는 쪽으로 넘어진다. */
+function seoulDay(iso: string): string {
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return '9999-12-31'
+  return new Date(t + 9 * 3600_000).toISOString().slice(0, 10)
+}
+
+function addDays(day: string, n: number): string {
+  if (day.startsWith('9999')) return day
+  return new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10)
 }
 
 /**
@@ -71,16 +88,17 @@ export function isPastSurvey(
 function pastCore(
   id: string,
   closed: boolean,
+  closesAt: string,
   today: string,
   meetups: Meetup[],
   meetupId?: string | null,
 ): boolean {
   if (!closed) return false
   const m = meetupOfSurvey(id, meetups, meetupId)
-  if (!m) return false
   // 'dead' 는 모임이 아니라 예매 마감일 같은 줄이다. 그 날짜는 영영 「다녀온 날」이 아니다.
-  if (m.kind === 'dead') return false
-  return m.date < today
+  if (m && m.kind !== 'dead') return m.date < today
+  // 모임 날짜를 모른다 — 짝을 지어내지 않고 마감일에서 한 달을 센다
+  return addDays(seoulDay(closesAt), UNLINKED_GRACE_DAYS) < today
 }
 
 /**
@@ -99,7 +117,23 @@ export function isPastAdminSurvey(
   // 마감을 못 읽으면 **지난 것으로 보지 않는다.** 접어 버리면 운영자가
   // 고치러 들어올 자리가 사라진다 — 모르면 남기는 쪽으로 넘어진다.
   if (Number.isNaN(c)) return false
-  return pastCore(s.id, now.getTime() > c, today, meetups, s.meetupId)
+  return pastCore(s.id, now.getTime() > c, s.closesAt, today, meetups, s.meetupId)
+}
+
+/**
+ * 모임 요약 카드(meetingBrief.ts)가 요약하는 모임이 지났나 — 지났으면 투표 화면 맨 위가
+ * 아니라 「지난 투표」 맨 앞에 둔다(2026-09-26 운영자 요청). 설문과 같은 잣대 —
+ * 날짜만 본다. 이어진 모임이 없거나 예매 마감 같은 줄('dead')이면 지난 것으로 보지 않는다.
+ */
+export function isPastBrief(
+  brief: { meetupId?: string } | null,
+  today: string = seoulToday(),
+  meetups: Meetup[] = MEETUPS,
+): boolean {
+  if (!brief?.meetupId) return false
+  const m = meetups.find((x) => x.id === brief.meetupId)
+  if (!m || m.kind === 'dead') return false
+  return m.date < today
 }
 
 /** 운영자 목록을 「지금 것」과 「지난 관람」으로 가른다. 순서는 그대로 둔다. */
