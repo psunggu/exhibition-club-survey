@@ -4,6 +4,7 @@ import {
   type Area, type ContentType, type Event,
 } from './lib/events'
 import { pickNews } from './lib/news'
+import { readEntry, writeEntry } from './lib/scrollMemory'
 import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
@@ -338,12 +339,24 @@ function tabKeys<T>(items: readonly T[], current: T, set: (v: T) => void) {
   }
 }
 
+/** 이 기록 칸에서 고르던 필터 — 뒤로 가기 · 새로 고침으로 돌아오면 자리와 함께 되살린다(lib/scrollMemory). */
+function savedFilter(): { area: Area; type: ContentType; search: string } {
+  const v = readEntry('board') as { area?: unknown; type?: unknown; search?: unknown } | undefined
+  return {
+    area: AREAS.find((a) => a === v?.area) ?? '서울',
+    type: CONTENT_TYPES.find((t) => t === v?.type) ?? '전체',
+    search: typeof v?.search === 'string' ? v.search : '',
+  }
+}
+
 export function Board() {
   const [events, setEvents] = useState<Event[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [area, setArea] = useState<Area>('서울')
-  const [type, setType] = useState<ContentType>('전체')
-  const [search, setSearch] = useState('')
+  const [area, setArea] = useState<Area>(() => savedFilter().area)
+  const [type, setType] = useState<ContentType>(() => savedFilter().type)
+  const [search, setSearch] = useState(() => savedFilter().search)
+
+  useEffect(() => { writeEntry('board', { area, type, search }) }, [area, type, search])
 
   useEffect(() => {
     const ac = new AbortController()

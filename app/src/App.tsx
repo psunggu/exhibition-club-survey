@@ -387,6 +387,8 @@ export function App() {
     linkAt.current = Number.NEGATIVE_INFINITY
     if (!byLink) return back === undefined ? undefined : restoreTo(back)
     window.scrollTo(0, 0)
+    // 맨 위에 선 것도 적어 둔다 — 안 구르고 떠나면 스크롤 이벤트가 없어 이 칸의 자리가 비었다
+    rememberHere()
     // 초점도 새 화면 제목으로 옮긴다 — 화면을 읽어 주는 쪽이 옛 화면에 남지 않게.
     document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll: true })
     return undefined

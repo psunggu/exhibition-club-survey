@@ -27,8 +27,12 @@ const GIVE_UP = ['wheel', 'touchstart', 'keydown', 'mousedown'] as const
 const positions = load()
 /** 뒤로 · 앞으로 가기로 도착한 칸과 돌아갈 자리. 다음 화면 그리기에서 한 번 쓰고 비운다. */
 let pending: { key: string; y: number | undefined; at: number } | null = null
-/** 되살리는 동안에는 적지 않는다 — 덜 자란 페이지에 걸린 자리를 기억하면 안 된다. */
-let restoring = false
+/**
+ * 지금 돌고 있는 되살리기(멈추는 함수). **한 번에 하나만** 돈다 — 새로 고침 뒤 보드 목록을
+ * 기다리던 되살리기가 뒤로 가기 뒤까지 남아 앞 화면을 보드의 자리로 끌고 가 그 자리를
+ * 앞 화면 것으로 적었다(2026-09-26 검토). 도는 동안에는 자리를 적지 않는다.
+ */
+let active: (() => void) | null = null
 let saveTimer = 0
 
 function load(): Map<string, number> {
@@ -66,8 +70,9 @@ function tagEntry() {
   history.replaceState({ ...(history.state ?? {}), siteKey }, '')
 }
 
-/** 링크를 누르는 순간의 자리를 적는다. */
+/** 링크를 누르는 순간의 자리를 적는다. 링크로 연 새 화면에서도 부른다 — 맨 위(0)를 적어 둔다. */
 export function rememberHere() {
+  active?.()
   tagEntry()
   const key = keyOf()
   if (key) remember(key, window.scrollY)
@@ -78,7 +83,8 @@ export function takePending(): number | undefined {
   const p = pending
   pending = null
   if (!p || p.key !== keyOf()) return undefined
-  return p.y
+  // 이름표는 있는데 적힌 자리가 없으면(오래돼 버렸거나) 맨 위 — 앞 화면의 자리를 물려받지 않게
+  return p.y ?? 0
 }
 
 /** 새로 고침 · 다른 페이지에서 돌아온 칸이면 그때의 자리를 준다. 처음 온 칸은 이름표가 없다. */
@@ -95,7 +101,8 @@ export function savedHere(): number | undefined {
  * 돌려주는 함수는 **적지 않고** 그만둔다 — 화면이 또 바뀌어 거둘 때 쓴다.
  */
 export function restoreTo(y: number) {
-  restoring = true
+  active?.()
+  const key = keyOf()
   let ended = false
   /**
    * 글꼴이 다 왔는지는 **멈출 때마다 새로** 본다. 처음 한 번만 보면 틀린다 — 되살리기가 시작될 때는
@@ -106,6 +113,7 @@ export function restoreTo(y: number) {
   /** 다시 맞추고, 잠잠한지 600ms 뒤에 본다 */
   const settle = () => {
     if (ended) return
+    if (keyOf() !== key) { cancel(); return }   // 그사이 다른 화면으로 갔다
     window.scrollTo(0, y)
     window.clearTimeout(quiet)
     quiet = window.setTimeout(() => {
@@ -115,26 +123,45 @@ export function restoreTo(y: number) {
   const grow = new ResizeObserver(settle)
   const timer = window.setTimeout(() => stop(), 6000)
   function cancel() {
+    if (ended) return
     ended = true
     grow.disconnect()
     window.clearTimeout(timer)
     window.clearTimeout(quiet)
     for (const ev of GIVE_UP) window.removeEventListener(ev, stop)
     document.fonts?.removeEventListener('loadingdone', settle)
-    restoring = false
+    if (active === cancel) active = null
   }
   function stop() {
     if (ended) return
     cancel()
-    const key = keyOf()
-    if (key) remember(key, window.scrollY)
+    if (key && keyOf() === key) remember(key, window.scrollY)
   }
+  active = cancel
   grow.observe(document.body)
   for (const ev of GIVE_UP) window.addEventListener(ev, stop, { passive: true })
   // 글꼴이 바뀌면 글줄이 달라져 위쪽 높이가 변한다 — 그때마다 다시 맞춘다
   document.fonts?.addEventListener('loadingdone', settle)
   settle()
   return cancel
+}
+
+/**
+ * 기록 칸마다 작은 값 하나를 기억한다 — 보드의 지역 · 유형 · 검색어.
+ * 자리만 되살리고 필터는 기본값(서울 · 전체)으로 돌아가면, 회원은 필터를 바꿔 보던
+ * 목록이 아니라 엉뚱한 목록의 한가운데에 선다 — 필터 탭은 화면 밖이라 바뀐 줄도 모른다.
+ */
+export function readEntry(name: string): unknown {
+  const key = keyOf()
+  if (!key) return undefined
+  try { return JSON.parse(sessionStorage.getItem(`site-entry:${key}:${name}`) ?? 'null') ?? undefined } catch { return undefined }
+}
+
+export function writeEntry(name: string, value: unknown) {
+  tagEntry()
+  const key = keyOf()
+  if (!key) return
+  try { sessionStorage.setItem(`site-entry:${key}:${name}`, JSON.stringify(value)) } catch { /* 못 적으면 기억 없이 간다 */ }
 }
 
 /** 스크롤 · 뒤로 가기 · 해시 바뀜 · 떠나기를 지켜본다. 떼어 내는 함수를 돌려준다. */
@@ -147,12 +174,13 @@ export function watchScroll() {
     frame = requestAnimationFrame(() => {
       frame = 0
       // 뒤로 가기가 막 일어났으면 브라우저가 옛 화면 길이에 걸린 자리일 수 있다 — 다시 그려질 때까지 적지 않는다
-      if (restoring || (pending && performance.now() - pending.at < 1000)) return
+      if (active || (pending && performance.now() - pending.at < 1000)) return
       const key = keyOf()
       if (key) remember(key, window.scrollY)
     })
   }
   const onPop = () => {
+    active?.()
     const key = keyOf()
     pending = key ? { key, y: positions.get(key), at: performance.now() } : null
   }
@@ -162,7 +190,7 @@ export function watchScroll() {
   // 떠나는 순간의 자리까지 적고 옮겨 둔다 — 새로 고침 · 다른 페이지에 다녀오기
   const onHide = () => {
     const key = keyOf()
-    if (key && !restoring) positions.set(key, Math.round(window.scrollY))
+    if (key && !active) positions.set(key, Math.round(window.scrollY))
     save()
   }
   window.addEventListener('pagehide', onHide)
