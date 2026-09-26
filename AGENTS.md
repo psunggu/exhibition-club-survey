@@ -1,6 +1,6 @@
 # AGENTS.md — 프로젝트 규칙 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-09-26. **여기에는 규칙만 적는다.**
+> 최종 갱신: 2026-09-27. **여기에는 규칙만 적는다.**
 > 왜 그렇게 정했는지와 무슨 일이 있었는지는 `docs/HISTORY.md`, 정기 갱신 절차는 `docs/OPERATIONS.md`.
 > 이 문서는 세션마다 읽히므로 길어지면 그만큼 매번 비용이 든다 — 근거는 HISTORY 로 보낸다.
 
@@ -39,6 +39,7 @@
 - 검사기가 못 잡는 것: 375px 가로 스크롤 · 캐시 버스팅 `?v=` 누락 · CSP 위반(브라우저 콘솔에만 뜬다) · React 가 만드는 iframe(`frame-src` 없음) · 달력 「오늘」 마커.
 - `validate-survey-admin-ui` 는 `.admin-card` · `.note*` 같은 클래스 이름을 차례로 짚어 「몇 번째 설문」 을 고른다. **새 구역은 새 이름**(`.admin-news-card` · `.admin-guide*` · `.gdoc-*`)을 쓰고, 모양이 같으면 CSS 선택자만 더한다.
 - 새 표 · 함수는 `validate-survey-schema.mjs` 의 `LOCKED` · `CALLABLE` 목록에 함께 적는다. 안 적으면 검사 밖이다.
+- 검사기가 `dist/` 를 띄울 때는 `scripts/static-server.mjs` 의 `serveStatic` 만 쓰고 `http://127.0.0.1:포트` 로 연다(localhost 아님). `http.createServer` 를 베끼지 않는다 — 베낀 서버가 모든 네트워크에 열리고 `dist/` 밖 파일을 내줬다(2026-09-27).
 
 ## 개발 규칙
 

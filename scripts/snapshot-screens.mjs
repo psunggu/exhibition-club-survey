@@ -17,8 +17,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { FROZEN_AT, FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -47,20 +47,7 @@ try {
 }
 
 // ── dist 를 그대로 내주는 최소 서버
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json' };
-const server = http.createServer((req, res) => {
-  let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-  if (u.startsWith(BASE)) u = u.slice(BASE.length);
-  if (u === '' || u === '/') u = '/index.html';
-  const p = path.join(DIST, u);
-  fs.readFile(p, (e, d) => {
-    if (e) { res.writeHead(404); res.end('404'); return; }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(p)] ?? 'application/octet-stream' });
-    res.end(d);
-  });
-});
-await new Promise((r) => server.listen(PORT, r));
+const server = await serveStatic(DIST, PORT);
 
 /**
  * 화면마다 이 선택자들의 계산된 스타일과 상자를 잰다.
@@ -172,14 +159,14 @@ await freezeClock(page);
 // DB 응답도 떠 둔 것으로 고정한다 — 보드가 갱신되면 이 검사가 거짓으로 실패한다
 await serveFrozenData(page);
 const SCREENS = [
-  ['보드-375', `http://localhost:${PORT}${BASE}/#/`, 375],
-  ['보드-1280', `http://localhost:${PORT}${BASE}/#/`, 1280],
-  ['일정-375', `http://localhost:${PORT}${BASE}/#/calendar`, 375],
-  ['일정-1280', `http://localhost:${PORT}${BASE}/#/calendar`, 1280],
+  ['보드-375', `http://127.0.0.1:${PORT}${BASE}/#/`, 375],
+  ['보드-1280', `http://127.0.0.1:${PORT}${BASE}/#/`, 1280],
+  ['일정-375', `http://127.0.0.1:${PORT}${BASE}/#/calendar`, 375],
+  ['일정-1280', `http://127.0.0.1:${PORT}${BASE}/#/calendar`, 1280],
   // 투표 현황 카드(`.survey-jump`)는 2026-09-25(#190)부터 투표 화면에만 있다. 이 두 화면이 없으면
   // 위 WATCH 의 카드 두 줄과 아래 `live` 빼기가 재는 자리를 잃는다.
-  ['투표-375', `http://localhost:${PORT}${BASE}/#/survey`, 375],
-  ['투표-1280', `http://localhost:${PORT}${BASE}/#/survey`, 1280],
+  ['투표-375', `http://127.0.0.1:${PORT}${BASE}/#/survey`, 375],
+  ['투표-1280', `http://127.0.0.1:${PORT}${BASE}/#/survey`, 1280],
 ];
 const now = {};
 for (const [name, url, w] of SCREENS) now[name] = await measure(page, url, w);

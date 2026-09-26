@@ -16,8 +16,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { freezeClock, FROZEN_DAY } from './frozen-clock.mjs';
 import { requestKey, FROZEN_DATA_FILE } from './frozen-data.mjs';
 
@@ -34,22 +34,7 @@ let chromium;
 try { ({ chromium } = await import('playwright')); }
 catch { console.error('playwright 가 없다 — `npm i -D playwright`'); process.exit(1); }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json' };
-const serve = (root, port, spa) => new Promise((done) => {
-  const s = http.createServer((req, res) => {
-    let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-    if (u.startsWith(BASE)) u = u.slice(BASE.length);
-    if (u === '' || u === '/') u = '/index.html';
-    if (spa && !path.extname(u)) u = '/index.html';
-    fs.readFile(path.join(root, u), (e, d) => {
-      if (e) { res.writeHead(404); res.end('404'); return; }
-      res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-      res.end(d);
-    });
-  });
-  s.listen(port, () => done(s));
-});
+const serve = (root, port, spa) => serveStatic(root, port, { spa });
 
 const sNew = await serve(DIST, 8217, true);
 
@@ -100,14 +85,14 @@ const browser = await chromium.launch();
 
 /** 화면 검사들이 실제로 여는 자리 전부. 하나라도 빠지면 그 화면이 빈 채로 재진다. */
 const VISITS = [
-  ['이식 보드', `http://localhost:8217${BASE}/#/`],
-  ['이식 일정', `http://localhost:8217${BASE}/#/calendar`],
-  ['이식 설문', `http://localhost:8217${BASE}/#/survey`],
-  ['이식 설문·식사', `http://localhost:8217${BASE}/#/survey/meal`],
+  ['이식 보드', `http://127.0.0.1:8217${BASE}/#/`],
+  ['이식 일정', `http://127.0.0.1:8217${BASE}/#/calendar`],
+  ['이식 설문', `http://127.0.0.1:8217${BASE}/#/survey`],
+  ['이식 설문·식사', `http://127.0.0.1:8217${BASE}/#/survey/meal`],
   // 사이트 띠 검사(validate-site-nav)가 주소마다 띠를 보려고 더 여는 자리
-  ['이식 설문·구글', `http://localhost:8217${BASE}/#/survey/google`],
-  ['이식 설문·숨긴 갈래', `http://localhost:8217${BASE}/#/survey/club`],
-  ['이식 운영자', `http://localhost:8217${BASE}/#/survey/admin`],
+  ['이식 설문·구글', `http://127.0.0.1:8217${BASE}/#/survey/google`],
+  ['이식 설문·숨긴 갈래', `http://127.0.0.1:8217${BASE}/#/survey/club`],
+  ['이식 운영자', `http://127.0.0.1:8217${BASE}/#/survey/admin`],
 ];
 
 for (const [label, url] of VISITS) {

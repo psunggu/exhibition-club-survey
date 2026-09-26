@@ -17,8 +17,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
 import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
@@ -35,19 +35,7 @@ const ok = (label, cond, detail = '') => {
   if (!cond) fails.push(label);
 };
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json' };
-const server = http.createServer((req, res) => {
-  let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-  if (u.startsWith(BASE)) u = u.slice(BASE.length);
-  if (u === '' || u === '/') u = '/index.html';
-  fs.readFile(path.join(ROOT, 'dist', u), (e, d) => {
-    if (e) { res.writeHead(404); res.end('404'); return; }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-    res.end(d);
-  });
-});
-await new Promise((r) => server.listen(8265, r));
+const server = await serveStatic(path.join(ROOT, 'dist'), 8265);
 
 const PW = '맞는암호';
 let saved = null;       // 마지막으로 저장된 payload
@@ -327,7 +315,7 @@ page.on('dialog', (d) => d.accept());            // 지우기 확인창
 
 const go = async () => {
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8265${BASE}/#/survey/admin`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8265${BASE}/#/survey/admin`, { waitUntil: 'networkidle' });
   await page.waitForSelector('.survey-who', { timeout: 20000 });
   await page.waitForTimeout(400);
 };
@@ -1118,7 +1106,7 @@ console.log('\n── 실설정(selfSurvey 꺼짐)');
   const p = await ctxOff.newPage();
   const offErrs = [];
   p.on('pageerror', (e) => offErrs.push(String(e)));
-  await p.goto(`http://localhost:8265${BASE}/#/survey/admin`, { waitUntil: 'networkidle' });
+  await p.goto(`http://127.0.0.1:8265${BASE}/#/survey/admin`, { waitUntil: 'networkidle' });
   await p.waitForSelector('.survey-who', { timeout: 20000 });
   await p.fill('.admin-input', PW);
   await p.click('.survey-who .survey-submit');
