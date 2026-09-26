@@ -934,15 +934,13 @@ function SurveyBody({ category }: { category: TabCategory }) {
      * 요약은 설문이 아니라 **모임**을 말하는 것이라, 이 갈래에 투표가 없다는 것과
      * 「모임이 이렇게 정해졌다」 는 서로 다른 이야기다.
      * 실제로 식사 갈래는 9월 투표가 아직 없는데, 그 갈래에서도 식사 시간은 정해져 있다.
+     *
+     * 「지금 투표가 없습니다」 는 여기서 다시 말하지 않는다 — 맨 위 「투표 현황」 카드
+     * (App.tsx 의 SurveyJump)가 한 번 말한다. 두 번 말하던 초록 칸은 2026-09-27 에 뺐다(운영자 요청).
      */
     return (
       <>
         <MeetingBriefCard brief={briefNow} category={category} surveys={all ?? []} />
-        <p className="survey-empty">
-          {selfSurveyOn()
-            ? `지금 ${CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.`
-            : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
-        </p>
         <SurveyHistory items={[]} briefs={briefsPast} category={category} surveys={all ?? []} />
       </>
     )
@@ -983,13 +981,7 @@ function SurveyBody({ category }: { category: TabCategory }) {
           </details>
         )
         : liveCards}
-      {!live.length && past.length > 0 && (
-        <p className="survey-empty">
-          {selfSurveyOn()
-            ? `지금 ${CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.`
-            : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
-        </p>
-      )}
+      {/* 지금 투표가 없다는 말은 맨 위 「투표 현황」 카드가 한다(위 !surveys.length 주석 참고). */}
       <SurveyHistory items={past} briefs={briefsPast} category={category} surveys={all ?? []} />
     </>
   )
