@@ -17,10 +17,9 @@
  * 반올림에 따라 통과와 미달을 오갔다. 그래서 여유를 둔 값을 쓴다.
  */
 
-import fs from 'node:fs';
 import path from 'node:path';
-import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { serveStatic } from './static-server.mjs';
 import { freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -31,19 +30,7 @@ let chromium;
 try { ({ chromium } = await import('playwright')); }
 catch { console.log('playwright 가 없어 건너뛴다'); process.exit(0); }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css',
-  '.js': 'text/javascript', '.json': 'application/json' };
-const server = http.createServer((req, res) => {
-  let u = decodeURIComponent((req.url ?? '/').split('?')[0]);
-  if (u.startsWith(BASE)) u = u.slice(BASE.length);
-  if (u === '' || u === '/') u = '/index.html';
-  fs.readFile(path.join(ROOT, 'dist', u), (e, d) => {
-    if (e) { res.writeHead(404); res.end('404'); return; }
-    res.writeHead(200, { 'content-type': TYPES[path.extname(u)] ?? 'application/octet-stream' });
-    res.end(d);
-  });
-});
-await new Promise((r) => server.listen(8252, r));
+const server = await serveStatic(path.join(ROOT, 'dist'), 8252);
 
 /** WCAG 상대 휘도 → 대비비 */
 const lum = (c) => {
@@ -187,7 +174,7 @@ const judge = (name, data) => {
 for (const [name, route] of [['일정', '#/calendar'], ['보드', '#/']]) {
   // 해시만 바꾸면 다시 그리지 않을 수 있다. 매번 새로 연다.
   await page.goto('about:blank');
-  await page.goto(`http://localhost:8252${BASE}/${route}`, { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:8252${BASE}/${route}`, { waitUntil: 'networkidle' });
   try {
     await page.waitForSelector(READY[name], { timeout: 30000, state: 'attached' });
   } catch {
