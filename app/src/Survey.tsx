@@ -6,9 +6,9 @@ import {
   type Survey as SurveyT, type SurveyLink, type SurveyOption, type TabCategory,
 } from './lib/survey'
 import { Analysis, ENOUGH, Metrics, ResultChart, summarize } from './SurveyChart'
-import { meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
+import { isPastBrief, meetupOfSurvey, splitByHistory } from './lib/surveyHistory'
 import { MEETUPS } from './data/meetups'
-import { BRIEF } from './data/meetingBrief'
+import { BRIEFS, type MeetingBrief } from './data/meetingBrief'
 import { GoogleSurveyRounds } from './GoogleSurveyRounds'
 
 /**
@@ -620,18 +620,55 @@ function SurveyHistoryItem({ s }: { s: SurveyT }) {
  * 그래서 다녀온 지 한참 지난 투표가 화면 맨 위를 차지하고 있었다.
  * 지우지는 않는다 — 어디서 먹었는지, 몇 명이 골랐는지는 두고두고 찾는 기록이다.
  */
-function SurveyHistory({ items }: { items: SurveyT[] }) {
-  if (!items.length) return null
+function SurveyHistory({ items, briefs = [], category, surveys = [] }: {
+  items: SurveyT[]
+  /** 모임 날짜가 지난 요약 — 맨 앞에 둔다(2026-09-26 운영자 요청) */
+  briefs?: MeetingBrief[]
+  category: TabCategory
+  surveys?: SurveyT[]
+}) {
+  if (!items.length && !briefs.length) return null
   return (
     <section className="survey-history" aria-labelledby="surveyHistoryTitle">
       {/* 「설문」 이 아니라 「투표」 — 달력·보드·제목과 말을 맞춘다 (2026-09-10).
           옛 설문 넷은 전부 톡방 투표를 옮겨 온 것이라 「투표」 가 사실에도 맞는다. */}
-      <h2 id="surveyHistoryTitle">지난 투표 ({items.length})</h2>
+      <h2 id="surveyHistoryTitle">지난 투표 ({items.length + briefs.length})</h2>
       <p className="survey-history-hint">
-        모임까지 끝난 투표입니다. 결과는 지우지 않고 그대로 둡니다.
+        {briefs.length ? '모임까지 끝난 모임 요약과 투표입니다.' : '모임까지 끝난 투표입니다.'} 결과는 지우지 않고 그대로 둡니다.
       </p>
+      {briefs.map((b) => <PastBriefItem key={b.id} brief={b} category={category} surveys={surveys} />)}
       {items.map((s) => <SurveyHistoryItem key={s.id} s={s} />)}
     </section>
+  )
+}
+
+/**
+ * **모임 날짜가 지난 요약 한 장** — 지난 투표 줄과 같은 모양으로 접어 둔다.
+ * 접힌 줄에 무엇을 · 언제 · 식사가 다 들어 있고, 열면 원래 요약 카드가 그대로 나온다.
+ */
+function PastBriefItem({ brief, category, surveys }: {
+  brief: MeetingBrief; category: TabCategory; surveys: SurveyT[]
+}) {
+  const [opened, setOpened] = useState(false)
+  return (
+    <details
+      className="survey-past survey-past-brief"
+      onToggle={(e) => setOpened((e.currentTarget as HTMLDetailsElement).open)}
+    >
+      <summary>
+        <span className="survey-past-title">{brief.title} 요약</span>
+        <span className="survey-past-facts">
+          {brief.rows.filter((r) => r.value).map((r) => (
+            <span key={r.key}><b>{r.label}</b>{' '}{r.value}</span>
+          ))}
+        </span>
+      </summary>
+      {opened && (
+        <div className="survey-past-body">
+          <MeetingBriefCard brief={brief} category={category} surveys={surveys} titleId={`brief-${brief.id}`} />
+        </div>
+      )}
+    </details>
   )
 }
 
@@ -700,10 +737,9 @@ function decideRow(
   return { kind: 'won', title: leaders[0]!.o.title, votes: top, total: tally.total }
 }
 
-function MeetingBriefCard({ category, surveys }: {
-  category: TabCategory; surveys: SurveyT[]
+function MeetingBriefCard({ brief, category, surveys, titleId = 'briefTitle' }: {
+  brief: MeetingBrief | null; category: TabCategory; surveys: SurveyT[]; titleId?: string
 }) {
-  const brief = BRIEF
   /** 집계를 읽어야 할 설문들. 같은 설문을 두 줄이 가리켜도 한 번만 읽는다. */
   const surveyIds = useMemo(() => {
     if (!brief) return []
@@ -735,9 +771,9 @@ function MeetingBriefCard({ category, surveys }: {
   if (!brief) return null
 
   return (
-    <section className="brief" aria-labelledby="briefTitle">
+    <section className="brief" aria-labelledby={titleId}>
       <div className="brief-head">
-        <h2 id="briefTitle">{brief.title}</h2>
+        <h2 id={titleId}>{brief.title}</h2>
         <span className="brief-state">{brief.state}</span>
       </div>
       <dl className="brief-rows">
@@ -877,6 +913,13 @@ function SurveyBody({ category }: { category: TabCategory }) {
   // 훅을 다 부른 뒤에 가른다 (위 Survey 주석 참고)
   if (category === 'google') return <GoogleSurveyRounds />
 
+  /**
+   * 맨 위 요약은 **아직 지나지 않은 첫 모임** 하나, 모임 날짜가 지난 요약은 「지난 투표」 맨 앞으로.
+   * 날짜로만 가른다(lib/surveyHistory.ts) — 손으로 옮기지 않아도 다음 날 저절로 내려간다.
+   */
+  const briefNow = BRIEFS.find((b) => !isPastBrief(b)) ?? null
+  const briefsPast = BRIEFS.filter((b) => isPastBrief(b))
+
   if (error) {
     return (
       <p className="survey-empty" role="alert">
@@ -894,12 +937,13 @@ function SurveyBody({ category }: { category: TabCategory }) {
      */
     return (
       <>
-        <MeetingBriefCard category={category} surveys={all ?? []} />
+        <MeetingBriefCard brief={briefNow} category={category} surveys={all ?? []} />
         <p className="survey-empty">
           {selfSurveyOn()
             ? `지금 ${CATEGORY[category].short} 설문이 없습니다. 새 설문이 올라오면 톡방에 안내드립니다.`
             : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
         </p>
+        <SurveyHistory items={[]} briefs={briefsPast} category={category} surveys={all ?? []} />
       </>
     )
   }
@@ -918,13 +962,13 @@ function SurveyBody({ category }: { category: TabCategory }) {
    * 접는 근거가 「위에 결론이 있다」 이기 때문이다.
    */
   const answerable = selfSurveyOn() && live.some((s) => isOpen(s) && !s.mirrored)
-  const foldable = BRIEF !== null && live.length > 0 && !answerable
+  const foldable = briefNow !== null && live.length > 0 && !answerable
 
   const liveCards = live.map((s) => <OneSurvey key={s.id} s={s} onChanged={() => reload()} />)
 
   return (
     <>
-      <MeetingBriefCard category={category} surveys={all ?? []} />
+      <MeetingBriefCard brief={briefNow} category={category} surveys={all ?? []} />
       {foldable
         ? (
           <details className="survey-fold">
@@ -946,7 +990,7 @@ function SurveyBody({ category }: { category: TabCategory }) {
             : `지금 ${CATEGORY[category].short} 투표가 없습니다. 새 투표는 톡방에서 안내드립니다.`}
         </p>
       )}
-      <SurveyHistory items={past} />
+      <SurveyHistory items={past} briefs={briefsPast} category={category} surveys={all ?? []} />
     </>
   )
 }

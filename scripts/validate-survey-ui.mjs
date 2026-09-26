@@ -51,7 +51,29 @@ await new Promise((r) => server.listen(8261, r));
 
 const iso = (d) => new Date(d).toISOString();
 const HOUR = 3600_000;
-const now = Date.now();
+/**
+ * **「지금」 을 첫 모임 요약의 모임 전날 낮으로 묶는다(2026-09-26).**
+ *
+ * 요약 카드는 요약한 모임 날짜가 지나면 맨 위에서 「지난 투표」 로 내려간다. 진짜 시각으로
+ * 재면 모임이 지난 날부터 요약 절(맨 위 카드 · 접기)이 통째로 헛돈다 — 실제로 9/19 모임 뒤에
+ * 열두 곳이 한꺼번에 깨졌다. 그래서 브라우저 시계와 가짜 자료의 「지금」 을 같은 날로 묶는다.
+ * 모임 날짜는 소스(meetingBrief.ts 의 첫 meetupId → meetups.ts)에서 읽는다 —
+ * 새 모임 요약을 맨 앞에 더하면 저절로 따라간다. 모임이 지난 뒤의 모습은 아래 절에서 따로 잰다.
+ */
+const briefSrc = fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8');
+const briefMeetupId = /meetupId:\s*'([^']+)'/.exec(briefSrc)?.[1];
+const briefTitle0 = /^\s*title: '([^']+)'/m.exec(briefSrc)?.[1] ?? '';
+const briefMeetupDate = briefMeetupId
+  ? new RegExp(`id: '${briefMeetupId}',\\s*date: '(\\d{4}-\\d{2}-\\d{2})'`)
+    .exec(fs.readFileSync(path.join(ROOT, 'app/src/data/meetups.ts'), 'utf8'))?.[1]
+  : undefined;
+if (!briefMeetupDate) {
+  console.error('첫 모임 요약의 모임 날짜를 소스에서 못 읽었다 — meetingBrief.ts 의 meetupId 와 meetups.ts 를 본다');
+  process.exit(1);
+}
+/** 서울 기준 그 날 낮 12시에서 n 일 */
+const dayNoon = (day, n = 0) => new Date(Date.parse(`${day}T12:00:00+09:00`) + n * 24 * HOUR);
+const now = dayNoon(briefMeetupDate, -1).getTime();
 
 const OPEN_SURVEY = {
   id: 'srv-open', title: '9월 정기 관람 전시 추천',
@@ -165,6 +187,8 @@ const MEAL_LOOSE = {
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
+// 브라우저 시계를 가짜 자료의 「지금」 과 묶는다 (위 가짜 데이터 설명)
+await ctx.clock.setFixedTime(new Date(now));
 
 /**
  * **응답 화면을 켠 설정으로 잰다.** 배포 설정은 `selfSurvey: false` 라 이름 확인 ·
@@ -574,7 +598,8 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(400);
 
-const pastCards = await page.$$('.survey-past');
+// 모임이 지난 요약도 같은 모양(.survey-past)으로 접히므로, 투표 줄만 센다
+const pastCards = await page.$$('.survey-past:not(.survey-past-brief)');
 ok('모임까지 끝난 설문이 지난 설문으로 내려간다', pastCards.length === 1, `${pastCards.length}개`);
 
 const liveHeads = await page.$$eval('.survey-head h3', (es) => es.map((e) => e.textContent.trim()));
@@ -1090,6 +1115,35 @@ if (folds.length === 1) {
 }
 
 
+/* ── 모임이 지난 요약은 「지난 투표」 맨 앞으로 (2026-09-26 운영자 요청) ──────
+ * 요약한 모임 다음 날로 시계를 옮겨, 요약이 맨 위에서 빠지고 「지난 투표」 맨 앞에 접혀 들어가는지,
+ * 열면 같은 카드가 나오는지, 결론이 위에 없으니 끝난 투표를 접지 않는지를 잰다. 재고 나면 되돌린다. */
+console.log('\n── 모임이 지난 요약');
+await ctx.clock.setFixedTime(dayNoon(briefMeetupDate, 1));
+await page.goto('about:blank');
+await page.goto(`http://localhost:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
+await waitFor('.survey-history');
+await page.waitForTimeout(900);
+const topBriefs = await page.$$eval('.brief', (es) => es.filter((e) => !e.closest('.survey-history')).length);
+ok('모임이 지난 요약은 맨 위에 없다', topBriefs === 0, `${topBriefs}개`);
+const firstPast = await page.$eval('.survey-history .survey-past',
+  (e) => ({ brief: e.classList.contains('survey-past-brief'), sum: e.querySelector('summary')?.innerText.replace(/\s+/g, ' ').trim() ?? '' }))
+  .catch(() => null);
+ok('「지난 투표」 맨 앞에 요약이 접혀 있다', !!firstPast?.brief, firstPast?.sum.slice(0, 40) ?? '지난 투표가 없다');
+ok('접힌 줄에 모임 이름이 있다', !!briefTitle0 && !!firstPast?.sum.includes(briefTitle0), `${briefTitle0} / ${firstPast?.sum.slice(0, 30) ?? ''}`);
+if (firstPast?.brief) {
+  await page.click('.survey-history .survey-past-brief > summary');
+  await page.waitForTimeout(500);
+  const pastRows = await page.$$eval('.survey-history .brief-row', (es) => es.length);
+  ok('열면 요약 카드가 그대로 나온다', pastRows === rows.length && pastRows > 0, `${pastRows}줄 / 맨 위일 때 ${rows.length}줄`);
+}
+const histHead = await page.$eval('#surveyHistoryTitle', (e) => e.textContent ?? '').catch(() => '');
+const histCount = await page.$$eval('.survey-history .survey-past', (es) => es.length);
+ok('지난 투표 개수에 요약이 들어간다', histHead.includes(`(${histCount})`), `${histHead} · 줄 ${histCount}`);
+ok('맨 위에 결론이 없으면 끝난 투표를 접지 않는다', (await page.$$('.survey-fold')).length === 0,
+  `${(await page.$$('.survey-fold')).length}개`);
+await ctx.clock.setFixedTime(new Date(now));
+
 /* ── 아직 정하는 중인 줄 ────────────────────────────────────
  *
  * 「식사 장소」 는 설문이 정한다. 그 설문이 어떤 상태냐에 따라 말이 달라져야 한다.
@@ -1110,7 +1164,7 @@ const placeOptions = ['가게 가', '가게 나', '가게 다'].map((t, i) => ({
 
 /** 식사 장소 설문을 세운다. votes 가 null 이면 집계를 안 준다(=아직 볼 때가 아니다). */
 const servePlace = async ({ open, votes }) => {
-  const now2 = Date.now();
+  const now2 = now;   // 브라우저 시계와 같은 「지금」 (위 설명)
   const survey = {
     id: PLACE_ID, title: '9월 정기모임 식사 장소', intro: null,
     multi_choice: true,

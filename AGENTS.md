@@ -85,6 +85,7 @@
 ## 설문
 
 - **투표는 톡방에서, 사이트는 결과만**(2026-09-09). `app/public/config.js` 의 `selfSurvey: false` 가 회원 응답을 끈다 — 모든 설문이 `mirrored` 와 같은 결과 화면이 되고 `submitResponse` 는 던진다. 응답 화면 코드는 얼마간 남긴다. 검사기는 `scripts/self-survey-config.mjs` 로 **켠 설정을 끼워** 그 코드를 재고, `validate-survey-ui` · `validate-survey-admin-ui` 끝에서 꺼진 설정도 잰다. 결과를 사이트에 옮겨 넣는 절차는 없다 — 결과는 톡방에서 나누고, 정해진 것만 요약 카드에 값으로 적는다(`docs/OPERATIONS.md` 1번).
+- **일정이 지난 것은 날짜로 저절로 「지난」 쪽으로 간다 — 손으로 옮기지 않는다**(2026-09-26 운영자 요청). 모임은 `isDone`(날짜 < 오늘), 투표는 이어진 모임 날짜(`surveyIds` · `meetup_id`)가 지나면, 이어진 모임이 없으면 마감 30일 뒤(`UNLINKED_GRACE_DAYS`), 모임 요약은 `meetupId` 의 날짜가 지나면 「지난 투표」 맨 앞으로(`lib/surveyHistory.ts`). 요약(`meetingBrief.ts` 의 `BRIEFS`)은 새 모임을 **맨 앞에 더하고 지난 것을 지우지 않는다.**
 - 설문은 **사이트에서 만들지 않는다**(2026-09-10). 투표는 톡방에서 올리고 결과도 거기서 나눈다. 운영자 화면의 「새 설문 올리기」·설문 카드·「지난 관람」 은 같은 `selfSurvey` 스위치로 꺼 두었다 — 코드와 DB 함수, 「이어지는 모임」(`meetup_id`) 은 그대로 있어 켜면 돌아온다. `meetups.ts` 의 `surveyIds` 와 `meetup_id` 는 둘 다 읽힌다(`surveyHistory.meetupOfSurvey`).
 - `google` 은 화면에만 있는 갈래다. `SurveyCategory`(DB 다섯)와 `TabCategory`(+google)를 **합치지 않는다.** 운영자 화면의 「어느 화면에」 는 `POSTABLE_CATEGORY_ORDER`(넷).
 - **`etc`(기타)는 탭 · 주소 · 운영자 선택지에 없지만 값은 지우지 않는다** — `toCategory` 가 모르는 값을 받아 주는 안전망이고 DB 제약도 그 값을 안다. `CATEGORY.etc.route` 는 첫 갈래로 간다.

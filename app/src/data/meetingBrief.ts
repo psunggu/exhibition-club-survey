@@ -71,6 +71,13 @@ export type BriefRow = {
 
 export type MeetingBrief = {
   id: string
+  /**
+   * 이 카드가 요약하는 모임(`meetups.ts` 의 id). **모임 날짜가 지나면** 카드가 투표 화면
+   * 맨 위에서 「지난 투표」 맨 앞으로 내려간다(lib/surveyHistory.ts 의 isPastBrief,
+   * 2026-09-26 운영자 요청). 날짜로만 가른다 — 손으로 적는 값에 걸면 하루씩 늦는다.
+   * 비우면 늘 맨 위에 둔다(추측하지 않는다).
+   */
+  meetupId?: string
   title: string
   /** 오른쪽 위 딱지. 「확정 발표 전」 처럼 지금 상태 */
   state: string
@@ -87,13 +94,19 @@ export type MeetingBrief = {
  */
 
 /**
- * 지금 요약할 모임. 없으면 `null` 로 두면 카드가 통째로 안 그려진다.
+ * 모임 요약들 — **새 모임은 맨 앞에 더한다. 지난 것을 지우지 않는다.**
  *
- * **하나만 둔다.** 여러 모임을 한 화면에 요약하면 어느 것이 이번 것인지 흐려진다.
- * 10월 모임이 시작되면 이 값을 갈아 끼운다.
+ * 화면 맨 위에는 **아직 지나지 않은 첫 요약 하나만** 뜬다 — 여러 모임을 한 화면에
+ * 요약하면 어느 것이 이번 것인지 흐려진다. 모임 날짜(`meetupId`)가 지난 요약은 저절로
+ * 「지난 투표」 맨 앞으로 내려간다(2026-09-26 운영자 요청). 예전에는 하나만 두고 갈아 끼워서
+ * 지난 모임의 요약이 통째로 사라졌다.
+ *
+ * 검사기(validate-survey-ui · validate-survey-schema)는 이 파일에서 **첫 요약**의 글자를
+ * 읽는다 — 그래서 새 모임을 맨 앞에 둔다.
  */
-export const BRIEF: MeetingBrief | null = {
+export const BRIEFS: MeetingBrief[] = [{
   id: 'september-2026',
+  meetupId: 'september-regular',
   title: '9월 정기모임',
   /**
    * **2026-08-28 확정 공지가 나면서 「확정 발표 전」 에서 바꿨다.**
@@ -171,4 +184,4 @@ export const BRIEF: MeetingBrief | null = {
       value: '꽃누리들밥 경복궁점',
     },
   ],
-}
+}]
