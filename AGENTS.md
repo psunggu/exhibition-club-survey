@@ -44,7 +44,7 @@
 ## 개발 규칙
 
 - **CSP 엄격.** 외부 CDN · 인라인 `<style>` · `style=` · 인라인 `<script>` 금지. 되는 것: React `style={{}}`, SVG 표현 속성(`<rect width fill>`). 안 되는 것: `style="…"` · `setAttribute('style')` · `<style>` 주입 · iframe. meta 의 `frame-ancestors` 는 브라우저가 무시한다 — 막고 있다고 믿지 말 것.
-- 캐시 버스팅 `?v=YYYYMMDD-n`. 모바일 우선(375px 가로 스크롤 없음). `word-break: keep-all` 은 `body` 에 있다.
+- 캐시 버스팅 `?v=YYYYMMDD-n`. `app/public/config.js` 를 고치면 `app/index.html` 의 `config.js?v=` 도 올린다(2026-09-27 부터 붙인다). 모바일 우선(375px 가로 스크롤 없음). `word-break: keep-all` 은 `body` 에 있다.
 - **색 · 모서리 · 그림자 · 서체는 `app/public/tokens.css` 한 곳.** 다른 CSS 는 `var(--…)` 만. 팔레트 열다섯(중립 8 · 브랜드 3 · 상태 4), 새 색 금지. 색은 **상태**만 말한다 — 갈래는 글자로. `--warn` 은 확인 필요, `--stop` 은 마감 · 오류 전용.
 - 여백은 4 · 8 · 12 · 16 · 22 · 32 눈금 — **새로 쓰는 값에만.** 기존 값은 손대지 않는다.
 - 서체는 `app/public/fonts/` 의 Pretendard 서브셋(OFL). `@font-face` 는 `tokens.css`.
@@ -81,7 +81,7 @@
 
 - **거르지 않는다.** 영화 순위 · 전시 목록에서 작품을 빼지 않는다. 볼지 말지는 회원이 판단한다.
 - 영화는 `npm run board:movies`(KOBIS → `movies.ts` → 빌드 → 화면 기준 저장). 「최종 정보 업데이트」 는 `App.tsx` 의 `SITE_INFO_UPDATED_ON` **한 곳** — 스크립트가 올린다. 전시만 갈았으면 손으로 올린다. 자료를 안 갈았으면 날짜만 올리지 않는다.
-- 전시 문구(`events.recommendation`)에 모임 확정 · 집결을 적었으면 **모임이 끝난 뒤 과거형으로 바꾼다** — 날짜 규칙이 DB 문구에는 닿지 않는다. `/ops` 가 찾아 주고 절차는 `docs/OPERATIONS.md` 5번.
+- 전시 문구(주로 `events.recommendation`)에 모임 확정 · 집결을 적었으면 **모임이 끝난 뒤 과거형으로 바꾼다** — 날짜 규칙이 DB 문구에는 닿지 않는다. `/ops` 가 글 칸 넷(`recommendation` · `summary` · `notes` · `discount`)에서 찾아 주고 절차는 `docs/OPERATIONS.md` 5번.
 - 소식 한 줄: 고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳(보드와 운영자 화면이 같이 쓴다). `events` 원본에서 뽑는다(`filterEvents` 를 거치지 않는다). JSX 는 `.exhibition-page` 안. 기한은 며칠(1~180)로. 쓰기는 `news_admin_save` · `news_admin_delete` 만이고 **`type = '소식'` 조건을 빼면 보드 전체가 사정권이다.**
 
 ## 설문
