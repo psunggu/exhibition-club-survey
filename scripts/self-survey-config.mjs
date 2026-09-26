@@ -34,10 +34,15 @@ export function configWithSelfSurvey(on) {
 /**
  * 페이지나 컨텍스트가 `config.js` 를 부르면 바꾼 본문을 준다.
  * 이미 걸어 둔 것이 있으면 걷어 내고 다시 건다 — 켠 뒤 끄는 흐름을 위해서다.
+ *
+ * 주소에 캐시 버스팅(`config.js?v=…`)이 붙으므로 glob 이 아니라 정규식으로 잡는다 — glob 은 뒤에 `?v=` 가 붙은 주소를 놓친다.
+ * 같은 객체를 넘겨야 unroute 가 앞서 건 것을 찾는다.
  */
+const CONFIG_URL = /\/config\.js(?:\?|$)/;
+
 export async function serveSelfSurveyConfig(target, on) {
-  await target.unroute('**/config.js').catch(() => {});
-  await target.route('**/config.js', (route) => route.fulfill({
+  await target.unroute(CONFIG_URL).catch(() => {});
+  await target.route(CONFIG_URL, (route) => route.fulfill({
     status: 200, contentType: 'text/javascript', body: configWithSelfSurvey(on),
   }));
 }

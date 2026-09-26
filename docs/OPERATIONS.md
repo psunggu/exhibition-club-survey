@@ -107,7 +107,7 @@ git commit -am "보드 영화 순위를 M월 D일 기준으로 갱신한다" && 
 - 전시만 갈고 영화는 안 갈았으면 `App.tsx` 의 `SITE_INFO_UPDATED_ON` 을 손으로 오늘로 올린다. **한 곳뿐이다.**
   자료를 안 갈았으면 날짜만 올리지 않는다.
 - 소식 한 줄은 운영자 화면에서 올리고 지운다. 기한은 며칠로 받는다.
-- 모임이 확정된 전시에 안내를 달 때는 `recommendation`(카드 맨 아래 문단)에 「○월 정기관람으로 확정된 전시입니다 — ○월 ○일(○) ○시 ○○ 집결 …」 꼴로 적는다. `/ops` 와 5번 SQL 은 `recommendation` 의 「정기관람으로 확정」 · 「집결」 으로 찾는다 — 다른 말로 적거나 `summary` 에 적으면 모임이 끝난 뒤 못 찾는다.
+- 모임이 확정된 전시에 안내를 달 때는 `recommendation`(카드 맨 아래 문단)에 「○월 정기관람으로 확정된 전시입니다 — ○월 ○일(○) ○시 ○○ 집결 …」 꼴로 적는다. `/ops` 와 5번 SQL 은 전시 칸 넷(`recommendation` · `summary` · `notes` · `discount`)에서 「정기관람으로 확정」 · 「집결」 으로 찾는다 — 다른 말로 적으면 모임이 끝난 뒤 못 찾는다. 할인처럼 다른 칸에 모임 날짜를 적었을 때도(「9월 19일 관람에는 …」) 그 두 말이 없으면 못 찾으니 되도록 `recommendation` 한 곳에만 적는다.
 
 ## 4. 다가오는 확정 모임 — `#/calendar`
 
@@ -159,12 +159,12 @@ git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin
 | 달력 구독(`.ics`) | 지난 일정으로 남는다 | 저절로 |
 | **보드 전시 카드의 모임 문구** | 「○월 정기관람으로 확정된 전시입니다 — ○일 집결 …」 가 그대로 남는다 | **운영자** |
 
-보드 문구는 `public.events.recommendation`(카드 맨 아래 문단)에 있어 날짜 규칙이 닿지 않는다. 전시는 모임 뒤에도 계속되므로 **카드는 두고 문구만** 바꾼다. `/ops` 가 「보드 모임 문구」 줄로 찾아 주고, 손으로 찾을 때는 SQL Editor 에서:
+보드 문구는 `public.events` 의 글 칸(주로 `recommendation` — 카드 맨 아래 문단, 가끔 `discount` 등)에 있어 날짜 규칙이 닿지 않는다. 전시는 모임 뒤에도 계속되므로 **카드는 두고 문구만** 바꾼다. `/ops` 가 「보드 모임 문구」 줄로 찾아 주고, 손으로 찾을 때는 SQL Editor 에서:
 
 ```sql
 -- 모임을 가리키는 문구 찾기
-select id, title, recommendation from public.events
-where recommendation ilike '%집결%' or recommendation ilike '%정기관람으로 확정%';
+select id, title, recommendation, summary, notes, discount from public.events
+where concat_ws(' ', recommendation, summary, notes, discount) ilike any (array['%집결%', '%정기관람으로 확정%']);
 
 -- 지난 모임이면 과거형으로(예시) — id 는 위에서 찾은 값
 update public.events

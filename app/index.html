@@ -16,8 +16,9 @@
 </head>
 <body>
   <div id="root"></div>
-  <!-- 설정은 빌드에 박지 않는다. URL 이 바뀌어도 다시 빌드하지 않게. -->
-  <script src="/exhibition-club-survey/config.js"></script>
+  <!-- 설정은 빌드에 박지 않는다. URL 이 바뀌어도 다시 빌드하지 않게.
+       config.js 를 고치면 ?v= 도 올린다 — 안 올리면 다시 찾은 회원에게 옛 설정이 남는다. -->
+  <script src="/exhibition-club-survey/config.js?v=20260927-1"></script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
