@@ -66,7 +66,7 @@
 - **잠긴 표**(`survey_notes` · `admin_guides`): 정책 없이 `revoke all … from anon, authenticated`, `security definer` 함수가 내준다. 함수 첫 줄에서 `public.survey_admin_ok(p_password)` — **읽기도 예외가 아니다.** `set search_path = pg_catalog, public, extensions`. `grant execute … to anon, authenticated` 를 빠뜨리면 앱이 못 부른다.
 - **관문은 POST 로만 열린다** — `survey_admin_ok` 가 `request.method` 를 본다. PostgREST 는 휘발성으로 GET 을 막지 않는다. `notify pgrst` · 재시작으로 시간을 쓰지 말 것.
 - **DB 를 고쳤다고 바깥이 바뀐 것은 아니다.** API 동작을 바꾸는 마이그레이션은 바깥에서 실제 요청을 쏴서 확인한다.
-- 톡방 투표는 **결과만** 옮긴다(`imported_votes` · `imported_voters`). 실명은 SQL 본문에도 주석에도 적지 않는다 — `202608270001b_poll_voters.template.sql` 을 채워 손으로 실행하고 저장하지 않는다.
+- 톡방 투표 결과를 DB 로 옮기는 절차는 지금 없다(2026-09-10, `docs/OPERATIONS.md` 1번). 설문 관리를 다시 켜서 옮길 때만 **결과만**(`imported_votes` · `imported_voters`) — 실명은 SQL 본문에도 주석에도 적지 않고, `202608270001b_poll_voters.template.sql` 을 채워 손으로 실행하고 저장하지 않는다.
 
 ## 일정 — `data/meetups.ts`
 
@@ -81,6 +81,7 @@
 
 - **거르지 않는다.** 영화 순위 · 전시 목록에서 작품을 빼지 않는다. 볼지 말지는 회원이 판단한다.
 - 영화는 `npm run board:movies`(KOBIS → `movies.ts` → 빌드 → 화면 기준 저장). 「최종 정보 업데이트」 는 `App.tsx` 의 `SITE_INFO_UPDATED_ON` **한 곳** — 스크립트가 올린다. 전시만 갈았으면 손으로 올린다. 자료를 안 갈았으면 날짜만 올리지 않는다.
+- 전시 문구(`events.recommendation`)에 모임 확정 · 집결을 적었으면 **모임이 끝난 뒤 과거형으로 바꾼다** — 날짜 규칙이 DB 문구에는 닿지 않는다. `/ops` 가 찾아 주고 절차는 `docs/OPERATIONS.md` 5번.
 - 소식 한 줄: 고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳(보드와 운영자 화면이 같이 쓴다). `events` 원본에서 뽑는다(`filterEvents` 를 거치지 않는다). JSX 는 `.exhibition-page` 안. 기한은 며칠(1~180)로. 쓰기는 `news_admin_save` · `news_admin_delete` 만이고 **`type = '소식'` 조건을 빼면 보드 전체가 사정권이다.**
 
 ## 설문
@@ -96,13 +97,15 @@
 
 작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-## 다음 작업 후보 (2026-09-25)
+## 다음 작업 후보 (2026-09-25, 6~7번 2026-09-27)
 
 1. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/26(토) 영화 · 9/28(월) 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
 2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
 4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `scripts/update-movies-task.sh` 와 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
+6. **Vite 개발 서버를 이 컴퓨터에만** — `vite.config.ts` 의 `server.host: true` 라 `npm run dev` 가 같은 와이파이에 열리고 `/@fs/` 로 저장소 파일(무시 목록의 `logs/` 까지)을 내준다. `host: '127.0.0.1'`(휴대폰 확인은 `npm run dev -- --host`)과 `server.fs.allow` 좁히기. 보안 변경이라 사람이 본 뒤 머지.
+7. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
 
 ## AI 에이전트 역할
 
