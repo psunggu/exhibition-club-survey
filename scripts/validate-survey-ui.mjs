@@ -1050,7 +1050,7 @@ ok('요약의 상태 글자가 소스와 같다',
   !!briefState && briefText.includes(briefState),
   `소스 '${briefState ?? '(못 읽음)'}' / 화면 '${briefText.slice(0, 40)}'`);
 ok('요약에 모임 이름이 있다',
-  briefText.includes('9월 정기모임'),
+  !!briefTitle0 && briefText.includes(briefTitle0),
   briefText.slice(0, 40) || '카드가 없다');
 
 /**

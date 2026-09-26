@@ -33,4 +33,4 @@ Agent 도구로 `ops` 를 부르고 확정된 항목과 함께 아래를 전달�
 
 ## 3. 보고
 
-세 줄 안쪽. 이 모임을 정한 설문이 있으면 `surveyIds` 를 이어야 한다고 한 줄 덧붙인다.
+세 줄 안쪽. 이 모임을 정한 설문이 있으면 `surveyIds` 를 이어야 한다고 한 줄 덧붙인다. 요약 카드를 쓸 모임(정기관람 등)이면 `meetingBrief.ts` 의 `BRIEFS` **맨 앞에** `meetupId: '<id>'` 로 더해야 한다고 한 줄(`docs/OPERATIONS.md` 1번 — 앞 요약을 복사해 맨 앞에, 뒤에 `npm run check`). 보드 전시 카드에도 알리려면 `recommendation` 에 「○월 정기관람으로 확정 … 집결」 꼴로(`docs/OPERATIONS.md` 3번). 모임이 끝난 뒤의 일은 `docs/OPERATIONS.md` 5번 — 거의 저절로 되고 보드 문구만 손으로.
