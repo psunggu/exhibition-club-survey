@@ -81,6 +81,18 @@ export type Meetup = {
    * 비워 두면 그 모임과 이어진 설문이 없다는 뜻이고, 설문 화면은 **아무것도 추측하지 않는다.**
    */
   surveyIds?: string[]
+  /**
+   * 카드 「모이는 곳」. 비우면 time 의 「… 집결」 토막에서 짓는다(lib/meetupFacts.ts).
+   * time 에 집결이 없을 때만 적는다. 여기에만 있는 사실을 적지 않는다 — 팝업은 이 칸을 안 보여 준다.
+   */
+  meet?: string
+  /**
+   * 카드 「꼭 확인」 — 모르면 헛걸음하는 것(예매 필수 · 마감일 · 요금). 30자 안쪽.
+   * 비우면 note 의 첫 문장. note 를 줄인 말이어야 한다 — 팝업은 note 전문을 보여 준다.
+   * 공지 이미지는 카드까지만 찍으므로 행동을 바꾸는 사실은 여기에 둔다.
+   * id~status 사이에 적지 않는다(validate-meetup-taxonomy 가 그 줄들을 연속으로 읽는다).
+   */
+  must?: string
 }
 
 /**
@@ -519,6 +531,8 @@ export const MEETUPS: Meetup[] = withDefaults([
       + '함께 가시려면 10/1까지 각자 예매해 주세요 — 하반기 야간관람 마지막 회차라 미루면 다음이 없습니다. '
       + '관람료는 1인 3,000원이고, 예매자와 일행은 함께 입장해야 합니다. '
       + '집결 장소와 최종 인원은 톡방 공지를 확인해 주세요.',
+    // 「1인」 과 「3,000원」 이 줄바꿈에 갈리지 않게 붙인다(\u00a0)
+    must: '예매 필수 · 10/1(목) 마감 · 1인\u00a03,000원',
     infoUrl: 'https://royal.khs.go.kr/ROYAL/contents/R403000000.do?id=20260818101010114410&schBcid=notice01&schM=view',
     infoLabel: '공식 야간관람 안내 보기 →',
     mapUrl: 'https://map.kakao.com/?q=%EA%B2%BD%EB%B3%B5%EA%B6%81',

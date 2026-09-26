@@ -10,6 +10,7 @@ description: 달력에 모임을 올린다. 「10/17 토 15시 덕수궁·정동
 `app/src/data/meetups.ts` 의 마지막 `MEETUPS` 항목과 `TENTATIVE` 를 읽고 같은 꼴로 쓴다.
 
 - **날짜가 정해졌으면** `MEETUPS` 에 **필수 필드만**: `id · date · chip · kind: 'conf' · regular · venueKind · title · time · venue · description`. 링크가 있으면 `infoUrl`. 나머지는 `withDefaults` 가 채운다 — `dateLabel · status · tone · mapUrl` 을 적지 않는다.
+  카드는 `time` · `venue` 의 첫 토막과 `time` 의 「… 집결」 토막, `note` 의 첫 문장을 이름표 줄로 싣는다 — 집결은 `time` 에 「장소 시각 집결」 꼴로 넣고, 예매 필수 · 마감 · 요금처럼 모르면 헛걸음하는 조건이 있을 때만 `must`(30자 안쪽)를 note 뒤에 더한다.
   - `regular` 는 「정기관람」 일 때만 true. 제목·칩에 「정기관람」 낱말이 있으면 반드시 true, 없으면 false 여야 검사가 통과한다.
   - `venueKind` 는 `'전시' | '박물관' | '영화' | '공연' | '모임'` 가운데 하나. `chip` 은 달력 칸에 들어갈 짧은 글(장소·시각).
   - `id` 는 영문 소문자·하이픈. `date` 는 ISO.

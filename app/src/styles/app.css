@@ -815,3 +815,107 @@ main :is(a, button, input, select, textarea, summary, [tabindex]) {
 }
 /* 화면을 옮기면 초점을 새 제목에 둔다(App.tsx). 누른 사람에게는 테두리를 그리지 않는다 */
 main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
+
+/* ── 다가오는 확정 모임 카드 — 핵심만 (Calendar.tsx · lib/meetupFacts.ts, 2026-09-26 운영자 요청) ──
+   .card · .db · .tag · h3 는 legacy 그대로, 새 이름만 더한다. flex-wrap 은 legacy 에 없는 속성이다.
+   전문(시간 · 주소 · 설명 · 운영진 확인 · 링크)은 「자세히 보기」 가 여는 .event-dialog 에 있다.
+   --warn 은 「확인 필요」 전용이라 「꼭 확인」 줄에만 쓴다. */
+.mcard { flex-wrap: wrap; }
+
+/* flex-basis 0 이 없으면 긴 제목이 날짜 블록 옆에 못 붙고 아랫줄로 떨어진다 — .mcard 의 wrap 과 짝이다 */
+.mcard-head {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: center;
+}
+
+.mfacts {
+  flex: 1 0 100%;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+/* 64px 는 「모이는 곳」(13px/700)이 한 줄에 드는 폭 — 375px 에서 값 칸 217px */
+.mfact {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 8px;
+}
+
+.mfact + .mfact { border-top: 1px solid var(--line); }
+
+.mfact-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.mfact-val {
+  margin: 0;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.mfact-sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* 모르면 헛걸음하는 줄. 색만으로 말하지 않는다 — 이름표 글자가 「꼭 확인」 이다 (5.87:1) */
+.mfact-must {
+  margin-top: 4px;
+  border-radius: var(--r-control);
+  background: var(--warn-tint);
+}
+
+.mfact + .mfact-must { border-top: 0; }
+
+.mfact-must .mfact-label,
+.mfact-must .mfact-val { color: var(--warn); }
+
+.mfact-must .mfact-val { font-weight: 700; }
+
+/* 상세 팝업을 여는 단추 — 누르는 크기 44px */
+.mcard-more {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  background: var(--card);
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.mcard-more svg { flex: none; }
+
+/* 터치 기기에서는 누른 뒤 hover 색이 남는다 — 마우스가 있을 때만 */
+@media (hover: hover) {
+  .mcard-more:hover { background: var(--green-tint); }
+}
+
+.mcard-more:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}

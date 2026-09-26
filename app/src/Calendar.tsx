@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
 import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
+import { meetupFacts } from './lib/meetupFacts'
 import {
   isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, shownStatus, TENTATIVE, type Meetup,
 } from './data/meetups'
@@ -334,23 +335,52 @@ export function Calendar() {
       {upcoming.length > 0 && (
         <>
           <h2 className="sec"><span className="dot dot-conf" />다가오는 확정 모임</h2>
-          {upcoming.map((m) => (
-            <article key={m.id} className={m.regular ? 'card card-regular' : 'card'}>
-              <DayBlock date={m.date} />
-              <div>
-                <span className={m.regular ? 'tag tag-regular' : 'tag'}>
-                  {m.regular ? '공식 정기관람' : '확정'}
-                </span>
-                <h3>{m.title || m.chip}</h3>
-                <p className="meta">
-                  <b>{m.time || '시간 확인 중'}</b>
-                  {m.venue ? ` · ${m.venue}` : ''}
-                  {m.description ? <><br />{m.description}</> : null}
-                </p>
-                {m.note && <p className="card-alert"><b>운영진 확인:</b> {m.note}</p>}
-              </div>
-            </article>
-          ))}
+          {/* 카드는 핵심 줄만 싣는다(운영자 요청 2026-09-26 — 「간결하게, 가독성 있게, 핵심만」).
+              시간 · 주소 · 설명 · 운영진 확인 전문은 「자세히 보기」 가 여는 팝업(달력 칩과 같은 것)에 있다. */}
+          {upcoming.map((m) => {
+            const f = meetupFacts(m)
+            return (
+              <article key={m.id} className={m.regular ? 'card card-regular mcard' : 'card mcard'}>
+                <DayBlock date={m.date} />
+                <div className="mcard-head">
+                  <span className={m.regular ? 'tag tag-regular' : 'tag'}>
+                    {m.regular ? '공식 정기관람' : '확정'}
+                  </span>
+                  <h3>{m.title || m.chip}</h3>
+                </div>
+                <dl className="mfacts">
+                  <div className="mfact">
+                    <dt className="mfact-label">언제</dt>
+                    <dd className="mfact-val">{f.when}{f.whenSub && <span className="mfact-sub">{f.whenSub}</span>}</dd>
+                  </div>
+                  <div className="mfact">
+                    <dt className="mfact-label">어디</dt>
+                    <dd className="mfact-val">{f.where}</dd>
+                  </div>
+                  {f.meet && (
+                    <div className="mfact">
+                      <dt className="mfact-label">모이는 곳</dt>
+                      <dd className="mfact-val">{f.meet}</dd>
+                    </div>
+                  )}
+                  {f.must && (
+                    <div className="mfact mfact-must">
+                      <dt className="mfact-label">꼭 확인</dt>
+                      <dd className="mfact-val">{f.must}</dd>
+                    </div>
+                  )}
+                </dl>
+                <button type="button" className="mcard-more" aria-haspopup="dialog"
+                  aria-label={`${m.title || m.chip} 자세히 보기`}
+                  onClick={(ev) => openDialog(m, ev.currentTarget)}>
+                  자세히 보기
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </article>
+            )
+          })}
         </>
       )}
 

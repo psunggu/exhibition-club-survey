@@ -90,7 +90,9 @@ const WATCH = [
   '.stars', '.rating-source',
   '.digest', '.digest-head', '.digest-title', '.digest-decisions', '.digest-open-questions',
   '.sec', '.card', '.card-regular', '.db', '.db .d',
-  '.tag', '.tag-regular', '.meta', '.card-alert',
+  '.tag', '.tag-regular',
+  // 다가오는 확정 모임 카드의 핵심 줄(2026-09-26). 옛 '.meta' · '.card-alert' 는 이 카드에만 쓰였다.
+  '.mfacts', '.mfact-label', '.mfact-val', '.mfact-must', '.mcard-more',
   '.cal', '.wd', '.cell', '.dnum', '.chip',
   '.survey-jump', '.survey-jump-list li',
   // 카드 안쪽 — 바깥 상자만 재면 알약 폭 · 안내문 색이 바뀌어도 통과했다(2026-09-25 변이 시험).

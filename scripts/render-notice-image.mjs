@@ -30,6 +30,7 @@ const BASE_PATH = '/exhibition-club-survey';
 /** 공유 이미지에 넣지 않을 것 — 눌러야 뜻이 있는 것, 이미지에선 죽은 것 */
 const HIDE = [
   '.site-nav',        // 맨 위 사이트 띠 — 이미지에서는 누를 수 없다
+  '.mcard-more',      // 모임 카드의 「자세히 보기」 — 이미지에서는 열 수 없다
   '.digest',          // 운영진 확인용 요약이라 공지에 넣지 않는다
   '.completed-toggle',
   '.completed-calendar',
