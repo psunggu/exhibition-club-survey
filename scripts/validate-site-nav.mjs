@@ -355,6 +355,68 @@ await page.waitForTimeout(200);
 s = await state();
 ok('띠의 칸으로 초점이 옮겨 가도 제자리', s.y === before, `${before} → ${s.y}`);
 
+// 안 구르고 떠난 칸 — 스크롤 이벤트가 없어 자리가 비면, 앞으로 가기에서 앞 화면의 자리를 물려받았다
+await open('#/');
+await page.waitForSelector('.exhibition-card');
+await press('모임 일정');
+await page.waitForFunction(() => location.hash === '#/calendar');
+await page.waitForTimeout(300);
+await page.goBack();
+await page.waitForFunction(() => location.hash === '#/' || location.hash === '');
+await page.waitForTimeout(600);
+await page.evaluate(() => window.scrollTo(0, 2000));
+await page.waitForTimeout(300);
+await page.goForward();
+await page.waitForFunction(() => location.hash === '#/calendar');
+await page.waitForTimeout(800);
+s = await state();
+ok('안 구르고 떠난 일정에 앞으로 가기로 돌아오면 맨 위', s.y === 0, JSON.stringify(s));
+
+// 보드의 필터도 자리와 함께 — 필터만 기본값으로 돌아가면 엉뚱한 목록의 한가운데에 섰다
+await open('#/');
+await page.waitForSelector('.exhibition-card');
+await page.locator('.content-type-tab', { hasText: '음악공연' }).click();
+await page.waitForTimeout(300);
+await page.evaluate(() => window.scrollTo(0, 600));
+await page.waitForTimeout(300);
+const typeBefore = await page.$eval('.content-type-tab.is-active', (e) => e.textContent.trim());
+const cardBefore = await cardInView();
+await press('모임 일정');
+await page.waitForFunction(() => location.hash === '#/calendar');
+await page.waitForTimeout(300);
+await page.goBack();
+await page.waitForFunction(() => location.hash === '#/' || location.hash === '');
+await page.waitForSelector('.exhibition-card');
+await page.waitForTimeout(1500);
+const typeAfter = await page.$eval('.content-type-tab.is-active', (e) => e.textContent.trim());
+const cardAfter = await cardInView();
+ok('보드에서 고른 유형 · 보던 카드가 뒤로 가기 뒤에도 그대로',
+  typeAfter === typeBefore && cardBefore?.title === cardAfter?.title,
+  `${typeBefore} ${JSON.stringify(cardBefore)} → ${typeAfter} ${JSON.stringify(cardAfter)}`);
+
+// 되살리기는 한 번에 하나 — 다른 페이지에서 돌아와 보드 목록을 기다리던 되살리기가 뒤로 가기 뒤까지
+// 남아 앞 화면(일정)을 보드의 자리로 끌고 갔고, 그 자리를 일정 것으로 적었다(2026-09-26 검토)
+await open('#/calendar');
+await page.evaluate(() => window.scrollTo(0, 800));
+await page.waitForTimeout(300);
+await press('관람 정보');
+await page.waitForFunction(() => location.hash === '#/');
+await page.waitForSelector('.exhibition-card');
+await page.evaluate(() => window.scrollTo(0, 3000));
+await page.waitForTimeout(300);
+await page.goto(`${URL0}survey-result.html`, { waitUntil: 'load' });
+const slowList = async (route) => { await new Promise((r) => setTimeout(r, 1500)); await route.fallback(); };
+await page.route('**/rest/v1/events**', slowList);
+await page.goBack({ waitUntil: 'commit' });
+await page.waitForSelector('.site-nav');
+await page.waitForTimeout(250);
+await page.goBack();
+await page.waitForFunction(() => location.hash === '#/calendar');
+await page.waitForTimeout(3000);
+await page.unroute('**/rest/v1/events**', slowList);
+s = await state();
+ok('보드 목록을 기다리는 중에 뒤로 가도 일정은 보던 자리(800)', Math.abs(s.y - 800) <= 2, JSON.stringify(s));
+
 /* ── (마) 세 화면에서 똑같이 ───────────────────────────────── */
 console.log('\n(마) 보드 · 일정 · 투표에서 띠가 똑같다');
 const PROPS = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'color', 'backgroundColor',
