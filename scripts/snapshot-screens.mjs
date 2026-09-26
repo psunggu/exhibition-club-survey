@@ -100,6 +100,9 @@ const WATCH = [
   // 투표 카드 · 투표 화면의 「모임 일정 보기」 링크 · 일정 화면의 달력 구독 링크도 쓰므로 모두 section.board-jump 안으로 좁힌다.
   '.board-jump', '.board-jump .board-jump-kicker', '.board-jump h2',
   '.board-jump p:not(.board-jump-kicker)', '.board-jump .board-jump-link',
+  // 맨 위 사이트 띠. `.site-nav-tab` 만 적으면 일정 화면에서는 첫 칸이 지금 칸이라
+  // 쉬는 칸의 모양이 기준에 안 남는다 — 둘을 따로 적는다.
+  '.site-nav', '.site-nav-list', '.site-nav-tab:not([aria-current])', '.site-nav-tab[aria-current]',
 ];
 
 /** 색·글자·간격·상자 — 눈에 보이는 것을 정하는 값들 */

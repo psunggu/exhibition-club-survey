@@ -66,6 +66,10 @@ jobs:
       - name: Validate survey screens
         run: node scripts/validate-survey-ui.mjs
 
+      # 모든 화면 맨 위의 사이트 띠 — 주소마다 켜지는 칸, 큰 글씨, 붙어 있기, 누르면 · 뒤로 가기
+      - name: Validate site nav
+        run: node scripts/validate-site-nav.mjs
+
       - name: Validate Supabase read-only boundary
         run: node scripts/validate-supabase-readonly.mjs
 

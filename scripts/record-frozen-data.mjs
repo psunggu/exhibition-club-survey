@@ -104,6 +104,10 @@ const VISITS = [
   ['이식 일정', `http://localhost:8217${BASE}/#/calendar`],
   ['이식 설문', `http://localhost:8217${BASE}/#/survey`],
   ['이식 설문·식사', `http://localhost:8217${BASE}/#/survey/meal`],
+  // 사이트 띠 검사(validate-site-nav)가 주소마다 띠를 보려고 더 여는 자리
+  ['이식 설문·구글', `http://localhost:8217${BASE}/#/survey/google`],
+  ['이식 설문·숨긴 갈래', `http://localhost:8217${BASE}/#/survey/club`],
+  ['이식 운영자', `http://localhost:8217${BASE}/#/survey/admin`],
 ];
 
 for (const [label, url] of VISITS) {
