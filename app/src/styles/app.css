@@ -43,14 +43,6 @@
   }
 }
 
-/* 보드 우상단에 링크가 둘이 되었다 — 설문과 일정 */
-.topbar-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: flex-start;
-}
-
 /* 소식 줄 — 목록 머리글 아래에 거는 바깥 링크 하나 (Board.tsx 의 NewsLine).
    옛 화면에 없던 것이라 여기가 자리다. **legacy 규칙을 덮어쓰지 않는다** —
    .card-kind-chip 을 가져다 쓰면 바탕색을 뒤집어야 하므로 손대지 않는다.
