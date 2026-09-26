@@ -88,32 +88,46 @@ export function savedHere(): number | undefined {
 }
 
 /**
- * y 에 세운다. 페이지가 아직 짧으면 자랄 때마다 다시 맞추다가,
- * 닿거나 6초가 지나거나 회원이 움직이면 멈추고 그 자리를 적는다.
+ * y 에 세운다. 닿았다고 바로 멈추지 않는다 — **글꼴이 다 오고 페이지가 잠잠해질 때까지**
+ * 흔들리면 다시 맞춘다. 리눅스처럼 한글 글꼴이 없는 기기는 Pretendard 가 오기 전의
+ * 대체 글꼴로 먼저 그려져, 자리를 맞춘 뒤 글꼴이 바뀌면 일정은 25px, 보드는 카드가
+ * 83px 밀렸다(2026-09-26 CI). 6초가 지나거나 회원이 움직이면 멈추고 그 자리를 적는다.
  * 돌려주는 함수는 **적지 않고** 그만둔다 — 화면이 또 바뀌어 거둘 때 쓴다.
  */
 export function restoreTo(y: number) {
-  window.scrollTo(0, y)
-  if (Math.abs(window.scrollY - y) <= 1) return undefined
   restoring = true
-  const grow = new ResizeObserver(() => {
+  let ended = false
+  let fontsDone = !document.fonts || document.fonts.status === 'loaded'
+  let quiet = 0
+  /** 다시 맞추고, 잠잠한지 600ms 뒤에 본다 */
+  const settle = () => {
+    if (ended) return
     window.scrollTo(0, y)
-    if (Math.abs(window.scrollY - y) <= 1) stop()
-  })
+    window.clearTimeout(quiet)
+    quiet = window.setTimeout(() => {
+      if (fontsDone && Math.abs(window.scrollY - y) <= 1) stop()
+    }, 600)
+  }
+  const grow = new ResizeObserver(settle)
   const timer = window.setTimeout(() => stop(), 6000)
   function cancel() {
+    ended = true
     grow.disconnect()
     window.clearTimeout(timer)
+    window.clearTimeout(quiet)
     for (const ev of GIVE_UP) window.removeEventListener(ev, stop)
     restoring = false
   }
   function stop() {
+    if (ended) return
     cancel()
     const key = keyOf()
     if (key) remember(key, window.scrollY)
   }
   grow.observe(document.body)
   for (const ev of GIVE_UP) window.addEventListener(ev, stop, { passive: true })
+  document.fonts?.ready.then(() => { fontsDone = true; settle() }).catch(() => { fontsDone = true })
+  settle()
   return cancel
 }
 

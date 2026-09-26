@@ -282,14 +282,33 @@ await page.waitForTimeout(600);
 s = await state();
 ok('보드 → 일정 1200px → 뒤로 → 앞으로 가기 → 일정 1200px', Math.abs(s.y - 1200) <= 2, JSON.stringify(s));
 
-// 새로 고침 · 다른 페이지에서 돌아오기도 보던 자리다 — 브라우저에 맡겼을 때 1548px · 0px 로 들쭉날쭉했다
+// 새로 고침 · 다른 페이지에서 돌아오기도 보던 자리다 — 브라우저에 맡겼을 때 1548px · 0px 로 들쭉날쭉했다.
+// **느린 기기처럼** 잰다 — 리눅스 CI 에서는 자리를 맞춘 뒤 늦게 온 자료(정리봇 · 목록)가 위쪽 높이를
+// 바꿔 일정은 25px, 보드는 카드가 83px 밀렸다(2026-09-26). CPU 를 4배 늦추고 자료를 1.2초 늦게 준다.
+const cdp = await context.newCDPSession(page);
+await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+// 새로 고침에서도 글꼴을 캐시에서 꺼내지 않게 한다 — 그래야 글꼴이 자리를 맞춘 **뒤에** 바뀐다
+await cdp.send('Network.enable');
+await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+const late = async (route) => { await new Promise((r) => setTimeout(r, 1200)); await route.fallback(); };
+await page.route('**/rest/v1/**', late);
+await page.route('**/weekly-digest.public.json', late);
+await page.route('**/*.woff2', late);
 await open('#/calendar');
 await page.evaluate(() => window.scrollTo(0, 1500));
 await page.waitForTimeout(300);
-await page.reload({ waitUntil: 'networkidle' });
-await page.waitForTimeout(800);
+const beforeReload = await page.evaluate(() => Math.round(window.scrollY));
+await page.reload({ waitUntil: 'commit' });
+// 실패하면 무엇이 언제 움직였는지 남긴다 — CI 에서만 나는 일은 로그밖에 볼 것이 없다
+const timeline = [];
+for (const t of [0, 150, 300, 600, 1200, 2400, 4000]) {
+  await page.waitForTimeout(t ? t - (timeline.at(-1)?.t ?? 0) : 0);
+  timeline.push({ t, ...(await page.evaluate(() => ({ y: Math.round(window.scrollY),
+    h: document.documentElement.scrollHeight, fonts: document.fonts.status }))) });
+}
 s = await state();
-ok('일정 1500px 에서 새로 고침 → 보던 자리', Math.abs(s.y - 1500) <= 2, JSON.stringify(s));
+ok('일정 1500px 에서 새로 고침 → 보던 자리', Math.abs(s.y - beforeReload) <= 2,
+  `${beforeReload} → ${JSON.stringify(s)} · ${timeline.map((p) => `${p.t}ms y${p.y} h${p.h} ${p.fonts}`).join(' | ')}`);
 
 // 보드는 새로 고치면 글꼴 · 목록이 다시 들어오며 몇십 px 씩 자리가 바뀐다(실측 −21px).
 // 픽셀이 아니라 **화면 가운데에 보이던 카드가 그대로인지** 본다.
@@ -304,7 +323,8 @@ await page.waitForTimeout(300);
 const seen = await cardInView();
 await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('.exhibition-card');
-await page.waitForTimeout(800);
+await page.evaluate(() => document.fonts.ready);
+await page.waitForTimeout(2000);
 const again = await cardInView();
 ok('보드 3000px 에서 새로 고침 → 목록이 다 온 뒤 같은 카드가 같은 자리', !!seen && !!again
   && seen.title === again.title && Math.abs(seen.top - again.top) <= 40, `${JSON.stringify(seen)} → ${JSON.stringify(again)}`);
@@ -319,6 +339,11 @@ await page.waitForTimeout(800);
 s = await state();
 ok('구글 설문에서 결과 페이지에 다녀오면 보던 자리', s.hash === '#/survey/google' && Math.abs(s.y - yGoogle) <= 2,
   `${yGoogle} → ${JSON.stringify(s)}`);
+await page.unroute('**/*.woff2', late);
+await page.unroute('**/weekly-digest.public.json', late);
+await page.unroute('**/rest/v1/**', late);
+await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+await cdp.send('Network.setCacheDisabled', { cacheDisabled: false });
 
 // 띠의 칸으로 초점이 가도 페이지가 구르지 않는다 — html 에 scroll-padding 을 줬을 때 칸마다 360px 굴렀다
 await open('#/calendar');
