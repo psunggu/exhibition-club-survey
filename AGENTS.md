@@ -71,6 +71,7 @@
 
 - **정본은 `MEETUPS` 다.** 이 문서에 일정을 베껴 적지 않는다.
 - 새 항목은 **필수 필드만** 적는다(`id · date · chip · kind · regular · venueKind · title · time · venue · description`). 날짜 표기 · 상태 딱지 · 지도 링크 · 완료 처리 · 완료 줄 · 달력 격자 · 연도 묶음은 `withDefaults` 와 `isDone` · `monthsToShow` 가 낸다. **`kind` 를 손으로 옮기지 않는다.** 참석 인원처럼 자료에 없는 것을 남길 때만 `completedRow`.
+- 「다가오는 확정 모임」 카드는 핵심 줄만 싣는다(`lib/meetupFacts.ts`) — 언제(`time` 의 첫 토막) · 어디(`venue` 의 첫 토막) · 모이는 곳(`time` 의 「… 집결」 토막) · 꼭 확인(`note` 의 첫 문장). 전문은 「자세히 보기」 팝업에 있다. 그래서 `time` 은 「오후 3시~6시 · 시청역 1번 출구 오후 2시 50분 집결」 꼴로, `note` 는 가장 중요한 문장을 맨 앞에 적는다. 예매 필수 · 마감 · 요금처럼 행동을 바꾸는 조건은 선택 필드 `must`(30자 안쪽, note 를 줄인 말)에, `meet` 는 `time` 에 집결이 없을 때만.
 - `TENTATIVE` 는 **날짜를 맞추는 중**인 것만. 각자 보기로 한 것은 어디에도 두지 않는다 — 보드가 그 자리다.
 - `monthsToShow` · `pastMonthsToShow` · `isDone` 은 `today` 를 인자로 받는다. 함수 안에서 `new Date()` 를 부르지 않는다 — 검사가 `frozen-clock.mjs` 로 시계를 묶는다.
 - `validate-meetup-taxonomy` 는 `id · date · chip · kind · regular · venueKind` 가 붙어 있어야 읽는다. 그 사이에 주석을 끼우지 않는다.
