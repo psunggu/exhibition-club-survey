@@ -32,7 +32,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20261807',
     movieCode: '20261807',
     bookingRank: 1,
-    bookingRate: 41.6,
+    bookingRate: 35.7,
     title: '극장판 치이카와: 인어 섬의 비밀',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-30',
@@ -47,7 +47,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20255033',
     movieCode: '20255033',
     bookingRank: 2,
-    bookingRate: 12.4,
+    bookingRate: 14.8,
     title: '암살자(들)',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -59,25 +59,10 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20255033'
   },
   {
-    id: 'movie-20224573',
-    movieCode: '20224573',
-    bookingRank: 3,
-    bookingRate: 9.6,
-    title: '부활남: 더 레드',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-30',
-    runtime: 101,
-    genre: '액션',
-    ageRating: '15세 이상 관람가',
-    director: '백',
-    summary: '절친 ‘영하’(강기영)의 현실적인 쓴소리와 동생 ‘예린’(김시아)의 든든한 지원에도 면접에서 떨어지기 일쑤인 취업 준비생 ‘석환’(구교환).',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20224573'
-  },
-  {
     id: 'movie-20250654',
     movieCode: '20250654',
-    bookingRank: 4,
-    bookingRate: 9.5,
+    bookingRank: 3,
+    bookingRate: 11.8,
     title: '오디세이',
     releaseStatus: '상영 중',
     releaseDate: '2026-08-05',
@@ -91,8 +76,8 @@ export const MOVIES: Movie[] = [
   {
     id: 'movie-20256161',
     movieCode: '20256161',
-    bookingRank: 5,
-    bookingRate: 9,
+    bookingRank: 4,
+    bookingRate: 10.5,
     title: '타짜: 벨제붑의 노래',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -104,10 +89,25 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256161'
   },
   {
+    id: 'movie-20224573',
+    movieCode: '20224573',
+    bookingRank: 5,
+    bookingRate: 6.7,
+    title: '부활남: 더 레드',
+    releaseStatus: '상영 중',
+    releaseDate: '2026-09-30',
+    runtime: 101,
+    genre: '액션',
+    ageRating: '15세 이상 관람가',
+    director: '백',
+    summary: '절친 ‘영하’(강기영)의 현실적인 쓴소리와 동생 ‘예린’(김시아)의 든든한 지원에도 면접에서 떨어지기 일쑤인 취업 준비생 ‘석환’(구교환).',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20224573'
+  },
+  {
     id: 'movie-20254904',
     movieCode: '20254904',
     bookingRank: 6,
-    bookingRate: 3.8,
+    bookingRate: 3.2,
     title: '가능한 사랑',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -119,27 +119,12 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20254904'
   },
   {
-    id: 'movie-20256308',
-    movieCode: '20256308',
-    bookingRank: 7,
-    bookingRate: 2.4,
-    title: '인턴',
-    releaseStatus: '상영 중',
-    releaseDate: '2026-09-16',
-    runtime: 132,
-    genre: '드라마',
-    ageRating: '12세 이상 관람가',
-    director: '김도영',
-    summary: '올가을, 다시 출근합니다 창업 3년 만에 100억대 매출을 달성하며 브랜드 ‘WOO22’(우투투)를 패션 업계의 다크호스로 성장시킨 젊은 CEO ‘선우’(한소희).',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256308'
-  },
-  {
     id: 'movie-20264775',
     movieCode: '20264775',
-    bookingRank: 8,
-    bookingRate: 2,
+    bookingRank: 7,
+    bookingRate: 2.6,
     title: '디거',
-    releaseStatus: '개봉 예정',
+    releaseStatus: '상영 중',
     releaseDate: '2026-10-03',
     runtime: 128,
     genre: '코미디, 드라마',
@@ -151,8 +136,8 @@ export const MOVIES: Movie[] = [
   {
     id: 'movie-20266766',
     movieCode: '20266766',
-    bookingRank: 9,
-    bookingRate: 1.3,
+    bookingRank: 8,
+    bookingRate: 2,
     title: '어벤져스: 엔드게임 앙코르',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -164,23 +149,38 @@ export const MOVIES: Movie[] = [
     infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20266766'
   },
   {
-    id: 'movie-20265146',
-    movieCode: '20265146',
-    bookingRank: 10,
-    bookingRate: 1,
-    title: '옵세션',
+    id: 'movie-20256308',
+    movieCode: '20256308',
+    bookingRank: 9,
+    bookingRate: 1.9,
+    title: '인턴',
     releaseStatus: '상영 중',
-    releaseDate: '2026-09-02',
-    runtime: 108,
-    genre: '공포(호러)',
-    ageRating: '청소년 관람불가',
-    director: '커리 바커',
-    summary: '“너무 너무 너무 너무 사랑해 사랑해 사랑해 사랑해” ‘니키’를 짝사랑하던 ‘베어’는 골동품 상점에서 구입한 ‘원 위시 윌로우’에 ‘니키’가 자신을 가장 사랑하게 해달라고 소원을 빈다.',
-    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20265146'
+    releaseDate: '2026-09-16',
+    runtime: 132,
+    genre: '드라마',
+    ageRating: '12세 이상 관람가',
+    director: '김도영',
+    summary: '올가을, 다시 출근합니다 창업 3년 만에 100억대 매출을 달성하며 브랜드 ‘WOO22’(우투투)를 패션 업계의 다크호스로 성장시킨 젊은 CEO ‘선우’(한소희).',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20256308'
+  },
+  {
+    id: 'movie-20265062',
+    movieCode: '20265062',
+    bookingRank: 10,
+    bookingRate: 1.9,
+    title: '룩백',
+    releaseStatus: '개봉 예정',
+    releaseDate: '2026-10-08',
+    runtime: 100,
+    genre: '드라마',
+    ageRating: '전체 관람가',
+    director: '고레에다 히로카즈',
+    summary: '학교 신문에서 네컷 만화를 그리는 자신만만한 소녀 ‘후지노’와 그를 동경하지만 세상 밖이 두려워 방 안에 틀어박힌 외톨이 ‘쿄모토’.',
+    infoUrl: 'https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=20265062'
   }
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.09.30 05:07'
+export const MOVIE_RANKING_UPDATED_AT = '2026.10.03 05:00'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
