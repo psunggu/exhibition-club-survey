@@ -93,7 +93,8 @@ for (const e of events) {
   const info = isInfo(e);
   const confirmed = !info && e.status === '확정';
   const facts = [
-    e.date ? `${dateWithDay(e.date)}${e.time ? ` ${e.time}` : ''}` : (info ? null : '날짜 미정'),
+    // 정보는 날짜가 없어도 시각(관람 시간 등)은 싣는다 — 모임 쪽은 예전 그대로
+    e.date ? `${dateWithDay(e.date)}${e.time ? ` ${e.time}` : ''}` : (info ? (e.time ?? null) : '날짜 미정'),
     e.place ?? null,
     e.note ?? null,
   ].filter(Boolean).map(scrub);
