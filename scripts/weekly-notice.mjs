@@ -74,7 +74,6 @@ try {
 
 // `etc` 는 탭이 없다(2026-09-09) — 아래 `?? '#/survey'` 로 첫 갈래에 떨어진다
 const ROUTE = { exhibition: '#/survey', datetime: '#/survey/datetime', meal: '#/survey/meal', club: '#/survey/club' };
-const SEV = { urgent: '⚠', check: '✓', planning: '…' };
 
 /* ── 조립 ────────────────────────────────────────────── */
 
@@ -84,7 +83,11 @@ L.push('');
 
 L.push(`■ 정리봇 (${digest.period_label})`);
 L.push(`${digest.summary}`);
-for (const h of digest.highlights) L.push(`${SEV[h.severity] ?? '·'} ${h.title} — ${h.text}`);
+// 줄머리는 사이트 카드의 딱지와 같은 라벨(「[전시 정보] …」). 기호(✓ · ?)는 읽는 사람마다 뜻을 달리 짐작했다 —
+// 「✓」 는 확정으로 읽혔다(2026-10-04). 급한 것만 「⚠」 를 앞에 더 붙인다.
+for (const h of digest.highlights) {
+  L.push(`${h.severity === 'urgent' ? '⚠ ' : ''}${h.label?.trim() ? `[${h.label.trim()}] ` : ''}${h.title} — ${h.text}`);
+}
 if (digest.open_questions?.length) {
   L.push('확인 중:');
   for (const q of digest.open_questions.slice(0, 4)) L.push(`- ${q}`);
