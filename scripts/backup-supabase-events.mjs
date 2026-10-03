@@ -68,12 +68,14 @@ function timestampForFile(date) {
 
 const configSource = await loadConfigSource();
 const { url: supabaseUrl, anonKey } = readPublicSupabaseConfig(configSource);
-const localAppData = process.env.LOCALAPPDATA ??
-  path.join(os.homedir(), "AppData", "Local");
+// 기본은 맥의 ~/Library/Application Support/ExhibitionClub/backups(launchd 가 --output-dir 로 같은 곳을 준다).
+// LOCALAPPDATA 는 그 환경 변수가 있을 때만 쓴다.
+const appDataRoot = process.env.LOCALAPPDATA ??
+  path.join(os.homedir(), "Library", "Application Support");
 const outputDirectory = path.resolve(
   argumentValue("--output-dir") ??
     process.env.EXHIBITION_BACKUP_DIR ??
-    path.join(localAppData, "ExhibitionClub", "backups"),
+    path.join(appDataRoot, "ExhibitionClub", "backups"),
 );
 
 if (isInside(repositoryRoot, outputDirectory)) {

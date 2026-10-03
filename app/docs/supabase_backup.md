@@ -40,25 +40,10 @@ node scripts/verify-supabase-backup.mjs --file "$HOME/Library/Application Suppor
 
 `scripts/install-launchd.sh supabase-backup` installs the user LaunchAgent
 `com.psunggu.exhibition-supabase-backup` at 02:30 each day. launchd runs a
-missed slot once after the Mac wakes. Output:
+missed slot once after the Mac wakes. It uses the public GitHub Pages
+`config.js` URL, so the job does not depend on a stored database password.
+Output (also the script's default without `--output-dir`):
 `~/Library/Application Support/ExhibitionClub/backups`.
-
-## Windows scheduled task (before 2026-09-24)
-
-The installer creates the user-level task `ExhibitionClub-Supabase-Backup` at
-02:30 each day. `StartWhenAvailable` runs a missed backup after the PC wakes.
-It uses the public GitHub Pages `config.js` URL, so the task does not depend on
-a Git checkout or a stored database password.
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install-supabase-backup-task.ps1
-```
-
-The recommended local output is:
-
-```text
-%LOCALAPPDATA%\ExhibitionClub\backups
-```
 
 ## Restore test
 

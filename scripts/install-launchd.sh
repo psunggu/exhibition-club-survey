@@ -1,7 +1,7 @@
 #!/bin/bash
-# 이 저장소의 배치를 맥 launchd(LaunchAgent)에 등록한다 — Windows 의 install-*-task.ps1 자리.
+# 이 저장소의 배치를 맥 launchd(LaunchAgent)에 등록한다.
 # plist 는 커밋하지 않는다. 이 스크립트가 경로를 채워 ~/Library/LaunchAgents 에 쓰고 bootstrap 한다.
-# 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(Windows 의 StartWhenAvailable 과 같은 효과). cron 은 놓친 실행을 건너뛰어 쓰지 않는다.
+# 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(StartCalendarInterval). cron 은 놓친 실행을 건너뛰어 쓰지 않는다.
 #
 #   scripts/install-launchd.sh <작업> [--uninstall]
 #
