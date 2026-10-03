@@ -76,6 +76,7 @@ bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 �
 - 스크립트 안의 `digest:public` 이 원본(개인정보 포함)을 공개 틀로 옮긴다 — 기간·시각·대화 수·요약·확인사항·결정·확인 중.
   익명화 식별자 「멤버 N」 은 「회원」 으로 바꾸고, 이름·전화·이메일로 보이는 것이 남으면 **쓰지 않고 멈춘다**(상태 `stopped`).
 - 같은 기간의 공개본이 이미 `main` 에 있으면 PR 을 열지 않는다. `--force` 는 이미 처리한 요약을 다시 올릴 때만 — 손질한 문구가 되돌아간다.
+- 네트워크 호출(git fetch · pull · push · gh)마다 시간 제한이 있다(`scripts/batch-lib.sh`, 영화 배치와 같이 쓴다). PR 생성이 실패로 끝나면 그 브랜치의 열린 PR 을 찾아 있으면 그것으로 받는다(2026-10).
 - PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다.
 - 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).

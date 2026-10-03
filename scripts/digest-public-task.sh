@@ -1,6 +1,7 @@
 #!/bin/bash
 # kakao-digest 의 새 요약을 공개본으로 옮겨 PR 까지 연다 — 세션 없이. 머지는 사람이 한다.
-# digest-public-task.ps1(Windows 작업 스케줄러) 과 같은 절차다. 맥의 launchd 가 매일 06:30 에 돌린다.
+# digest-public-task.ps1(Windows 작업 스케줄러) 과 같은 절차에, 2026-10 부터 네트워크 호출 시간 제한과
+# PR 생성 실패 뒤 열린 PR 확인을 더했다(ps1 원본은 고치지 않는다). 맥의 launchd 가 매일 06:30 에 돌린다.
 #
 #   1. <DIGEST_DIR> 에서 가장 새 digest-*.json 을 잡는다. logs/digest-public-last.json 에 적힌
 #      마지막 처리 파일과 같으면 끝(--force 면 다시 한다).
@@ -86,6 +87,32 @@ fail() {
   exit 1
 }
 
+# 네트워크 호출(git fetch · pull · push · gh)의 시간 제한(with_timeout) — 영화 배치와 같이 쓴다.
+# 새벽 잠자기 중 네트워크에서 호출이 몇 시간씩 멈추면 체크아웃이 content/digest-* 에 남아
+# 같은 체크아웃을 쓰는 다른 배치가 main 이 아닌 상태를 읽는다(2026-09-26 영화 배치에서 겪었다).
+. "$REPO/scripts/batch-lib.sh" || fail 'scripts/batch-lib.sh 를 못 읽었다'
+
+# PR 을 연다. PR_URL 에 주소를 남긴다.
+# 생성 호출이 실패로 끝나도 서버에서는 열렸을 수 있다(9/30 영화 배치: 머지 응답만 끊김). 그때 실패로
+# 끝내면 상태 파일이 안 적혀 다음 날 같은 원본을 다시 처리하고 매일 실패 알림이 뜬다. 그래서 이 브랜치의
+# 열린 PR 을 먼저 찾아 있으면 그것으로 받는다. 네트워크가 잠깐 끊긴 것이면 몇 번 더 묻는다.
+open_pr() {
+  local out rc i url l
+  out="$(with_timeout 120 gh pr create --fill --base main 2>&1)"; rc=$?
+  while IFS= read -r l; do log "  $l"; done <<< "$out"
+  if [ "$rc" -eq 0 ]; then
+    PR_URL="$(printf '%s\n' "$out" | grep -E '^https://' | tail -1)"
+    return 0
+  fi
+  log "실패: 종료 코드 $rc — gh pr create. 이 브랜치의 열린 PR 이 있는지 본다"
+  for i in 1 2 3; do
+    url="$(with_timeout 60 gh pr list --head "$BRANCH" --state open --json url -q '.[0].url' 2>/dev/null)"
+    case "$url" in https://*) PR_URL="$url"; log "PR 은 이미 열려 있다 — $url"; return 0 ;; esac
+    [ "$i" -lt 3 ] && sleep "${PR_LOOKUP_RETRY_SLEEP:-30}"
+  done
+  return 1
+}
+
 cd "$REPO" || exit 1
 log '=== 정리봇 공개본 배치 시작 ==='
 [ -d "$DIGEST_DIR" ] || fail "요약 폴더가 없다: $DIGEST_DIR"
@@ -107,7 +134,7 @@ END_DATE="$(printf '%s' "$NEWEST" | sed -nE 's/^digest-[0-9]{8}-([0-9]{8})\.json
 [ -z "$END_DATE" ] && END_DATE="$(date +%Y%m%d)"
 BRANCH_NAME="content/digest-$END_DATE"
 
-run git fetch -q --prune origin || fail 'git fetch'
+run with_timeout 120 git fetch -q --prune origin || fail 'git fetch'
 # 같은 기간의 공개본이 이미 main 에 있으면 PR 을 열지 않는다 — 손으로 다듬어 머지한 문구가 되돌아간다(#183).
 # 원본 period_start·period_end 를 digest-to-public.mjs 의 kDate 꼴로 만들어 origin/main 공개본의 period_label 과 견준다.
 # 어느 쪽이든 못 읽으면(빈 값) 예전처럼 진행한다.
@@ -122,7 +149,7 @@ if [ "$FORCE" -eq 0 ]; then
 fi
 [ -n "$(git status --porcelain)" ] && fail '작업 트리에 커밋 안 된 변경이 있다 — 손으로 정리한 뒤 다시 돌린다'
 run git checkout -q main || fail 'checkout main'
-run git pull -q --ff-only origin main || fail 'pull main'
+run with_timeout 120 git pull -q --ff-only origin main || fail 'pull main'
 if [ -n "$(git branch --list "$BRANCH_NAME")" ]; then run git branch -q -D "$BRANCH_NAME" || fail 'branch -D'; fi
 run git checkout -q -b "$BRANCH_NAME" || fail 'checkout branch'
 BRANCH="$BRANCH_NAME"
@@ -162,12 +189,9 @@ MSG_FILE="${TMPDIR:-/tmp}/exhibition-club-digest-commit.txt"
 printf '정리봇 %s (자동)\n' "$PERIOD" > "$MSG_FILE"
 run git add -A || fail 'git add'
 run git -c user.name=psunggu -c user.email=psunggu@users.noreply.github.com commit -q -F "$MSG_FILE" || fail 'git commit'
-run git push -q -u origin "$BRANCH" || fail 'git push'
-PR_OUT="$(gh pr create --fill --base main 2>&1)"
-PR_RC=$?
-while IFS= read -r l; do log "  $l"; done <<< "$PR_OUT"
-[ "$PR_RC" -ne 0 ] && fail 'gh pr create'
-PR_URL="$(printf '%s\n' "$PR_OUT" | grep -E '^https://' | tail -1)"
+run with_timeout 120 git push -q -u origin "$BRANCH" || fail 'git push'
+PR_URL=""
+open_pr || fail 'gh pr create — 열린 PR 도 찾지 못했다'
 run git checkout -q main || fail 'checkout main'
 save_state "$NEWEST" pr-opened "$PR_URL"
 log "완료 — PR 을 열었다. 머지는 사람이 한다: $PR_URL"
