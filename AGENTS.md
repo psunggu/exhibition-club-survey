@@ -29,7 +29,7 @@
 - 해시 라우팅을 히스토리 API 로 바꾸지 않는다 — 카카오톡 인앱 브라우저 때문이다.
 - **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
 - Pages 배포 원천은 GitHub Actions 다(2026-09-08). `gh-pages` 브랜치는 없다.
-- 영화 순위는 소유자 맥의 launchd(`scripts/update-movies-task.sh`, 등록 `scripts/install-launchd.sh movies`)가 PR 로 올려 머지한다. Windows 용 `*.ps1` 은 2026-09-24 이관 전 원본으로 남겨 둔다. GitHub 러너는 KOBIS 에 못 붙는다. ruleset 에 우회 대상을 만들지 않는다.
+- 영화 순위는 소유자 맥의 launchd(`scripts/update-movies-task.sh`, 등록 `scripts/install-launchd.sh movies`)가 PR 로 올려 머지한다. GitHub 러너는 KOBIS 에 못 붙는다. ruleset 에 우회 대상을 만들지 않는다.
 - 정기 갱신용 스킬 `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout` 와 서브에이전트 `ops` 는 `.claude/skills/` · `.claude/agents/` 에 있고 추적한다.
 
 ## 검사
@@ -102,7 +102,7 @@
 1. **정리봇 갈래 첫 실측** — 다음 카톡 저장 때 요약에 `kind`(모임 · 정보)가 붙는지, 회원이 나눈 전시 안내가 사이트에 「전시 정보」 로, 공지문에 `[전시 정보]` 로 나오고 ICS 에서 빠지는지 본다(kakao-digest#22 · #221). 기간 전시는 종료일 칸이 없어 이미 끝난 전시도 실릴 수 있다 — 실측에서 보이면 요약 스키마에 종료일을 더할지 정한다.
 2. **머지 커밋 작성자 메일** — `main` 의 squash 머지 작성자가 개인 메일로 남는다(10/4 확인, 최근 30개 모두 — 같은 날 켠 자동 머지 커밋 #220~#223 도 같다). GitHub 의 「Keep my email addresses private」 를 켜면 웹 · `gh pr merge` 머지가 함께 noreply 로 바뀐다(권장, 사람이 켠다). 스크립트 · 스킬에 `--author-email` 을 붙이는 길은 웹 머지를 못 막는다.
 3. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
-4. **윈도우 정리** — 맥 한 바퀴는 10/4 확인(inbox 저장 → `kakao-weekly` 병합·요약 → 공개본 PR #217 → 머지 → 주간 소식). 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제한다 — 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. `scripts/*.ps1` 일곱 개를 지울지 정한다(언급하는 문서 · 스크립트 10곳도 함께). kakao-digest 의 `CLAUDE.md`(`C:\D\Project\…` · `%TEMP%` 경로) · `AGENTS.md`(ps1 · 작업 스케줄러 설명)도 맥 기준으로 맞춘다.
+4. **옛 PC 작업 스케줄러 해제(사람)** — 옛 Windows PC 를 켜서 `ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup` 을 한 줄 명령으로 지운다(`docs/OPERATIONS.md` 「자동화 구성」). 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. 저장소의 `*.ps1` 은 10/4 에 지웠다.
 5. **새벽 배치의 잠자기** — 맥이 배터리로 잠든 채 launchd 배치가 DarkWake 몇 초씩만 나아가 몇 시간씩 늘어진다(`logs/recheck-task-202609.log`, 9/28 재확인 6시간 41분). `scripts/install-launchd.sh` 의 실행을 `caffeinate -i` 로 감쌀지, 전원 · 시각(`pmset repeat`)을 바꿀지 정한다.
 6. **잠긴 표 백업** — 매일 백업이 `events` · `surveys` · `survey_options` 를 받는다(2026-10-04). Supabase 는 무료 요금제라 자체 백업이 없다. 잠긴 표 `admin_guides` · `survey_notes` 는 익명 키로 못 읽어 빠져 있다 — 운영자가 원문을 따로 보관할지, 운영자 암호를 쓰는 손 백업 절차를 둘지 정한다(명부 · 응답 표는 제외).
 7. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`, 3,288줄)와 명부 보관을 지울지 둘지 정한다. `Survey.tsx` · `lib/survey.ts` 는 결과 화면도 그려 응답 · 만들기 부분만 걷어내는 일이다. 한 번도 가동하지 않은 `app/apps-script/` 는 따로 먼저 지울 수 있다.

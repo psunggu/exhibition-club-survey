@@ -68,7 +68,7 @@ dist/
 .vite/
 *.tsbuildinfo
 
-# 작업 스케줄러 러너(scripts/update-movies-task.ps1)의 로그
+# launchd 배치(scripts/*-task.sh) · 점검 스크립트의 로그와 보고서
 logs/
 
 # ── 편집기 · OS ─────────────────────────────────────────────

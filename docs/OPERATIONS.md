@@ -30,15 +30,21 @@
 
 ### 자동화 구성 (2026-09-08, 맥 이관 2026-09-24)
 
-2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼는 `*.sh` 이고 ps1 과 같은 절차·로그·상태 파일을 쓴다. 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(Windows 의 `StartWhenAvailable` 과 같다). 알림은 맥 알림 센터. 아래 `*.ps1` 설명은 절차의 원본이라 남긴다.
+2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼(`scripts/*-task.sh`)의 로그·상태 파일은 `logs/`, launchd 출력(래퍼가 없는 백업 포함)은 `~/Library/Logs/com.psunggu.exhibition-<작업>.log`. 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(`StartCalendarInterval`). 알림은 맥 알림 센터.
+
+**옛 Windows PC 의 작업 스케줄러는 사람이 그 PC 에서 한 번 해제한다** — 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. PowerShell 에서:
+```
+Get-ScheduledTask -TaskName 'ExhibitionClub-*','KakaoWeeklyDigest','KakaoDigest-StoreBackup' -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
+```
+그 PC 의 러너(`*.ps1`)는 2026-10-04 에 저장소에서 지웠다(되살리는 법은 `docs/HISTORY.md`).
 
 
-- **`scripts/update-movies-task.sh`**(원본 `update-movies-task.ps1`) — 맥의 launchd 가 수·토 05:00 에 돌린다(`scripts/install-launchd.sh movies` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 맥을 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. 05:00 에 맥이 자고 있으면 깨어난 뒤 한 번 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키려면 `sudo pmset repeat wakeorpoweron WS 04:55:00` 으로 맥을 깨운다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. 머지 호출이 실패하면 먼저 PR 상태를 본다 — `MERGED` 면 이어서 정리하고, `OPEN` 일 때만 위 재시도, 닫혔거나 못 읽으면 브랜치를 남기고 멈춘다. gh 호출마다 시간 제한이 있다(2026-10). **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs/update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
+- **`scripts/update-movies-task.sh`** — 맥의 launchd 가 수·토 05:00 에 돌린다(`scripts/install-launchd.sh movies` 로 등록). 새벽인 이유는 낮·저녁에는 사람이 맥을 쓰고 있어서다. `board:movies` + `check:quick` 뒤 사용자 계정의 `gh` 로 PR 을 열고 CI 를 기다려 머지한다. 05:00 에 맥이 자고 있으면 깨어난 뒤 한 번 돈다 — 낮에 돌면 KOBIS 가 느려 연결이 끊기곤 해서 받기는 시도마다 30초 · 세 번(`scripts/fetch-retry.mjs`)이고, 실패하면 체크아웃을 `main` 으로 되돌린다(2026-09-13). 05:00 을 지키려면 `sudo pmset repeat wakeorpoweron WS 04:55:00` 으로 맥을 깨운다 — 노트북이 새벽에 깨는 것을 받아들일 때만. 그 사이 `main` 이 움직여 머지가 거부되면 `gh pr update-branch` 로 맞추고 한 번 더 시도한다. 머지 호출이 실패하면 먼저 PR 상태를 본다 — `MERGED` 면 이어서 정리하고, `OPEN` 일 때만 위 재시도, 닫혔거나 못 읽으면 브랜치를 남기고 멈춘다. gh 호출마다 시간 제한이 있다(2026-10). **우회 권한을 만들지 않는다** — 사람과 같은 길이다. 로그는 `logs/update-movies-YYYYMM.log`. GitHub 호스트 러너에서는 KOBIS 가 연결 시간 초과로 막혀 크론 워크플로는 쓸 수 없었다(2026-09-08 실측).
   ```
   scripts/install-launchd.sh movies
   ```
-- **`scripts/digest-public-task.sh`**(원본 `digest-public-task.ps1`, 2026-09-14, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 알림. 등록은 `scripts/install-launchd.sh digest`. 시험은 `--no-pr`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
-- **`scripts/recheck-task.sh`**(원본 `recheck-task.ps1`, 2026-09-14, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-launchd.sh recheck`. 시험은 `--no-ai`.
+- **`scripts/digest-public-task.sh`**(2026-09-14, 매일 06:30) — kakao-digest 의 새 `digest-*.json` 이 있으면 공개본으로 옮겨 검사하고 **PR 까지만** 연다(머지는 사람). 새 요약이 없는 날은 로그 한 줄. 실명으로 보이는 값이 남아 변환이 멈추면 알림. 등록은 `scripts/install-launchd.sh digest`. 시험은 `--no-pr`. `/digest` 스킬은 손으로 돌릴 때 남긴다.
+- **`scripts/recheck-task.sh`**(2026-09-14, 월 06:00) — 위 「주 1회 재확인」. 등록은 `scripts/install-launchd.sh recheck`. 시험은 `--no-ai`.
 - **`.claude/skills/`** — `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout`. 부를 때만 읽히므로 세션 고정 비용이 늘지 않는다.
 - **`.claude/agents/ops.md`** — `/meetup` 이 실행을 맡기는 서브에이전트. Sonnet, 도구는 Bash · Read · Edit · Grep · Glob. 판단은 하지 않고 절차만 돌린다.
 - Pages 배포 원천은 2026-09-08 부터 **GitHub Actions** 다. `gh-pages` 브랜치는 지웠다.
@@ -80,7 +86,7 @@ bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 �
 - PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다.
 - 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
-- `kakao-digest` 의 launchd `com.psunggu.kakao-weekly` 가 `~/KakaoDigest/inbox` 를 지켜보다(WatchPaths) 저장 즉시 병합·요약하고, `com.psunggu.kakao-weekly-remind` 가 화·금 22:00 에 마지막 저장(inbox · archive 의 내보내기 파일)이 7일 이상이면 저장 안내 알림을 띄운다 — inbox 에 한 시간 넘게 남은(처리 못 한) 파일이 있으면 저장 안내 대신 그 알림을. 조용해 요약을 건너뛴 주라도 저장했으면 조르지 않는다. 등록은 `kakao-digest/scripts/install-launchd.sh <weekly|weekly-remind>`, 로그는 `~/Library/Logs/com.psunggu.kakao-<작업>.log`. 종료 2 는 저장 파일이 오래됐다는 뜻이라(맥 CSV 는 저장한 지 36시간) 카톡에서 다시 저장한다. 방이 조용했으면 종료 0 에 새 0건, 8일 넘게 조용하면 종료 3 이다. 종료 1(오류)이면 inbox 파일이 일부러 남는다 — 로그로 원인을 고친 뒤 `launchctl kickstart gui/$(id -u)/com.psunggu.kakao-weekly`. 윈도우 원본(`*.ps1` · AHK)은 kakao-digest 에 남아 있다.
+- `kakao-digest` 의 launchd `com.psunggu.kakao-weekly` 가 `~/KakaoDigest/inbox` 를 지켜보다(WatchPaths) 저장 즉시 병합·요약하고, `com.psunggu.kakao-weekly-remind` 가 화·금 22:00 에 마지막 저장(inbox · archive 의 내보내기 파일)이 7일 이상이면 저장 안내 알림을 띄운다 — inbox 에 한 시간 넘게 남은(처리 못 한) 파일이 있으면 저장 안내 대신 그 알림을. 조용해 요약을 건너뛴 주라도 저장했으면 조르지 않는다. 등록은 `kakao-digest/scripts/install-launchd.sh <weekly|weekly-remind>`, 로그는 `~/Library/Logs/com.psunggu.kakao-<작업>.log`. 종료 2 는 저장 파일이 오래됐다는 뜻이라(맥 CSV 는 저장한 지 36시간) 카톡에서 다시 저장한다. 방이 조용했으면 종료 0 에 새 0건, 8일 넘게 조용하면 종료 3 이다. 종료 1(오류)이면 inbox 파일이 일부러 남는다 — 로그로 원인을 고친 뒤 `launchctl kickstart gui/$(id -u)/com.psunggu.kakao-weekly`.
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 

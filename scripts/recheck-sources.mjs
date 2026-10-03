@@ -253,7 +253,7 @@ console.log(`\n자료: ${path.relative(ROOT, out).replace(/\\/g, '/')}`);
 
 /**
  * `--exit-on-change` — 바뀐/처음 항목이 있으면 종료 코드 3.
- * 배치(scripts/recheck-task.ps1)가 「AI 를 부를지」 를 이 코드로 가른다 — 변화가 없으면
+ * 배치(scripts/recheck-task.sh)가 「AI 를 부를지」 를 이 코드로 가른다 — 변화가 없으면
  * 세션도 헤드리스 호출도 없이 끝낸다(docs/AUTOMATION_PLAN.md 단계 4). 손으로 돌릴 때는
  * 이 플래그를 안 쓰므로 npm 이 오류처럼 보이게 찍지 않는다.
  */

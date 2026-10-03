@@ -54,7 +54,7 @@ AI 가 실제로 드는 곳은 **D 와 G(달라진 주에만)** 이고, C 는 `/
 **바꾸는 것:** 따로 도는 06:30 배치(`digest-public-task.sh`)가 새 요약이 있으면 `npm run digest:public` → `validate-weekly-digest` → 브랜치·커밋·PR 까지 한다(영화 배치 `update-movies-task.sh` 와 같은 틀). **머지는 사람이 PR 버튼** — 공개 페이지에 나가는 글이다. 세션은 열지 않는다.
 **통과 판정:** 4주 연속 PR 이 사람 손질 없이 머지됨.
 **토큰:** 0. (`/digest` 스킬은 손으로 돌릴 때만 남긴다.)
-**준비물:** `scripts/digest-public-task.sh`(원본 `.ps1`, 영화 배치 사본에서 시작), PR 본문 틀, 실패 시 되돌리기.
+**준비물:** `scripts/digest-public-task.sh`(영화 배치 사본에서 시작), PR 본문 틀, 실패 시 되돌리기.
 
 ### 단계 3 · 모임 한 줄 → 달력을 AI 없이 — D
 **켜는 조건:** 최근 5건의 `/meetup` 입력이 전부 「날짜 · 시각 · 장소 · 제목」 네 조각으로 규칙 파싱 가능했음(로그로 확인).
@@ -117,8 +117,8 @@ claude -p --model claude-sonnet-5 --output-format text \
 
 | | 준비물 | 크기 | 어느 단계 |
 |---|---|---|---|
-| 1 | `recheck --exit-on-change` 종료 코드 + 주 1회 launchd — **2026-09-14 만듦**(원본 `recheck-task.ps1`), 2026-09-24 맥 이관: `scripts/recheck-task.sh`, 등록은 `scripts/install-launchd.sh recheck`. 헤드리스 호출은 터미널 CLI 로그인(`claude auth login`)이 전제 | 반나절 | 4 |
-| 2 | `digest-public-task.sh`(원본 `.ps1`) — 영화 배치 틀 복제 — **2026-09-14 만듦**, 09-24 맥 이관 (등록은 `scripts/install-launchd.sh digest`, 머지는 사람) | 반나절 | 2 |
+| 1 | `recheck --exit-on-change` 종료 코드 + 주 1회 launchd — **2026-09-14 만듦**, 2026-09-24 맥 이관: `scripts/recheck-task.sh`, 등록은 `scripts/install-launchd.sh recheck`. 헤드리스 호출은 터미널 CLI 로그인(`claude auth login`)이 전제 | 반나절 | 4 |
+| 2 | `digest-public-task.sh` — 영화 배치 틀 복제 — **2026-09-14 만듦**, 09-24 맥 이관 (등록은 `scripts/install-launchd.sh digest`, 머지는 사람) | 반나절 | 2 |
 | 3 | 방 창 감시자 — **해당 없음**(맥은 내보내기를 사람이 한다, 단계 1 참조). 저장을 잊으면 화·금 22:00 remind 알림 → 사람이 inbox 에 저장 | — | 1 |
 | 4 | `add-meetup.mjs` 규칙 파서 | 반나절 | 3 |
 | 5 | kakao-digest K10 | 하루 | 5 |

@@ -1,6 +1,6 @@
 #!/bin/bash
 # 공식 출처 재확인을 주 1회 배치로 — 달라진 페이지가 있을 때만 AI 를 부른다.
-# recheck-task.ps1(Windows 작업 스케줄러) 과 같은 절차다. 맥의 launchd 가 월 06:00 에 돌린다.
+# 맥의 launchd 가 월 06:00 에 돌린다.
 #
 #   1. node scripts/recheck-sources.mjs --exit-on-change
 #        0 → 변화 없음. 여기서 끝낸다. AI 호출 없음.
@@ -47,7 +47,7 @@ notify() {
 
 ST_EXIT=1; ST_CHANGED=""; ST_SOURCE=""; ST_REPORT=""; ST_AI=skipped; ST_MESSAGE=""
 RAN_AT="$(date '+%Y-%m-%dT%H:%M:%S%z')"
-# 상태는 어떤 길로 끝나도 기록한다(ps1 의 finally).
+# 상태는 어떤 길로 끝나도 기록한다.
 save_state() {
   RAN_AT="$RAN_AT" ST_EXIT="$ST_EXIT" ST_CHANGED="$ST_CHANGED" ST_SOURCE="$ST_SOURCE" \
   ST_REPORT="$ST_REPORT" ST_AI="$ST_AI" ST_MESSAGE="$ST_MESSAGE" node -e '

@@ -1,7 +1,7 @@
 #!/bin/bash
 # kakao-digest 의 새 요약을 공개본으로 옮겨 PR 까지 연다 — 세션 없이. 머지는 사람이 한다.
-# digest-public-task.ps1(Windows 작업 스케줄러) 과 같은 절차에, 2026-10 부터 네트워크 호출 시간 제한과
-# PR 생성 실패 뒤 열린 PR 확인을 더했다(ps1 원본은 고치지 않는다). 맥의 launchd 가 매일 06:30 에 돌린다.
+# 맥의 launchd 가 매일 06:30 에 돌린다. 2026-10 부터 네트워크 호출
+# 시간 제한과 PR 생성 실패 뒤 열린 PR 확인을 더했다.
 #
 #   1. <DIGEST_DIR> 에서 가장 새 digest-*.json 을 잡는다. logs/digest-public-last.json 에 적힌
 #      마지막 처리 파일과 같으면 끝(--force 면 다시 한다).
