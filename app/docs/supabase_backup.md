@@ -1,16 +1,24 @@
 # Supabase events backup
 
 The Supabase Free plan does not provide a project-restorable backup for this
-application. The current production data surface is limited to 13 public rows
-in `public.events`; Auth has no users and Storage has no buckets. The repository
-contains the schema and migrations, while this procedure stores the event rows
-outside Git.
+application (daily backups start at the Pro plan). The repository contains the
+schema and migrations, while this procedure stores the public rows outside Git.
 
 ## Backup contract
 
-- The backup job downloads `public.events` through the same anonymous,
-  read-only API used by the live site.
-- An empty response, invalid row, or duplicate event ID fails the job.
+- The backup job downloads `public.events`, `public.surveys` and
+  `public.survey_options` through the same anonymous, read-only API used by the
+  live site (format `v2` since 2026-10-04; older files are `v1`, events only).
+- Row-level security limits the survey tables to what members see: surveys
+  with no `deleted_at` and `audience = 'members'`, and their options.
+  Admin-only or deleted surveys are not in the backup.
+- `survey_options.imported_voters` (voter names) is dropped before writing —
+  member lists and responses are never copied to this computer.
+- Locked tables (`admin_guides`, `survey_notes`, members, responses) and Auth
+  are not covered. The anonymous key cannot read them, and the job does not
+  store the operator password.
+- An empty events response, an invalid row, a duplicate ID, or a survey option
+  whose survey is missing fails the job.
 - Each timestamped JSON file has an adjacent SHA-256 checksum file.
 - The output directory must be outside the Git repository.
 - The anonymous key is read from the public site configuration and is never
