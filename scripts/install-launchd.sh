@@ -49,6 +49,11 @@ case "$JOB" in
     exit 2 ;;
 esac
 
+# 도는 동안 맥이 다시 잠들지 않게 감싼다(2026-10-04). 배터리로 잠든 새벽에는 몇 초씩 깨는 틈으로만 나아가
+# 몇 시간씩 늘어졌다(9/28 재확인 6시간 41분). -i 는 유휴 잠자기, -s 는 전원 연결 때 시스템 잠자기를 막는다.
+# 맥을 깨우지는 못한다 — 시작은 여전히 launchd 가 깨어난 때다. 종료 코드는 감싼 명령의 것을 그대로 돌려준다.
+ARGS=(/usr/bin/caffeinate -i -s "${ARGS[@]}")
+
 launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
 if [[ "${2:-}" == "--uninstall" ]]; then
   rm -f "$PLIST"
