@@ -1,6 +1,7 @@
 #!/bin/bash
 # 보드 영화 순위를 KOBIS 에서 받아 PR 로 올리고 머지한다 — 맥의 launchd 가 수·토 05:00 에 돌린다.
-# update-movies-task.ps1(Windows 작업 스케줄러) 과 같은 절차다. ps1 은 참고용으로 남겨 둔다.
+# update-movies-task.ps1(Windows 작업 스케줄러) 과 같은 절차에, 2026-10 부터 gh 시간 제한과 머지 실패 뒤
+# PR 상태 확인을 더했다. ps1 은 이관 전 원본으로 남겨 둔다(고치지 않는다).
 #
 # GitHub 호스트 러너에서는 KOBIS 접속이 막혀(연결 시간 초과) 크론 워크플로를 쓸 수 없었다.
 # 그래서 이 컴퓨터에서 돈다. 사람이 손으로 하던 것과 같은 절차다 (docs/OPERATIONS.md 3):
@@ -54,6 +55,71 @@ fail() {
   exit 1
 }
 
+# ── gh 호출에는 시간 제한을 둔다 ───────────────────────────────────────
+# 2026-09-26 머지 호출이 응답 없이 2시간 45분 멈췄다(새벽 잠자기 중 네트워크). 맥에는 timeout 명령이
+# 없어 기본으로 있는 perl 로 감싼다. **alarm 만 걸고 exec 하면 안 된다** — gh 는 Go 프로그램이라
+# SIGALRM 을 스스로 잡아 무시한다(실측: 4초 제한이 39초 넘게 안 끊겼다). 그래서 perl 이 gh 를 자식으로
+# 띄워 기다리고, 시간이 되면 TERM(2초 안에 안 끝나면 KILL)을 보낸 뒤 142 로 끝낸다.
+# 정상 종료면 자식의 종료 코드를 그대로, 시그널로 죽었으면 128+번호를 돌려준다.
+with_timeout() {
+  local secs="$1" rc; shift
+  perl -MPOSIX=:sys_wait_h -e '
+    my $s = shift @ARGV; my $p = fork; defined $p or exit 126;
+    if (!$p) { exec @ARGV or exit 127 }
+    $SIG{ALRM} = sub {
+      kill "TERM", $p;
+      for (1 .. 20) { exit 142 if waitpid($p, WNOHANG) == $p; select(undef, undef, undef, 0.1) }
+      kill "KILL", $p; waitpid $p, 0; exit 142;
+    };
+    alarm $s; waitpid $p, 0; alarm 0;
+    exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
+  ' "$secs" "$@"; rc=$?
+  [ "$rc" -eq 142 ] && echo "시간 초과 — ${secs}초 안에 끝나지 않았다" >&2
+  return "$rc"
+}
+
+# PR 상태(OPEN · MERGED · CLOSED). 네트워크가 잠깐 끊긴 것이면 몇 번 더 묻고, 끝내 모르면 UNKNOWN.
+# stdout 이 돌려주는 값이다 — 여기서 log 를 부르지 않는다(log 는 stdout 에도 찍어 값이 섞인다).
+pr_state() {
+  local i s
+  for i in 1 2 3; do
+    s="$(with_timeout 60 gh pr view "$PR" --json state -q .state 2>/dev/null)"
+    case "$s" in OPEN|MERGED|CLOSED) echo "$s"; return 0 ;; esac
+    [ "$i" -lt 3 ] && sleep "${PR_STATE_RETRY_SLEEP:-30}"
+  done
+  echo UNKNOWN
+}
+
+# ── 머지 — 호출이 실패로 끝나도 서버에서는 머지됐을 수 있다 ──────────────
+# 2026-09-30 #206: 머지는 됐는데 응답만 끊겨(connection reset) 실패로 읽고 update-branch 를 했다가,
+# 이미 머지된 뒤라 충돌로 멈추고 브랜치를 남겼다. 다음 동작을 고르기 전에 PR 상태를 직접 본다.
+# 보호 규칙이 strict 라, 브랜치를 만든 뒤 main 이 움직였으면(정리봇·모임 머지 등) 「브랜치가 뒤처졌다」 로
+# 머지가 거부된다 — 그때(상태 OPEN)만 브랜치를 main 에 맞추고 검사를 다시 기다린다.
+merge_pr() {
+  local state
+  run with_timeout 300 gh pr merge "$PR" --squash && return 0
+  state="$(pr_state)"; log "머지 호출이 실패로 끝났다 — PR 상태 $state"
+  case "$state" in
+    MERGED) log '서버에서는 이미 머지됐다 — 이어서 정리한다'; return 0 ;;
+    OPEN) ;;
+    CLOSED) fail "PR #$PR 이 닫혀 있다 — 누가 닫았는지 보고 손으로 정리한다" ;;
+    *) fail "PR #$PR 상태를 읽지 못했다 — PR 을 보고 손으로 정리한다" ;;
+  esac
+  log '머지 거부 — 브랜치를 main 에 맞추고 한 번 더 시도한다'
+  # 시간 초과로 끊긴 머지가 서버에서 늦게 끝나면 방금은 OPEN 이었어도 지금은 MERGED 라 update-branch 가
+  # 충돌로 실패한다(9/30 과 같은 꼴). 실패하면 상태를 한 번 더 본다.
+  if ! run with_timeout 120 gh pr update-branch "$PR"; then
+    [ "$(pr_state)" = MERGED ] && { log '그 사이 서버에서 머지됐다 — 이어서 정리한다'; return 0; }
+    fail 'gh pr update-branch'
+  fi
+  sleep "${MERGE_RETRY_SLEEP:-30}"
+  run with_timeout 1800 gh pr checks "$PR" --watch -i 30 || fail 'gh pr checks (2)'
+  run with_timeout 300 gh pr merge "$PR" --squash && return 0
+  state="$(pr_state)"; log "두 번째 머지 호출도 실패로 끝났다 — PR 상태 $state"
+  [ "$state" = MERGED ] && { log '서버에서는 이미 머지됐다 — 이어서 정리한다'; return 0; }
+  fail 'gh pr merge (2)'
+}
+
 log '=== 영화 순위 갱신 시작 ==='
 run git fetch -q --prune origin || fail 'git fetch'
 
@@ -82,19 +148,15 @@ printf '보드 영화 순위를 %s 기준으로 갱신한다 (자동)\n' "$(date
 run git add -A || fail 'git add'
 run git -c user.name=psunggu -c user.email=psunggu@users.noreply.github.com commit -q -F "$MSG_FILE" || fail 'git commit'
 run git push -q -u origin "$BRANCH" || fail 'git push'
-run gh pr create --fill --base main || fail 'gh pr create'
+run with_timeout 120 gh pr create --fill --base main || fail 'gh pr create'
+# 뒤의 호출이 모두 이 PR 을 번호로 가리키게 한다 — 브랜치로 찾으면 머지 뒤에 못 찾을 수 있다.
+PR="$(with_timeout 60 gh pr view --json number -q .number 2>/dev/null)"
+case "$PR" in ''|*[!0-9]*) fail 'PR 번호를 읽지 못했다' ;; esac
+log "PR #$PR"
 sleep 20
-run gh pr checks --watch -i 30 || fail 'gh pr checks'
+run with_timeout 1800 gh pr checks "$PR" --watch -i 30 || fail 'gh pr checks'
 
-# 보호 규칙이 strict 라, 브랜치를 만든 뒤 main 이 움직였으면(정리봇·모임 머지 등)
-# 「브랜치가 뒤처졌다」 로 머지가 거부된다. 그때는 브랜치를 main 에 맞추고 검사를 다시 기다린다.
-if ! run gh pr merge --squash; then
-  log '머지 거부 — 브랜치를 main 에 맞추고 한 번 더 시도한다'
-  run gh pr update-branch || fail 'gh pr update-branch'
-  sleep 30
-  run gh pr checks --watch -i 30 || fail 'gh pr checks (2)'
-  run gh pr merge --squash || fail 'gh pr merge (2)'
-fi
+merge_pr
 
 run git checkout -q main || fail 'checkout main'
 run git pull -q --ff-only origin main || fail 'pull main'
