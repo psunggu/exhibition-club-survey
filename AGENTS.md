@@ -1,6 +1,6 @@
 # AGENTS.md — 프로젝트 규칙 (AI 코딩 에이전트용)
 
-> 최종 갱신: 2026-09-27. **여기에는 규칙만 적는다.**
+> 최종 갱신: 2026-10-03. **여기에는 규칙만 적는다.**
 > 왜 그렇게 정했는지와 무슨 일이 있었는지는 `docs/HISTORY.md`, 정기 갱신 절차는 `docs/OPERATIONS.md`.
 > 이 문서는 세션마다 읽히므로 길어지면 그만큼 매번 비용이 든다 — 근거는 HISTORY 로 보낸다.
 
@@ -97,15 +97,16 @@
 
 작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-## 다음 작업 후보 (2026-09-25, 6~7번 2026-09-27)
+## 다음 작업 후보 (2026-10-03)
 
-1. **맥 배치 첫 바퀴 확인 · 윈도우 정리** — 9/26(토) 영화 · 9/28(월) 재확인 정기 실행과 inbox → 정리봇 공개본 PR 한 바퀴를 로그로 확인한 뒤, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
+1. **정리봇 한 바퀴 확인 · 윈도우 정리** — 맥 영화(9/26 · 9/30 · 10/3) · 재확인(9/28) 정기 실행은 돌았다. 남은 것은 inbox 저장 → 요약 → 정리봇 공개본 PR 한 바퀴다(9/24 저장분은 「공지할 내용 부족」 으로 요약이 안 나왔다). 그 한 바퀴를 로그로 본 뒤 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
 2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
 4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `scripts/update-movies-task.sh` 와 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
 6. **Vite 개발 서버를 이 컴퓨터에만** — `vite.config.ts` 의 `server.host: true` 라 `npm run dev` 가 같은 와이파이에 열리고 `/@fs/` 로 저장소 파일(무시 목록의 `logs/` 까지)을 내준다. `host: '127.0.0.1'`(휴대폰 확인은 `npm run dev -- --host`)과 `server.fs.allow` 좁히기. 보안 변경이라 사람이 본 뒤 머지.
 7. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
+8. **영화 배치의 머지 판정** — `scripts/update-movies-task.sh` 가 `gh pr merge` 의 실패를 곧바로 거부로 읽고 update-branch 를 한다. 9/30 은 응답만 끊겼을 뿐 실제로 머지됐는데(#206) 실패로 끝나 `content/movies-*` 브랜치를 남겼다. 재시도 전에 `gh pr view --json state` 로 MERGED 인지 먼저 보고, gh 호출에 타임아웃을 둔다(9/26 은 머지 호출이 2시간 45분 멈췄다).
 
 ## AI 에이전트 역할
 
