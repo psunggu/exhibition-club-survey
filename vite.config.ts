@@ -118,8 +118,10 @@ function serveLiveAssets(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        // 경로 부분에만 건다 — index.html 이 `config.js?v=…` 로 부르기 시작하자(2026-09-27) 끝의 `$` 가
+        // 쿼리 때문에 안 맞아 dev 에서만 config.js 가 404 였다.
         const m = /\/(config\.js|weekly-digest\.public\.json|fonts\/[\w.-]+\.(?:woff2|txt))$/
-          .exec(req.url ?? '')
+          .exec((req.url ?? '').split('?')[0] ?? '')
         if (!m) return next()
         const name = m[1] as string
         const p = path.resolve(HERE, 'app/public', name)
