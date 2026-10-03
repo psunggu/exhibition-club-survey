@@ -16,6 +16,7 @@
  *   message_count                 → message_count
  *   decisions[0] (없으면 topics[0]) → summary
  *   events (지나지 않은 것만)      → highlights    확정 → check · 논의중/미정 → planning
+ *                                                  kind 정보 → planning 「전시 정보」 (모임 아래)
  *   decisions · open_questions    → 그대로 (8개 · 180자 한도)
  *
  * ── 개인정보 ────────────────────────────────────────────
@@ -82,19 +83,27 @@ const topics = (raw.topics ?? []).map(scrub).filter(Boolean);
 const summary = clip(decisions[0] ?? topics[0] ?? '이번 기간에는 새로 정해진 것이 없습니다.', 160);
 
 const highlights = [];
-for (const e of raw.events ?? []) {
+// kind 「정보」 는 회원이 나눈 전시·행사 안내다 — 모임이 아니므로 「확정」 · 「날짜 미정」 을 붙이지 않고
+// 모임 아래에 싣는다(2026-10-04, 9/26~10/3 사진전 두 건이 「확정」 으로 나와 #218 에서 손으로 고쳤다).
+// kind 가 없는 옛 요약은 모임으로 읽는다.
+const isInfo = (e) => e.kind === '정보';
+const events = [...(raw.events ?? [])].sort((a, b) => Number(isInfo(a)) - Number(isInfo(b)));
+for (const e of events) {
   if (e.date && e.date < todayIso) continue;          // 지난 일정은 싣지 않는다
-  const confirmed = e.status === '확정';
+  const info = isInfo(e);
+  const confirmed = !info && e.status === '확정';
   const facts = [
-    e.date ? `${dateWithDay(e.date)}${e.time ? ` ${e.time}` : ''}` : '날짜 미정',
+    // 정보는 날짜가 없어도 시각(관람 시간 등)은 싣는다 — 모임 쪽은 예전 그대로
+    e.date ? `${dateWithDay(e.date)}${e.time ? ` ${e.time}` : ''}` : (info ? (e.time ?? null) : '날짜 미정'),
     e.place ?? null,
     e.note ?? null,
   ].filter(Boolean).map(scrub);
   highlights.push({
     severity: confirmed ? 'check' : 'planning',
-    label: confirmed ? '확정' : (e.status === '논의중' ? '조율 중' : '미정'),
+    label: info ? '전시 정보' : confirmed ? '확정' : (e.status === '논의중' ? '조율 중' : '미정'),
     title: clip(scrub(e.title), 80),
-    text: clip(facts.join(' · '), 240),
+    // 날짜 · 장소 · 메모가 다 없는 안내도 빈 글로 두지 않는다 — 검사기가 빈 text 를 막는다
+    text: clip(facts.join(' · ') || '자세한 안내는 톡방에서 확인해 주세요', 240),
   });
   if (highlights.length >= 8) break;
 }
