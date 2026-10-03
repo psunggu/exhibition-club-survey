@@ -100,7 +100,7 @@
 ## 다음 작업 후보 (2026-10-04)
 
 1. **정리봇 갈래 첫 실측** — 다음 카톡 저장 때 요약에 `kind`(모임 · 정보)가 붙는지, 회원이 나눈 전시 안내가 사이트에 「전시 정보」 로, 공지문에 `[전시 정보]` 로 나오고 ICS 에서 빠지는지 본다(kakao-digest#22 · #221). 기간 전시는 종료일 칸이 없어 이미 끝난 전시도 실릴 수 있다 — 실측에서 보이면 요약 스키마에 종료일을 더할지 정한다.
-2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
+2. **운영자 암호 재설정 확인** (10/4 운영자: 나중에) — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 3. **옛 PC 작업 스케줄러 해제(사람)** — 옛 Windows PC 를 켜서 `ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup` 을 한 줄 명령으로 지운다(`docs/OPERATIONS.md` 「자동화 구성」). 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. 저장소의 `*.ps1` 은 10/4 에 지웠다.
 4. **새벽 배치의 잠자기 — 효과 재기** — 맥이 배터리로 잠든 채 launchd 배치가 DarkWake 몇 초씩만 나아가 몇 시간씩 늘어졌다(9/28 재확인 6시간 41분). 10/4 에 모든 작업을 `caffeinate -i -s` 로 감쌌다(맥을 깨우지는 못한다). 10/5(월) 06:00 재확인 · 10/7(수) 05:00 영화가 걸린 시간을 로그로 재고, 그래도 늘어지면 새벽에 맥을 깨우는 `pmset repeat`(관리자 암호 — 사람이 실행)을 더할지 정한다. 밤에 전원을 연결해 두면 `-s` 가 시스템 잠자기까지 막는다.
 5. **잠긴 표 백업** — 매일 백업이 `events` · `surveys` · `survey_options` 를 받는다(2026-10-04). Supabase 는 무료 요금제라 자체 백업이 없다. 잠긴 표 `admin_guides` · `survey_notes` 는 익명 키로 못 읽어 빠져 있다 — 운영자가 원문을 따로 보관할지, 운영자 암호를 쓰는 손 백업 절차를 둘지 정한다(명부 · 응답 표는 제외).
