@@ -165,5 +165,17 @@ export default defineConfig({
     target: 'es2020',
   },
 
-  server: { port: 5173, host: true },
+  /**
+   * 개발 서버는 **이 컴퓨터에만** 연다 (2026-10-03).
+   *
+   * 전에는 `host: true` 라 같은 와이파이의 누구나 붙을 수 있었고, `fs.allow` 기본값이 저장소 루트라
+   * `/@fs/…` 로 `logs/`(무시 목록) 같은 저장소 파일까지 내줬다. 휴대폰으로 볼 때만
+   * `npm run dev -- --host` 로 잠깐 연다. 앱 코드는 `app/` 안에서 끝나고 의존성은 `node_modules/` 에 있어
+   * 그 둘만 허용한다 — 정적 파일(config.js · 글꼴 · 정리봇 JSON)은 위 serveLiveAssets 가 따로 내준다.
+   */
+  server: {
+    port: 5173,
+    host: '127.0.0.1',
+    fs: { allow: [path.resolve(HERE, 'app'), path.resolve(HERE, 'node_modules')] },
+  },
 })

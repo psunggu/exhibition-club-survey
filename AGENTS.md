@@ -104,8 +104,7 @@
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
 4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `scripts/update-movies-task.sh` 와 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
-6. **Vite 개발 서버를 이 컴퓨터에만** — `vite.config.ts` 의 `server.host: true` 라 `npm run dev` 가 같은 와이파이에 열리고 `/@fs/` 로 저장소 파일(무시 목록의 `logs/` 까지)을 내준다. `host: '127.0.0.1'`(휴대폰 확인은 `npm run dev -- --host`)과 `server.fs.allow` 좁히기. 보안 변경이라 사람이 본 뒤 머지.
-7. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
+6. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
 
 ## AI 에이전트 역할
 
