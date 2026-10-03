@@ -104,7 +104,7 @@
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
 4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `gh pr merge` 를 부르는 `scripts/update-movies-task.sh` · `docs/OPERATIONS.md` · 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
-6. **새벽 배치의 잠자기 · 재확인 프롬프트** — 맥이 배터리로 잠든 채 launchd 배치가 DarkWake 몇 초씩만 나아가 몇 시간씩 늘어진다(`logs/recheck-task-202609.log`, 9/28 재확인 6시간 41분). `scripts/install-launchd.sh` 의 실행을 `caffeinate -i` 로 감쌀지, 전원 · 시각(`pmset repeat`)을 바꿀지 정한다. 또 `scripts/recheck-task.sh` 가 넣는 `.claude/skills/recheck/SKILL.md` 2절의 「WebFetch 로 한 번 더」 를 배치에서는 빼거나 「도구 없음」 을 적어, 보고서가 못 읽은 원인을 「권한 없음」 으로 잘못 적지 않게 한다.
+6. **새벽 배치의 잠자기** — 맥이 배터리로 잠든 채 launchd 배치가 DarkWake 몇 초씩만 나아가 몇 시간씩 늘어진다(`logs/recheck-task-202609.log`, 9/28 재확인 6시간 41분). `scripts/install-launchd.sh` 의 실행을 `caffeinate -i` 로 감쌀지, 전원 · 시각(`pmset repeat`)을 바꿀지 정한다.
 7. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
 
 ## AI 에이전트 역할
