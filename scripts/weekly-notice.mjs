@@ -74,7 +74,8 @@ try {
 
 // `etc` 는 탭이 없다(2026-09-09) — 아래 `?? '#/survey'` 로 첫 갈래에 떨어진다
 const ROUTE = { exhibition: '#/survey', datetime: '#/survey/datetime', meal: '#/survey/meal', club: '#/survey/club' };
-const SEV = { urgent: '⚠', check: '✓', planning: '…' };
+// check 는 사이트(lib/digest.ts 의 SEVERITY_ICON)와 같은 「?」 — 「✓」 는 확정으로 읽혔다(2026-10-04)
+const SEV = { urgent: '⚠', check: '?', planning: '…' };
 
 /* ── 조립 ────────────────────────────────────────────── */
 
