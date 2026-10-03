@@ -30,7 +30,7 @@
 
 ### 자동화 구성 (2026-09-08, 맥 이관 2026-09-24)
 
-2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼(`scripts/*-task.sh`)의 로그·상태 파일은 `logs/`, launchd 출력(래퍼가 없는 백업 포함)은 `~/Library/Logs/com.psunggu.exhibition-<작업>.log`. 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(`StartCalendarInterval`). 알림은 맥 알림 센터.
+2026-09-24 부터 배치는 **맥의 launchd** 가 돌린다. 등록·제거는 `scripts/install-launchd.sh <supabase-backup|movies|recheck|digest> [--uninstall]`, 바로 한 번은 `launchctl kickstart gui/$(id -u)/com.psunggu.exhibition-<작업>`. 래퍼(`scripts/*-task.sh`)의 로그·상태 파일은 `logs/`, launchd 출력(래퍼가 없는 백업 포함)은 `~/Library/Logs/com.psunggu.exhibition-<작업>.log`. 각 작업은 `caffeinate -i -s` 로 감싸 도는 동안 다시 잠들지 않는다(2026-10-04 — 맥을 깨우지는 못한다). 잠자기 중이던 시각은 깨어난 뒤 한 번 돈다(`StartCalendarInterval`). 알림은 맥 알림 센터.
 
 **옛 Windows PC 의 작업 스케줄러는 사람이 그 PC 에서 한 번 해제한다** — 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. PowerShell 에서:
 ```
