@@ -99,12 +99,13 @@
 
 ## 다음 작업 후보 (2026-10-03)
 
-1. **정리봇 한 바퀴 확인 · 윈도우 정리** — 맥 영화(9/26 · 9/30 · 10/3) · 재확인(9/28) 정기 실행은 돌았다. 남은 것은 inbox 저장 → 요약 → 정리봇 공개본 PR 한 바퀴다(9/24 저장분은 「공지할 내용 부족」 으로 요약이 안 나왔다). 그 한 바퀴를 로그로 본 뒤 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
+1. **정리봇 한 바퀴 확인 · 윈도우 정리** — 맥에서 처음 PR 까지 가기 전에 `scripts/digest-public-task.sh` 의 `gh pr create` · `git fetch` · `pull` · `push` 를 `update-movies-task.sh` 의 `with_timeout` 으로 감싸고, PR 생성이 실패하면 그 브랜치의 PR 이 이미 열렸는지 본 뒤 상태를 적게 한다. 그다음 inbox 저장 → 요약(launchd `kakao-weekly`) → 정리봇 공개본 PR(`logs/digest-public-last.json`) 한 바퀴를 로그로 확인하고, 옛 PC 의 작업 스케줄러(`ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup`)를 해제하고 `scripts/*.ps1` 을 지울지 정한다.
 2. **운영자 암호 재설정 확인** — SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 3. **꺼 둔 설문 코드 존폐** — `selfSurvey: false` 로 꺼 둔 응답 · 설문 관리 코드(`Survey.tsx` · `SurveyAdmin.tsx` · `lib/survey.ts` · `scripts/self-survey-config.mjs`)와 명부 보관, 쓸 곳이 없어진 `app/apps-script/` 를 지울지 둘지 정한다.
-4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `scripts/update-movies-task.sh` 와 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)의 `gh pr merge` 에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
+4. **머지 커밋 작성자 메일** — squash 머지 작성자가 개인 메일로 남는다. GitHub 의 「Keep my email addresses private」 를 켜거나, `gh pr merge` 를 부르는 `scripts/update-movies-task.sh` · `docs/OPERATIONS.md` · 스킬(`/digest` · `/meetup` · 서브에이전트 `ops`)에 `--author-email` 을 붙여 noreply 로 맞출지 정한다.
 5. **잠긴 표 백업 범위** — 매일 백업은 `events` 만 받는다. Supabase 자체 백업 여부를 확인하고, `admin_guides` · `surveys` 처럼 저장소에 원본이 없는 표를 넣을지 정한다(명부 · 응답 표는 제외).
-6. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
+6. **새벽 배치의 잠자기 · 재확인 프롬프트** — 맥이 배터리로 잠든 채 launchd 배치가 DarkWake 몇 초씩만 나아가 몇 시간씩 늘어진다(`logs/recheck-task-202609.log`, 9/28 재확인 6시간 41분). `scripts/install-launchd.sh` 의 실행을 `caffeinate -i` 로 감쌀지, 전원 · 시각(`pmset repeat`)을 바꿀지 정한다. 또 `scripts/recheck-task.sh` 가 넣는 `.claude/skills/recheck/SKILL.md` 2절의 「WebFetch 로 한 번 더」 를 배치에서는 빼거나 「도구 없음」 을 적어, 보고서가 못 읽은 원인을 「권한 없음」 으로 잘못 적지 않게 한다.
+7. **넓은 화면의 보드 폭** — 창 700px 이상에서 보드 본문은 넓게 퍼지고 띠 칸은 가운데 552px 라 왼쪽 끝이 안 맞는다. 휴대폰에서는 드러나지 않아 보류(2026-09-27 운영자 확인).
 
 ## AI 에이전트 역할
 
