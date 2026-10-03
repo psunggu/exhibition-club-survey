@@ -13,7 +13,9 @@ const resolvedPath = path.resolve(backupPath);
 const content = await fs.readFile(resolvedPath, "utf8");
 const backup = JSON.parse(content);
 
-if (backup.format !== "exhibition-club-events-backup/v1") {
+// v1 은 events 만, v2(2026-10-04 부터)는 surveys · survey_options 도 담는다.
+const isV2 = backup.format === "exhibition-club-events-backup/v2";
+if (!isV2 && backup.format !== "exhibition-club-events-backup/v1") {
   throw new Error("Unsupported backup format");
 }
 if (!Array.isArray(backup.events) || backup.events.length === 0) {
@@ -26,16 +28,40 @@ if (Number.isNaN(Date.parse(backup.createdAt))) {
   throw new Error("Backup creation time is invalid");
 }
 
-const requiredFields = ["id", "title", "created_at", "updated_at"];
-const ids = new Set();
-for (const event of backup.events) {
-  for (const field of requiredFields) {
-    if (event[field] === null || event[field] === undefined || event[field] === "") {
-      throw new Error(`Event is missing required field: ${field}`);
+function checkRows(table, rows, requiredFields) {
+  if (!Array.isArray(rows)) throw new Error(`Backup has no ${table} array`);
+  const ids = new Set();
+  for (const row of rows) {
+    for (const field of requiredFields) {
+      if (row[field] === null || row[field] === undefined || row[field] === "") {
+        throw new Error(`${table} row is missing required field: ${field}`);
+      }
+    }
+    if (ids.has(row.id)) throw new Error(`Duplicate ${table} id: ${row.id}`);
+    ids.add(row.id);
+  }
+  return ids;
+}
+
+checkRows("events", backup.events, ["id", "title", "created_at", "updated_at"]);
+
+if (isV2) {
+  for (const table of ["events", "surveys", "survey_options"]) {
+    if (backup.rowCounts?.[table] !== backup[table]?.length) {
+      throw new Error(`Backup row count does not match the ${table} array`);
     }
   }
-  if (ids.has(event.id)) throw new Error(`Duplicate event id: ${event.id}`);
-  ids.add(event.id);
+  const surveyIds = checkRows("surveys", backup.surveys, ["id", "title", "created_at"]);
+  checkRows("survey_options", backup.survey_options, ["id", "survey_id", "position", "title"]);
+  for (const option of backup.survey_options) {
+    if (!surveyIds.has(option.survey_id)) {
+      throw new Error(`Survey option ${option.id} points to a survey missing from the backup`);
+    }
+    // 투표자 이름은 백업에 두지 않는다(backup-supabase-events.mjs 의 OMITTED_COLUMNS).
+    if ("imported_voters" in option) {
+      throw new Error("Backup must not contain survey_options.imported_voters");
+    }
+  }
 }
 
 const digest = crypto.createHash("sha256").update(content).digest("hex");
@@ -47,6 +73,8 @@ try {
   if (error.code !== "ENOENT") throw error;
 }
 
-console.log(`Backup verified: ${backup.rowCount} rows`);
+console.log(isV2
+  ? `Backup verified: ${backup.rowCount} events, ${backup.surveys.length} surveys, ${backup.survey_options.length} survey options`
+  : `Backup verified: ${backup.rowCount} events`);
 console.log(`Created: ${backup.createdAt}`);
 console.log(`SHA-256: ${digest}`);

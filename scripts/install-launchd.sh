@@ -5,7 +5,7 @@
 #
 #   scripts/install-launchd.sh <작업> [--uninstall]
 #
-#   supabase-backup  매일 02:30  events 표 백업(저장소 밖 ~/Library/Application Support/ExhibitionClub/backups)
+#   supabase-backup  매일 02:30  events · surveys · survey_options 표 백업(저장소 밖 ~/Library/Application Support/ExhibitionClub/backups)
 #   movies           수·토 05:00 영화 순위 → PR → 머지   (scripts/update-movies-task.sh)
 #   recheck          월 06:00    공식 출처 재확인          (scripts/recheck-task.sh)
 #   digest           매일 06:30  정리봇 공개본 → PR       (scripts/digest-public-task.sh)
