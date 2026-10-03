@@ -8,7 +8,7 @@ description: 주간 정리봇 갱신 — 사람이 ~/KakaoDigest/inbox 에 저�
 ## 1. 원본 만들기 (이 맥에서만 된다 — 내보내기는 사람이 한다)
 
 사람이 카톡 방 → ≡ → 채팅방 설정 → 대화 내용 관리 → 대화 내용 저장으로 `~/KakaoDigest/inbox` 에 저장하면 launchd(`kakao-weekly`)가 곧바로 병합·요약한다. 세션은 처리됐는지부터 본다.
-방 이름은 저장소에 적지 않는다(두 저장소 다 공개다) — `weekly_collect.sh` 가 `config.local.json` 의 `room` 을 스스로 읽는다. 세션은 그 값 · inbox 파일 이름 · `last_run.json` 의 `room` · `message` 를 읽거나 출력하지 않는다.
+방 이름은 저장소에 적지 않는다(사이트 저장소는 공개이고, kakao-digest 는 비공개지만 공개처럼 다룬다) — `weekly_collect.sh` 가 `config.local.json` 의 `room` 을 스스로 읽는다. 세션은 그 값 · inbox 파일 이름 · `last_run.json` 의 `room` · `message` 를 읽거나 출력하지 않는다.
 
 ```bash
 K="$HOME/D/Project/kakao-digest"; jq -r '"병합·요약 \(.startedAt[:16]) \(.result)/\(.exitCode) 새 \(.steps.collect.new // "-")건 공지 \(if .steps.summary.noticeFile then "생성" else "없음" end)"' "$K/last_run.json"; echo "가장 새 요약 $(ls "$K/output" | grep -E '^digest-[0-9]{8}-[0-9]{8}\.json$' | sort -t- -k3 | tail -1) · inbox 대기 $(find ~/KakaoDigest/inbox -maxdepth 1 -type f \( -name '*.csv' -o -name '*.txt' \) | wc -l | tr -d ' ')개"

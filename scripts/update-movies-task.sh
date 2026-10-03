@@ -141,6 +141,9 @@ merge_pr
 run git checkout -q main || fail 'checkout main'
 run git pull -q --ff-only origin main || fail 'pull main'
 run git branch -q -D "$BRANCH"
-run git push -q origin --delete "$BRANCH"
+# 저장소가 머지 뒤 브랜치를 지운다(2026-10-04 deleteBranchOnMerge) — 남아 있을 때만 지운다. 없는 것을 지우면 「실패」 줄만 남는다.
+if with_timeout 60 git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+  run with_timeout 120 git push -q origin --delete "$BRANCH"
+fi
 log '완료 — 머지됐고 배포 워크플로가 이어서 돈다'
 exit 0
