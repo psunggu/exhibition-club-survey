@@ -27,7 +27,14 @@ npm run recheck
 표 하나: `항목 | 우리 정보 | 공식 페이지 | 해야 할 일`. 다른 것이 없으면 「N건 확인, 달라진 것 없음」 한 줄.
 
 해야 할 일은 **사람이 실행할 것**으로 적는다.
-- 전시·공연: 운영자가 Supabase SQL Editor 에 붙여 넣을 `update public.events set … where title = '…';` 한 줄. `updated_at = now()` 와 `verification_note` 에 확인일·근거를 함께 넣는다. AGENTS.md 「DB」 규칙대로 컬럼을 새로 만들지 않는다.
+- 전시·공연: 운영자가 Supabase SQL Editor 에 붙여 넣을 update 한 줄. **SQL 은 표 칸에 넣지 않고 표 아래 ```sql 블록에 한 줄씩** 적고, 표의 할 일 칸에는 「아래 SQL ①」 처럼 번호만 적는다 — 표 칸에 넣으면 `||` 가 `\|\|` 로 바뀌어 그대로 붙이면 깨진다. 이 꼴 그대로 쓴다 —
+  `update public.events set updated_at = now(), <고칠 칸> = '…', verification_note = coalesce(nullif(verification_note, '') || ' / ', '') || 'YYYY-MM-DD <출처> 재확인: <근거>' where id = '<자료의 id>' returning title, updated_at;`
+  - **행은 자료의 `id` 로 가리킨다.** 제목으로 찾으면 《》 하나 차이로 0행이 된다. id 가 없는 옛 자료면 `where title = '<자료 머리줄 제목을 글자 그대로>'`.
+  - **확인메모는 덧붙인다**(위 `coalesce … ||` 꼴). `verification_note = '…'` 로 덮어쓰지 않는다 — 앞선 확인 근거가 지워진다.
+  - 따옴표 안 글에 작은따옴표(`'`)가 있으면 두 번(`''`) 쓴다 — 영어 제목 · 페이지 글에서 SQL 이 깨진다.
+  - 값은 그대로이고 확인만 한 줄이면 할 일 앞에 「확인 메모만」 이라고 적고, 달라진 것으로 세지 않는다.
+  - **공식 페이지에서 실제로 확인한 것만** SQL 을 만든다. 「확인 못 함」 · 「링크 없음」 · 「확인일이 30일 넘게 지남」 만 알리는 줄은 SQL 없이 할 일을 「사람이 링크를 열어 확인」 으로 적는다 — `updated_at` 을 올리면 확인하지 않은 것이 확인한 것으로 기록되고 다음 경고도 사라진다.
+  - AGENTS.md 「DB」 규칙대로 컬럼을 새로 만들지 않는다.
 - 모임: `app/src/data/meetups.ts` 의 어느 필드를 어떻게 고칠지. 고치기로 하면 `/meetup` 절차(브랜치 → 검사 → PR)로 올린다.
 - 회원이 바로 알아야 할 것(예매 마감 · 휴관)이면 운영자 화면의 「소식 한 줄」 로 올리자고 권한다.
 

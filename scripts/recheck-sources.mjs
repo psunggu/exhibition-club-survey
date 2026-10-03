@@ -186,24 +186,27 @@ const cache = !NO_CACHE && fs.existsSync(CACHE) ? JSON.parse(fs.readFileSync(CAC
 const hash = (s) => crypto.createHash('sha256').update(s).digest('hex').slice(0, 16);
 const won = (n) => (n == null ? '' : `${Number(n).toLocaleString('ko-KR')}원`);
 const clip = (s, n) => (s ? (s.length > n ? `${s.slice(0, n)}…` : s) : '');
+// 확인메모는 새 확인을 뒤에 덧붙인다(스킬 3절) — 앞을 자르면 가장 새 확인일이 잘려 「30일 지남」 이 잘못 뜬다.
+const clipTail = (s, n) => (s ? (s.length > n ? `…${s.slice(-n)}` : s) : '');
 
 const items = [];
 for (const e of await fetchEvents()) {
   items.push({
-    kind: e.type ?? '전시', title: e.title, url: e.main_url || e.info_url || '',
+    // id 는 보고서의 update 문이 `where id = …` 로 행을 가리키게 하려고 싣는다(제목은 《》 하나로 0행이 됐다).
+    id: e.id, kind: e.type ?? '전시', title: e.title, url: e.main_url || e.info_url || '',
     ours: [
       e.venue, `기간 ${e.start_date ?? '?'} ~ ${e.end_date ?? '?'}`,
       e.visit_date ? `방문 ${e.visit_date}` : '', e.time ? `시간 ${e.time}` : '',
       `관람료 ${won(e.price)}${e.price_type ? ` (${e.price_type})` : ''}`,
       e.discount ? `할인 ${clip(e.discount, 160)}` : '',
       e.recommendation ? `안내 ${clip(e.recommendation, 160)}` : '',
-      e.verification_note ? `확인메모 ${clip(e.verification_note, 160)}` : '',
+      e.verification_note ? `확인메모 ${clipTail(e.verification_note, 160)}` : '',
     ].filter(Boolean),
   });
 }
 for (const m of await loadMeetups()) {
   items.push({
-    kind: `모임·${m.venueKind}`, title: m.title, url: m.infoUrl || '',
+    id: m.id, kind: `모임·${m.venueKind}`, title: m.title, url: m.infoUrl || '',
     ours: [m.venue, `날짜 ${m.date} ${m.time}`, m.note ? `메모 ${clip(m.note, 160)}` : ''].filter(Boolean),
   });
 }
@@ -233,7 +236,7 @@ for (const it of items) {
       cache[it.url] = { hash: h, checkedAt: TODAY, title: it.title };
     }
   }
-  blocks.push(`### [${it.kind}] ${it.title}\n- 우리 정보: ${it.ours.join(' · ')}\n- 링크: ${it.url || '(없음)'}\n- 상태: ${status}` + (body ? `\n\n\`\`\`\n${body}\n\`\`\`` : ''));
+  blocks.push(`### [${it.kind}] ${it.title}\n- id: ${it.id ?? '(없음)'}\n- 우리 정보: ${it.ours.join(' · ')}\n- 링크: ${it.url || '(없음)'}\n- 상태: ${status}` + (body ? `\n\n\`\`\`\n${body}\n\`\`\`` : ''));
 }
 
 await closeBrowser();
