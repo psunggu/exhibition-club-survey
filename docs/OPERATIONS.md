@@ -54,6 +54,7 @@ Get-ScheduledTask -TaskName 'ExhibitionClub-*','KakaoWeeklyDigest','KakaoDigest-
 **투표는 톡방에서 한다. 사이트는 현황과 결과만 보여 준다**(2026-09-09 부터). 회원이 사이트에서 직접 고르는 화면은 `app/public/config.js` 의 `selfSurvey: false` 로 꺼 두었다 — 켜면 옛 응답 화면이 돌아온다.
 
 1. **톡방에 투표를 올린다**(카카오톡 투표). 후보와 마감을 거기서 정하고, **결과도 톡방에서 나눈다.**
+   - 날짜를 시간대까지 짝으로 받아야 하는 **정기관람 날짜**는 카톡 투표 대신 구글 폼으로 받는다 — `app/apps-script/date-survey.gs`(사용법은 같은 폴더 README). 응답 링크만 톡방에 올리고, 결과도 톡방에서 나눈다. 응답 시트는 운영진만 보고 모임 뒤 지운다.
 2. **정해진 것만 사이트에 적는다.** 모임이 확정되면 `/meetup` 으로 `meetups.ts` 에, 요약 카드가 있는 모임이면 `meetingBrief.ts` 의 `BRIEFS` **맨 앞에** 새 요약을 더하고(`meetupId` 에 그 모임 id — 모임 날짜가 지나면 저절로 「지난 투표」 로 내려간다, 지난 요약은 지우지 않는다) 줄에 **값만**(`value`) 적는다 — 표 수·인원은 적지 않는다(2026-09-10 운영자 결정). PR → 배포.
    - **요약 카드 만드는 법:** 앞 요약(지금은 `september-2026`)을 통째로 복사해 `BRIEFS` **맨 앞에** 붙이고 `id` · `meetupId` · `title` · `state` 와 줄의 `value` · `sub` 만 바꾼다. 줄은 넷 그대로다(무엇을 · 언제 · 식사 시간 · 식사 장소 — `key` · `category` 도 그대로). 안 정한 줄은 `value: null`. 「언제」 의 `value` 에는 날짜만, 시각은 `sub` 에. `from` · `decidedBy` 는 적지 않는다(숫자를 두지 않는다 · 투표는 톡방).
    - `meetupId` 의 모임이 `meetups.ts` 에 **먼저** 있어야 한다(`/meetup` 을 먼저 머지). 검사기(`validate-survey-ui`)는 맨 앞 요약의 `title` · `state` · `meetupId` 를 소스에서 읽어 재므로 검사기를 고칠 일은 없다.
