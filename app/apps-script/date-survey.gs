@@ -11,9 +11,13 @@
  *                           회원에게 돌리려면 이름이 든 시트 링크를 톡방에 올려야 해서 개인정보 원칙과 부딪힌다.
  *        refreshTally     — 취합 시트를 다시 계산한다(A·B)
  *        closeForm        — 응답 받기를 끈다(A·B)
+ *        updateDeadline   — 이미 돌고 있는 폼의 마감 · 결과 알림만 바꾼다(CONFIG 의 deadline · announceDate 를 고친 뒤).
+ *                           폼 · 응답 링크 · 문항 · 받은 응답은 그대로다. forceNew 를 쓰지 않는다.
+ *                           setup 을 실행한 구글 계정으로 실행한다(자동 마감 트리거는 건 계정에서만 보이고 지워진다).
  *   4. 실행 기록(로그)에 나온 응답 링크만 톡방에 올린다. 시트 링크는 올리지 않는다.
  *   5. 권한 화면에 체크칸이 보이면 「모두 선택」 을 누른다. 하나라도 빼면 스크립트가 멈추고 권한을 다시 묻는다.
- *   6. 날짜를 빼거나 바꾸려면 폼 편집기에서 격자 줄을 고치지 말고 CONFIG 를 고친 뒤 forceNew 로 새로 만든다.
+ *   6. 후보 날짜를 빼거나 바꾸려면 폼 편집기에서 격자 줄을 고치지 말고 CONFIG 를 고친 뒤 forceNew 로 새로 만든다.
+ *      마감 · 결과 알림만 바꿀 때는 forceNew 가 아니라 updateDeadline 이다(응답 링크가 그대로다).
  *
  * 받는 것은 이름(필수)과 구역(선택)뿐이다. 직업 · 연락처 · 이메일은 묻지 않는다.
  */
@@ -38,14 +42,20 @@ var CONFIG = {
   },
 
   // 마감(한국 시각). 바꾸면 폼 · 안내문 · 자동 마감이 모두 따라간다.
-  deadline: '2026-10-10T23:00:00+09:00',
-  announceDate: '2026-10-11',
+  // 이미 만든 폼이면 바꾼 뒤 updateDeadline 을 실행한다(새로 만들지 않는다).
+  // 처음에는 10/10(토) 오후 11시 마감 · 10/11 결과였고, 2026-10-06 에 10/7 마감 · 10/8 결과로 당겼다.
+  deadline: '2026-10-07T23:00:00+09:00',
+  // 바꾸기 전 마감. updateDeadline 이 톡방 알림에 「당겨졌어요 / 늦춰졌어요」 를 고르는 데만 쓴다(폼 · 안내문에는 나오지 않는다).
+  // 마감을 다시 바꾸면 여기에 바로 전 마감을 적는다. 모르면 null(알림은 「바뀌었어요」).
+  previousDeadline: '2026-10-10T23:00:00+09:00',
+  announceDate: '2026-10-08',
   keepUntil: '2026-10-31',
   targetMonth: '2026-10',
   timeZone: 'Asia/Seoul',
 
   // 본 모임 후보는 토요일만 넣는다(일요일은 뺀다 — 운영자 결정 2026-10-06). 토요일이 아닌 날을 넣으면 검사에서 멈춘다.
-  // 10/10(토)은 마감 날이라 넣지 않는다. 이름은 weekendDates 로 두지만 회원 화면에는 「토요일」 로 보인다.
+  // 10/10(토)은 넣지 않는다 — 처음 마감 날이라 뺐고, 마감을 10/7 로 당긴 뒤에도 이미 나간 폼의 격자 줄을 바꾸지 않으려고 그대로 둔다.
+  // 이름은 weekendDates 로 두지만 회원 화면에는 「토요일」 로 보인다.
   weekendDates: ['2026-10-17', '2026-10-24', '2026-10-31'],
   weekdayDates: [
     '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16',
@@ -54,7 +64,8 @@ var CONFIG = {
   ],
   // 휴관일을 모르므로 월요일은 후보에 넣지 않는다. 확인되면 true.
   allowMonday: false,
-  // 마감 전후라 뺀 날(넣으면 검사에서 멈춘다).
+  // 후보에서 뺀 날(넣으면 검사에서 멈춘다). 처음 마감(10/10) · 결과 알림(10/11) 무렵이라 뺐다(10/9 는 한글날).
+  // 마감을 10/7 로 당긴 뒤에도 후보 · 격자 줄을 바꾸지 않으려고 그대로 둔다 — 줄을 바꾸면 응답이 어긋나 새 폼이 필요하다.
   excludedDates: ['2026-10-09', '2026-10-10', '2026-10-11'],
   // 따로 알릴 날 — 1차 · 2차 사진을 바꾸느라 쉴 수 있다(공식 확인 없음).
   noteDates: { '2026-10-15': '1차 마지막 날', '2026-10-16': '2차 첫날' },
@@ -138,11 +149,11 @@ function hourLabel_(hh, mm) {
 
 function deadlineParts_() {
   var m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(CONFIG.deadline);
-  if (!m) throw new Error('마감 형식이 틀렸어요: ' + CONFIG.deadline + ' (예: 2026-10-10T23:00:00+09:00)');
+  if (!m) throw new Error('마감 형식이 틀렸어요: ' + CONFIG.deadline + ' (예: 2026-10-07T23:00:00+09:00)');
   return { iso: m[1], hh: +m[2], mm: +m[3] };
 }
 
-/** 10/10(토) 오후 11시 */
+/** 10/7(수) 오후 11시 */
 function deadlineLabel_() {
   var p = deadlineParts_();
   return dateLabel_(p.iso) + ' ' + hourLabel_(p.hh, p.mm);
@@ -177,6 +188,7 @@ function validateConfig_() {
   var errors = [];
   var dl = deadlineParts_();
   deadlineDate_();
+  if (CONFIG.previousDeadline && isNaN(new Date(CONFIG.previousDeadline).getTime())) errors.push('바꾸기 전 마감(previousDeadline)을 읽지 못했어요: ' + CONFIG.previousDeadline + ' (예: 2026-10-10T23:00:00+09:00, 모르면 null)');
   var all = CONFIG.weekendDates.concat(CONFIG.weekdayDates);
   var seen = {};
   all.forEach(function (iso) {
@@ -325,6 +337,29 @@ function announceText_(variant, link) {
     throw new Error('버전 C 는 회원 안내문이 없어요(운영진 내부용). 회원에게는 A · B · D 중 하나를 쓰세요.');
   }
   throw new Error('모르는 버전: ' + variant);
+}
+
+/** 마감이 어느 쪽으로 바뀌었는지 — CONFIG.previousDeadline 과 견준다. 모르면 「바뀌었어요」. */
+function deadlineChangeWord_() {
+  var prev = CONFIG.previousDeadline ? new Date(CONFIG.previousDeadline).getTime() : NaN;
+  var now = deadlineDate_().getTime();
+  if (isNaN(prev) || prev === now) return '바뀌었어요';
+  return now < prev ? '당겨졌어요' : '늦춰졌어요';
+}
+
+/**
+ * 이미 올린 폼의 마감을 바꿨을 때 톡방에 다시 올리는 글(updateDeadline 이 찍는다).
+ * 처음 안내문과 헷갈리지 않게 마감이 바뀐 것을 맨 앞에 쓰고, 이미 낸 분은 다시 내지 않아도 된다고 알린다.
+ */
+function changeNoticeText_(variant, link) {
+  if (variant !== 'A' && variant !== 'B') throw new Error('버전 ' + variant + ' 은 톡방 안내문이 없어요.');
+  var T = texts_();
+  return ['[마감이 ' + deadlineChangeWord_() + '] 10월 정기관람 날짜 고르기 — ' + CONFIG.exhibition.shortTitle,
+    '새 마감 ' + T.deadline + ' · 결과 ' + T.announce + ' 이 방에서',
+    '이미 내신 분은 다시 안 내셔도 돼요. 고치시려면 같은 링크로 다시 내 주세요(마지막 응답으로 셀게요).',
+    '아직 안 내신 분은 마감 전에 골라 주세요. ' + (variant === 'A' ? '1~2분' : '1분') + '이면 끝나요. 로그인 없이 열려요.',
+    link,
+    '링크가 안 열리면 오른쪽 위 ⋮ → 다른 브라우저로 열기를 눌러 주세요.'].join('\n');
 }
 
 /** 버전 D — 카톡 투표에 붙여 넣을 글과 항목 */
@@ -534,6 +569,84 @@ function closeForm() {
   return true;
 }
 
+/**
+ * 이미 돌고 있는 폼의 마감 · 결과 알림 날짜만 바꾼다. CONFIG 의 deadline · announceDate 를 고친 뒤 실행한다.
+ * 폼 설명 · 확인 메시지 · 마감 뒤 메시지 · 자동 마감 트리거 · 「안내」 시트만 다시 쓰고 취합을 다시 계산한다.
+ * 폼 · 응답 링크 · 문항 · 받은 응답 · 제출 트리거는 건드리지 않는다. 여러 번 실행해도 결과가 같다.
+ * 차례: 새 자동 마감을 먼저 걸고(여기서 멈추면 아무것도 바뀌지 않는다) → 폼 문구 → 옛 자동 마감을 지운다
+ * (여기서 멈춰도 문구와 새 자동 마감은 이미 새 마감이다). 멈추면 다시 실행하면 된다.
+ * setup 을 실행한 계정으로 실행한다 — 다른 계정이 건 트리거는 이 계정에서 보이지 않아 지우지 못한다.
+ */
+function updateDeadline() {
+  validateConfig_();
+  var props = PropertiesService.getScriptProperties();
+  var variant = props.getProperty(PROP_VARIANT);
+  var formId = props.getProperty(PROP_FORM_ID);
+  var sheetId = props.getProperty(PROP_SHEET_ID);
+  var T = texts_();
+
+  if (variant === 'C') {
+    if (!sheetId) {
+      Logger.log('아직 만든 표가 없어요. 먼저 setup 을 실행해 주세요(setupSheetGrid).');
+      return false;
+    }
+    var ssC = SpreadsheetApp.openById(sheetId);
+    var gridC = ssC.getSheetByName(SHEET_GRID);
+    if (gridC) gridC.getRange(1, 1).setValue(safeCell_(T.gridIntro));
+    writeGuide_(ssC.getSheetByName(SHEET_GUIDE) || ssC.insertSheet(SHEET_GUIDE), 'C', { sheet: ssC.getUrl() });
+    Logger.log('버전 C 는 폼이 없어 「' + SHEET_GRID + '」 맨 윗줄 안내와 「' + SHEET_GUIDE + '」 시트만 다시 썼어요.');
+    Logger.log('새 마감: ' + T.deadline + ' · 결과 알림: ' + T.announce);
+    return { status: 'updated', variant: 'C', sheetId: sheetId, deadline: T.deadline, announce: T.announce };
+  }
+  if (!variant || !formId || !sheetId) {
+    Logger.log('아직 만든 폼이 없어요. 먼저 setup 을 실행해 주세요(setupBranchForm 이나 setupSimpleForm).');
+    return false;
+  }
+
+  var form = FormApp.openById(formId);
+  var ss = SpreadsheetApp.openById(sheetId);
+  var accepting = form.isAcceptingResponses();
+  var past = deadlineDate_().getTime() <= Date.now();
+
+  // 1) 새 자동 마감을 먼저 건다 — 여기서 멈추면 폼 문구 · 옛 자동 마감이 그대로라 다시 실행하면 된다.
+  var made = CONFIG.autoCloseAtDeadline ? createCloseTrigger_(true) : null;
+  var closeAt = made ? made.at : null;
+  // 2) 폼 문구
+  form.setDescription(variant === 'A' ? T.descriptionA : T.descriptionB);
+  form.setConfirmationMessage(T.confirmation);
+  form.setCustomClosedFormMessage(T.closed);
+  // 3) 옛 자동 마감을 지운다(이 계정이 건 것만 보인다).
+  var removed = removeCloseTriggersExcept_(made ? made.uid : null);
+
+  var url = form.getPublishedUrl();
+  var guide = ss.getSheetByName(SHEET_GUIDE) || ss.insertSheet(SHEET_GUIDE);
+  writeGuide_(guide, variant, { respond: url, edit: form.getEditUrl(), sheet: ss.getUrl() });
+  refreshTally();
+
+  var oldGone = removed ? ' 전에 이 계정으로 걸어 둔 자동 마감은 지웠어요.' : '';
+  Logger.log('버전 ' + variant + '(' + VARIANT_NAMES[variant] + ')의 마감 · 결과 알림 날짜를 바꿨어요. 폼은 새로 만들지 않았어요.');
+  Logger.log('바꾼 것: 폼 설명 · 응답 뒤 확인 메시지 · 마감 뒤 메시지 · 자동 마감 · 「' + SHEET_GUIDE + '」 시트(「' + SHEET_TALLY + '」' + topicParticle_(SHEET_TALLY) + ' 다시 계산). 문항 · 받은 응답 · 제출 트리거는 그대로예요.');
+  Logger.log('새 마감: ' + T.deadline + ' · 결과 알림: ' + T.announce + ' 톡방');
+  if (closeAt) {
+    Logger.log('자동 마감: ' + formatTime_(closeAt.getTime()) + '(한국 시각) 무렵 저절로 닫혀요(구글 시간 트리거라 몇 분 늦을 수 있어요 — 그 사이 들어온 응답도 취합에 들어가요).' + oldGone);
+    if (!removed && accepting) Logger.log('주의: 이 계정에서 보이는 전 자동 마감이 없었어요. setup 을 다른 구글 계정으로 실행했다면 그 계정이 건 옛 자동 마감이 남아 있을 수 있어요 — setup 을 실행한 계정으로 updateDeadline 을 다시 실행하거나, 그 계정의 트리거 화면에서 closeForm 트리거를 지워 주세요.');
+  } else if (CONFIG.autoCloseAtDeadline && past) {
+    Logger.log(accepting
+      ? '새 마감(' + T.deadline + ')이 이미 지나 자동 마감을 걸지 않았어요.' + oldGone + ' 응답을 그만 받으려면 closeForm 을 실행해 주세요.'
+      : '새 마감(' + T.deadline + ')이 이미 지났고 폼도 이미 닫혀 있어요. 자동 마감은 걸지 않았어요.' + oldGone);
+  } else {
+    Logger.log('자동 마감은 꺼져 있어요(autoCloseAtDeadline). 마감 때 closeForm 을 실행해 주세요.' + oldGone);
+  }
+  if (!accepting && !past) Logger.log('응답 받기가 꺼져 있어요 — 다시 받으려면 폼 편집기에서 켜 주세요.');
+  Logger.log('응답 링크는 그대로예요(새 링크가 아니에요): ' + url);
+  if (accepting && !past) Logger.log('톡방 안내문(바뀐 마감을 알릴 때 — 처음 안내문이 아니라 이것을 올려 주세요):\n' + changeNoticeText_(variant, url));
+  else Logger.log('톡방 안내문은 찍지 않았어요 — ' + (past ? '새 마감이 이미 지났어요' : '폼이 닫혀 있어요') + '. 지금은 바뀐 마감을 올리지 마세요.');
+  return {
+    status: 'updated', variant: variant, formId: formId, sheetId: sheetId,
+    deadline: T.deadline, announce: T.announce, closeAt: closeAt ? closeAt.getTime() : null, accepting: accepting
+  };
+}
+
 /* ───────────────────────── 폼 만들기 ───────────────────────── */
 
 function setupForm_(variant) {
@@ -591,7 +704,7 @@ function finishFormSetup_(props, form, ss, variant, publish, status) {
   Logger.log('응답 시트 링크(운영진만 — 톡방 · 저장소에 올리지 마세요): ' + links.sheet);
   Logger.log('게시 상태: ' + (publish.published === null ? '확인 못 함 — 폼 편집기에서 「게시됨」 인지 봐 주세요' : (publish.published ? '게시됨' : '게시 안 됨 — 폼 편집기에서 「게시」 를 눌러 주세요')));
   Logger.log('응답 권한: ' + publish.access);
-  if (closeAt) Logger.log('마감 ' + T.deadline + '에 저절로 닫혀요.');
+  if (closeAt) Logger.log('마감 ' + T.deadline + ' 무렵 저절로 닫혀요(구글 시간 트리거라 몇 분 늦을 수 있어요).');
   if (CONFIG.forceNew) Logger.log('CONFIG.forceNew 를 false 로 되돌려 두세요. 그대로 두면 실행할 때마다 새로 만들어요.');
   Logger.log('톡방에 올리기 전에 휴대폰 카톡에서 응답 링크를 한 번 열어 시험 응답을 내 보세요.');
   Logger.log('톡방 안내문:\n' + announceText_(variant, links.respond));
@@ -819,15 +932,37 @@ function ensureSubmitTrigger_(form) {
   if (!mine.length) ScriptApp.newTrigger(TALLY_HANDLER).forForm(form).onFormSubmit().create();
 }
 
+/**
+ * 마감 시각에 closeForm 을 건다. 새 트리거를 먼저 만들고 그다음 옛것을 지운다 —
+ * 만들다 멈추면 옛 자동 마감이 남아 폼이 저절로 닫히지 않는 일이 없다. 걸었으면 마감 시각, 아니면 null.
+ */
 function ensureCloseTrigger_() {
-  removeTriggers_(CLOSE_HANDLER, null);
+  var made = createCloseTrigger_(false);
+  removeCloseTriggersExcept_(made ? made.uid : null);
+  return made ? made.at : null;
+}
+
+/** 마감이 아직이면 closeForm 시간 트리거를 하나 만들어 { at, uid } 를, 지났으면 null 을 돌려준다. 아무것도 지우지 않는다. */
+function createCloseTrigger_(quiet) {
   var at = deadlineDate_();
   if (at.getTime() <= Date.now()) {
-    Logger.log('마감 시각이 이미 지나 자동 마감을 걸지 않았어요.');
+    if (!quiet) Logger.log('마감 시각이 이미 지나 자동 마감을 걸지 않았어요.');
     return null;
   }
-  ScriptApp.newTrigger(CLOSE_HANDLER).timeBased().at(at).create();
-  return at;
+  var t = ScriptApp.newTrigger(CLOSE_HANDLER).timeBased().at(at).create();
+  return { at: at, uid: t.getUniqueId() };
+}
+
+/** keepUid 가 아닌 closeForm 트리거를 모두 지우고 지운 수를 돌려준다. 이 계정이 건 트리거만 보인다(getProjectTriggers). */
+function removeCloseTriggersExcept_(keepUid) {
+  var n = 0;
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() !== CLOSE_HANDLER) return;
+    if (keepUid && t.getUniqueId() === keepUid) return;
+    ScriptApp.deleteTrigger(t);
+    n++;
+  });
+  return n;
 }
 
 function removeTriggers_(handler, sourceId) {
