@@ -14,12 +14,14 @@
  *        updateDeadline   — 이미 돌고 있는 폼의 마감 · 결과 알림만 바꾼다(CONFIG 의 deadline · announceDate 를 고친 뒤).
  *                           폼 · 응답 링크 · 문항 · 받은 응답은 그대로다. forceNew 를 쓰지 않는다.
  *                           setup 을 실행한 구글 계정으로 실행한다(자동 마감 트리거는 건 계정에서만 보이고 지워진다).
+ *        requireDistrict  — 이미 돌고 있는 폼의 구역 문항만 필수 · 1~8구역으로 바꾼다(CONFIG 의 districts · districtRequired 대로).
+ *                           폼 · 응답 링크 · 다른 문항 · 받은 응답 · 트리거 · 마감은 그대로다. forceNew 를 쓰지 않는다.
  *   4. 실행 기록(로그)에 나온 응답 링크만 톡방에 올린다. 시트 링크는 올리지 않는다.
  *   5. 권한 화면에 체크칸이 보이면 「모두 선택」 을 누른다. 하나라도 빼면 스크립트가 멈추고 권한을 다시 묻는다.
  *   6. 후보 날짜를 빼거나 바꾸려면 폼 편집기에서 격자 줄을 고치지 말고 CONFIG 를 고친 뒤 forceNew 로 새로 만든다.
  *      마감 · 결과 알림만 바꿀 때는 forceNew 가 아니라 updateDeadline 이다(응답 링크가 그대로다).
  *
- * 받는 것은 이름(필수)과 구역(선택)뿐이다. 직업 · 연락처 · 이메일은 묻지 않는다.
+ * 받는 것은 이름과 구역(둘 다 필수 — districtRequired)뿐이다. 직업 · 연락처 · 이메일은 묻지 않는다.
  */
 
 var CONFIG = {
@@ -77,7 +79,12 @@ var CONFIG = {
     { id: 'pm1', label: '오후 1~3시' },
     { id: 'pm2', label: '오후 3~6시' }
   ],
-  districts: ['1구역', '2구역', '3구역', '4구역', '5구역', '6구역', '7구역', '8구역', '잘 모르겠어요'],
+  // 구역은 필수 · 1~8구역 드롭다운이다(2026-10-06 운영자 결정 — 「잘 모르겠어요」 를 뺐다).
+  // 이미 만든 폼이면 바꾼 뒤 requireDistrict 를 실행한다(새로 만들지 않는다).
+  districts: ['1구역', '2구역', '3구역', '4구역', '5구역', '6구역', '7구역', '8구역'],
+  districtRequired: true,
+  // 선택지에서는 뺐지만 지우지 않는다 — 바꾸기 전에 받은 응답의 이 값을 취합이 「구역 없음」 으로 친다(빈 값과 같다).
+  // districtRequired 가 true 인데 이 값을 districts 에 다시 넣으면 검사에서 멈춘다(모름을 고를 수 있으면 필수가 아니다).
   districtUnknown: '잘 모르겠어요',
 
   // 마감 시각에 응답 받기를 저절로 끈다(closeForm 을 시간 트리거로 건다).
@@ -111,6 +118,8 @@ var SHEET_RAW = '응답 원본';
 var SHEET_TALLY = '취합';
 var SHEET_GUIDE = '안내';
 var SHEET_GRID = '날짜 고르기';
+var DISTRICT_TITLE = '구역';
+var DISTRICT_OPTIONAL_TITLE = '구역 (선택)'; // 2026-10-06 까지 쓴 제목 — 이미 돌던 폼에서 문항을 찾을 때도 쓴다
 var DOW = ['일', '월', '화', '수', '목', '금', '토'];
 
 /* ───────────────────────── 날짜 도우미 ───────────────────────── */
@@ -216,7 +225,21 @@ function validateConfig_() {
     if (labels[s.label]) errors.push('시간대 이름이 겹쳐요: ' + s.label);
     labels[s.label] = true;
   });
-  if (CONFIG.districts.indexOf(CONFIG.districtUnknown) < 0) errors.push('구역 선택지에 「' + CONFIG.districtUnknown + '」 이 있어야 해요');
+  if (typeof CONFIG.districtRequired !== 'boolean') errors.push('구역 필수 여부(districtRequired)는 true 나 false 로 적어 주세요');
+  if (!Array.isArray(CONFIG.districts) || !CONFIG.districts.length) errors.push('구역 선택지(districts)가 없어요');
+  else {
+    var dSeen = {};
+    CONFIG.districts.forEach(function (d) {
+      if (typeof d !== 'string' || !d.trim()) errors.push('구역 선택지에 빈 값이 있어요');
+      else if (dSeen[d]) errors.push('구역 선택지가 두 번 들어 있어요: ' + d);
+      dSeen[d] = true;
+    });
+    // 「잘 모르겠어요」 를 고를 수 있으면 필수로 해도 구역을 받지 못한다 — 운영자 결정(드롭다운 필수, 모름 빼기)과 어긋나 멈춘다.
+    if (CONFIG.districtRequired && CONFIG.districtUnknown && CONFIG.districts.indexOf(CONFIG.districtUnknown) >= 0) {
+      errors.push('구역이 필수(districtRequired: true)인데 선택지에 「' + CONFIG.districtUnknown + '」 항목이 있어요 — districts 에서 빼 주세요(옛 응답의 이 값은 그대로 「구역 없음」 으로 세요)');
+    }
+  }
+  if (CONFIG.districtUnknown !== null && CONFIG.districtUnknown !== undefined && typeof CONFIG.districtUnknown !== 'string') errors.push('districtUnknown 은 글자로 적어 주세요(없으면 null)');
   if (!CONFIG.weekendDates.length) errors.push('토요일 후보가 없어요');
   if (errors.length) throw new Error('CONFIG 를 고쳐 주세요:\n- ' + errors.join('\n- '));
   return true;
@@ -239,6 +262,7 @@ function texts_() {
   var phaseNote = E.factsConfirmed ? '' : '(2차 시작일은 확인 중)';
   var p2 = E.phase2Start;
   var p2Prev = prevDay_(p2);
+  var dReq = CONFIG.districtRequired;
   var noteIsos = Object.keys(CONFIG.noteDates).sort();
   var noteLine = noteIsos.length
     ? noteIsos.map(function (iso) {
@@ -268,7 +292,10 @@ function texts_() {
     descriptionA: descLines.concat(['', '1~2분이면 끝나요. 로그인 없이 낼 수 있어요.']).join('\n'),
     descriptionB: descLines.concat(['', '한 화면이라 1분이면 끝나요. 로그인 없이 낼 수 있어요.']).join('\n'),
     name: { title: '이름', help: '톡방 이름도 괜찮아요.' },
-    district: { title: '구역 (선택)', help: '같은 이름이 있을 때 구분하려고 여쭤봐요. 모르면 비워 두셔도 돼요.' },
+    // 필수가 아니면(districtRequired: false) 처음 만든 폼의 문구 그대로다 — requireDistrict 가 옛 제목으로도 문항을 찾는다(DISTRICT_OPTIONAL_TITLE).
+    district: dReq
+      ? { title: DISTRICT_TITLE, help: '같은 이름이 있을 때 구분하려고 여쭤봐요. 다시 내실 때도 같은 구역을 골라 주세요.' }
+      : { title: DISTRICT_OPTIONAL_TITLE, help: '같은 이름이 있을 때 구분하려고 여쭤봐요. 모르면 비워 두셔도 돼요.' },
     attend: { title: '10월 관람에 함께하실 수 있나요?', yes: '날짜가 맞으면 갈게요', no: '10월은 어려워요' },
     pageWeekend: { title: '토요일 가능한 시간', help: '오실 수 있는 칸을 모두 골라 주세요. 토요일이 어려우면 비워 두셔도 돼요.' },
     weekendGrid: { title: '토요일 가능한 날짜와 시간', help: '여러 칸 골라도 돼요.' + hoursNote },
@@ -288,7 +315,7 @@ function texts_() {
     message: { title: '하고 싶은 말 (선택)', help: '가고 싶은 시간이나 부탁하실 것을 편하게 적어 주세요. 이름 말고 다른 개인정보는 적지 말아 주세요.' },
     privacy: {
       title: '개인정보 확인',
-      help: '이름과 구역(선택)만 받아요. 응답은 운영진만 보고, 모임이 끝나면(늦어도 ' + keep + ') 지워요.',
+      help: '이름과 ' + (dReq ? '구역' : '구역(선택)') + '만 받아요. 응답은 운영진만 보고, 모임이 끝나면(늦어도 ' + keep + ') 지워요.',
       choice: '확인했어요'
     },
     dates: {
@@ -474,7 +501,7 @@ function setupSheetGrid() {
   var districtRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(CONFIG.districts, true)
     .setAllowInvalid(false)
-    .setHelpText('선택이에요. 같은 이름이 있을 때 구분해요.')
+    .setHelpText((CONFIG.districtRequired ? '' : '선택이에요. ') + '같은 이름이 있을 때 구분해요.')
     .build();
   sheet.getRange(firstEntry, 2, nEntry, 1).setDataValidation(districtRule);
 
@@ -647,6 +674,137 @@ function updateDeadline() {
   };
 }
 
+/**
+ * 이미 돌고 있는 폼의 구역 문항을 CONFIG(districts · districtRequired)대로 맞춘다 — 제목 · 도움말 · 선택지 · 필수.
+ * 「개인정보 확인」 도움말(「이름과 구역만 받아요」)과 「안내」 시트도 새 문구로 다시 쓰고 취합을 다시 계산한다.
+ * 폼 · 응답 링크 · 구역 문항 id · 다른 문항 · 폼 설명 · 확인 메시지 · 받은 응답 · 트리거 · 마감 · 게시 상태는 건드리지 않는다.
+ * 닫힌 폼도 문항은 고치되 다시 열지 않는다. 여러 번 실행해도 결과가 같다.
+ * 바꾸기 전에 받은 응답의 빈 구역 · 「잘 모르겠어요」(districtUnknown)는 그대로 남고, 취합은 그것을 「구역 없음」 으로 친다.
+ */
+function requireDistrict() {
+  validateConfig_();
+  if (!CONFIG.districtRequired) {
+    Logger.log('CONFIG.districtRequired 가 false 예요. 구역을 필수로 하려면 true 로 바꾸고 districts 에서 「' + CONFIG.districtUnknown + '」 를 뺀 뒤 저장하고 다시 실행해 주세요. 아무것도 바꾸지 않았어요.');
+    return false;
+  }
+  var props = PropertiesService.getScriptProperties();
+  var variant = props.getProperty(PROP_VARIANT);
+  var formId = props.getProperty(PROP_FORM_ID);
+  var sheetId = props.getProperty(PROP_SHEET_ID);
+
+  if (variant === 'C') {
+    if (!sheetId) {
+      Logger.log('아직 만든 표가 없어요. 먼저 setup 을 실행해 주세요(setupSheetGrid).');
+      return false;
+    }
+    var ssC = SpreadsheetApp.openById(sheetId);
+    writeGuide_(ssC.getSheetByName(SHEET_GUIDE) || ssC.insertSheet(SHEET_GUIDE), 'C', { sheet: ssC.getUrl() });
+    Logger.log('버전 C 는 폼이 없어 구역을 필수로 만들 수 없어요(시트는 빈칸을 막지 못해요). 「' + SHEET_GUIDE + '」 시트 문구만 다시 썼어요. 「' + SHEET_GRID + '」 표는 그대로예요.');
+    return { status: 'not-applicable', variant: 'C', sheetId: sheetId };
+  }
+  if (!variant || !formId || !sheetId) {
+    Logger.log('아직 만든 폼이 없어요. 먼저 setup 을 실행해 주세요(setupBranchForm 이나 setupSimpleForm).');
+    return false;
+  }
+
+  var form = FormApp.openById(formId);
+  var ss = SpreadsheetApp.openById(sheetId);
+  var T = texts_();
+  var meta = null;
+  try { meta = JSON.parse(props.getProperty(PROP_META) || 'null'); } catch (err) { meta = null; }
+  var ids = meta && meta.variant === variant && meta.items ? meta.items : {};
+
+  // 1) 구역 문항 — 저장해 둔 item id 로, 없으면 제목(「구역」 · 「구역 (선택)」)으로 찾는다. 못 찾으면 아무것도 바꾸지 않는다.
+  var found = findItem_(form, ids.district, districtTitles_(), FormApp.ItemType.LIST);
+  if (!found) {
+    Logger.log('구역 문항(드롭다운 「' + districtTitles_().join('」 · 「') + '」)을 찾지 못해 아무것도 바꾸지 않았어요. 폼 편집기에서 구역 문항을 지웠거나 제목 · 갈래를 바꿨는지 봐 주세요. 폼을 새로 만들지 말고 운영진에게 알려 주세요.');
+    return false;
+  }
+  var list = found.asListItem();
+  var before = {
+    title: list.getTitle(), help: list.getHelpText(), required: list.isRequired(),
+    choices: list.getChoices().map(function (c) { return c.getValue(); })
+  };
+  var changed = [];
+  var titleChanged = before.title !== T.district.title;
+  if (titleChanged) {
+    list.setTitle(T.district.title);
+    changed.push(before.title === DISTRICT_OPTIONAL_TITLE
+      ? '제목 「' + T.district.title + '」(「(선택)」 뺌)'
+      : '제목 「' + before.title + '」 → 「' + T.district.title + '」');
+  }
+  if (before.help !== T.district.help) {
+    list.setHelpText(T.district.help);
+    changed.push('도움말');
+  }
+  if (before.choices.join('\n') !== CONFIG.districts.join('\n')) {
+    list.setChoiceValues(CONFIG.districts);
+    var gone = before.choices.filter(function (v) { return CONFIG.districts.indexOf(v) < 0; });
+    var added = CONFIG.districts.filter(function (v) { return before.choices.indexOf(v) < 0; });
+    changed.push('선택지 ' + before.choices.length + '개 → ' + CONFIG.districts.length + '개' +
+      (gone.length ? '(「' + gone.join('」 · 「') + '」 뺌)' : '') + (added.length ? '(「' + added.join('」 · 「') + '」 더함)' : ''));
+  }
+  if (!before.required) {
+    list.setRequired(true);
+    changed.push('필수');
+  }
+
+  // 2) 「개인정보 확인」 도움말 — 받는 것을 「이름과 구역」 으로.
+  var privacy = findItem_(form, ids.privacy, [T.privacy.title], FormApp.ItemType.CHECKBOX);
+  if (privacy) {
+    if (privacy.getHelpText() !== T.privacy.help) {
+      privacy.asCheckboxItem().setHelpText(T.privacy.help);
+      changed.push('「' + T.privacy.title + '」 도움말');
+    }
+  } else {
+    Logger.log('주의: 「' + T.privacy.title + '」 문항을 찾지 못해 그 도움말은 바꾸지 못했어요. 폼 편집기에서 「' + T.privacy.help + '」 로 고쳐 주세요.');
+  }
+
+  // 3) 이미 받은 응답 가운데 구역이 비었거나 districtUnknown 인 것 — 숫자만 센다(이름은 찍지 않는다).
+  var did = String(list.getId());
+  var responses = form.getResponses();
+  var noDistrict = 0;
+  responses.forEach(function (r) {
+    var v = '';
+    r.getItemResponses().forEach(function (ir) { if (String(ir.getItem().getId()) === did) v = ir.getResponse(); });
+    if (typeof v !== 'string' || !v || v === CONFIG.districtUnknown) noDistrict++;
+  });
+
+  // 4) 「안내」 시트 · 취합
+  var url = form.getPublishedUrl();
+  writeGuide_(ss.getSheetByName(SHEET_GUIDE) || ss.insertSheet(SHEET_GUIDE), variant, { respond: url, edit: form.getEditUrl(), sheet: ss.getUrl() });
+  refreshTally();
+  var accepting = form.isAcceptingResponses();
+
+  var head = '버전 ' + variant + '(' + VARIANT_NAMES[variant] + ')';
+  Logger.log(changed.length
+    ? head + '의 구역 문항을 고쳤어요. 폼은 새로 만들지 않았어요.'
+    : head + '의 구역 문항은 이미 CONFIG 대로예요. 폼에서 바꾼 것은 없어요.');
+  if (changed.length) Logger.log('바꾼 것: ' + changed.join(' · ') + '. 「' + SHEET_GUIDE + '」 시트도 다시 썼어요(「' + SHEET_TALLY + '」' + topicParticle_(SHEET_TALLY) + ' 다시 계산).');
+  // 연결된 응답 시트는 폼 문항 제목을 열 머리글로 쓴다 — 제목을 바꾸면 그 열 머리글도 바뀐다. 취합은 폼 응답(item id)으로 계산해 영향이 없다.
+  if (titleChanged) Logger.log('「' + SHEET_RAW + '」 시트의 구역 열 머리글도 「' + T.district.title + '」 으로 바뀌어요. 옛 줄의 빈칸 · 「' + CONFIG.districtUnknown + '」 는 그대로 남아요 — 취합은 폼 응답으로 계산해서 상관없어요.');
+  Logger.log('지금 구역 문항: 「' + T.district.title + '」 · 필수 · 드롭다운 ' + CONFIG.districts[0] + '~' + CONFIG.districts[CONFIG.districts.length - 1] + '(' + CONFIG.districts.length + '개).');
+  Logger.log('그대로인 것: 응답 링크 · 구역 문항 id · 다른 문항 · 폼 설명 · 확인 메시지 · 받은 응답 · 트리거 · 마감 · 게시 상태.');
+  Logger.log('이미 받은 응답 ' + responses.length + '건 가운데 구역이 비었거나 「' + CONFIG.districtUnknown + '」 인 응답: ' + noDistrict + '건. 지우거나 고치지 않았어요 — 취합에서는 「구역 없음」 으로 쳐요. 그 응답을 고쳐 내면 그때 구역을 골라야 해요.');
+  if (!accepting) Logger.log('응답 받기가 꺼져 있어요 — 다시 열지 않았어요. 다시 받으려면 폼 편집기에서 켜 주세요.');
+  Logger.log('응답 링크는 그대로예요(새 링크가 아니에요): ' + url);
+  return {
+    status: 'updated', variant: variant, formId: formId, sheetId: sheetId, itemId: list.getId(),
+    changed: changed, responses: responses.length, noDistrict: noDistrict, accepting: accepting
+  };
+}
+
+/** id 로 찾고(갈래가 맞을 때만), 없으면 갈래와 제목으로 찾는다. 못 찾으면 null. */
+function findItem_(form, id, titles, type) {
+  var item = null;
+  if (id !== undefined && id !== null) {
+    try { item = form.getItemById(id); } catch (e) { item = null; }
+  }
+  if (item && item.getType() !== type) item = null;
+  if (!item) item = find_(form.getItems(), function (it) { return it.getType() === type && titles.indexOf(it.getTitle()) >= 0; });
+  return item;
+}
+
 /* ───────────────────────── 폼 만들기 ───────────────────────── */
 
 function setupForm_(variant) {
@@ -780,7 +938,7 @@ function buildBranchItems_(form, T) {
   var weekend = weekendSorted_(), weekday = weekdaySorted_();
   var name = form.addTextItem().setTitle(T.name.title).setHelpText(T.name.help).setRequired(true);
   var district = form.addListItem().setTitle(T.district.title).setHelpText(T.district.help)
-    .setChoiceValues(CONFIG.districts).setRequired(false);
+    .setChoiceValues(CONFIG.districts).setRequired(CONFIG.districtRequired);
   var attend = form.addMultipleChoiceItem().setTitle(T.attend.title).setRequired(true);
 
   var pWeekend = form.addPageBreakItem().setTitle(T.pageWeekend.title).setHelpText(T.pageWeekend.help);
@@ -825,7 +983,7 @@ function buildSimpleItems_(form, T) {
 
   var name = form.addTextItem().setTitle(T.name.title).setHelpText(T.name.help).setRequired(true);
   var district = form.addListItem().setTitle(T.district.title).setHelpText(T.district.help)
-    .setChoiceValues(CONFIG.districts).setRequired(false);
+    .setChoiceValues(CONFIG.districts).setRequired(CONFIG.districtRequired);
   var dates = form.addCheckboxItem().setTitle(T.dates.title).setHelpText(T.dates.help)
     .setChoiceValues(values).setRequired(true);
   var slots = form.addCheckboxItem().setTitle(T.slots.title).setHelpText(T.slots.help)
@@ -867,6 +1025,13 @@ function titlesByKey_(variant) {
     base.dates = T.dates.title; base.slots = T.slots.title;
   }
   return base;
+}
+
+/** 구역 문항이 가질 수 있는 제목 — 지금 CONFIG 의 제목이 먼저, 그다음 필수 · 선택 제목. */
+function districtTitles_() {
+  var out = [texts_().district.title];
+  [DISTRICT_TITLE, DISTRICT_OPTIONAL_TITLE].forEach(function (t) { if (out.indexOf(t) < 0) out.push(t); });
+  return out;
 }
 
 /* ───────────────────────── 이미 만든 것 · 트리거 ───────────────────────── */
@@ -1007,7 +1172,9 @@ function formLayout_(form, meta) {
     }
     if (!item) {
       if (!all) all = form.getItems();
-      item = find_(all, function (it) { return it.getTitle() === titles[k]; });
+      // 구역은 requireDistrict 전후로 제목이 다르다(「구역 (선택)」 → 「구역」) — 어느 쪽이든 찾는다.
+      var alts = k === 'district' ? districtTitles_() : [titles[k]];
+      item = find_(all, function (it) { return alts.indexOf(it.getTitle()) >= 0; });
     }
     if (item) found[k] = item;
   });
@@ -1172,6 +1339,8 @@ function gridCells_(resp, rowsIso, slotByLabel, warnings, rowLabels) {
   return out;
 }
 
+var NO_DISTRICT_MERGED_ = '구역 없이 낸 응답이라 가장 최근 응답한 같은 이름에 합쳤어요';
+
 /** 같은 이름: 구역이 둘 다 있고 다르면 다른 사람, 아니면 가장 늦은 응답 하나만 남긴다. */
 function dedupe_(entries) {
   // 같은 시각이면 응답 id 로 가른다 — getResponses() 의 순서는 보장되지 않아 order 로 가르면 실행마다 달라질 수 있다.
@@ -1190,7 +1359,7 @@ function dedupe_(entries) {
         find_(list, function (p) { return !p.district; });
     } else if (list.length) {
       target = list.reduce(function (best, p) { return p.lastTs >= best.lastTs ? p : best; }, list[0]);
-      if (list.length > 1) e.warnings.push('구역 없이 낸 응답이라 가장 최근 응답한 같은 이름에 합쳤어요');
+      if (list.length > 1) e.warnings.push(NO_DISTRICT_MERGED_);
     }
     if (target) {
       if (e.ts && e.ts === target.lastTs) e.warnings.push('같은 시각에 낸 응답이 둘이에요 — 어느 쪽이 맞는지 확인해 주세요');
@@ -1198,17 +1367,21 @@ function dedupe_(entries) {
       var districtRaw = e.district ? e.districtRaw : (target.district ? target.districtRaw : (e.districtRaw || target.districtRaw));
       var dup = target.dupCount + 1;
       var prevWarn = target.mergeWarnings;
+      // 구역 없는 응답(빈칸 · districtUnknown)이 섞였는지 — 뒤에 같은 이름이 다른 구역으로도 오면 경고한다(숫자는 그대로).
+      var absorbed = target.absorbedNoDistrict || !e.district || !target.district;
       for (var k in e) target[k] = e[k];
       target.district = district;
       target.districtRaw = districtRaw;
       target.dupCount = dup;
       target.mergeWarnings = prevWarn;
+      target.absorbedNoDistrict = absorbed;
       target.lastTs = e.ts;
     } else {
       var p = {};
       for (var k2 in e) p[k2] = e[k2];
       p.dupCount = 0;
       p.mergeWarnings = [];
+      p.absorbedNoDistrict = false;
       p.lastTs = e.ts;
       list.push(p);
       persons.push(p);
@@ -1219,6 +1392,13 @@ function dedupe_(entries) {
     list.forEach(function (p) {
       p.displayName = list.length > 1 ? p.name + '(' + (p.districtRaw || '구역 없음') + ')' : p.name;
       if (!p.normName) p.displayName = '(이름 없음)';
+      // 같은 이름이 여러 구역으로 왔다 — 동명이인일 수도, 한 분이 구역을 다르게 고른 것일 수도 있다. 세는 법은 그대로 두고 알리기만 한다.
+      if (list.length > 1) {
+        p.mergeWarnings.push('같은 이름이 다른 구역으로도 왔어요(모두 ' + list.length + '곳) — 같은 분인지 확인해 주세요');
+        if (p.absorbedNoDistrict && p.warnings.indexOf(NO_DISTRICT_MERGED_) < 0) {
+          p.mergeWarnings.push('구역 없이 낸 응답을 이 구역에 합쳤어요 — 다른 구역의 같은 이름 것일 수도 있어요');
+        }
+      }
     });
   });
   return persons;
@@ -1408,7 +1588,7 @@ function writeTally_(sheet, t) {
       (p.cells.some(function (k) { return meta_isWeekday_(k); }) ? '가능' : '');
     var status = p.status === 'attend' ? '갈게요' : p.status === 'decline' ? '어려워요' : '확인 필요';
     var slotsText = t.variant === 'B' && p.slots.length ? ' / 시간대 ' + p.slots.map(function (id) { return slotLabelOf_(id); }).join('·') : '';
-    add([p.displayName, p.districtRaw, status, weekdayCol, p.cells.length, personCells_(p, t.variant) + slotsText, p.tea, p.message,
+    add([p.displayName, p.district || (p.districtRaw ? '구역 없음(' + p.districtRaw + ')' : '구역 없음'), status, weekdayCol, p.cells.length, personCells_(p, t.variant) + slotsText, p.tea, p.message,
       p.dupCount ? '중복 ' + p.dupCount + '건 정리' : '', p.warnings.concat(p.mergeWarnings || []).join(' / '), formatTime_(p.ts)]);
   });
 
@@ -1489,7 +1669,7 @@ function writeGuide_(sheet, variant, links) {
     [variant === 'C'
       ? '이 표는 운영진만 써요. 회원에게 돌리려면 이름이 든 시트 링크를 톡방에 올려야 해서 「응답 시트는 운영진만 보고 링크를 톡방에 올리지 않는다」 는 원칙과 부딪혀요. 회원 투표는 A · B · D 중 하나로 받아 주세요.'
       : '이 스프레드시트는 운영진만 봐요. 시트 링크를 톡방 · 저장소 · 다른 곳에 올리지 마세요.'],
-    ['받는 것은 이름과 구역(선택)뿐이에요. 직업 · 연락처 · 이메일은 받지 않아요.'],
+    ['받는 것은 이름과 ' + (CONFIG.districtRequired ? '구역' : '구역(선택)') + '뿐이에요. 직업 · 연락처 · 이메일은 받지 않아요.'],
     ['보관: 모임이 끝나면, 늦어도 ' + T.keepUntil + ' 까지 이 스프레드시트' + (variant === 'C' ? '를' : '와 폼을') + ' 지우고 휴지통도 비워 주세요.'],
     ['마감 ' + T.deadline + ' · 결과 ' + T.announce + ' 톡방']
   ];
@@ -1503,6 +1683,7 @@ function writeGuide_(sheet, variant, links) {
     lines.push(['「' + SHEET_RAW + '」: 구글 폼이 채워요. 직접 고치지 마세요.']);
     lines.push(['「' + SHEET_TALLY + '」: 응답이 들어올 때마다 다시 계산해요. 직접 고친 내용은 지워져요. 바로 다시 계산하려면 스크립트에서 refreshTally 를 실행해 주세요.']);
     lines.push(['같은 이름이 여러 번이면 가장 늦은 응답 하나만 세요. 구역이 서로 다르게 적혀 있으면 다른 사람으로 봐요.']);
+    lines.push(['구역이 빈 응답(구역을 모른다고 고른 것 포함)은 구역 없음으로 쳐서 같은 이름의 응답에 합쳐요. 같은 이름이 여러 구역으로 왔거나 구역 없는 응답을 합쳤으면 「확인 필요」 에 적어요.']);
     lines.push(['같은 이름 · 같은 구역의 동명이인은 구분하지 못해요. 「응답자별 정리」 의 「중복 정리」 를 보고 확인해 주세요.']);
     lines.push(['날짜를 빼거나 바꾸려면 폼 편집기에서 격자 줄 · 선택지를 고치지 말고 스크립트의 CONFIG 를 고친 뒤 forceNew 로 새로 만들어 주세요.']);
     lines.push(['마감하려면 closeForm 을 실행해 주세요.' + (CONFIG.autoCloseAtDeadline ? ' 마감 시각에 저절로도 닫혀요.' : '')]);
