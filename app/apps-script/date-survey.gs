@@ -10,6 +10,8 @@
  *        setupSheetGrid   — 버전 C 시트 직접 입력형(폼 없음) — 비권장 · 운영진 내부용.
  *                           회원에게 돌리려면 이름이 든 시트 링크를 톡방에 올려야 해서 개인정보 원칙과 부딪힌다.
  *        refreshTally     — 취합 시트를 다시 계산한다(A·B)
+ *        logSummary       — 취합을 다시 계산하고 실행 기록에 **건수만** 찍는다(이름 · 하고 싶은 말 없음). 날짜를 정할 때
+ *                           시트(이름이 든)를 열지 않고 숫자만 나눌 수 있다.
  *        closeForm        — 응답 받기를 끈다(A·B)
  *        updateDeadline   — 이미 돌고 있는 폼의 마감 · 결과 알림만 바꾼다(CONFIG 의 deadline · announceDate 를 고친 뒤).
  *                           폼 · 응답 링크 · 문항 · 받은 응답은 그대로다. forceNew 를 쓰지 않는다.
@@ -575,6 +577,61 @@ function refreshTally() {
   } finally {
     if (lock) { try { lock.releaseLock(); } catch (err3) {} }
   }
+}
+
+/**
+ * 날짜를 정할 때 쓰는 요약 — 실행 기록에 **건수만** 찍는다.
+ * 「취합」 시트에는 칸마다 이름이 있어 그대로 나누기 어렵다. 여기서는 이름 · 구역 · 하고 싶은 말을 싣지 않고
+ * 인원 수 · 후보별 인원 · 「두 번 나눠 간다면」 조합 · 확인할 응답 수만 남긴다. 취합 시트도 같이 다시 계산한다.
+ */
+function logSummary() {
+  var t = refreshTally();
+  if (!t) return null;
+  if (t.error) {
+    Logger.log('요약을 만들지 못했어요 — ' + t.error);
+    return { variant: t.variant, error: t.error };
+  }
+  var s = t.summary;
+  var form = null;
+  try { form = FormApp.openById(PropertiesService.getScriptProperties().getProperty(PROP_FORM_ID)); } catch (err) { form = null; }
+  var accepting = null;
+  try { accepting = form ? form.isAcceptingResponses() : null; } catch (err2) { accepting = null; }
+  var lines = [];
+  lines.push('응답 받기: ' + (accepting === null ? '확인 못 함' : accepting ? '받는 중' : '마감됨') + ' · 마감 ' + deadlineLabel_() + ' · 결과 알림 ' + dateLabel_(CONFIG.announceDate));
+  lines.push('응답 ' + s.responses + '건 → ' + s.people + '명(중복 ' + s.duplicatesRemoved + '건 정리) · 참석 가능 ' + s.attending + '명 · 10월은 어려움 ' + s.declined +
+    '명 · 칸을 고르지 않음 ' + s.noCell + '명 · 평일 낮도 가능 ' + s.weekday + '명 · 마지막 응답 ' + (s.lastResponseAt || '없음'));
+  var sat = t.candidates.filter(function (c) { return c.kind === '토요일'; });
+  var weekday = t.candidates.filter(function (c) { return c.kind === '평일 낮' && c.count > 0; }).sort(rankCand_);
+  lines.push('토요일 칸별 인원:');
+  sat.forEach(function (c) { lines.push('  ' + candLabel_(c) + ' — ' + c.count + '명'); });
+  lines.push('평일 낮 인원 많은 칸(위 5개' + (weekday.length > 5 ? ', 모두 ' + weekday.length + '칸' : '') + '):');
+  if (!weekday.length) lines.push('  없음');
+  weekday.slice(0, 5).forEach(function (c) { lines.push('  ' + candLabel_(c) + ' — ' + c.count + '명'); });
+  if (t.slotCounts) {
+    lines.push('시간대별 인원:');
+    t.slotCounts.forEach(function (x) { lines.push('  ' + x.label + ' — ' + x.count + '명'); });
+  }
+  lines.push('두 번 나눠 간다면(토요일 하나 + 평일 낮 하나, 위 ' + t.pairs.length + '개):');
+  if (!t.pairs.length) lines.push('  없음');
+  t.pairs.forEach(function (p) {
+    lines.push('  ' + candLabel_(p.weekend) + ' + ' + candLabel_(p.weekday) + ' — 둘 중 하나라도 ' + p.union + '명(둘 다 ' + p.both + '명)');
+  });
+  var flagged = t.persons.filter(function (p) { return p.warnings.length || (p.mergeWarnings && p.mergeWarnings.length); }).length;
+  lines.push('확인할 응답: ' + flagged + '명' + (flagged ? ' — 「취합」 의 「응답자별 정리」 에서 「확인 필요」 열을 봐 주세요' : '') +
+    (t.notices.length ? ' · 폼 확인 필요 ' + t.notices.length + '건' : ''));
+  lines.push('(이름 · 구역 · 하고 싶은 말은 싣지 않았어요. 사람별로는 「취합」 시트에서 봐 주세요.)');
+  Logger.log(lines.join('\n'));
+  return {
+    variant: t.variant,
+    accepting: accepting,
+    summary: s,
+    saturday: sat.map(function (c) { return { label: candLabel_(c), count: c.count }; }),
+    weekdayTop: weekday.slice(0, 5).map(function (c) { return { label: candLabel_(c), count: c.count }; }),
+    slots: t.slotCounts ? t.slotCounts.map(function (x) { return { label: x.label, count: x.count }; }) : null,
+    pairs: t.pairs.map(function (p) { return { weekend: candLabel_(p.weekend), weekday: candLabel_(p.weekday), union: p.union, both: p.both }; }),
+    flagged: flagged,
+    notices: t.notices.length
+  };
 }
 
 function closeForm() {
