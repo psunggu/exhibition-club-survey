@@ -11,12 +11,14 @@
 #   3. 결과를 맥 알림으로 알린다(모달 창은 쓰지 않는다 — 배치가 영원히 기다린다).
 #      DB 는 고치지 않는다 — 보고서의 update 문은 사람이 붙여 넣는다.
 #
-# 헤드리스 호출이 실패해도(로그인 만료 · CLI 없음) 자료 파일과 알림은 남는다.
+# 헤드리스 호출이 실패해도(로그인 만료 · CLI 없음 · 시간 초과) 자료 파일과 알림은 남는다.
+# 보고서까지 못 가면 캐시(logs/recheck-cache.json)를 모으기 전으로 되돌려 다음 배치가 같은 페이지를 다시 잡는다.
 # 터미널 CLI 는 앱 로그인과 별개다 — 처음 한 번 `claude auth login` 을 사람이 해 둔다.
 #
 # 로그:   logs/recheck-task-YYYYMM.log
 # 상태:   logs/recheck-last.json  (언제 · 종료 코드 · 바뀐 수 · 자료 · 보고서)
-# 옵션:   --model <이름>(기본 sonnet) · --max-chars <n>(기본 60000) · --no-ai(자료만 만든다, 시험용)
+# 옵션:   --model <이름>(기본 sonnet) · --max-chars <n>(기본 60000) · --ai-timeout <초>(기본 1800)
+#         · --no-ai(자료만 만든다, 시험용 — 캐시는 되돌린다)
 # 설치:   scripts/install-launchd.sh recheck
 set -o pipefail
 
@@ -24,10 +26,12 @@ REPO="$(cd "$(dirname "$0")/.." && pwd)"
 MODEL=sonnet
 MAX_CHARS=60000
 NO_AI=0
+AI_TIMEOUT=1800
 while [ $# -gt 0 ]; do
   case "$1" in
     --model) MODEL="$2"; shift 2 ;;
     --max-chars) MAX_CHARS="$2"; shift 2 ;;
+    --ai-timeout) AI_TIMEOUT="$2"; shift 2 ;;
     --no-ai) NO_AI=1; shift ;;
     *) echo "모르는 옵션: $1" >&2; exit 2 ;;
   esac
@@ -68,6 +72,23 @@ fail() {
 
 cd "$REPO" || exit 1
 log '=== 공식 출처 재확인 시작 ==='
+. "$REPO/scripts/batch-lib.sh" || fail 'scripts/batch-lib.sh 를 읽지 못했다'
+
+# recheck-sources 는 자료를 모으자마자 캐시에 새 해시를 적는다. 보고서까지 못 가면(AI 실패 · 시간 초과 ·
+# 자료가 큼 · --no-ai · 모으기 실패) 모으기 전 캐시로 되돌린다 — 10/5 에 AI 호출이 7시간 뒤 끊겼는데 캐시는
+# 이미 갱신돼, 바뀐 3건이 다음 주에 「변화 없음」 으로 묻힐 뻔했다.
+CACHE="$LOG_DIR/recheck-cache.json"
+CACHE_BEFORE="$(mktemp "${TMPDIR:-/tmp}/exhibition-club-recheck-cache.XXXXXX")" || fail '임시 파일을 만들지 못했다'
+trap 'save_state; rm -f "$CACHE_BEFORE"' EXIT
+HAD_CACHE=0
+[ -f "$CACHE" ] && cp -p "$CACHE" "$CACHE_BEFORE" && HAD_CACHE=1
+restore_cache() {
+  if [ "$HAD_CACHE" -eq 1 ]; then
+    cp -p "$CACHE_BEFORE" "$CACHE" && log '캐시를 모으기 전으로 되돌렸다 — 다음 배치가 같은 페이지를 다시 본다'
+  else
+    rm -f "$CACHE" && log '캐시를 지웠다(모으기 전에는 없었다) — 다음 배치가 처음부터 본다'
+  fi
+}
 HERE="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
 [ "$HERE" != main ] && log "주의: 체크아웃이 main 이 아니다($HERE) — meetups.ts 는 이 브랜치 것을 읽는다"
 
@@ -85,23 +106,25 @@ if [ "$RC" -eq 0 ]; then
   notify '공식 출처 재확인' "달라진 페이지 없음. $COUNT_LINE"
   exit 0
 fi
-[ "$RC" -ne 3 ] && fail "recheck-sources 종료 코드 $RC"
-[ -z "$SOURCE" ] && fail '자료 파일 경로를 출력에서 찾지 못했다'
+[ "$RC" -ne 3 ] && { restore_cache; fail "recheck-sources 종료 코드 $RC"; }
+[ -z "$SOURCE" ] && { restore_cache; fail '자료 파일 경로를 출력에서 찾지 못했다'; }
 
 # ── 2. 달라진 것이 있다 → AI 로 표를 만든다 ─────────────────
 SOURCE_PATH="$REPO/$SOURCE"
-[ -f "$SOURCE_PATH" ] || fail "자료 파일이 없다: $SOURCE"
+[ -f "$SOURCE_PATH" ] || { restore_cache; fail "자료 파일이 없다: $SOURCE"; }
 REPORT_PATH="$LOG_DIR/recheck-report-$(date +%Y%m%d).md"
 ST_REPORT="$REPORT_PATH"
 BODY_CHARS="$(node -e 'process.stdout.write(String(require("fs").readFileSync(process.argv[1], "utf8").length))' "$SOURCE_PATH")"
 
 if [ "$NO_AI" -eq 1 ]; then
+  restore_cache
   finish 3 "바뀐 페이지 $CHANGED — --no-ai 라 자료만 남겼다"
   notify '공식 출처 재확인' "바뀐 페이지 ${CHANGED}건 — 자료: $SOURCE"
   exit 3
 fi
 if [ "$BODY_CHARS" -gt "$MAX_CHARS" ]; then
   ST_AI=too-large
+  restore_cache
   finish 3 "자료가 커서(${BODY_CHARS}자 > ${MAX_CHARS}) AI 를 부르지 않았다 — 사람이 본다"
   notify '공식 출처 재확인 — 사람이 볼 것' "바뀐 페이지 ${CHANGED}건, 자료가 커서 AI 를 건너뛰었다. $SOURCE"
   exit 3
@@ -129,14 +152,15 @@ PROMPT_FILE="${TMPDIR:-/tmp}/exhibition-club-recheck-prompt.txt"
 } > "$PROMPT_FILE"
 log "헤드리스 호출 — 모델 $MODEL, 프롬프트 $(wc -m < "$PROMPT_FILE" | tr -d ' ')자"
 
-AI_OUT="$(claude -p --model "$MODEL" --output-format text < "$PROMPT_FILE" 2>&1)"
+AI_OUT="$(with_timeout "$AI_TIMEOUT" claude -p --model "$MODEL" --output-format text < "$PROMPT_FILE" 2>&1)"
 AI_RC=$?
 rm -f "$PROMPT_FILE"
 if [ "$AI_RC" -ne 0 ] || [ -z "$AI_OUT" ]; then
   ST_AI=failed
+  restore_cache
   finish 3 "AI 호출 실패(코드 $AI_RC): $(printf '%s\n' "$AI_OUT" | head -2 | paste -sd '/' -)"
   log '터미널 CLI 로그인이 만료됐으면 `claude auth login` 을 한 번 해 둔다. 자료 파일은 남아 있다.'
-  notify '공식 출처 재확인 — AI 호출 실패' "바뀐 페이지 ${CHANGED}건. 자료: $SOURCE"
+  notify '공식 출처 재확인 — AI 호출 실패' "바뀐 페이지 ${CHANGED}건 — 다음 배치가 다시 본다. 자료: $SOURCE"
   exit 3
 fi
 {
