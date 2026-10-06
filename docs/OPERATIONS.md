@@ -199,5 +199,5 @@ git push -u origin HEAD && gh pr create --fill
 gh pr checks --watch && gh pr merge --squash
 ```
 
-  자동 머지(`--auto`)는 저장소 설정에서 꺼져 있다. PR 을 연 뒤 **한 번 더 푸시하면 앞 검사가 취소되어** `--watch` 가 실패로 끝나니, 그때는 `gh pr checks` 로 새 검사가 통과했는지 보고 머지한다. 머지 뒤 배포 워크플로가 같은 검사를 한 번 더 돌린다 — 거기서 실패하면 배포되지 않는다.
+  자동 머지(`--auto`)는 저장소 설정에서 켜져 있다(2026-10-04 부터, `docs/HISTORY.md`). 검사를 지켜보지 않으려면 `gh pr merge --squash --auto --delete-branch` 로 걸어 두면 검사가 통과한 뒤 저절로 머지된다. `--watch` 로 기다릴 때는 PR 을 연 뒤 **한 번 더 푸시하면 앞 검사가 취소되어** `--watch` 가 실패로 끝나니, 그때는 `gh pr checks` 로 새 검사가 통과했는지 보고 머지한다. 머지 뒤 배포 워크플로가 같은 검사를 한 번 더 돌린다 — 거기서 실패하면 배포되지 않는다.
 - 커밋 메시지는 한 줄이다. 근거를 길게 적을 일이면 코드 주석이 아니라 `docs/HISTORY.md` 에 한 문단으로 적는다.
