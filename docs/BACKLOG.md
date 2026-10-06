@@ -23,10 +23,6 @@
 
 (10/4 운영자: 나중에) SQL Editor 에서 `select left(password_hash, 7), count(*) from public.survey_admins group by 1` 이 모두 `$2a$10$` 인지 본다. 아니면 `supabase/migrations/202608200001d_admin_password.template.sql` 을 채워 다시 정한다. 채운 파일은 저장하지 않는다.
 
-## 옛 PC 작업 스케줄러 해제
-
-옛 Windows PC 를 켜서 `ExhibitionClub-*` · `KakaoWeeklyDigest` · `KakaoDigest-StoreBackup` 을 한 줄 명령으로 지운다(`docs/OPERATIONS.md` 「자동화 구성」). 등록된 채 켜면 맥과 겹쳐 PR 이 두 번 열린다. 저장소의 `*.ps1` 은 10/4 에 지웠다.
-
 ## 잠긴 표 백업
 
 매일 백업이 `events` · `surveys` · `survey_options` 를 받는다(2026-10-04). Supabase 는 무료 요금제라 자체 백업이 없다. 잠긴 표 `admin_guides` · `survey_notes` 는 익명 키로 못 읽어 빠져 있다 — 운영자가 원문을 따로 보관할지, 운영자 암호를 쓰는 손 백업 절차를 둘지 정한다(명부 · 응답 표는 제외).
