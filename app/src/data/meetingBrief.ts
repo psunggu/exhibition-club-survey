@@ -105,6 +105,41 @@ export type MeetingBrief = {
  * 읽는다 — 그래서 새 모임을 맨 앞에 둔다.
  */
 export const BRIEFS: MeetingBrief[] = [{
+  id: 'october-2026',
+  meetupId: 'october-regular',
+  title: '10월 정기모임',
+  state: '확정',
+  rows: [
+    {
+      key: 'what',
+      label: '무엇을',
+      category: 'exhibition',
+      value: '《고종의 밀사 헐버트, 조선을 담다》 사진전',
+      sub: '함께봄 한옥',
+    },
+    {
+      key: 'when',
+      label: '언제',
+      category: 'exhibition',
+      value: '10월 24일(토)',
+      dateChip: { big: '10월 24일', small: '토요일' },
+      sub: '15~17시 관람 · 모이는 곳은 톡방 공지',
+    },
+    // 식사는 정리봇에 없었다(10/11) — 정해지면 값을 적는다. null 이면 「아직 안 정했습니다」.
+    {
+      key: 'mealTime',
+      label: '식사 시간',
+      category: 'meal',
+      value: null,
+    },
+    {
+      key: 'mealPlace',
+      label: '식사 장소',
+      category: 'meal',
+      value: null,
+    },
+  ],
+}, {
   id: 'september-2026',
   meetupId: 'september-regular',
   title: '9월 정기모임',

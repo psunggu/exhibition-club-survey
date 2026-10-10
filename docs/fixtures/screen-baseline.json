@@ -1932,7 +1932,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 4863
+    "h": 5204
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2177,7 +2177,7 @@
    }
   },
   ".card": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 343,
     "h": 332
@@ -2209,7 +2209,7 @@
    }
   },
   ".card-regular": {
-   "count": 1,
+   "count": 2,
    "box": {
     "w": 343,
     "h": 369
@@ -2241,7 +2241,7 @@
    }
   },
   ".db": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 68,
     "h": 82
@@ -2273,7 +2273,7 @@
    }
   },
   ".db .d": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 60,
     "h": 29
@@ -2305,7 +2305,7 @@
    }
   },
   ".tag": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 41,
     "h": 24
@@ -2337,7 +2337,7 @@
    }
   },
   ".tag-regular": {
-   "count": 1,
+   "count": 2,
    "box": {
     "w": 85,
     "h": 24
@@ -2369,7 +2369,7 @@
    }
   },
   ".mfacts": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 309,
     "h": 142
@@ -2401,7 +2401,7 @@
    }
   },
   ".mfact-label": {
-   "count": 13,
+   "count": 16,
    "box": {
     "w": 64,
     "h": 18
@@ -2433,7 +2433,7 @@
    }
   },
   ".mfact-val": {
-   "count": 13,
+   "count": 16,
    "box": {
     "w": 217,
     "h": 41
@@ -2465,7 +2465,7 @@
    }
   },
   ".mfact-must": {
-   "count": 3,
+   "count": 4,
    "box": {
     "w": 309,
     "h": 38
@@ -2497,7 +2497,7 @@
    }
   },
   ".mcard-more": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 309,
     "h": 44
@@ -2657,7 +2657,7 @@
    }
   },
   ".chip": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 40,
     "h": 36
@@ -2823,9 +2823,9 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1849,
+   "textLength": 1872,
    "cardCount": 0,
-   "chipCount": 15
+   "chipCount": 16
   }
  },
  "일정-1280": {
@@ -2833,7 +2833,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 4422
+    "h": 4778
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3078,7 +3078,7 @@
    }
   },
   ".card": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 520,
     "h": 330
@@ -3110,7 +3110,7 @@
    }
   },
   ".card-regular": {
-   "count": 1,
+   "count": 2,
    "box": {
     "w": 520,
     "h": 369
@@ -3142,7 +3142,7 @@
    }
   },
   ".db": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 68,
     "h": 82
@@ -3174,7 +3174,7 @@
    }
   },
   ".db .d": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 60,
     "h": 29
@@ -3206,7 +3206,7 @@
    }
   },
   ".tag": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 41,
     "h": 24
@@ -3238,7 +3238,7 @@
    }
   },
   ".tag-regular": {
-   "count": 1,
+   "count": 2,
    "box": {
     "w": 85,
     "h": 24
@@ -3270,7 +3270,7 @@
    }
   },
   ".mfacts": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 486,
     "h": 142
@@ -3302,7 +3302,7 @@
    }
   },
   ".mfact-label": {
-   "count": 13,
+   "count": 16,
    "box": {
     "w": 64,
     "h": 18
@@ -3334,7 +3334,7 @@
    }
   },
   ".mfact-val": {
-   "count": 13,
+   "count": 16,
    "box": {
     "w": 394,
     "h": 41
@@ -3366,7 +3366,7 @@
    }
   },
   ".mfact-must": {
-   "count": 3,
+   "count": 4,
    "box": {
     "w": 486,
     "h": 38
@@ -3398,7 +3398,7 @@
    }
   },
   ".mcard-more": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 486,
     "h": 44
@@ -3558,7 +3558,7 @@
    }
   },
   ".chip": {
-   "count": 15,
+   "count": 16,
    "box": {
     "w": 65,
     "h": 28
@@ -3724,9 +3724,9 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1849,
+   "textLength": 1872,
    "cardCount": 0,
-   "chipCount": 15
+   "chipCount": 16
   }
  },
  "투표-375": {
@@ -3734,7 +3734,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 910
+    "h": 891
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -4129,7 +4129,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 214,
+   "textLength": 216,
    "cardCount": 0,
    "chipCount": 0
   }
@@ -4139,7 +4139,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 914
+    "h": 895
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -4534,7 +4534,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 214,
+   "textLength": 216,
    "cardCount": 0,
    "chipCount": 0
   }

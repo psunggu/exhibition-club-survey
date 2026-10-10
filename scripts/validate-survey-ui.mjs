@@ -740,7 +740,7 @@ await page.goto('about:blank');
 await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'networkidle' });
 await page.waitForSelector('.survey-past', { timeout: 20000 });
 await page.waitForTimeout(1100);
-const thin = await page.$eval('.survey-past > summary',
+const thin = await page.$eval('.survey-past:not(.survey-past-brief) > summary',
   (e) => e.innerText.replace(/\s+/g, ' ').trim());
 ok('참여가 적으면 비율을 외치지 않는다', !/\(\d+%\)/.test(thin),
   /설문 결과\s*([^\n]{0,40})/.exec(thin)?.[1] ?? thin.slice(0, 40));
@@ -758,7 +758,7 @@ await page.goto(`http://127.0.0.1:8261${BASE}/#/survey/meal`, { waitUntil: 'netw
 await page.waitForSelector('.survey-past', { timeout: 20000 });
 await page.waitForTimeout(700);
 const focusRatio = await page.evaluate(() => {
-  const el = document.querySelector('.survey-past > summary');
+  const el = document.querySelector('.survey-past:not(.survey-past-brief) > summary');
   el.focus();
   const c = getComputedStyle(el);
   const num = (s) => (s.match(/[0-9.]+/g) ?? []).map(Number);
@@ -984,7 +984,7 @@ ok('네 갈래 이름이 다 있다',
  * 글자를 검사기에 박아 두면 카드를 고칠 때마다 검사가 거짓으로 깨진다 — `state` 에서 한 번 겪었다.
  */
 const mealSrc0 = fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8');
-const mealRow0 = mealSrc0.slice(mealSrc0.indexOf("key: 'mealPlace'"));
+const mealRow0 = ((t) => t.slice(0, t.indexOf('}')))(mealSrc0.slice(mealSrc0.indexOf("key: 'mealPlace'")));
 const mealValue0 = /value:\s*'([^']+)'/.exec(mealRow0)?.[1] ?? null;
 const mealRowText = rows.find((r) => r.text.includes('식사 장소'))?.text ?? '없다';
 if (mealValue0 === null) {
@@ -1194,7 +1194,7 @@ const placeRow = () => page.$$eval('.brief-row',
  * 화면에 그대로 나오는지만 잰다 — 손으로 적는 값이라 한 번 어긋난 적이 있는 자리다.
  */
 const BRIEF_SRC = fs.readFileSync(path.join(ROOT, 'app/src/data/meetingBrief.ts'), 'utf8');
-const mealPlaceSrc = BRIEF_SRC.slice(BRIEF_SRC.indexOf("key: 'mealPlace'"));
+const mealPlaceSrc = ((t) => t.slice(0, t.indexOf('}')))(BRIEF_SRC.slice(BRIEF_SRC.indexOf("key: 'mealPlace'")));
 const placeBySurvey = /^\s*decidedBy:/m.test(mealPlaceSrc);
 const placeHandValue = /value:\s*'([^']+)'/.exec(mealPlaceSrc)?.[1] ?? null;
 
@@ -1256,12 +1256,14 @@ ok('설문이 없으면 아직 안 정했다고 말한다', row.includes('아직
 ok('없는 설문으로 가는 길을 만들지 않는다', (await page.$$('.brief-go')).length === 0);
 await page.unroute('**/rest/v1/surveys*');
 } else {
-  console.log(`  · 식사 장소는 손으로 정했다 (${placeHandValue}) — 설문 상태 다섯 가지는 건너뛴다`);
+  console.log(`  · 식사 장소는 ${placeHandValue ? `손으로 정했다 (${placeHandValue})` : '아직 안 정했다(value: null)'} — 설문 상태 다섯 가지는 건너뛴다`);
   // 설문이 열려 있어도 손으로 정한 값이 이긴다 — 결정은 운영자가 했고, 설문은 그릇일 뿐이다
   await servePlace({ open: true, votes: [2, 1, 0] });
   const handRow = await placeRow();
   console.log(`  · 손으로 정함: ${handRow}`);
-  ok('손으로 정한 식사 장소가 그대로 나온다', !!placeHandValue && handRow.includes(placeHandValue), handRow);
+  // 손으로 값을 적었으면 그 값이, value: null 이면 「아직 안 정했습니다」 가 나와야 한다(10월 요약부터)
+  if (placeHandValue) ok('손으로 정한 식사 장소가 그대로 나온다', handRow.includes(placeHandValue), handRow);
+  else ok('안 정한 식사 장소는 「아직 안 정했습니다」 라고 말한다', handRow.includes('아직 안 정했습니다'), handRow);
   ok('정해졌으니 투표 중이라고 하지 않는다', !handRow.includes('투표 중'), handRow);
   ok('정해졌으니 고르러 갈 길을 만들지 않는다', (await page.$$('.brief-go')).length === 0);
   ok('인원을 적지 않는다', !/\d+명/.test(handRow), handRow);
@@ -1500,7 +1502,8 @@ if (placeBySurvey) {
   ok('현황을 볼 길은 준다',
     (await page.$eval('.brief-go', (e) => e.getAttribute('href')).catch(() => null)) === '#/survey/meal');
 } else {
-  ok('손으로 정한 식사 장소가 그대로 나온다', !!placeHandValue && offRow.includes(placeHandValue), offRow);
+  if (placeHandValue) ok('손으로 정한 식사 장소가 그대로 나온다', offRow.includes(placeHandValue), offRow);
+  else ok('안 정한 식사 장소는 「아직 안 정했습니다」 라고 말한다', offRow.includes('아직 안 정했습니다'), offRow);
 }
 ok('「여기서 고르실 수 있습니다」 라고는 안 한다', !offRow.includes('고르실 수'), offRow);
 await unservePlace();
