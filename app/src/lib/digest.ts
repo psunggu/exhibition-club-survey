@@ -28,6 +28,14 @@ export type Highlight = {
   text: string
 }
 
+/**
+ * 「확정」 은 공개본에서 「확인 필요」 와 같은 `check` 로 온다(색도 같다). 물음표는 확정에 맞지 않아
+ * 글자만 체크로 바꾼다 — 달력의 완료 줄과 같은 ✓ (2026-10-15 운영자 요청).
+ */
+const LABEL_ICON: Readonly<Record<string, string>> = { 확정: '✓' }
+
+export const highlightIcon = (h: Highlight): string => LABEL_ICON[h.label] ?? SEVERITY_ICON[h.severity]
+
 export type Digest = {
   botName: string
   periodLabel: string
