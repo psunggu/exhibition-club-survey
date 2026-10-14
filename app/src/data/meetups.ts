@@ -541,15 +541,21 @@ export const MEETUPS: Meetup[] = withDefaults([
   {
     id: 'deoksugung-walk',
     date: '2026-10-17',
-    chip: '덕수궁 15시',
+    chip: '덕수궁 16시',
     kind: 'conf',
     regular: false,
     venueKind: '박물관',
     title: '덕수궁·정동길 관람·산책',
-    time: '오후 3시~6시 · 시청역 1번 출구 오후 2시 50분 집결',
+    time: '오후 4시~7시 30분 · 시청역 1번 출구 오후 3시 50분 집결',
     venue: '덕수궁 · 서울 중구 세종대로 99',
-    description: '15:00~16:40 덕수궁 관람, 16:40~17:40 정동길 산책, 17:40~18:00 식사·티타임. '
+    description: '16:00~17:30 정동길 일대 관람·산책, 17:30~18:30 저녁 식사, 18:30~19:30 덕수궁 탐방. '
       + '이후 귀가 또는 청계천 걷기는 자율입니다.',
+    note: '비가 와도 진행하고, 일정은 현장 상황에 따라 조금 바뀔 수 있습니다. '
+      + '덕수궁 입장료는 1,000원이고 현금과 카드 모두 됩니다.',
+    // 「입장료」 와 「1,000원」 이 줄바꿈에 갈리지 않게 붙인다( )
+    must: '우천 시에도 진행 · 입장료 1,000원',
+    infoUrl: 'https://psunggu.github.io/exhibition-club-survey-tour/',
+    infoLabel: '현장 가이드 보기 →',
   },
   {
     id: 'october-regular',

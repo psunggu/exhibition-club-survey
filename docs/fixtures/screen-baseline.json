@@ -1932,7 +1932,7 @@
    "count": 1,
    "box": {
     "w": 375,
-    "h": 5204
+    "h": 5245
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -2401,7 +2401,7 @@
    }
   },
   ".mfact-label": {
-   "count": 16,
+   "count": 17,
    "box": {
     "w": 64,
     "h": 18
@@ -2433,7 +2433,7 @@
    }
   },
   ".mfact-val": {
-   "count": 16,
+   "count": 17,
    "box": {
     "w": 217,
     "h": 41
@@ -2465,7 +2465,7 @@
    }
   },
   ".mfact-must": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 309,
     "h": 38
@@ -2823,7 +2823,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 1872,
+   "textLength": 1904,
    "cardCount": 0,
    "chipCount": 16
   }
@@ -2833,7 +2833,7 @@
    "count": 1,
    "box": {
     "w": 1280,
-    "h": 4778
+    "h": 4820
    },
    "style": {
     "color": "rgb(31, 30, 27)",
@@ -3302,7 +3302,7 @@
    }
   },
   ".mfact-label": {
-   "count": 16,
+   "count": 17,
    "box": {
     "w": 64,
     "h": 18
@@ -3334,7 +3334,7 @@
    }
   },
   ".mfact-val": {
-   "count": 16,
+   "count": 17,
    "box": {
     "w": 394,
     "h": 41
@@ -3366,7 +3366,7 @@
    }
   },
   ".mfact-must": {
-   "count": 4,
+   "count": 5,
    "box": {
     "w": 486,
     "h": 38
@@ -3724,7 +3724,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 1872,
+   "textLength": 1904,
    "cardCount": 0,
    "chipCount": 16
   }
