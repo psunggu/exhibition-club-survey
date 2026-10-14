@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
-import { fetchDigest, SEVERITY_ICON, type Digest } from './lib/digest'
+import { fetchDigest, highlightIcon, type Digest } from './lib/digest'
 import { meetupFacts } from './lib/meetupFacts'
 import {
   isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, shownStatus, TENTATIVE, type Meetup,
@@ -299,7 +299,7 @@ export function Calendar() {
                   <div className="digest-highlights">
                     {digest.highlights.map((h, i) => (
                       <article key={i} className={`digest-item digest-item-${h.severity}`}>
-                        <span className="digest-marker" aria-hidden="true">{SEVERITY_ICON[h.severity]}</span>
+                        <span className="digest-marker" aria-hidden="true">{highlightIcon(h)}</span>
                         <div className="digest-item-body">
                           <span className="digest-status">{h.label}</span>
                           <h4>{h.title}</h4>
