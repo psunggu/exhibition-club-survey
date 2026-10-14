@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
-import { fetchDigest, highlightIcon, type Digest } from './lib/digest'
+import { fetchDigest, highlightIcon, shownHighlights, type Digest } from './lib/digest'
 import { meetupFacts } from './lib/meetupFacts'
 import {
   isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, shownStatus, TENTATIVE, type Meetup,
@@ -127,6 +127,7 @@ export function Calendar() {
 
   const upcoming = MEETUPS.filter((m) => m.kind === 'conf' && m.date >= today)
   const done = MEETUPS.filter((m) => isDone(m, today)).sort((a, b) => b.date.localeCompare(a.date))
+  const highlights = digest ? shownHighlights(digest.highlights, today) : []
 
   /**
    * 완료된 모임을 **해 → 달**로 묶는다.
@@ -293,11 +294,11 @@ export function Calendar() {
             {digest && (
               <>
                 <h3 className="digest-subtitle">중요 확인사항</h3>
-                {digest.highlights.length === 0 ? (
+                {highlights.length === 0 ? (
                   <p className="digest-loading">현재 표시할 중요 확인사항이 없습니다.</p>
                 ) : (
                   <div className="digest-highlights">
-                    {digest.highlights.map((h, i) => (
+                    {highlights.map((h, i) => (
                       <article key={i} className={`digest-item digest-item-${h.severity}`}>
                         <span className="digest-marker" aria-hidden="true">{highlightIcon(h)}</span>
                         <div className="digest-item-body">

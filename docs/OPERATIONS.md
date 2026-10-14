@@ -84,7 +84,7 @@ bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 �
   익명화 식별자 「멤버 N」 은 「회원」 으로 바꾸고, 이름·전화·이메일로 보이는 것이 남으면 **쓰지 않고 멈춘다**(상태 `stopped`).
 - 같은 기간의 공개본이 이미 `main` 에 있으면 PR 을 열지 않는다. `--force` 는 이미 처리한 요약을 다시 올릴 때만 — 손질한 문구가 되돌아간다.
 - 네트워크 호출(git fetch · pull · push · gh)마다 시간 제한이 있다(`scripts/batch-lib.sh`, 영화 배치와 같이 쓴다). PR 생성이 실패로 끝나면 그 브랜치의 열린 PR 을 찾아 있으면 그것으로 받는다(2026-10).
-- PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다.
+- PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다. 확인사항의 `date`(ISO)는 화면이 지난 카드를 빼는 값이라 본문 날짜를 고치면 같이 고친다 — 검사기가 둘을 맞춰 본다.
 - 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
 - `kakao-digest` 의 launchd `com.psunggu.kakao-weekly` 가 `~/KakaoDigest/inbox` 를 지켜보다(WatchPaths) 저장 즉시 병합·요약하고, `com.psunggu.kakao-weekly-remind` 가 화·금 22:00 에 마지막 저장(inbox · archive 의 내보내기 파일)이 7일 이상이면 저장 안내 알림을 띄운다 — inbox 에 한 시간 넘게 남은(처리 못 한) 파일이 있으면 저장 안내 대신 그 알림을. 조용해 요약을 건너뛴 주라도 저장했으면 조르지 않는다. 등록은 `kakao-digest/scripts/install-launchd.sh <weekly|weekly-remind>`, 로그는 `~/Library/Logs/com.psunggu.kakao-<작업>.log`. 종료 2 는 저장 파일이 오래됐다는 뜻이라(맥 CSV 는 저장한 지 36시간) 카톡에서 다시 저장한다. 방이 조용했으면 종료 0 에 새 0건, 8일 넘게 조용하면 종료 3 이다. 종료 1(오류)이면 inbox 파일이 일부러 남는다 — 로그로 원인을 고친 뒤 `launchctl kickstart gui/$(id -u)/com.psunggu.kakao-weekly`.
@@ -165,6 +165,7 @@ git commit -am "10월 정기관람을 달력에 올린다" && git push -u origin
 | 사이트에 옮겨 온 투표(마감된 것) | 투표 화면 「지난 투표」 — 이어진 모임(`surveyIds` · `meetup_id`) 날짜가 지나면, 이어진 모임이 없으면 마감 30일 뒤(`UNLINKED_GRACE_DAYS`). 지금은 톡방 투표를 사이트에 옮기지 않아 새로 생기지 않는다 | 저절로 |
 | 모임 요약 카드 | 「지난 투표」 맨 앞 접힌 줄 (`BRIEFS` 의 `meetupId`) | 저절로 — **지우지 않는다** |
 | 달력 구독(`.ics`) | 지난 일정으로 남는다 | 저절로 |
+| 정리봇 「중요 확인사항」 카드 | 날짜(`date`)가 지난 카드는 빠진다 — 다 빠지면 「현재 표시할 중요 확인사항이 없습니다.」 (`shownHighlights`) | 저절로 — 다음 정리봇을 기다리지 않는다 |
 | **보드 전시 카드의 모임 문구** | 「○월 정기관람으로 확정된 전시입니다 — ○일 집결 …」 가 그대로 남는다 | **운영자** |
 
 보드 문구는 `public.events` 의 글 칸(주로 `recommendation` — 카드 맨 아래 문단, 가끔 `discount` 등)에 있어 날짜 규칙이 닿지 않는다. 전시는 모임 뒤에도 계속되므로 **카드는 두고 문구만** 바꾼다. `/ops` 가 「보드 모임 문구」 줄로 찾아 주고, 손으로 찾을 때는 SQL Editor 에서:
