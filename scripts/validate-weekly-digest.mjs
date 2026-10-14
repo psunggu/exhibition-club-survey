@@ -26,6 +26,7 @@ const allowedHighlightKeys = new Set([
   "label",
   "title",
   "text",
+  "date",
   "completed_date"
 ]);
 const allowedSeverities = new Set(["urgent", "check", "planning"]);
@@ -83,6 +84,20 @@ for (const [index, item] of data.highlights.entries()) {
   assertPublicText(item.label, `highlights[${index}].label`, 20);
   assertPublicText(item.title, `highlights[${index}].title`, 80);
   assertPublicText(item.text, `highlights[${index}].text`, 240);
+  // date 는 화면이 지난 항목을 빼는 데만 쓴다(app/src/lib/digest.ts). 날짜 말고는 실을 수 없게 형식을 못 박고,
+  // 손으로 다듬다 본문 날짜와 어긋나면 카드가 엉뚱한 날 사라지므로 둘을 맞춰 본다.
+  if (Object.hasOwn(item, "date")) {
+    const day = item.date;
+    const time = typeof day === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(day) ? Date.parse(`${day}T00:00:00Z`) : NaN;
+    if (Number.isNaN(time) || new Date(time).toISOString().slice(0, 10) !== day) {
+      fail(`highlights[${index}].date는 YYYY-MM-DD 형식의 날짜여야 합니다.`);
+    }
+    const [, month, date] = day.split("-").map(Number);
+    // 앞에 숫자가 없어야 한다 — 「1월 11일」 이 「11월 11일」 에 걸리지 않게
+    if (!new RegExp(`(?:^|\\D)${month}월 ${date}일`, "u").test(item.text)) {
+      fail(`highlights[${index}].date(${day})가 text의 날짜와 다릅니다. 화면은 date로 지난 항목을 뺍니다.`);
+    }
+  }
   if (Object.hasOwn(item, "completed_date")) {
     fail(`highlights[${index}].completed_date는 중요 확인사항에서 사용할 수 없습니다.`);
   }

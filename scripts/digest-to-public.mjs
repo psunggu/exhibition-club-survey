@@ -17,6 +17,7 @@
  *   decisions[0] (없으면 topics[0]) → summary
  *   events (지나지 않은 것만)      → highlights    확정 → check · 논의중/미정 → planning
  *                                                  kind 정보 → planning 「전시 정보」 (모임 아래)
+ *                                                  date → date (날짜 있는 것만 — 화면이 그날이 지나면 뺀다)
  *   decisions · open_questions    → 그대로 (8개 · 180자 한도)
  *
  * ── 개인정보 ────────────────────────────────────────────
@@ -104,6 +105,8 @@ for (const e of events) {
     title: clip(scrub(e.title), 80),
     // 날짜 · 장소 · 메모가 다 없는 안내도 빈 글로 두지 않는다 — 검사기가 빈 text 를 막는다
     text: clip(facts.join(' · ') || '자세한 안내는 톡방에서 확인해 주세요', 240),
+    // 공개본은 새 요약이 올 때만 다시 만들어진다 — 그사이 지난 일정은 화면이 이 값으로 뺀다(lib/digest.ts)
+    ...(e.date ? { date: e.date } : {}),
   });
   if (highlights.length >= 8) break;
 }

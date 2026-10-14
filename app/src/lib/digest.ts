@@ -26,6 +26,8 @@ export type Highlight = {
   label: string
   title: string
   text: string
+  /** 일정 날짜 `YYYY-MM-DD`. 날짜 없는 안내(전시 정보 · 확인 필요)에는 없다 — 그런 카드는 늘 보인다. */
+  date?: string
 }
 
 /**
@@ -55,8 +57,12 @@ const strArray = (v: unknown): string[] =>
 const isSeverity = (v: unknown): v is Severity =>
   typeof v === 'string' && v in SEVERITY_ICON
 
+/** `YYYY-MM-DD` — 글자 그대로 견주면 날짜 순서다. */
+const isIsoDay = (v: unknown): v is string =>
+  typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+
 /**
- * 옛 `isSafeDigest` 와 같은 검사다 — 모양이 어긋난 항목은 통째로 버린다.
+ * 옛 `isSafeDigest` 와 같은 검사다 — 모양이 어긋난 항목은 통째로 버린다(날짜 칸도 같다).
  * 완료 항목은 중요 확인사항이 아니다. 완료 목록과 `decisions` 에만 남기고 여기서는 받지 않는다.
  */
 function parseHighlights(v: unknown): Highlight[] {
@@ -71,10 +77,21 @@ function parseHighlights(v: unknown): Highlight[] {
     const text = str(h.text)
     if (!label || !title || !text) continue
     if ('completed_date' in h) continue
-    out.push({ severity: h.severity, label, title, text })
+    if (h.date !== undefined && !isIsoDay(h.date)) continue
+    out.push({ severity: h.severity, label, title, text, ...(isIsoDay(h.date) ? { date: h.date } : {}) })
   }
   return out
 }
+
+/**
+ * 화면에 낼 확인사항 — 날짜가 지난 것은 뺀다(당일은 둔다). 날짜 없는 안내는 그대로.
+ *
+ * 공개본은 새 요약이 들어올 때만 다시 만들어진다. 만들 때 지난 일정을 빼도(`digest-to-public.mjs`)
+ * 다음 요약까지는 그대로라, 10/11 모임 두 건이 10/15 에도 「확정」 으로 남았다(2026-10-15).
+ * 그래서 화면이 같은 규칙으로 다시 본다. `today` 는 부르는 쪽이 넘긴다 — `isDone` 과 같다.
+ */
+export const shownHighlights = (list: readonly Highlight[], today: string): Highlight[] =>
+  list.filter((h) => !h.date || h.date >= today)
 
 export function parseDigest(raw: unknown): Digest | null {
   if (!raw || typeof raw !== 'object') return null
