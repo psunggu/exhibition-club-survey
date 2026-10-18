@@ -43,8 +43,8 @@ fail() {
   here="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
   if [ "$here" = "$BRANCH" ]; then
     git checkout -q main 2>&1 | while IFS= read -r l; do log "  $l"; done
-    if [ -n "$(git ls-remote --heads origin "$BRANCH" 2>/dev/null)" ]; then
-      log "브랜치 $BRANCH 는 원격에 있어(PR 열림) 남겨 두었다 — PR 을 보고 손으로 정리한다"
+    if [ -n "$(with_timeout 60 git ls-remote --heads origin "refs/heads/$BRANCH" 2>/dev/null)" ]; then
+      log "브랜치 $BRANCH 는 원격에 있어 남겨 두었다 — PR 이 열렸는지 보고 손으로 정리한다"
     else
       git branch -q -D "$BRANCH" 2>&1 | while IFS= read -r l; do log "  $l"; done
       log "브랜치 $BRANCH 를 지우고 main 으로 돌아왔다 — 다음 배치가 그대로 다시 시도한다"
@@ -157,12 +157,29 @@ MSG_FILE="${TMPDIR:-/tmp}/exhibition-club-movies-commit.txt"
 printf '보드 영화 순위를 %s 기준으로 갱신한다 (자동)\n' "$(date '+%-m월 %-d일')" > "$MSG_FILE"
 run git add -A || fail 'git add'
 run git -c user.name=psunggu -c user.email=psunggu@users.noreply.github.com commit -q -F "$MSG_FILE" || fail 'git commit'
-run git push -q -u origin "$BRANCH" || fail 'git push'
+if ! run git push -q -u origin "$BRANCH"; then
+  # 2026-10-17: 맥이 잠든 사이 push 가 1시간 반 매달리다 「cannot lock ref」 로 실패했는데, 원격에는
+  # 브랜치가 이 커밋으로 이미 있었다(먼저 닿은 쪽이 성공). PR 없이 끝나 순위가 그 주에 안 올라갔다.
+  # 원격 브랜치가 지금 커밋을 가리키면 push 는 된 것이다 — PR 단계로 간다.
+  # 깬 직후에는 네트워크가 늦게 붙는다 — 세 번까지 묻는다.
+  for TRY in 1 2 3; do
+    REMOTE_SHA="$(with_timeout 60 git ls-remote --heads origin "refs/heads/$BRANCH" 2>/dev/null | cut -f1)"
+    [ -n "$REMOTE_SHA" ] && break
+    [ "$TRY" -lt 3 ] && sleep 20
+  done
+  if [ -z "$REMOTE_SHA" ]; then
+    log "원격에 $BRANCH 가 없거나 원격에 닿지 못했다"; fail 'git push'
+  elif [ "$REMOTE_SHA" != "$(git rev-parse HEAD)" ]; then
+    log "원격 $BRANCH 가 다른 커밋(${REMOTE_SHA:0:7})을 가리킨다"; fail 'git push'
+  fi
+  log "push 는 실패로 끝났지만 원격 $BRANCH 가 이 커밋(${REMOTE_SHA:0:7})을 가리킨다 — 이어서 PR 을 연다"
+fi
 # PR 번호는 gh pr create 가 찍는 주소에서 바로 읽는다 — 10/7 에는 따로 묻다가 44분 만에 실패했다.
 # 뒤의 호출이 모두 이 PR 을 번호로 가리키게 한다 — 브랜치로 찾으면 머지 뒤에 못 찾을 수 있다.
 # 만들기 호출이 실패로 끝나도 서버에는 PR 이 생겼을 수 있어 브랜치로 한 번 찾는다.
-log '> with_timeout 120 gh pr create --fill --base main'
-CREATE_OUT="$(with_timeout 120 gh pr create --fill --base main 2>&1)"; CREATE_RC=$?
+# --head 를 적는다 — push 가 실패로 끝난 길에서는 추적 브랜치가 없어 gh 가 head 를 못 정한다.
+log "> with_timeout 120 gh pr create --fill --base main --head $BRANCH"
+CREATE_OUT="$(with_timeout 120 gh pr create --fill --base main --head "$BRANCH" 2>&1)"; CREATE_RC=$?
 while IFS= read -r l; do log "  $l"; done <<< "$CREATE_OUT"
 PR="$(printf '%s\n' "$CREATE_OUT" | sed -nE 's#.*/pull/([0-9]+).*#\1#p' | tail -1)"
 if [ -z "$PR" ]; then
