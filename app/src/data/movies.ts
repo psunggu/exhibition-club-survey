@@ -32,7 +32,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20261807',
     movieCode: '20261807',
     bookingRank: 1,
-    bookingRate: 37.4,
+    bookingRate: 37.6,
     title: '극장판 치이카와: 인어 섬의 비밀',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-30',
@@ -62,7 +62,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20231795',
     movieCode: '20231795',
     bookingRank: 3,
-    bookingRate: 5.9,
+    bookingRate: 5.8,
     title: '수능, 출제의 비밀',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-10-28',
@@ -77,7 +77,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20259894',
     movieCode: '20259894',
     bookingRank: 4,
-    bookingRate: 5.5,
+    bookingRate: 5.4,
     title: '최종면접',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-11-04',
@@ -122,7 +122,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20255033',
     movieCode: '20255033',
     bookingRank: 7,
-    bookingRate: 2.9,
+    bookingRate: 3,
     title: '암살자(들)',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-23',
@@ -152,7 +152,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20264498',
     movieCode: '20264498',
     bookingRank: 9,
-    bookingRate: 2.3,
+    bookingRate: 2.2,
     title: '하트 오브 비스트',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-10-28',
@@ -181,6 +181,6 @@ export const MOVIES: Movie[] = [
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.10.24 00:13'
+export const MOVIE_RANKING_UPDATED_AT = '2026.10.24 05:08'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
