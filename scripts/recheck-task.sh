@@ -6,8 +6,8 @@
 #        0 → 변화 없음. 여기서 끝낸다. AI 호출 없음.
 #        3 → 바뀐/처음 항목이 있다. logs/recheck-YYYYMMDD.md 에 본문이 실려 있다.
 #   2. (3일 때만) 헤드리스 `claude -p` 에 /recheck 스킬의 「견주기·보고」 절 + 자료 파일을 넣어
-#      표를 받아 logs/recheck-report-YYYYMMDD.md 에 쓴다. 저장소 전체를 읽지 않는다 —
-#      프롬프트 + 자료뿐이다. 자료가 너무 크면(MAX_CHARS) AI 를 부르지 않고 사람에게 넘긴다.
+#      표를 받아 logs/recheck-report-YYYYMMDD.md 에 쓴다. 도구를 모두 끄고 저장소 밖 빈 폴더에서
+#      돌린다 — 프롬프트 + 자료뿐이다. 자료가 너무 크면(MAX_CHARS) AI 를 부르지 않고 사람에게 넘긴다.
 #   3. 결과를 맥 알림으로 알린다(모달 창은 쓰지 않는다 — 배치가 영원히 기다린다).
 #      DB 는 고치지 않는다 — 보고서의 update 문은 사람이 붙여 넣는다.
 #
@@ -79,7 +79,7 @@ log '=== 공식 출처 재확인 시작 ==='
 # 이미 갱신돼, 바뀐 3건이 다음 주에 「변화 없음」 으로 묻힐 뻔했다.
 CACHE="$LOG_DIR/recheck-cache.json"
 CACHE_BEFORE="$(mktemp "${TMPDIR:-/tmp}/exhibition-club-recheck-cache.XXXXXX")" || fail '임시 파일을 만들지 못했다'
-trap 'save_state; rm -f "$CACHE_BEFORE"' EXIT
+trap 'save_state; rm -f "$CACHE_BEFORE"; [ -n "${AI_DIR:-}" ] && rm -rf "$AI_DIR"' EXIT
 HAD_CACHE=0
 [ -f "$CACHE" ] && cp -p "$CACHE" "$CACHE_BEFORE" && HAD_CACHE=1
 restore_cache() {
@@ -138,7 +138,11 @@ RULES="$(awk 'f || /^## 2\./ { f = 1; print }' "$SKILL")"
 # 9/28 보고서가 못 읽은 원인을 「WebFetch 권한이 없어」 로 잘못 적었다(실제는 렌더링해도 본문이 없는 페이지).
 # 배치에서는 그 문장을 빼고, 아래 머리말에 도구가 없다는 것과 원인을 적는 법을 밝힌다.
 RULES="$(printf '%s\n' "$RULES" | sed -E 's/ *필요하면 WebFetch[^.]*\.//')"
-PROMPT_FILE="${TMPDIR:-/tmp}/exhibition-club-recheck-prompt.txt"
+# 헤드리스 호출은 바깥 웹 글을 그대로 받는다 — 저장소 폴더에서 부르면 그 폴더의 설정(허용 규칙 · 훅)과
+# CLAUDE.md · 메모가 함께 실린다. 저장소 밖 빈 폴더에서, 도구를 모두 끄고(--tools "") MCP 없이
+# 사용자 설정만 읽게(--setting-sources user) 부른다. 표만 받으면 되니 잃는 것이 없다(2026-10-24).
+AI_DIR="$(mktemp -d "${TMPDIR:-/tmp}/exhibition-club-recheck-ai.XXXXXX")" || fail '임시 폴더를 만들지 못했다'
+PROMPT_FILE="$AI_DIR/prompt.txt"
 {
   echo '너는 동호회 사이트의 「공식 출처 재확인」 을 한다. 아래 규칙대로 **표 하나와 그 아래 SQL 블록만** 만든다. 설명·인사·요약 문장은 쓰지 않는다.'
   echo 'DB 나 파일을 고치지 않는다 — 사람이 붙여 넣을 update 한 줄만 적는다.'
@@ -152,7 +156,8 @@ PROMPT_FILE="${TMPDIR:-/tmp}/exhibition-club-recheck-prompt.txt"
 } > "$PROMPT_FILE"
 log "헤드리스 호출 — 모델 $MODEL, 프롬프트 $(wc -m < "$PROMPT_FILE" | tr -d ' ')자"
 
-AI_OUT="$(with_timeout "$AI_TIMEOUT" claude -p --model "$MODEL" --output-format text < "$PROMPT_FILE" 2>&1)"
+AI_OUT="$(cd "$AI_DIR" && with_timeout "$AI_TIMEOUT" claude -p --model "$MODEL" --output-format text \
+  --tools "" --strict-mcp-config --setting-sources user < "$PROMPT_FILE" 2>&1)"
 AI_RC=$?
 rm -f "$PROMPT_FILE"
 if [ "$AI_RC" -ne 0 ] || [ -z "$AI_OUT" ]; then
