@@ -63,7 +63,8 @@ const period = (s) => {
 async function sema() {
   const html = await get('https://sema.seoul.go.kr/kr/whatson/landing?whatChoice2=N&whatChoice3=N&whatChoice4=N&whatChoice5=N&whatsonMenuDivList=EX&whenType=ALL_DAY');
   const out = [];
-  for (const m of html.matchAll(/id="dv_(\d+)"[\s\S]*?<strong class="o_h1">([\s\S]*?)<\/strong>[\s\S]*?epEcPlaceNm[^>]*>([\s\S]*?)<\/span>[\s\S]*?<span class="o_h3">([\s\S]*?)<\/span>/g)) {
+  // 제목 칸은 2026-10 무렵 `class="o_h1 s_title"` 로 바뀌었다 — 예전 `class="o_h1"` 만 잡던 규칙이 몇 주째 0건이었다
+  for (const m of html.matchAll(/id="dv_(\d+)"[\s\S]*?<strong class="o_h1[^"]*">([\s\S]*?)<\/strong>[\s\S]*?epEcPlaceNm[^>]*>([\s\S]*?)<\/span>[\s\S]*?<span class="o_h3">([\s\S]*?)<\/span>/g)) {
     const { start, end } = period(clean(m[4]));
     out.push({ source: '서울시립미술관', id: `sema-${m[1]}`, title: clean(m[2]), venue: clean(m[3]) || '서울시립미술관', start, end,
       url: `https://sema.seoul.go.kr/kr/whatson/exhibition/detail?exNo=${m[1]}` });
@@ -115,25 +116,39 @@ async function museum() {
   return out;
 }
 
+// 목록 페이지는 이제 빈 틀만 내주고 전시는 AjaxExhibitionList.do 가 JSON 으로 준다(2026-11 확인 —
+// 예전처럼 progressList.do 의 exhId 링크를 긁으면 0건이다). exhFlag 1 = 현재, 2 = 예정, 한 쪽에 8건씩.
 async function mmca() {
-  const html = await get('https://www.mmca.go.kr/exhibitions/progressList.do');
   const out = [];
   const seen = new Set();
-  for (const m of html.matchAll(/exhId=(\d+)[^>]*>([\s\S]{0,400}?)<\/a>/g)) {
-    if (seen.has(m[1])) continue;
-    seen.add(m[1]);
-    const title = clean(/alt="([^"]+)"/.exec(m[2])?.[1] ?? m[2]);
-    if (!title) continue;
-    const { start, end } = period(clean(m[2]));
-    out.push({ source: '국립현대미술관', id: `mmca-${m[1]}`, title, venue: '국립현대미술관', start, end,
-      url: `https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=${m[1]}` });
+  for (const flag of ['1', '2']) {
+    for (let page = 1; page <= 6; page++) {
+      const body = await get(`https://www.mmca.go.kr/exhibitions/AjaxExhibitionList.do?exhFlag=${flag}&searchExhPlaCd=&searchExhCd=&sort=1&pageIndex=${page}`,
+        { 'x-requested-with': 'XMLHttpRequest', referer: 'https://www.mmca.go.kr/exhibitions/progressList.do' });
+      const data = JSON.parse(body);
+      const list = Array.isArray(data.exhibitionsList) ? data.exhibitionsList : [];
+      for (const e of list) {
+        const id = String(e.exhId ?? '');
+        if (!/^\d+$/.test(id) || seen.has(id)) continue;
+        seen.add(id);
+        const place = clean(e.exhPlaNm);
+        if (place.includes('청주')) continue;   // 서울 · 과천 · 덕수궁 · 창동만 — 청주관은 동아리 권역 밖
+        const title = clean(e.exhTitle);
+        if (!title) continue;
+        out.push({ source: '국립현대미술관', id: `mmca-${id}`, title, venue: `국립현대미술관 ${place}`.trim(),
+          start: isoDate(e.exhStDt) || '', end: isoDate(e.exhEdDt) || '',
+          url: `https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=${id}` });
+      }
+      const pages = Number(data.paginationInfo?.totalPageCount ?? 1);
+      if (!list.length || page >= pages) break;
+    }
   }
   return out;
 }
 
 /* ── 보드에 이미 있는 것 ─────────────────────────────── */
 
-const norm = (s) => String(s ?? '').replace(/[《》〈〉「」『』()\[\]:：·\-–—,.'"“”‘’!?\s]/g, '').toLowerCase();
+const norm = (s) => String(s ?? '').replace(/[《》〈〉«»<>「」『』()\[\]:：·\-–—,.'"“”‘’!?\s]/g, '').toLowerCase();
 async function boardTitles() {
   const cfg = fs.readFileSync(path.join(ROOT, 'app/public/config.js'), 'utf8');
   const url = /supabaseUrl:\s*"([^"]+)"/.exec(cfg)?.[1];
@@ -142,9 +157,11 @@ async function boardTitles() {
   if (!res.ok) throw new Error(`events 응답 ${res.status}`);
   return (await res.json()).map((r) => norm(r.title)).filter(Boolean);
 }
+// 짧은 제목(「서도호」 처럼 4자 미만)은 다른 제목에 우연히 들어가기 쉬워 포함 관계로는 안 본다 — 완전히 같을 때만
 const onBoard = (titles, t) => {
   const n = norm(t);
-  return n.length >= 4 && titles.some((b) => b.includes(n) || n.includes(b));
+  if (!n) return false;
+  return titles.includes(n) || (n.length >= 4 && titles.some((b) => b.includes(n) || n.includes(b)));
 };
 
 /* ── 실행 ────────────────────────────────────────────── */
