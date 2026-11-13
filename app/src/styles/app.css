@@ -1161,3 +1161,107 @@ main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
   background: var(--ink);
   color: var(--card);
 }
+
+/* 영화 · 공연 줄의 정보 칸 (2026-11-13) — 개요 · 개봉 · 출연 / 기간 · 장소 (네이버 영화 칸의 꼴). 이름표는 --ink-2, 값은 --ink. */
+.rank-facts {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+}
+
+.rank-facts > div {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.rank-facts dt {
+  flex: 0 0 auto;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.rank-facts dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* 스틸컷 — 「자세히 보기」 안. 닫혀 있으면 그림을 받지 않는다(lazy). 가로로 넘치지 않게 격자로. */
+.movie-stills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.movie-stills img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--sunken);
+}
+
+/* 공연 줄의 바깥 링크 둘 — KOPIS 공연 정보 · 카카오맵. 「자세히 보기」 가 없는 줄이라 여기에 둔다. */
+.rank-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.rank-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;               /* 누르는 크기 */
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 0 12px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.rank-links a:hover {
+  background: var(--sunken);
+}
+
+.rank-links a:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* 갈래가 일곱이라 좁은 화면에서는 한 줄을 옆으로 민다(예매처 갈래 줄처럼) — 다섯째 칸이 반쯤 걸려 더 있음을 알린다.
+   페이지는 가로로 밀리지 않는다(줄 안에서만). 넓은 화면(761px~)에서는 일곱 칸이 한 줄에 다 들어온다. */
+.content-type-tabs {
+  justify-content: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.content-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.content-type-tab {
+  flex: 0 0 76px;
+  scroll-snap-align: start;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (min-width: 761px) {
+  .content-type-tab {
+    flex: 1 1 0;
+    font-size: 14px;
+  }
+}

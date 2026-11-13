@@ -91,6 +91,21 @@ bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 �
 
 ## 3. 문화 콘텐츠 보드 — `#/`
 
+### 공연 예매 순위 — 뮤지컬 · 콘서트 · 클래식 · 무용 · 연극 (주 1회, `/rank`)
+
+KOPIS(공연예술통합전산망, kopis.or.kr) 예매상황판의 **주간 · 총티켓예매액 순 · 지역별(서울 · 경기 · 인천)** 순위를 그대로 싣는다(`app/src/data/performances.ts`). 거르지 않는다.
+
+- 지금은 `/rank` 스킬이 내장 브라우저로 KOPIS 화면의 목록 열다섯(갈래 5 × 지역 3)을 읽어 글 파일로 적고, 아래 명령이 자료 파일로 바꾼다. 꼴이 어긋나면 쓰지 않고 멈춘다.
+
+```
+node scripts/shows-from-kopis.mjs <목록.txt> --from 2026-11-06 --to 2026-11-12 --published '2026.11.13 17:33'
+npm run build && npm run screens:save && npm run check:quick
+```
+
+- 포스터는 KOPIS 의 줄인 그림 주소(256px)를 부르고 실패하면 원본으로 넘어간다. 호스트 `https://kopis.or.kr` 가 CSP `img-src` 에 있다.
+- 갱신이 밀리면 화면의 「KOPIS 주간 예매 순위 · ○/○~○/○」 가 그대로 낡은 날짜를 말하고, 끝난 공연은 저절로 빠진다. 틀린 정보가 나가지는 않는다.
+- **자동화하려면 KOPIS Open API 인증키가 필요하다**(운영자가 kopis.or.kr 에서 무료 발급). 받으면 영화 배치처럼 맥 launchd 로 옮긴다 — 키는 저장소 · 번들에 넣지 않는다(`docs/BACKLOG.md`).
+
 ### 영화 예매 순위 (수요일·토요일 05시)
 
 **맥의 launchd 가 한다** (`com.psunggu.exhibition-movies` → `scripts/update-movies-task.sh`). 손으로 돌릴 일이 생기면:

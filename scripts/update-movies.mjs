@@ -34,6 +34,9 @@ const APP_TSX = path.join(ROOT, 'app/src/App.tsx');
 
 const LIST_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do';
 const DETAIL_URL = (code) => `https://www.kobis.or.kr/kobis/mobile/mast/mvie/searchMovieDtl.do?movieCd=${code}`;
+/** 포스터 · 스틸컷은 PC 상세(POST)에만 있다 — 모바일 상세에는 그림이 없다(2026-11-13 실측). */
+const DESK_DETAIL_URL = 'https://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do';
+const KOBIS_ORIGIN = 'https://www.kobis.or.kr';
 const UA = 'Mozilla/5.0 (exhibition-club-survey board updater)';
 
 const args = process.argv.slice(2);
@@ -173,7 +176,34 @@ async function fetchDetail(code) {
   const director = between('감독', ['출연', '스틸컷', '시놉시스', '영화사'])
     .map((s) => s.replace(/,$/, '').trim()).filter(Boolean).join(', ');
   const synopsis = between('시놉시스', ['영화사', '배급사', '수입사', '목록']).join(' ');
-  return { genre, runtime, ageRating, director, summary: firstSentences(synopsis) };
+  // 출연 — 앞의 셋만(네이버 영화 칸처럼 줄 하나). 이름 끝의 쉼표는 KOBIS 가 붙인 것이다.
+  const cast = between('출연', ['스틸컷', '시놉시스', '영화사', '배급사', '수입사', '목록'])
+    .map((s) => s.replace(/,$/, '').trim()).filter(Boolean).slice(0, 3).join(', ');
+  return { genre, runtime, ageRating, director, cast, summary: firstSentences(synopsis) };
+}
+
+/**
+ * 대표 포스터와 스틸컷 넷 — KOBIS PC 상세의 썸네일 주소를 그대로 쓴다(복사해 두지 않는다).
+ * 포스터는 상단 `<a class="fl thumb">` 안의 `thumb_x192`(가로 192px, 가볍다),
+ * 스틸컷은 「스틸컷」 칸(`ovf steelcut`)의 `thumb_x132`. 못 읽어도 배치를 멈추지 않는다 — 그림만 빈다.
+ */
+async function fetchImages(code) {
+  try {
+    const html = await fetchText(DESK_DETAIL_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: `code=${code}&sType=&titleYN=Y&etcParam=&isOuterReq=false`,
+    });
+    const abs = (p) => (p ? `${KOBIS_ORIGIN}${p.replace(/\s+/g, '')}` : '');
+    const poster = /class="fl thumb"[\s\S]{0,600}?<img[^>]+src="(\/common\/mast\/movie\/[^"]+\/thumb_x192\/[^"]+)"/.exec(html)?.[1] ?? '';
+    const stillPart = html.slice(Math.max(0, html.indexOf('ovf steelcut')));
+    const stills = [...new Set([...stillPart.matchAll(/\/common\/mast\/movie\/[^"']+\/thumb_x132\/[^"']+/g)].map((m) => m[0]))]
+      .slice(0, 4).map(abs);
+    return { posterUrl: abs(poster), stills };
+  } catch (err) {
+    console.error(`  그림을 못 읽었다(${code}) — ${String(err.message).slice(0, 80)}`);
+    return { posterUrl: '', stills: [] };
+  }
 }
 
 /* ── 쓰기 ────────────────────────────────────────────── */
@@ -193,8 +223,11 @@ function renderMoviesTs(movies) {
     genre: ${q(m.genre)},
     ageRating: ${q(m.ageRating)},
     director: ${q(m.director)},
+    cast: ${q(m.cast)},
     summary: ${q(m.summary)},
-    infoUrl: ${q(DETAIL_URL(m.code))}
+    infoUrl: ${q(DETAIL_URL(m.code))},
+    posterUrl: ${q(m.posterUrl)},
+    stills: [${m.stills.map(q).join(', ')}]
   }`).join(',\n');
 
   return `/**
@@ -204,7 +237,7 @@ function renderMoviesTs(movies) {
  *   node scripts/update-movies.mjs
  *
  * **이건 events 가 아니다.** 전시·공연과 모양이 완전히 다르다 —
- * 예매율 · 상영시간 · 관람등급 · 감독. KOBIS 예매율 순위이고
+ * 예매율 · 상영시간 · 관람등급 · 감독 · 출연 · 포스터 · 스틸컷. KOBIS 예매율 순위이고
  * \`public.events\` 에 넣을 것이 아니다.
  *
  * 거르지 않는다. 순위대로 싣고 볼지 말지는 회원이 판단한다 (AGENTS.md).
@@ -222,8 +255,14 @@ export type Movie = {
   genre: string
   ageRating: string
   director: string
+  /** 출연 — 앞의 셋. 없으면 빈 값 */
+  cast: string
   summary: string
   infoUrl: string
+  /** 대표 포스터 썸네일(KOBIS, 가로 192px). 없으면 빈 값 — 화면은 포스터 칸을 비운다 */
+  posterUrl: string
+  /** 스틸컷 썸네일 넷까지(KOBIS). 「자세히 보기」 안에 */
+  stills: string[]
 }
 
 export const MOVIES: Movie[] = [
@@ -250,12 +289,14 @@ const ranking = await fetchRanking();
 const movies = [];
 for (const r of ranking) {
   const d = await fetchDetail(r.code);
-  movies.push({ ...r, ...d });
+  const img = await fetchImages(r.code);
+  movies.push({ ...r, ...d, ...img });
   const warn = [];
   if (!d.genre) warn.push('장르 없음');
   if (!d.runtime) warn.push('상영시간 없음');
   if (!d.director) warn.push('감독 없음');
   if (!d.summary) warn.push('시놉시스 없음');
+  if (!img.posterUrl) warn.push('포스터 없음');
   console.log(`  ${String(r.rank).padStart(2)}  ${r.rate.toFixed(1).padStart(5)}%  ${r.title}`
     + `  (${r.releaseDate || '개봉일 미상'})${warn.length ? '  ⚠ ' + warn.join(' · ') : ''}`);
 }

@@ -12,7 +12,7 @@
 
 | 화면 | 코드 | 데이터의 정본 |
 |---|---|---|
-| 보드 `#/` | `Board.tsx` | 전시·공연 `public.events`(운영자가 Supabase 에서) · 영화 `data/movies.ts`(`npm run board:movies`) · 소식 한 줄 `events` 의 `type='소식'`(운영자 화면) |
+| 보드 `#/` | `Board.tsx` | 전시 `public.events`(운영자가 Supabase 에서) · 공연 순위 `data/performances.ts`(KOPIS, `/rank`) · 영화 `data/movies.ts`(`npm run board:movies`) · 소식 한 줄 `events` 의 `type='소식'`(운영자 화면) |
 | 일정 `#/calendar` | `Calendar.tsx` | 모임 `data/meetups.ts` · 정리봇 `app/public/weekly-digest.public.json`(`npm run digest:public`) |
 | 설문 `#/survey/*` | `Survey.tsx` · `SurveyAdmin.tsx` | 회원 탭 넷(exhibition · datetime · meal · club) + `google`(화면만, `data/googleSurveys.ts`). DB 값에는 `etc` 도 있다(탭 없음). **투표는 톡방에서 올리고 결과도 톡방에서**(`config.js` 의 `selfSurvey: false`). 회원 화면 탭은 꺼진 설정에서 셋(관람 장소 · 식사·Tea · 구글 설문, `visibleTabs()`)이고 제목은 「… 투표 결과」(`categoryHeading()`). 운영자 화면 `#/survey/admin` 은 보드 소식 · 구글 설문 분석만 — 설문 만들기·고치기와 회원 명부는 같은 스위치로 꺼 두었다(2026-09-10) |
 | 정적 | `survey-result.html` · `meal-review.html` | 회원용 설문 결과 · 운영진 식당 검토. `copyLiveAssets` 목록에 있다 |
@@ -34,7 +34,7 @@
 
 ## 검사
 
-- `npm run check:quick` — 빌드 + 정적 검사(약 15초). `npm run check` — 여기에 Playwright 화면 검사(접근성 · 설문 · 사이트 띠 · 운영자 · 화면 대조)까지(약 2분).
+- `npm run check:quick` — 빌드 + 정적 검사(약 15초, 보드 자료 ↔ CSP 정합성 `validate-board-data` 포함). `npm run check` — 여기에 Playwright 화면 검사(접근성 · 설문 · 사이트 띠 · 운영자 · 화면 대조)까지(약 2분).
 - `screens:check` 는 화면이 **의도치 않게** 바뀌었는지 본다. 화면을 일부러 바꿨으면 `screens:save`. 영화 · 모임처럼 **콘텐츠가 바뀌어도 화면 숫자가 달라지므로** save 가 따라온다(`board:movies` 는 스스로 한다).
 - 검사기가 못 잡는 것: 375px 가로 스크롤 · 캐시 버스팅 `?v=` 누락 · CSP 위반(브라우저 콘솔에만 뜬다) · React 가 만드는 iframe(`frame-src` 없음) · 달력 「오늘」 마커.
 - `validate-survey-admin-ui` 는 `.admin-card` · `.note*` 같은 클래스 이름을 차례로 짚어 「몇 번째 설문」 을 고른다. **새 구역은 새 이름**(`.admin-news-card` · `.admin-guide*` · `.gdoc-*`)을 쓰고, 모양이 같으면 CSS 선택자만 더한다.
@@ -81,6 +81,8 @@
 
 - **영화 순위는 거르지 않는다**(KOBIS 그대로). **전시 · 공연은 추천 순위(`recommended_rank`)가 있는 것만 한 목록에 15개까지**(2026-11-13 운영자 요청) — 순위는 관람평 · 예매 순위 · 공식 조회수로 매기고 근거를 `rating_reason` 에 적는다(`/rank`, 취향으로 빼지 않는다). 순위 없는 전시는 검색에만 뜨고, 그 지역에 순위가 하나도 없으면 날짜 순으로 채운다. **동아리가 함께 본 전시는 모임 날짜가 지나면 빠진다** — 모임 줄의 `eventIds`(`visitedEventIds`).
 - 카드는 순위 줄(포스터 · 순위 · 제목 · 장소 · 기간 · 근거, 나머지는 「자세히 보기」). 포스터는 `events.image_url`(공식 페이지의 이미지 주소를 그대로) — 그 호스트가 `app/index.html` CSP 의 `img-src` 에 있어야 뜬다. 새 기관 포스터를 쓰면 호스트를 더하고, 이 PR 은 사람이 본 뒤 머지한다(보안).
+- 갈래 탭은 일곱(2026-11-14) — 전체 · 전시/행사 · 뮤지컬 · 콘서트 · 클래식/무용 · 연극 · 영화(`CONTENT_TYPES`). 좁은 화면에서는 갈래 줄만 옆으로 민다(페이지는 안 밀린다). **뮤지컬 · 콘서트 · 클래식 · 무용 · 연극은 KOPIS 주간 예매 순위를 그대로**(`data/performances.ts`, 지역별 열 편 · 무용 다섯 편) — 영화처럼 거르지 않고, 끝난 공연만 화면에서 빠진다. 「전체」 에는 갈래마다 위의 셋. 손으로 고치지 않는다 — `/rank` 가 KOPIS 화면에서 읽어 `scripts/shows-from-kopis.mjs` 로 쓴다. `events` 의 옛 `공연` 행은 「클래식/무용」 탭 맨 위 「추천 음악공연」 으로 뜬다.
+- 영화 · 공연 포스터도 남의 주소를 그대로 부른다 — 영화는 KOBIS 썸네일(`posterUrl` · `stills`), 공연은 KOPIS 의 줄인 그림(256px, 실패하면 원본). **그림 호스트 ↔ CSP `img-src` ↔ 순위 꼴은 `validate-board-data` 가 본다**(`--live` 를 붙이면 DB `image_url` 까지). `img-src` 에 `https:` 같은 넓은 출처를 적지 않는다.
 - 영화는 `npm run board:movies`(KOBIS → `movies.ts` → 빌드 → 화면 기준 저장). 「최종 정보 업데이트」 는 `App.tsx` 의 `SITE_INFO_UPDATED_ON` **한 곳** — 스크립트가 올린다. 전시만 갈았으면 손으로 올린다. 자료를 안 갈았으면 날짜만 올리지 않는다.
 - 전시 문구(주로 `events.recommendation`)에 모임 확정 · 집결을 적었으면 **모임이 끝난 뒤 과거형으로 바꾼다** — 날짜 규칙이 DB 문구에는 닿지 않는다. `/ops` 가 글 칸 넷(`recommendation` · `summary` · `notes` · `discount`)에서 찾아 주고 절차는 `docs/OPERATIONS.md` 5번.
 - 소식 한 줄: 고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳(보드와 운영자 화면이 같이 쓴다). `events` 원본에서 뽑는다(`filterEvents` 를 거치지 않는다). JSX 는 `.exhibition-page` 안. 기한은 며칠(1~180)로. 쓰기는 `news_admin_save` · `news_admin_delete` 만이고 **`type = '소식'` 조건을 빼면 보드 전체가 사정권이다.**
@@ -98,7 +100,7 @@
 
 작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-## 다음 작업 후보 (2026-11-13)
+## 다음 작업 후보 (2026-11-14)
 
 한 줄씩만 적는다 — 자세한 내용 · 확인 방법 · 진행 기록은 `docs/BACKLOG.md`(세션마다 읽히지 않는다). 후보를 바꾸면 두 곳을 함께 고친다.
 
@@ -110,6 +112,7 @@
 6. **넓은 화면의 보드 폭** — 보류(휴대폰에서는 안 드러남).
 7. **정리봇 공개본에 달력의 확정 모임 채우기** — 10/24 정기관람 · 11/14 산책이 「확정」 에서 빠져 세 번 손으로 넣었다(#261 · #262 · #268). 10/24~10/30(#273)부터 11/8~11/13(#285)까지 네 주는 정리봇이 스스로 실었지만 시각 · 집결은 세 번 다 손으로 채웠다(#278 · #281 · #285). `digest-to-public.mjs` 가 앞으로의 `MEETUPS` 로 빠진 모임과 시각 · 집결을 채울지 결정.
 8. **보드 포스터 무게** — 국립현대미술관 · 서울시립미술관 포스터는 한 장 0.2~1MB(공식 주소를 그대로 부른다). 카톡 인앱에서 느린지 보고, 작은 그림 주소를 찾을지 · 그대로 둘지 결정(`loading="lazy"` 라 보이는 것만 받는다).
+9. **공연 순위 자동 갱신 — KOPIS 인증키(사람)** — 지금은 `/rank` 때 세션이 KOPIS 화면에서 읽어 옮긴다(주 1회, 15개 목록). kopis.or.kr 에서 Open API 인증키(무료)를 받으면 영화처럼 맥 배치로 바꾼다 — 키는 저장소에 넣지 않는다.
 
 ## AI 에이전트 역할
 
