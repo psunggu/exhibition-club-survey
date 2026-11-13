@@ -596,6 +596,21 @@ export const MEETUPS: Meetup[] = withDefaults([
       + '16:30부터 저녁 식사와 친목 교류는 희망자만 함께합니다.',
     // 지도는 걷는 길 전체가 아니라 모이는 곳으로 — venue 글 전체로는 검색이 안 잡힌다
     mapUrl: 'https://map.kakao.com/?q=%EB%8F%99%EB%8C%80%EB%AC%B8%EC%97%AD%201%EB%B2%88%EC%B6%9C%EA%B5%AC',
+  },
+  {
+    id: 'november-movie',
+    date: '2026-11-28',
+    chip: '영화 15시',
+    kind: 'conf',
+    regular: false,
+    venueKind: '영화',
+    title: '11월 정기 영화관람',
+    time: '오후 3시~6시',
+    venue: '교회 양봉관 3층',
+    description: '교회 양봉관 3층에서 함께 영화를 봅니다. 상영 후보는 《추락의 해부》 · 《퍼펙트 데이즈》 · 《미드나잇 인 파리》입니다.',
+    note: '상영작과 참여는 톡방 투표로 정합니다. 끝나는 시각(오후 6시)은 예상입니다.',
+    // 교회 안 장소라 지도 링크를 달지 않는다(킥오프 모임과 같다)
+    mapUrl: '',
   }
 ])
 
