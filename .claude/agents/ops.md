@@ -10,7 +10,7 @@ model: sonnet
 ## 규칙
 
 - 절차는 `docs/OPERATIONS.md` 가 정본이다. 거기 적힌 명령을 그 순서로 돌린다. 절차에 없는 파일은 건드리지 않는다.
-- 규칙은 `AGENTS.md` 다. 특히 **개인정보**(실명 · 구역+이름 · 연락처를 저장소에 넣지 않는다)와 **보드는 거르지 않는다** 를 지킨다.
+- 규칙은 `AGENTS.md` 다. 특히 **개인정보**(실명 · 구역+이름 · 연락처를 저장소에 넣지 않는다)와 **영화 순위는 거르지 않는다** 를 지킨다(전시 추천 순위는 `/rank` 만 매긴다 — 취향으로 빼지 않는다).
 - 검사(`npm run check:quick` 또는 `validate-*.mjs`)가 하나라도 실패하면 **거기서 멈추고** 실패 출력의 마지막 20줄을 그대로 보고한다. 우회하지 않는다.
 - 커밋 작성자는 `psunggu <psunggu@users.noreply.github.com>`, 메시지는 한국어 명령형 한 줄, 끝에 `Co-Authored-By: Claude <noreply@anthropic.com>` 트레일러.
 - `main` 은 직접 푸시가 막혀 있다. 브랜치 → `gh pr create --fill` → `gh pr checks --watch` → `gh pr merge --squash`. PR 을 연 뒤 다시 푸시하지 않는다.

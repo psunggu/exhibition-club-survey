@@ -11,7 +11,7 @@ description: 보드 전시 추천 순위를 다시 매긴다 — 관람평 · �
 
 ## 2. 지표 — 있는 것만, 지어내지 않는다
 
-- **NOL**(내장 브라우저만 — curl · Node 는 403): 전시 주간 순위 `https://nol.yanolja.com/ticket/display/ranking/exhibition?period=W&category=EXHIBITION`, 상품 페이지 `nol.yanolja.com/ticket/products/<번호>` 의 JSON-LD `aggregateRating`(평점 · 리뷰 수)와 「전시/행사 주간 N위」 · 「찜 N명」. 상품 페이지는 같은 출처 `fetch` 로 여러 개를 한 번에 읽는다.
+- **NOL**: 내장 브라우저에서 사람이 보듯 몇 쪽만 연다 — 전시 주간 순위 `https://nol.yanolja.com/ticket/display/ranking/exhibition?period=W&category=EXHIBITION` 한 쪽과, 보드 후보의 상품 페이지 `nol.yanolja.com/ticket/products/<번호>`(한 주 열 쪽 안팎). 상품 페이지에는 평점 · 리뷰 수 · 「전시/행사 주간 N위」 · 「찜 N명」 이 보인다. 스크립트 · curl 로 긁지 않고, 막히거나 확인 화면이 뜨면 우회하지 않고 그 전시는 「NOL 지표 없음」 으로 둔다.
 - **국립현대미술관**: `https://www.mmca.go.kr/exhibitions/AjaxExhibitionList.do?exhFlag=1&pageIndex=1`(헤더 `x-requested-with: XMLHttpRequest`)의 `exhReadCnt`(조회수) · `exhThumbImg`(포스터). 조회수는 쌓인 값이라 개막 전 · 막 연 전시는 「개막 전 조회수」 로 적는다.
 - 둘 다 없으면 매체 소개 · 「국내 첫」 같은 사실 한 줄. 이것만 있는 전시는 지표가 있는 것 뒤에 둔다.
 
@@ -25,4 +25,16 @@ description: 보드 전시 추천 순위를 다시 매긴다 — 관람평 · �
 
 ## 5. 넘기기
 
-SQL 한 묶음을 채팅에 통째로: 먼저 `update public.events set recommended_rank = null where recommended_rank is not null;`, 이어 고른 것마다 `update public.events set recommended_rank = N, rating = '5', rating_reason = '…', image_url = '…' where id = '<id>';`(작은따옴표는 두 번). 순위는 사실 확인이 아니라 `updated_at` · `verification_note` 는 건드리지 않는다. 실행했다고 하면 공개 API 로 순위 · 근거 · 이미지가 들어갔는지 본다. 열다섯 줄 + 코드 블록을 넘기지 않는다.
+SQL 한 묶음을 채팅에 통째로. **`events` 에는 update 마다 `updated_at` 을 now() 로 찍는 트리거(`events_set_updated_at`)가 있다** — 순위만 바꿔도 「정보 기준일」 과 주간 소식의 「이번 주 고친 안내」 가 순위 날짜로 바뀐다(2026-11-13 에 41행이 그렇게 됐다). 그래서 트리거를 끄고 한 묶음(transaction)으로:
+
+```sql
+begin;
+alter table public.events disable trigger events_set_updated_at;
+update public.events set recommended_rank = null where recommended_rank is not null;
+update public.events set recommended_rank = 1, rating = '5', rating_reason = '…', image_url = '…' where id = '<id>';
+-- … 고른 것마다(작은따옴표는 두 번)
+alter table public.events enable trigger events_set_updated_at;
+commit;
+```
+
+중간에 실패하면 끈 것까지 함께 되돌아간다. `verification_note` 도 건드리지 않는다 — 순위는 사실 확인이 아니다. 실행했다고 하면 공개 API 로 순위 · 근거 · 이미지가 들어갔는지 본다. 열다섯 줄 + 코드 블록을 넘기지 않는다.
