@@ -82,6 +82,13 @@ export type Meetup = {
    */
   surveyIds?: string[]
   /**
+   * 이 모임에서 함께 본 보드 전시 — `public.events` 의 id.
+   * 모임 날짜가 지나면(`isDone`) 보드에서 빠진다. 이미 본 것을 다시 추천하지 않는다
+   * (2026-11-13 운영자 요청 「동아리에서 관람을 한 것은 제외」). 비우면 아무것도 빼지 않는다.
+   * id~status 사이에 적지 않는다(validate-meetup-taxonomy 가 그 줄들을 연속으로 읽는다).
+   */
+  eventIds?: string[]
+  /**
    * 카드 「모이는 곳」. 비우면 time 의 「… 집결」 토막에서 짓는다(lib/meetupFacts.ts).
    * time 에 집결이 없을 때만 적는다. 여기에만 있는 사실을 적지 않는다 — 팝업은 이 칸을 안 보여 준다.
    */
@@ -428,6 +435,7 @@ export const MEETUPS: Meetup[] = withDefaults([
     status: '공식 정기관람',
     tone: 'official',
     title: '9월 정기관람 · 《서도호》',
+    eventIds: ['0e717256-4c9c-48de-96d0-485e789d9ea2'],
     dateLabel: '2026. 9. 19. (토)',
     /**
      * 토요일이라 저녁 관람이 가능하다. 서울관은 **수·토만 21시까지** 열고
@@ -565,6 +573,7 @@ export const MEETUPS: Meetup[] = withDefaults([
     regular: true,
     venueKind: '전시',
     title: '10월 정기관람 · 《고종의 밀사 헐버트, 조선을 담다》',
+    eventIds: ['6b9252e9-5bce-4ab6-b1af-3efce63f0be7'],
     time: '오후 3시~5시',
     venue: '함께봄 한옥 · 서울 종로구 효자로7길 10',
     description: '헐버트 박사가 찍고 모은 조선과 대한제국 시대 사진을 보는 전시입니다. '
@@ -667,6 +676,11 @@ export const COMPLETED_VISIBLE_DAYS = 3
 export function isDone(m: Meetup, today: string): boolean {
   if (m.kind === 'dead' || m.kind === 'tent') return false
   return m.kind === 'done' || m.date < today
+}
+
+/** 지난 모임에서 함께 본 보드 전시의 id — 보드가 목록에서 뺀다(`eventIds`). */
+export function visitedEventIds(today: string): Set<string> {
+  return new Set(MEETUPS.filter((m) => isDone(m, today)).flatMap((m) => m.eventIds ?? []))
 }
 
 /**

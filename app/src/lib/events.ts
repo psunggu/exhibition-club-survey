@@ -45,12 +45,20 @@ export type Event = {
   sourceLabel: string | null
   verificationNote: string | null
   mainUrl: string | null
+  /**
+   * 포스터 · 대표 이미지 — 공식 페이지에 있는 그 주소를 그대로 부른다(복사해 두지 않는다).
+   * `image_url` 열이 생기기 전에는 null 이다(select=* 라 열이 없어도 400 이 안 난다).
+   * https 만 받는다. 뜨려면 그 호스트가 index.html CSP 의 img-src 에 있어야 한다.
+   */
+  imageUrl: string | null
 }
 
 type Row = Record<string, unknown>
 
 const str = (v: unknown): string | null =>
   v === null || v === undefined || v === '' ? null : String(v)
+const httpsOnly = (v: string | null): string | null =>
+  v && /^https:\/\/[^\s"'<>]+$/.test(v) ? v : null
 const num = (v: unknown): number | null =>
   v === null || v === undefined || v === '' ? null : Number(v)
 
@@ -91,6 +99,7 @@ export function toEvent(row: Row): Event {
     sourceLabel: str(row.source_label),
     verificationNote: str(row.verification_note),
     mainUrl: str(row.main_url),
+    imageUrl: httpsOnly(str(row.image_url)),
   }
 }
 

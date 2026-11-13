@@ -30,7 +30,7 @@
 - **`main` 은 직접 푸시가 막혀 있다**(ruleset). 모든 변경은 브랜치 + PR 이다. **콘텐츠만 바꾸는 커밋**(영화 · 모임 · 정리봇 · 문구)은 `npm run check:quick` 뒤 PR 을 열고 CI 가 통과하면 스스로 머지한다 — 리뷰를 기다리지 않는다. **화면 · 기능 변경**은 `npm run check` 까지. Supabase · 개인정보 · 인증 · 보안은 반드시 사람이 본 뒤 머지한다.
 - Pages 배포 원천은 GitHub Actions 다(2026-09-08). `gh-pages` 브랜치는 없다.
 - 영화 순위는 소유자 맥의 launchd(`scripts/update-movies-task.sh`, 등록 `scripts/install-launchd.sh movies`)가 PR 로 올려 머지한다. GitHub 러너는 KOBIS 에 못 붙는다. ruleset 에 우회 대상을 만들지 않는다.
-- 정기 갱신용 스킬 `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout` 와 서브에이전트 `ops` 는 `.claude/skills/` · `.claude/agents/` 에 있고 추적한다.
+- 정기 갱신용 스킬 `/ops` · `/digest` · `/meetup` · `/recheck` · `/scout` · `/rank` 와 서브에이전트 `ops` 는 `.claude/skills/` · `.claude/agents/` 에 있고 추적한다.
 
 ## 검사
 
@@ -45,7 +45,7 @@
 
 - **CSP 엄격.** 외부 CDN · 인라인 `<style>` · `style=` · 인라인 `<script>` 금지. 되는 것: React `style={{}}`, SVG 표현 속성(`<rect width fill>`). 안 되는 것: `style="…"` · `setAttribute('style')` · `<style>` 주입 · iframe. meta 의 `frame-ancestors` 는 브라우저가 무시한다 — 막고 있다고 믿지 말 것.
 - 캐시 버스팅 `?v=YYYYMMDD-n`. `app/public/config.js` 를 고치면 `app/index.html` 의 `config.js?v=` 도 올린다(2026-09-27 부터 붙인다). 모바일 우선(375px 가로 스크롤 없음). `word-break: keep-all` 은 `body` 에 있다.
-- **색 · 모서리 · 그림자 · 서체는 `app/public/tokens.css` 한 곳.** 다른 CSS 는 `var(--…)` 만. 팔레트 열다섯(중립 8 · 브랜드 3 · 상태 4), 새 색 금지. 색은 **상태**만 말한다 — 갈래는 글자로. `--warn` 은 확인 필요, `--stop` 은 마감 · 오류 전용.
+- **색 · 모서리 · 그림자 · 서체는 `app/public/tokens.css` 한 곳.** 다른 CSS 는 `var(--…)` 만. 팔레트 열다섯(중립 8 · 브랜드 3 · 상태 4), 새 색 금지. 그림 파일(포스터 · 보드 갈래 아이콘 `app/src/assets/board-icons/`)의 색은 예외 — 콘텐츠로 본다(2026-11-13). 색은 **상태**만 말한다 — 갈래는 글자로. `--warn` 은 확인 필요, `--stop` 은 마감 · 오류 전용.
 - 여백은 4 · 8 · 12 · 16 · 22 · 32 눈금 — **새로 쓰는 값에만.** 기존 값은 손대지 않는다.
 - 서체는 `app/public/fonts/` 의 Pretendard 서브셋(OFL). `@font-face` 는 `tokens.css`.
 
@@ -71,7 +71,7 @@
 ## 일정 — `data/meetups.ts`
 
 - **정본은 `MEETUPS` 다.** 이 문서에 일정을 베껴 적지 않는다.
-- 새 항목은 **필수 필드만** 적는다(`id · date · chip · kind · regular · venueKind · title · time · venue · description`). 날짜 표기 · 상태 딱지 · 지도 링크 · 완료 처리 · 완료 줄 · 달력 격자 · 연도 묶음은 `withDefaults` 와 `isDone` · `monthsToShow` 가 낸다. **`kind` 를 손으로 옮기지 않는다.** 참석 인원처럼 자료에 없는 것을 남길 때만 `completedRow`.
+- 새 항목은 **필수 필드만** 적는다(`id · date · chip · kind · regular · venueKind · title · time · venue · description`). 보드 전시를 함께 보는 모임이면 `eventIds`(보드 `events.id`)도 — 날짜가 지나면 그 전시가 보드에서 빠진다. 날짜 표기 · 상태 딱지 · 지도 링크 · 완료 처리 · 완료 줄 · 달력 격자 · 연도 묶음은 `withDefaults` 와 `isDone` · `monthsToShow` 가 낸다. **`kind` 를 손으로 옮기지 않는다.** 참석 인원처럼 자료에 없는 것을 남길 때만 `completedRow`.
 - 「다가오는 확정 모임」 카드는 핵심 줄만 싣는다(`lib/meetupFacts.ts`) — 언제(`time` 의 첫 토막) · 어디(`venue` 의 첫 토막) · 모이는 곳(`time` 의 「… 집결」 토막) · 꼭 확인(`note` 의 첫 문장). 전문은 「자세히 보기」 팝업에 있다. 그래서 `time` 은 「오후 3시~6시 · 시청역 1번 출구 오후 2시 50분 집결」 꼴로, `note` 는 가장 중요한 문장을 맨 앞에 적는다. 예매 필수 · 마감 · 요금처럼 행동을 바꾸는 조건은 선택 필드 `must`(30자 안쪽, note 를 줄인 말)에, `meet` 는 `time` 에 집결이 없을 때만.
 - `TENTATIVE` 는 **날짜를 맞추는 중**인 것만. 각자 보기로 한 것은 어디에도 두지 않는다 — 보드가 그 자리다.
 - `monthsToShow` · `pastMonthsToShow` · `isDone` 은 `today` 를 인자로 받는다. 함수 안에서 `new Date()` 를 부르지 않는다 — 검사가 `frozen-clock.mjs` 로 시계를 묶는다.
@@ -79,7 +79,8 @@
 
 ## 보드
 
-- **거르지 않는다.** 영화 순위 · 전시 목록에서 작품을 빼지 않는다. 볼지 말지는 회원이 판단한다.
+- **영화 순위는 거르지 않는다**(KOBIS 그대로). **전시 · 공연은 추천 순위(`recommended_rank`)가 있는 것만 한 목록에 15개까지**(2026-11-13 운영자 요청) — 순위는 관람평 · 예매 순위 · 공식 조회수로 매기고 근거를 `rating_reason` 에 적는다(`/rank`, 취향으로 빼지 않는다). 순위 없는 전시는 검색에만 뜨고, 그 지역에 순위가 하나도 없으면 날짜 순으로 채운다. **동아리가 함께 본 전시는 모임 날짜가 지나면 빠진다** — 모임 줄의 `eventIds`(`visitedEventIds`).
+- 카드는 순위 줄(포스터 · 순위 · 제목 · 장소 · 기간 · 근거, 나머지는 「자세히 보기」). 포스터는 `events.image_url`(공식 페이지의 이미지 주소를 그대로) — 그 호스트가 `app/index.html` CSP 의 `img-src` 에 있어야 뜬다. 새 기관 포스터를 쓰면 호스트를 더하고, 이 PR 은 사람이 본 뒤 머지한다(보안).
 - 영화는 `npm run board:movies`(KOBIS → `movies.ts` → 빌드 → 화면 기준 저장). 「최종 정보 업데이트」 는 `App.tsx` 의 `SITE_INFO_UPDATED_ON` **한 곳** — 스크립트가 올린다. 전시만 갈았으면 손으로 올린다. 자료를 안 갈았으면 날짜만 올리지 않는다.
 - 전시 문구(주로 `events.recommendation`)에 모임 확정 · 집결을 적었으면 **모임이 끝난 뒤 과거형으로 바꾼다** — 날짜 규칙이 DB 문구에는 닿지 않는다. `/ops` 가 글 칸 넷(`recommendation` · `summary` · `notes` · `discount`)에서 찾아 주고 절차는 `docs/OPERATIONS.md` 5번.
 - 소식 한 줄: 고르는 규칙은 `lib/news.ts` 의 `pickNews` 한 곳(보드와 운영자 화면이 같이 쓴다). `events` 원본에서 뽑는다(`filterEvents` 를 거치지 않는다). JSX 는 `.exhibition-page` 안. 기한은 며칠(1~180)로. 쓰기는 `news_admin_save` · `news_admin_delete` 만이고 **`type = '소식'` 조건을 빼면 보드 전체가 사정권이다.**
