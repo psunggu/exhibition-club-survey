@@ -38,7 +38,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20268264',
     movieCode: '20268264',
     bookingRank: 1,
-    bookingRate: 14.6,
+    bookingRate: 14.5,
     title: '임영웅 | 아임 히어로 더 스타디움 2',
     releaseStatus: '개봉 예정',
     releaseDate: '2026-11-18',
@@ -56,7 +56,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20261807',
     movieCode: '20261807',
     bookingRank: 2,
-    bookingRate: 11.4,
+    bookingRate: 11.3,
     title: '극장판 치이카와: 인어 섬의 비밀',
     releaseStatus: '상영 중',
     releaseDate: '2026-09-30',
@@ -200,7 +200,7 @@ export const MOVIES: Movie[] = [
     id: 'movie-20267697',
     movieCode: '20267697',
     bookingRank: 10,
-    bookingRate: 3.6,
+    bookingRate: 3.7,
     title: '명탐정 코난: 30호 살인 사건',
     releaseStatus: '상영 중',
     releaseDate: '2026-11-05',
@@ -217,6 +217,6 @@ export const MOVIES: Movie[] = [
 ]
 
 /** 순위 기준 시각. 화면에 그대로 보여 준다 — 언제 것인지 모르면 못 믿는다. */
-export const MOVIE_RANKING_UPDATED_AT = '2026.11.14 02:36'
+export const MOVIE_RANKING_UPDATED_AT = '2026.11.14 05:09'
 export const MOVIE_RANKING_SOURCE_URL = 'https://www.kobis.or.kr/kobis/business/stat/boxs/findRealTicketList.do?allMovieYn=Y&dmlMode=search&loadEnd=0'
 export const MOVIE_BOOKING_URL = 'https://cgv.co.kr/cnm/cgvChart/movieChart'
