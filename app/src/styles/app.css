@@ -919,3 +919,245 @@ main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
+
+/* 보드 순위 줄 (2026-11-13) — 왼쪽 포스터, 오른쪽 순위 · 제목 · 장소 · 기간과 관람료 · 근거.
+   운영자 요청으로 예매처 순위 목록의 짜임을 빌렸다. 색은 tokens.css 안에서만, 갈래는 글자로.
+   legacy 의 .exhibition-card 규칙을 지우지 않고 .rank-row 로 덮는다(클래스 둘이라 이긴다) —
+   검사기와 화면 대조가 .exhibition-card · .exhibition-rank 이름을 잡는다.
+   여백은 4·8·12·16 눈금. 글줄 높이는 단위 없는 값만 — 큰 글씨에서 겹치지 않게. */
+.exhibition-card.rank-row {
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.exhibition-card.rank-row.no-poster {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rank-poster {
+  width: 88px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--sunken);
+}
+
+.rank-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rank-poster.is-empty {
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rank-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.rank-row .exhibition-rank {
+  display: inline-block;
+  width: auto;
+  height: auto;
+  margin-right: 4px;
+  border-radius: 0;
+  background: none;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.rank-row h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.rank-row .exhibition-venue {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rank-meta {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.rank-metric {
+  margin: 8px 0 0;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.rank-more {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+}
+
+.rank-more > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;               /* 누르는 크기 */
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  list-style: none;
+}
+
+.rank-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.rank-more > summary::after {
+  content: '＋';
+  margin-left: auto;
+  color: var(--ink-2);
+}
+
+.rank-more[open] > summary::after {
+  content: '－';
+}
+
+.rank-more > summary:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.rank-more .exhibition-summary {
+  margin-top: 0;
+}
+
+@media (min-width: 761px) {
+  .exhibition-card.rank-row {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 12px 16px;
+  }
+
+  .rank-poster {
+    width: 112px;
+  }
+
+  .rank-row h3 {
+    font-size: 19px;
+  }
+}
+
+/* 갈래 탭 — 동그란 칸 안의 색 그림 + 아래 글자 (2026-11-13, 예매처 갈래 줄의 짜임).
+   그림 파일(app/src/assets/board-icons)의 색은 팔레트 밖이다 — 포스터처럼 콘텐츠로 본다.
+   여기 CSS 의 색은 tokens 만. 고른 탭은 동그라미 테두리(--green)와 글자 밑줄로 말한다. */
+.content-type-tabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  padding: 0;
+}
+
+.content-type-tab {
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 4px 0 8px;
+  background: none;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.content-type-tab:hover {
+  background: none;
+  color: var(--ink);
+}
+
+.content-type-tab.is-active {
+  border-bottom-color: var(--ink);
+  background: none;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.content-type-tab-icon.tab-icon-img {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.content-type-tab-icon.tab-icon-img img {
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+.content-type-tab.is-active .content-type-tab-icon.tab-icon-img {
+  border: 2px solid var(--green);
+  background: var(--green-tint);
+}
+
+/* 지역 — 알약 모양 칩 (전체 · 전시 · 행사 줄처럼). 고른 것은 진한 바탕에 흰 글자. */
+.area-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: auto;
+  margin: 0 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+}
+
+.area-tab {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--sunken);
+  color: var(--ink-2);
+}
+
+.area-tab:hover {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.area-tab:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.area-tab.is-active {
+  background: var(--ink);
+  color: var(--card);
+}

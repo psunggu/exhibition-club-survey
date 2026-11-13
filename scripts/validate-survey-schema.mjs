@@ -670,6 +670,7 @@ const NOT_CHECKED = new Map([
   ['202608300003a_culture_news_row.sql', '보드 소식 한 줄을 넣는 자료 (함수·표 없음)'],
   ['202608300003a_meal_place_survey.sql', '자료만 넣는다 (함수·표 없음)'],
   ['202609050001a_meal_survey_extend.sql', '설문 한 건의 closes_at 만 민다 (함수·표 없음)'],
+  ['202611130001a_events_image_url.sql', '보드 표에 nullable 열 하나(포스터 주소) — 권한 · 정책은 그대로, validate-supabase-readonly 가 본다'],
 ]);
 
 const unseen = ALL_SQL.filter((f) => !READ_FILES.has(f) && !NOT_CHECKED.has(f));

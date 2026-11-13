@@ -9,6 +9,11 @@ import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
 } from './data/movies'
+import { visitedEventIds } from './data/meetups'
+import iconAll from './assets/board-icons/all.svg'
+import iconExhibition from './assets/board-icons/exhibition.svg'
+import iconMusic from './assets/board-icons/music.svg'
+import iconMovie from './assets/board-icons/movie.svg'
 
 /**
  * 옛 화면의 마크업을 **그대로** 쓴다 — `.exhibition-card` · `.area-tab` 계열.
@@ -18,8 +23,8 @@ import {
  * 여기서 같은 클래스 이름과 같은 구조를 낸다.
  *
  * 값을 만드는 함수들도 옛 app.js 와 같은 규칙이다 —
- * formatStars · formatDateRange · formatSharePrice · formatDocentTime ·
- * formatParkingInfo · formatRatingSource.
+ * formatDateRange · formatSharePrice · formatDocentTime · formatParkingInfo.
+ * 카드 모양은 2026-11-13 에 순위 줄로 바꿨다(EventCard 주석).
  */
 
 const today = () => new Date().toISOString().slice(0, 10)
@@ -50,13 +55,6 @@ const season = (now: Date = new Date()) => {
   const m = Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', month: 'numeric' })
     .format(now))
   return `${m}~${(m % 12) + 1}월`
-}
-
-/** 별점의 노란 별을 숫자로 바꾼다. 뜻은 그대로다 — 5점 만점의 몇 점.
-    색으로 말하던 것을 글자가 말하게 하는 것이라 aria-label 은 손대지 않는다. */
-const stars = (rating: string | null) => {
-  const v = Math.max(0, Math.min(5, Number(rating ?? 0)))
-  return v ? `${v.toFixed(1)} / 5` : '-'
 }
 
 /**
@@ -94,8 +92,6 @@ const docentTime = (e: Event) => {
 const parkingInfo = (e: Event) =>
   e.parkingFee ? `${e.parking ?? '확인 필요'} · ${e.parkingFee}` : (e.parking ?? '확인 필요')
 
-const ratingSource = (e: Event) =>
-  `별점 출처: ${e.sourceLabel ?? '공식 정보'} · 기준: ${e.ratingReason ?? '모임 추천 기준'}`
 
 /** 옛 `formatKoreanDate`(app.js:1647) 그대로 — "2026. 7. 29." */
 const koDate = (v: string | null) => {
@@ -156,33 +152,94 @@ function InlineInfo({ e }: { e: Event }) {
   )
 }
 
-function EventCard({ e, index }: { e: Event; index: number }) {
+/** 보드 목록 하나에 거는 수 — 운영자 요청 「15개 이내로 추천」(2026-11-13). */
+const MAX_PER_LIST = 15
+
+/**
+ * 목록에 걸 것을 고른다. `items` 는 이미 추천 순위 → 시작일 순이다(`byRecommendedThenDate`).
+ *
+ * - 검색 중에는 찾은 것을 모두 — 찾는 사람은 그 전시를 보러 왔다.
+ * - 그 밖에는 **추천 순위(`recommended_rank`)가 있는 것만.** 순위는 관람평 · 예매 순위 ·
+ *   공식 조회수로 매긴다(`/rank`). 근거는 `rating_reason` 에 적어 줄 맨 아래에 보인다.
+ * - 그 지역 · 갈래에 순위가 하나도 없으면 예전처럼 날짜 순으로 — 탭이 텅 비지 않게.
+ */
+function pickForList(items: Event[], search: string): { picked: Event[]; ranked: boolean } {
+  const ranked = items.filter((e) => e.recommendedRank != null)
+  const useRanked = !search && ranked.length > 0
+  return { picked: (useRanked ? ranked : items).slice(0, MAX_PER_LIST), ranked: useRanked }
+}
+
+/** '2026-11-29' → '11/29' — 줄 머리 딱지용 */
+const md = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`
+const daysUntil = (from: string, to: string) =>
+  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000)
+
+/**
+ * 줄 머리 딱지 — 개막 전 · 곧 끝남 · 무료. **색이 아니라 글자로 말한다**(AGENTS 「색은 상태만」)
+ * — 모두 같은 중립 칩이다.
+ */
+function rowBadges(e: Event, now: string): string[] {
+  const out: string[] = []
+  if (e.startDate && e.startDate > now) out.push(`${md(e.startDate)} 개막`)
+  else if (e.endDate && daysUntil(now, e.endDate) <= 14) out.push(`${md(e.endDate)}까지`)
+  if (price(e) === '무료') out.push('무료')
+  return out
+}
+
+/**
+ * 포스터 칸. 이미지는 공식 페이지의 주소를 그대로 부르고, 못 불러오면 빈 칸으로 둔다.
+ * `alt=""` — 바로 옆에 제목이 있어 스크린리더가 같은 말을 두 번 읽지 않게 한다.
+ * `no-referrer` — 우리 주소를 남의 서버에 흘리지 않고, 외부 링크 막기에도 덜 걸린다.
+ */
+function Poster({ e }: { e: Event }) {
+  const [broken, setBroken] = useState(false)
+  if (!e.imageUrl || broken) {
+    return <div className="rank-poster is-empty" aria-hidden="true">{kindLabel(e.type) ?? ''}</div>
+  }
   return (
-    <article className={`exhibition-card${e.type === '공연' ? ' performance-card' : ''}`}>
-      <div className="exhibition-rank">{index + 1}</div>
+    <div className="rank-poster">
+      <img src={e.imageUrl} alt="" loading="lazy" decoding="async"
+        referrerPolicy="no-referrer" onError={() => setBroken(true)} />
+    </div>
+  )
+}
+
+/**
+ * 순위 줄 하나 (2026-11-13) — 왼쪽 포스터, 오른쪽 순위 · 제목 · 장소 · 기간과 관람료 · 근거.
+ * 운영자 요청으로 예매처 순위 목록의 짜임을 빌렸다. 나머지(운영시간 · 할인 · 위치 · 도슨트 ·
+ * 주차 · 링크)는 「자세히 보기」 안에 둔다 — 열다섯 줄을 한눈에 훑게 하려는 것이다.
+ * `.exhibition-card` · `.exhibition-rank` · `h3` 이름은 그대로 둔다 — 검사기가 그 이름을 잡는다.
+ */
+function EventCard({ e, rank }: { e: Event; rank: number }) {
+  const badges = rowBadges(e, today())
+  const kind = e.type === '전시' || e.type === '공연' ? null : kindLabel(e.type)
+  return (
+    <article className={`exhibition-card rank-row${e.type === '공연' ? ' performance-card' : ''}`}>
+      <Poster e={e} />
       <div className="exhibition-body">
-        <div className="exhibition-head">
-          <div>
-            {kindLabel(e.type) && (
-              <div className="card-kind-line">
-                <span className="card-kind-chip">{kindLabel(e.type)}</span>
-              </div>
-            )}
-            <p className="exhibition-venue">
-              {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
-            </p>
-            <h3>{e.title}</h3>
-          </div>
-          <div className="rating-box">
-            <div className="stars" role="img" aria-label={`추천 별점 ${e.rating ?? '-'}점`}>{stars(e.rating)}</div>
-            <div className="rating-source">{ratingSource(e)}</div>
-          </div>
+        <div className="rank-line">
+          <span className="exhibition-rank">{rank}<span className="visually-hidden">위</span></span>
+          {kind && <span className="card-kind-chip">{kind}</span>}
+          {badges.map((b) => <span key={b} className="card-kind-chip">{b}</span>)}
         </div>
+        <h3>{e.title}</h3>
+        <p className="exhibition-venue">
+          {[e.region, e.venue || '장소 확인 필요'].filter(Boolean).join(' · ')}
+        </p>
+        {/* 관람료가 「성인 23,000원, 청소년 18,000원」 처럼 길면 첫 토막만 — 전문은 「자세히 보기」.
+            쉼표 뒤 빈칸으로 자른다(「23,000」 의 쉼표에서 자르면 「성인 23」 이 된다). */}
+        <p className="rank-meta">{`${dateRange(e)} · ${price(e).split(/,\s+/)[0]}`}</p>
+        {e.recommendedRank != null && e.ratingReason && (
+          <p className="rank-metric">{e.ratingReason}</p>
+        )}
+      </div>
 
-        <p className="exhibition-summary">{e.summary ?? e.recommendation ?? ''}</p>
-
+      <details className="rank-more">
+        <summary>자세히 보기</summary>
+        {(e.summary ?? e.recommendation) && (
+          <p className="exhibition-summary">{e.summary ?? e.recommendation}</p>
+        )}
         <dl className="exhibition-details">
-          <Detail label="관람일정" value={dateRange(e)} />
           <Detail label="운영시간" value={e.time ?? '확인 필요'} />
           <Detail label="관람료" value={price(e)} />
           <Detail label="카드·통신사 할인" value={e.discount ?? '확인 필요'} />
@@ -190,56 +247,44 @@ function EventCard({ e, index }: { e: Event; index: number }) {
           <Detail label={e.type === '공연' ? '공연 해설·도슨트' : '도슨트 운영시간'} value={docentTime(e)} />
           <Detail label="주차/주차료" value={parkingInfo(e)} />
         </dl>
-
-        {e.recommendation && <p className="exhibition-reason">{e.recommendation}</p>}
-
+        {e.summary && e.recommendation && <p className="exhibition-reason">{e.recommendation}</p>}
         <div className="exhibition-actions">
           <a className="button primary" href={kakaoMapUrl(e)} target="_blank" rel="noopener noreferrer">
             카카오맵
           </a>
           <InlineInfo e={e} />
         </div>
-      </div>
+      </details>
     </article>
   )
 }
 
-/** 옛 `renderMovieCard`(app.js:1604) 그대로다. 이식하며 예매율 박스와
- *  버튼 셋을 잃고 문구도 달라져 있었다. */
 function MovieCard({ m, area }: { m: Movie; area: string }) {
   const releaseDateLabel = m.releaseStatus.startsWith('재개봉') ? '재개봉일' : '개봉일'
   return (
-    <article className="exhibition-card movie-card">
-      <div className="exhibition-rank">{m.bookingRank}</div>
+    <article className="exhibition-card movie-card rank-row no-poster">
       <div className="exhibition-body">
-        <div className="exhibition-head">
-          <div>
-            <div className="card-kind-line">
-              <span className="card-kind-chip">{`영화 · ${m.releaseStatus} · 전국 예매 ${m.bookingRank}위`}</span>
-            </div>
-            <h3>{m.title}</h3>
-          </div>
-          <div className="movie-booking-box" aria-label={`KOBIS 예매율 ${m.bookingRate}퍼센트`}>
-            <strong>{m.bookingRate}%</strong>
-            <span>KOBIS 실시간 예매율</span>
-          </div>
+        <div className="rank-line">
+          <span className="exhibition-rank">{m.bookingRank}<span className="visually-hidden">위</span></span>
+          <span className="card-kind-chip">{m.releaseStatus}</span>
+          <span className="card-kind-chip">{m.ageRating}</span>
         </div>
+        <h3>{m.title}</h3>
+        <p className="exhibition-venue">{`${m.genre} · ${m.runtime}분`}</p>
+        <p className="rank-metric">{`KOBIS 실시간 예매율 ${m.bookingRate}% · 전국 ${m.bookingRank}위`}</p>
+      </div>
 
+      <details className="rank-more">
+        <summary>자세히 보기</summary>
         <p className="exhibition-summary">{m.summary}</p>
-
         <dl className="exhibition-details">
           <Detail label={releaseDateLabel} value={koDate(m.releaseDate)} />
-          <Detail label="러닝타임" value={`${m.runtime}분`} />
-          <Detail label="장르" value={m.genre} />
-          <Detail label="관람등급" value={m.ageRating} />
           <Detail label="감독" value={m.director} />
           <Detail label="상영관" value={`${area} 지역 영화관별 회차 확인`} />
         </dl>
-
         <p className="exhibition-reason">
           전국 실시간 예매 {m.bookingRank}위입니다. 예매율은 조회 시점에 따라 수시로 바뀝니다.
         </p>
-
         <div className="exhibition-actions">
           <a className="button primary" href={MOVIE_BOOKING_URL}
             target="_blank" rel="noopener noreferrer">영화관 예매</a>
@@ -248,7 +293,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
           <a className="button tertiary" href={theaterMapUrl(area)}
             target="_blank" rel="noopener noreferrer">주변 영화관</a>
         </div>
-      </div>
+      </details>
     </article>
   )
 }
@@ -304,8 +349,13 @@ function NewsLine({ e }: { e: Event }) {
   )
 }
 
+/**
+ * 갈래 탭의 그림 (2026-11-13) — 동그란 칸 안의 색 그림. 운영자 요청으로 예매처 갈래 줄의 짜임을 빌렸다.
+ * 그림 파일의 색은 팔레트 밖이다 — 포스터처럼 콘텐츠로 본다. CSS 의 색은 그대로 tokens 만 쓴다.
+ * 그림은 직접 그린 것이다(남의 아이콘을 가져오지 않는다).
+ */
 const TAB_ICON: Record<ContentType, string> = {
-  전체: 'tab-icon-all', 전시: 'tab-icon-exhibition', 공연: 'tab-icon-music', 영화: 'tab-icon-movie',
+  전체: iconAll, 전시: iconExhibition, 공연: iconMusic, 영화: iconMovie,
 }
 const TAB_LABEL: Record<ContentType, string> = {
   전체: '전체', 전시: '전시', 공연: '음악공연', 영화: '영화',
@@ -369,10 +419,13 @@ export function Board() {
     return () => ac.abort()
   }, [])
 
-  const list = useMemo(
-    () => (events ? filterEvents(events, { area, type, search, today: today() }) : []),
-    [events, area, type, search],
-  )
+  /** 지난 모임에서 함께 본 전시는 뺀다(`MEETUPS` 의 `eventIds`) — 검색에도 안 뜬다. */
+  const list = useMemo(() => {
+    if (!events) return []
+    const now = today()
+    const seen = visitedEventIds(now)
+    return filterEvents(events.filter((e) => !seen.has(e.id)), { area, type, search, today: now })
+  }, [events, area, type, search])
 
   /**
    * 소식은 **`list` 가 아니라 `events` 원본에서** 뽑는다.
@@ -390,12 +443,17 @@ export function Board() {
     }
     const shows = list.filter((e) => e.type === '전시')
     const gigs = list.filter((e) => e.type === '공연')
-    if (type === '전체' || type === '전시')
-      add('전시', '추천 전시', `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
-        shows.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
-    if (type === '전체' || type === '공연')
-      add('공연', '추천 음악공연', `공식 공연장 일정 페이지에서 고르는 ${area} ${season()} 공연 후보`,
-        gigs.slice(0, 10).map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+    const RANKED_NOTE = '관람평 · 예매 순위 · 공식 조회수로 매긴 순서 · 함께 본 전시는 뺐습니다'
+    if (type === '전체' || type === '전시') {
+      const { picked, ranked } = pickForList(shows, search)
+      add('전시', '추천 전시', ranked ? RANKED_NOTE : `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
+        picked.map((e, i) => <EventCard key={e.id} e={e} rank={i + 1} />))
+    }
+    if (type === '전체' || type === '공연') {
+      const { picked, ranked } = pickForList(gigs, search)
+      add('공연', '추천 음악공연', ranked ? RANKED_NOTE : `공식 공연장 일정 페이지에서 고르는 ${area} ${season()} 공연 후보`,
+        picked.map((e, i) => <EventCard key={e.id} e={e} rank={i + 1} />))
+    }
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
         `${MOVIE_RANKING_UPDATED_AT} KOBIS 전국 기준 · ${area} 영화관별 상영 회차 확인`,
@@ -406,7 +464,7 @@ export function Board() {
     const rest = list.filter((e) =>
       e.type !== '전시' && e.type !== '공연' && e.type !== '소식')
     if (type === '전체' && rest.length)
-      add('기타', '그 밖에', '', rest.map((e, i) => <EventCard key={e.id} e={e} index={i} />))
+      add('기타', '그 밖에', '', rest.slice(0, MAX_PER_LIST).map((e, i) => <EventCard key={e.id} e={e} rank={i + 1} />))
     return out
   }, [list, type, area, search])
 
@@ -427,15 +485,6 @@ export function Board() {
       <p className="visually-hidden" role="status" aria-live="polite">
         {`${TAB_LABEL[type]} · ${area} · ${groups.reduce((n, g) => n + g.nodes.length, 0)}건`}
       </p>
-      <nav className="area-tabs" role="tablist" aria-label="추천 지역 선택"
-        onKeyDown={tabKeys(AREAS, area, setArea)}>
-        {AREAS.map((a) => (
-          <button key={a} type="button" role="tab" data-area={a}
-            className={a === area ? 'area-tab is-active' : 'area-tab'}
-            aria-selected={a === area} onClick={() => setArea(a)}>{a}</button>
-        ))}
-      </nav>
-
       <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택"
         onKeyDown={tabKeys(CONTENT_TYPES, type, setType)}>
         {CONTENT_TYPES.map((t) => (
@@ -443,9 +492,20 @@ export function Board() {
             className={t === type ? 'content-type-tab is-active' : 'content-type-tab'}
             id={`tab-${t}`} aria-controls="recommendationPanel"
             aria-selected={t === type} onClick={() => setType(t)}>
-            <span className={`content-type-tab-icon ${TAB_ICON[t]}`} aria-hidden="true" />
+            <span className="content-type-tab-icon tab-icon-img" aria-hidden="true">
+              <img src={TAB_ICON[t]} alt="" width={36} height={36} />
+            </span>
             <span className="content-type-tab-label">{TAB_LABEL[t]}</span>
           </button>
+        ))}
+      </nav>
+
+      <nav className="area-tabs" role="tablist" aria-label="추천 지역 선택"
+        onKeyDown={tabKeys(AREAS, area, setArea)}>
+        {AREAS.map((a) => (
+          <button key={a} type="button" role="tab" data-area={a}
+            className={a === area ? 'area-tab is-active' : 'area-tab'}
+            aria-selected={a === area} onClick={() => setArea(a)}>{a}</button>
         ))}
       </nav>
 
@@ -472,7 +532,7 @@ export function Board() {
           <p className="result-count" id="recommendationHint">
             {type === '영화'
               ? '전국 예매 순위 · 선택 지역의 영화관 회차 확인'
-              : '지역과 유형을 차례로 선택하세요'}
+              : '갈래와 지역을 차례로 고르세요'}
           </p>
         </div>
         {/* 소식은 목록 **안**에 둔다. `.app-shell` 이 flex column 이고
