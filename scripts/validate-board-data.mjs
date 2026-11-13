@@ -44,16 +44,30 @@ const inCsp = (url, where) => {
 
 /* ── 영화 (KOBIS) ────────────────────────────────────── */
 const movies = read('app/src/data/movies.ts');
-const movieUrls = [...movies.matchAll(/(?:posterUrl: |stills: \[|, )'(https?:\/\/[^']+)'/g)].map((m) => m[1]);
+// 값을 스킴으로 미리 거르지 않는다 — `//host/…` · `/common/…` 같은 꼴도 여기서 걸려야 한다(빈 값만 건너뛴다)
+const posters = [...movies.matchAll(/posterUrl: '([^']*)'/g)].map((m) => m[1]);
+const stills = [...movies.matchAll(/stills: \[([^\]]*)\]/g)].flatMap((m) => [...m[1].matchAll(/'([^']*)'/g)].map((x) => x[1]));
+const movieUrls = [...posters, ...stills].filter(Boolean);
 for (const u of new Set(movieUrls)) inCsp(u, 'movies.ts');
 const ranks = [...movies.matchAll(/bookingRank: (\d+)/g)].map((m) => Number(m[1]));
 if (!ranks.length) fail('movies.ts: 영화가 한 편도 없다');
-if (ranks.some((r, i) => r !== i + 1)) fail(`movies.ts: 순위가 1부터 차례가 아니다 — ${ranks.join(',')}`);
+// KOBIS 는 동률에 같은 순위를 준다(1,2,2,4) — 그것은 받는다. 1로 시작 · 내려가지 않음 · 줄 번호를 넘지 않음만 본다
+// (넘으면 중간 줄을 못 읽고 건너뛴 것이다). 「1부터 차례」 로 재면 동률이 든 날 새벽 배치가 멈춘다(2026-11-14 리뷰).
+if (ranks[0] !== 1 || ranks.some((r, i) => r > i + 1 || (i > 0 && r < ranks[i - 1]))) fail(`movies.ts: 순위가 1로 시작해 내려가지 않고 이어져야 한다 — ${ranks.join(',')}`);
+if (posters.length !== ranks.length) fail(`movies.ts: 영화 ${ranks.length}편인데 posterUrl 칸이 ${posters.length}개`);
+if (ranks.length && !posters.some(Boolean)) fail('movies.ts: 포스터가 한 장도 없다 — KOBIS 상세 화면 구조가 바뀌었을 수 있다(update-movies.mjs 의 fetchImages)');
 
 /* ── 공연 (KOPIS) ────────────────────────────────────── */
 const shows = read('app/src/data/performances.ts');
 const kopis = /const KOPIS = '([^']+)'/.exec(shows)?.[1] ?? '';
 inCsp(`${kopis}/upload/pfmPoster/x.gif`, 'performances.ts(KOPIS)');
+// 주소를 짓는 세 함수가 모두 그 호스트에서 시작하는지, 파일에 다른 호스트가 적히지 않았는지
+for (const [name, head] of [['showPosterUrl', '/_next/image?url='], ['showPosterFallbackUrl', '/upload/pfmPoster/'], ['showInfoUrl', '/por/db/pblprfr/']]) {
+  if (!shows.includes(`export const ${name} = (s: Show) =>`) || !new RegExp(`${name} = \\(s: Show\\) =>\\s*\`\\$\\{KOPIS\\}${head.replace(/[/?]/g, '\\$&')}`).test(shows)) fail(`performances.ts: ${name} 가 \`\${KOPIS}${head}\` 로 시작하지 않는다`);
+}
+for (const m of shows.matchAll(/https?:\/\/[^\s'"`)]+/g)) {
+  if (!m[0].startsWith(`${kopis}/`) && m[0] !== kopis) fail(`performances.ts: KOPIS 가 아닌 주소가 적혀 있다 — ${m[0].slice(0, 60)}`);
+}
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 let showCount = 0;
 for (const area of shows.matchAll(/^ {2}(서울|경기|인천): \{\n([\s\S]*?)\n {2}\},/gm)) {

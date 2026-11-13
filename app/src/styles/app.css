@@ -1243,6 +1243,7 @@ main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
   justify-content: flex-start;
   gap: 0;
   overflow-x: auto;
+  overflow-y: hidden;             /* 탭의 margin-bottom:-1px 가 세로 1px 스크롤을 만들어 첫 세로 쓸기를 먹었다 */
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
@@ -1252,16 +1253,25 @@ main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
   display: none;
 }
 
+/* 칸 폭을 박지 않는다 — 글씨를 키우면(카톡 · 안드로이드 글자 크기) 이름이 옆 칸과 겹쳤다. 가장 좁을 때만 76px. */
 .content-type-tab {
-  flex: 0 0 76px;
+  flex: 0 0 auto;
+  min-width: 76px;
+  padding: 4px 4px 8px;
   scroll-snap-align: start;
   font-size: 13px;
   white-space: nowrap;
 }
 
+/* 초점 고리는 칸 안쪽에 — 줄이 스크롤 상자라 바깥 고리는 잘려 세로 줄만 남았다 */
+.content-type-tab:focus-visible {
+  outline-offset: -2px;
+}
+
 @media (min-width: 761px) {
   .content-type-tab {
     flex: 1 1 0;
+    min-width: 0;
     font-size: 14px;
   }
 }

@@ -112,7 +112,8 @@ async function fetchRanking() {
   const rowRe = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
   for (let m; (m = rowRe.exec(html)) !== null;) {
     const tr = m[1];
-    const code = /mstView\('movie','(\d+)'\)/.exec(tr)?.[1];
+    // 영화 코드에 글자가 든 것도 있다(`2022A432`) — 숫자만 받으면 그 줄을 통째로 건너뛴다
+    const code = /mstView\('movie','([0-9A-Za-z]+)'\)/.exec(tr)?.[1];
     if (!code) continue;
     const tds = [...tr.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((t) => t[1]);
     const rank = Number(tds[0]?.replace(/<[^>]+>/g, '').trim());
@@ -173,12 +174,14 @@ async function fetchDetail(code) {
   const runtime = Number(/(\d+)\s*분/.exec(after('상영시간'))?.[1] ?? 0);
   const ageRaw = after('관람등급').replace(/\s+/g, '');
   const ageRating = AGE_RATING[ageRaw] ?? after('관람등급');
+  // KOBIS 는 빈칸에 「해당정보없음」 을 적는다 — 이름으로 싣지 않는다
+  const known = (s) => s && s.replace(/\s/g, '') !== '해당정보없음';
   const director = between('감독', ['출연', '스틸컷', '시놉시스', '영화사'])
-    .map((s) => s.replace(/,$/, '').trim()).filter(Boolean).join(', ');
+    .map((s) => s.replace(/,$/, '').trim()).filter(known).join(', ');
   const synopsis = between('시놉시스', ['영화사', '배급사', '수입사', '목록']).join(' ');
   // 출연 — 앞의 셋만(네이버 영화 칸처럼 줄 하나). 이름 끝의 쉼표는 KOBIS 가 붙인 것이다.
   const cast = between('출연', ['스틸컷', '시놉시스', '영화사', '배급사', '수입사', '목록'])
-    .map((s) => s.replace(/,$/, '').trim()).filter(Boolean).slice(0, 3).join(', ');
+    .map((s) => s.replace(/,$/, '').trim()).filter(known).slice(0, 3).join(', ');
   return { genre, runtime, ageRating, director, cast, summary: firstSentences(synopsis) };
 }
 
@@ -204,6 +207,21 @@ async function fetchImages(code) {
     console.error(`  그림을 못 읽었다(${code}) — ${String(err.message).slice(0, 80)}`);
     return { posterUrl: '', stills: [] };
   }
+}
+
+/**
+ * 지난 자료(movies.ts)의 그림. KOBIS PC 상세만 느리거나 죽은 날에도 포스터가 통째로 비지 않게,
+ * 이번에 못 읽은 영화는 같은 영화 코드의 지난 그림을 이어 쓴다. KOBIS 주소가 아닌 값은 버린다.
+ */
+function previousImages() {
+  const map = new Map();
+  if (!fs.existsSync(MOVIES_TS)) return map;
+  const ok = (u) => u.startsWith(`${KOBIS_ORIGIN}/common/mast/movie/`);
+  for (const m of fs.readFileSync(MOVIES_TS, 'utf8').matchAll(/movieCode: '([0-9A-Za-z]+)'[\s\S]*?posterUrl: '([^']*)',\s*stills: \[([^\]]*)\]/g)) {
+    const stills = [...m[3].matchAll(/'([^']+)'/g)].map((x) => x[1]).filter(ok);
+    if (ok(m[2])) map.set(m[1], { posterUrl: m[2], stills });
+  }
+  return map;
 }
 
 /* ── 쓰기 ────────────────────────────────────────────── */
@@ -286,10 +304,13 @@ const writeKeepingEol = (file, body) => {
 
 console.log(`KOBIS 실시간 예매율 — 상위 ${TOP}편 · ${STAMP} 기준`);
 const ranking = await fetchRanking();
+const prevImages = previousImages();
+let reused = 0;
 const movies = [];
 for (const r of ranking) {
   const d = await fetchDetail(r.code);
-  const img = await fetchImages(r.code);
+  let img = await fetchImages(r.code);
+  if (!img.posterUrl && prevImages.has(r.code)) { img = prevImages.get(r.code); reused++; }
   movies.push({ ...r, ...d, ...img });
   const warn = [];
   if (!d.genre) warn.push('장르 없음');
@@ -300,6 +321,9 @@ for (const r of ranking) {
   console.log(`  ${String(r.rank).padStart(2)}  ${r.rate.toFixed(1).padStart(5)}%  ${r.title}`
     + `  (${r.releaseDate || '개봉일 미상'})${warn.length ? '  ⚠ ' + warn.join(' · ') : ''}`);
 }
+
+const noPoster = movies.filter((m) => !m.posterUrl).length;
+if (reused || noPoster) console.log(`  그림: 지난 것을 이어 쓴 영화 ${reused}편 · 포스터 없는 영화 ${noPoster}편`);
 
 if (dryRun) {
   console.log('\n--dry-run — 파일은 건드리지 않았다');

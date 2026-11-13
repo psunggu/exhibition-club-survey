@@ -34,7 +34,11 @@ import iconPlay from './assets/board-icons/play.svg'
  * 카드 모양은 2026-11-13 에 순위 줄로 바꿨다(EventCard 주석).
  */
 
-const today = () => new Date().toISOString().slice(0, 10)
+/**
+ * 오늘 — **서울 날짜**(YYYY-MM-DD). `toISOString()` 은 UTC 라 한국 시각 자정~오전 9시에 하루 전을 준다 —
+ * 어제 끝난 공연 · 전시가 아침까지 남았다(2026-11-14 리뷰). en-CA 는 YYYY-MM-DD 꼴을 낸다.
+ */
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
 
 /**
  * **예매 순위는 거르지 않는다 — 있는 그대로 보여 준다.**
@@ -406,6 +410,8 @@ const SHOW_TABS: Partial<Record<ContentType, ShowGenre[]>> = {
 /** 「전체」 에는 갈래마다 위의 셋만 — 전체 순위는 그 갈래 탭에 있다. */
 const SHOWS_IN_ALL = 3
 const SHOWS_IN_ALL_GENRES: ShowGenre[] = ['뮤지컬', '콘서트', '클래식', '연극']
+/** 검색할 때는 무용까지 — 「전체」 요약에서만 빼는 것이지 찾는 사람에게 숨길 것이 아니다. */
+const SHOW_GENRES_ALL: ShowGenre[] = ['뮤지컬', '콘서트', '클래식', '무용', '연극']
 
 function NewsLine({ e }: { e: Event }) {
   const href = e.mainUrl ?? e.infoUrl
@@ -567,7 +573,8 @@ export function Board() {
     const now = today()
     const q = search.trim().toLowerCase()
     const brief = type === '전체' && !q
-    for (const g of type === '전체' ? SHOWS_IN_ALL_GENRES : SHOW_TABS[type] ?? []) {
+    const genres = type === '전체' ? (q ? SHOW_GENRES_ALL : SHOWS_IN_ALL_GENRES) : SHOW_TABS[type] ?? []
+    for (const g of genres) {
       const rows = SHOWS[area][g]
         .filter((s) => s.end >= now && (!q || `${s.title} ${s.venue}`.toLowerCase().includes(q)))
         .slice(0, brief ? SHOWS_IN_ALL : 10)
