@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AREAS, CONTENT_TYPES, EventsUnavailable, fetchEvents, filterEvents,
   type Area, type ContentType, type Event,
@@ -9,11 +9,18 @@ import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
   type Movie,
 } from './data/movies'
+import {
+  SHOWS, SHOW_RANKING_PERIOD, showInfoUrl, showPosterFallbackUrl, showPosterUrl,
+  type Show, type ShowGenre,
+} from './data/performances'
 import { visitedEventIds } from './data/meetups'
 import iconAll from './assets/board-icons/all.svg'
 import iconExhibition from './assets/board-icons/exhibition.svg'
 import iconMusic from './assets/board-icons/music.svg'
 import iconMovie from './assets/board-icons/movie.svg'
+import iconMusical from './assets/board-icons/musical.svg'
+import iconClassic from './assets/board-icons/classic.svg'
+import iconPlay from './assets/board-icons/play.svg'
 
 /**
  * 옛 화면의 마크업을 **그대로** 쓴다 — `.exhibition-card` · `.area-tab` 계열.
@@ -27,7 +34,11 @@ import iconMovie from './assets/board-icons/movie.svg'
  * 카드 모양은 2026-11-13 에 순위 줄로 바꿨다(EventCard 주석).
  */
 
-const today = () => new Date().toISOString().slice(0, 10)
+/**
+ * 오늘 — **서울 날짜**(YYYY-MM-DD). `toISOString()` 은 UTC 라 한국 시각 자정~오전 9시에 하루 전을 준다 —
+ * 어제 끝난 공연 · 전시가 아침까지 남았다(2026-11-14 리뷰). en-CA 는 YYYY-MM-DD 꼴을 낸다.
+ */
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
 
 /**
  * **예매 순위는 거르지 않는다 — 있는 그대로 보여 준다.**
@@ -92,14 +103,6 @@ const docentTime = (e: Event) => {
 const parkingInfo = (e: Event) =>
   e.parkingFee ? `${e.parking ?? '확인 필요'} · ${e.parkingFee}` : (e.parking ?? '확인 필요')
 
-
-/** 옛 `formatKoreanDate`(app.js:1647) 그대로 — "2026. 7. 29." */
-const koDate = (v: string | null) => {
-  if (!v) return '확인 필요'
-  const [y, m, d] = v.split('-')
-  if (!y || !m || !d) return v
-  return `${y}. ${Number(m)}. ${Number(d)}.`
-}
 
 /** 옛 `movieTheaterMapUrl`(app.js:1654) 그대로 */
 const theaterMapUrl = (area: string) =>
@@ -178,10 +181,14 @@ const daysUntil = (from: string, to: string) =>
  * 줄 머리 딱지 — 개막 전 · 곧 끝남 · 무료. **색이 아니라 글자로 말한다**(AGENTS 「색은 상태만」)
  * — 모두 같은 중립 칩이다.
  */
+function dateBadges(start: string | null, end: string | null, now: string): string[] {
+  if (start && start > now) return [`${md(start)} 개막`]
+  if (end && daysUntil(now, end) <= 14) return [`${md(end)}까지`]
+  return []
+}
+
 function rowBadges(e: Event, now: string): string[] {
-  const out: string[] = []
-  if (e.startDate && e.startDate > now) out.push(`${md(e.startDate)} 개막`)
-  else if (e.endDate && daysUntil(now, e.endDate) <= 14) out.push(`${md(e.endDate)}까지`)
+  const out = dateBadges(e.startDate, e.endDate, now)
   if (price(e) === '무료') out.push('무료')
   return out
 }
@@ -259,10 +266,31 @@ function EventCard({ e, rank }: { e: Event; rank: number }) {
   )
 }
 
-function MovieCard({ m, area }: { m: Movie; area: string }) {
-  const releaseDateLabel = m.releaseStatus.startsWith('재개봉') ? '재개봉일' : '개봉일'
+/** '2026-11-05' → '2026.11.05.' — 네이버 영화 칸의 개봉일 꼴 */
+const dotDate = (v: string) => (/^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v.replace(/-/g, '.')}.` : v || '확인 필요')
+
+/** 영화 포스터 — KOBIS 썸네일 주소 그대로(가로 192px). 못 불러오면 빈 칸. */
+function MoviePoster({ m }: { m: Movie }) {
+  const [broken, setBroken] = useState(false)
+  if (!m.posterUrl || broken) return <div className="rank-poster is-empty" aria-hidden="true">영화</div>
   return (
-    <article className="exhibition-card movie-card rank-row no-poster">
+    <div className="rank-poster">
+      <img src={m.posterUrl} alt="" loading="lazy" decoding="async"
+        referrerPolicy="no-referrer" onError={() => setBroken(true)} />
+    </div>
+  )
+}
+
+/**
+ * 영화 순위 줄 (2026-11-13) — 포스터 · 순위 · 제목 · 개요/개봉/출연 · 예매율.
+ * 운영자 요청으로 네이버 영화 칸의 정보 꼴(개요 · 개봉 · 출연)을 빌렸다. 자료는 모두 KOBIS(update-movies.mjs).
+ * 평점은 싣지 않는다 — KOBIS 에 없고, 네이버 검색은 로봇 수집을 막는다(robots.txt Disallow /).
+ */
+function MovieCard({ m, area }: { m: Movie; area: string }) {
+  const releaseLabel = m.releaseStatus.startsWith('재개봉') ? '재개봉' : '개봉'
+  return (
+    <article className="exhibition-card movie-card rank-row">
+      <MoviePoster m={m} />
       <div className="exhibition-body">
         <div className="rank-line">
           <span className="exhibition-rank">{m.bookingRank}<span className="visually-hidden">위</span></span>
@@ -270,15 +298,25 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
           <span className="card-kind-chip">{m.ageRating}</span>
         </div>
         <h3>{m.title}</h3>
-        <p className="exhibition-venue">{`${m.genre} · ${m.runtime}분`}</p>
+        <dl className="rank-facts">
+          <div><dt>개요</dt><dd>{[m.genre, m.runtime ? `${m.runtime}분` : ''].filter(Boolean).join(' · ') || '확인 필요'}</dd></div>
+          <div><dt>{releaseLabel}</dt><dd>{dotDate(m.releaseDate)}</dd></div>
+          {m.cast && <div><dt>출연</dt><dd>{m.cast}</dd></div>}
+        </dl>
         <p className="rank-metric">{`KOBIS 실시간 예매율 ${m.bookingRate}% · 전국 ${m.bookingRank}위`}</p>
       </div>
 
       <details className="rank-more">
         <summary>자세히 보기</summary>
         <p className="exhibition-summary">{m.summary}</p>
+        {m.stills.length > 0 && (
+          <div className="movie-stills">
+            {m.stills.map((src) => (
+              <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+            ))}
+          </div>
+        )}
         <dl className="exhibition-details">
-          <Detail label={releaseDateLabel} value={koDate(m.releaseDate)} />
           <Detail label="감독" value={m.director} />
           <Detail label="상영관" value={`${area} 지역 영화관별 회차 확인`} />
         </dl>
@@ -298,6 +336,7 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
   )
 }
 
+
 /**
  * 소식 줄 — 문화예술 소식 하나를 목록 머리글 바로 아래에 건다.
  *
@@ -315,6 +354,65 @@ function MovieCard({ m, area }: { m: Movie; area: string }) {
  *
  * 갈래는 색이 아니라 글자가 말한다 — 카드와 같은 규칙이다.
  */
+/** 공연 포스터 — KOPIS 의 줄인 그림을 먼저, 못 받으면 원본, 그것도 안 되면 빈 칸. */
+function ShowPoster({ s }: { s: Show }) {
+  const [step, setStep] = useState(0)
+  if (step > 1) return <div className="rank-poster is-empty" aria-hidden="true">공연</div>
+  return (
+    <div className="rank-poster">
+      <img src={step === 0 ? showPosterUrl(s) : showPosterFallbackUrl(s)} alt="" loading="lazy" decoding="async"
+        referrerPolicy="no-referrer" onError={() => setStep((n) => n + 1)} />
+    </div>
+  )
+}
+
+/** '2026-12-22' → '2026.12.22' — 기간 한 줄에 두 날짜가 들어가게 끝점은 뺀다 */
+const dots = (iso: string) => iso.replace(/-/g, '.')
+
+/** 공연장 이름에서 KOPIS 가 붙인 꼬리(「[서울]」 · 「(구. …)」)를 떼고 지도에서 찾는다. */
+const venueMapUrl = (venue: string) =>
+  `https://map.kakao.com/?q=${encodeURIComponent(venue.replace(/\s*[[(].*$/, '') || venue)}`
+
+/**
+ * 공연 순위 줄 (2026-11-13) — 포스터 · 순위 · 제목 · 기간 · 장소 · KOPIS 주간 예매 순위.
+ * 자료는 KOPIS 예매상황판 한 곳이다(data/performances.ts). 관람료 · 출연 · 시간은 싣지 않는다 —
+ * 그 목록에 없는 것을 지어내지 않고, KOPIS 공연 정보(예매처 링크가 거기 있다)로 보낸다.
+ */
+function ShowCard({ s, now }: { s: Show; now: string }) {
+  const badges = dateBadges(s.start, s.end, now)
+  return (
+    <article className="exhibition-card show-card rank-row">
+      <ShowPoster s={s} />
+      <div className="exhibition-body">
+        <div className="rank-line">
+          <span className="exhibition-rank">{s.rank}<span className="visually-hidden">위</span></span>
+          {badges.map((b) => <span key={b} className="card-kind-chip">{b}</span>)}
+        </div>
+        <h3>{s.title}</h3>
+        <dl className="rank-facts">
+          <div><dt>기간</dt><dd>{s.start === s.end ? dots(s.start) : `${dots(s.start)} ~ ${dots(s.end)}`}</dd></div>
+          <div><dt>장소</dt><dd>{s.venue}</dd></div>
+        </dl>
+        <p className="rank-metric">{`KOPIS 주간 예매 ${s.rank}위`}</p>
+        <div className="rank-links">
+          <a href={showInfoUrl(s)} target="_blank" rel="noopener noreferrer">공연 정보</a>
+          <a href={venueMapUrl(s.venue)} target="_blank" rel="noopener noreferrer">카카오맵</a>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/** 공연 갈래 탭 ↔ KOPIS 갈래. 「클래식/무용」 탭은 두 순위를 차례로 싣는다. */
+const SHOW_TABS: Partial<Record<ContentType, ShowGenre[]>> = {
+  뮤지컬: ['뮤지컬'], 콘서트: ['콘서트'], 클래식: ['클래식', '무용'], 연극: ['연극'],
+}
+/** 「전체」 에는 갈래마다 위의 셋만 — 전체 순위는 그 갈래 탭에 있다. */
+const SHOWS_IN_ALL = 3
+const SHOWS_IN_ALL_GENRES: ShowGenre[] = ['뮤지컬', '콘서트', '클래식', '연극']
+/** 검색할 때는 무용까지 — 「전체」 요약에서만 빼는 것이지 찾는 사람에게 숨길 것이 아니다. */
+const SHOW_GENRES_ALL: ShowGenre[] = ['뮤지컬', '콘서트', '클래식', '무용', '연극']
+
 function NewsLine({ e }: { e: Event }) {
   const href = e.mainUrl ?? e.infoUrl
   if (!href) return null
@@ -355,10 +453,12 @@ function NewsLine({ e }: { e: Event }) {
  * 그림은 직접 그린 것이다(남의 아이콘을 가져오지 않는다).
  */
 const TAB_ICON: Record<ContentType, string> = {
-  전체: iconAll, 전시: iconExhibition, 공연: iconMusic, 영화: iconMovie,
+  전체: iconAll, 전시: iconExhibition, 뮤지컬: iconMusical, 콘서트: iconMusic,
+  클래식: iconClassic, 연극: iconPlay, 영화: iconMovie,
 }
 const TAB_LABEL: Record<ContentType, string> = {
-  전체: '전체', 전시: '전시', 공연: '음악공연', 영화: '영화',
+  전체: '전체', 전시: '전시/행사', 뮤지컬: '뮤지컬', 콘서트: '콘서트',
+  클래식: '클래식/무용', 연극: '연극', 영화: '영화',
 }
 
 
@@ -408,6 +508,19 @@ export function Board() {
 
   useEffect(() => { writeEntry('board', { area, type, search }) }, [area, type, search])
 
+  /**
+   * 갈래 줄은 좁은 화면에서 옆으로 민다(일곱 칸). 고른 칸이 가려져 있으면 가운데로 데려온다.
+   * `scrollIntoView` 를 쓰지 않는다 — 세로로도 움직여 뒤로 가기의 자리 되살리기를 깨뜨린다.
+   */
+  const tabsRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const nav = tabsRef.current
+    const tab = nav?.querySelector<HTMLElement>('.content-type-tab.is-active')
+    if (!nav || !tab) return
+    const left = tab.getBoundingClientRect().left - nav.getBoundingClientRect().left + nav.scrollLeft
+    nav.scrollLeft = Math.max(0, left - (nav.clientWidth - tab.offsetWidth) / 2)
+  }, [type, events])
+
   useEffect(() => {
     const ac = new AbortController()
     fetchEvents(ac.signal)
@@ -424,8 +537,9 @@ export function Board() {
     if (!events) return []
     const now = today()
     const seen = visitedEventIds(now)
-    return filterEvents(events.filter((e) => !seen.has(e.id)), { area, type, search, today: now })
-  }, [events, area, type, search])
+    // 갈래는 아래 groups 가 가른다 — 탭 이름(클래식 · 뮤지컬 …)이 `events.type` 과 같은 말이 아니다
+    return filterEvents(events.filter((e) => !seen.has(e.id)), { area, type: '전체', search, today: now })
+  }, [events, area, search])
 
   /**
    * 소식은 **`list` 가 아니라 `events` 원본에서** 뽑는다.
@@ -449,10 +563,24 @@ export function Board() {
       add('전시', '추천 전시', ranked ? RANKED_NOTE : `공식 상세 페이지로 확인한 ${area} ${season()} 전시`,
         picked.map((e, i) => <EventCard key={e.id} e={e} rank={i + 1} />))
     }
-    if (type === '전체' || type === '공연') {
+    if (type === '전체' || type === '클래식') {
       const { picked, ranked } = pickForList(gigs, search)
       add('공연', '추천 음악공연', ranked ? RANKED_NOTE : `공식 공연장 일정 페이지에서 고르는 ${area} ${season()} 공연 후보`,
         picked.map((e, i) => <EventCard key={e.id} e={e} rank={i + 1} />))
+    }
+    // 공연 예매 순위(KOPIS) — 갈래 탭에서는 열 편까지, 「전체」 에서는 갈래마다 위의 셋.
+    // 끝난 공연은 뺀다(자료가 한 주 묵어도 지난 공연을 권하지 않게). 순위 숫자는 KOPIS 것 그대로 둔다.
+    const now = today()
+    const q = search.trim().toLowerCase()
+    const brief = type === '전체' && !q
+    const genres = type === '전체' ? (q ? SHOW_GENRES_ALL : SHOWS_IN_ALL_GENRES) : SHOW_TABS[type] ?? []
+    for (const g of genres) {
+      const rows = SHOWS[area][g]
+        .filter((s) => s.end >= now && (!q || `${s.title} ${s.venue}`.toLowerCase().includes(q)))
+        .slice(0, brief ? SHOWS_IN_ALL : 10)
+      add(`공연-${g}`, `${g} 예매 순위`,
+        `KOPIS 주간 예매 순위 · ${SHOW_RANKING_PERIOD} · ${area}${brief ? ` · 위 ${SHOWS_IN_ALL}편` : ''}`,
+        rows.map((s) => <ShowCard key={s.id} s={s} now={now} />))
     }
     if ((type === '전체' || type === '영화') && !search)
       add('영화', '실시간 영화 예매 순위',
@@ -485,7 +613,7 @@ export function Board() {
       <p className="visually-hidden" role="status" aria-live="polite">
         {`${TAB_LABEL[type]} · ${area} · ${groups.reduce((n, g) => n + g.nodes.length, 0)}건`}
       </p>
-      <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택"
+      <nav className="content-type-tabs" role="tablist" aria-label="문화 유형 선택" ref={tabsRef}
         onKeyDown={tabKeys(CONTENT_TYPES, type, setType)}>
         {CONTENT_TYPES.map((t) => (
           <button key={t} type="button" role="tab" data-content-type={t}
@@ -526,13 +654,16 @@ export function Board() {
           <div>
             <p className="eyebrow">공유용 목록</p>
             <h2 id="exhibitionPageTitle">
-              {type === '영화' ? `${area}에서 볼 영화 예매 순위` : `${area} ${type} 추천`}
+              {type === '영화' ? `${area}에서 볼 영화 예매 순위`
+                : SHOW_TABS[type] ? `${area} ${TAB_LABEL[type]} 예매 순위`
+                  : `${area} ${TAB_LABEL[type]} 추천`}
             </h2>
           </div>
           <p className="result-count" id="recommendationHint">
             {type === '영화'
               ? '전국 예매 순위 · 선택 지역의 영화관 회차 확인'
-              : '갈래와 지역을 차례로 고르세요'}
+              : SHOW_TABS[type] ? 'KOPIS 주간 예매 순위 · 고른 지역의 공연'
+                : '갈래와 지역을 차례로 고르세요'}
           </p>
         </div>
         {/* 소식은 목록 **안**에 둔다. `.app-shell` 이 flex column 이고
@@ -563,11 +694,14 @@ export function Board() {
           물을 때 답이 되는 문단이고, 옛 화면에서 목록 끝을 맺던 블록이다. */}
       <section className="verification-panel" aria-labelledby="verificationTitle">
         <p className="eyebrow">검증 기준</p>
-        <h2 id="verificationTitle">공식 한국어 페이지와 KOBIS 자료로 확인한 정보만 노출</h2>
+        <h2 id="verificationTitle">공식 한국어 페이지와 KOBIS · KOPIS 자료로 확인한 정보만 노출</h2>
         <p>
-          전시·공연은 공식 상세 페이지의 일정, 관람료, 해설, 주차 정보를 확인합니다.
-          영화는 영화진흥위원회 실시간 예매율의 전국 순위를 사용하며, 예매율과 지역별 상영
+          전시는 공식 상세 페이지의 일정, 관람료, 해설, 주차 정보를 확인합니다.
+          영화는 영화진흥위원회(KOBIS) 실시간 예매율의 전국 순위를 사용하며, 예매율과 지역별 상영
           회차는 수시로 바뀌므로 영화관 공식 예매 화면에서 다시 확인하세요.
+          뮤지컬 · 콘서트 · 클래식 · 무용 · 연극 순위의 출처는 (재)예술경영지원센터
+          공연예술통합전산망(KOPIS, kopis.or.kr)의 주간 예매상황판입니다 — 지역별 · 총티켓예매액 순이며,
+          일정과 관람료는 KOPIS 공연 정보와 예매처에서 다시 확인하세요.
         </p>
       </section>
     </>

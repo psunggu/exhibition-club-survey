@@ -160,7 +160,12 @@ export function byRecommendedThenDate(a: Event, b: Event): number {
 // ── 걸러내기 ────────────────────────────────────────────────
 
 export const AREAS = ['서울', '경기', '인천'] as const
-export const CONTENT_TYPES = ['전체', '전시', '공연', '영화'] as const
+/**
+ * 보드의 갈래 탭 (2026-11-13) — 전체 · 전시/행사 · 뮤지컬 · 콘서트 · 클래식/무용 · 연극 · 영화.
+ * `전시` 만 `events.type` 과 같은 말이다. 뮤지컬 · 콘서트 · 클래식 · 연극은 KOPIS 예매 순위(data/performances.ts),
+ * 영화는 KOBIS(data/movies.ts)에서 온다. `events` 의 옛 `공연` 행은 보드가 「클래식」 탭에 싣는다.
+ */
+export const CONTENT_TYPES = ['전체', '전시', '뮤지컬', '콘서트', '클래식', '연극', '영화'] as const
 export type Area = (typeof AREAS)[number]
 export type ContentType = (typeof CONTENT_TYPES)[number]
 

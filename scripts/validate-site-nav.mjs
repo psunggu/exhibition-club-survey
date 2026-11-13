@@ -363,7 +363,7 @@ ok('안 구르고 떠난 일정에 앞으로 가기로 돌아오면 맨 위', s.
 // 보드의 필터도 자리와 함께 — 필터만 기본값으로 돌아가면 엉뚱한 목록의 한가운데에 섰다
 await open('#/');
 await page.waitForSelector('.exhibition-card');
-await page.locator('.content-type-tab', { hasText: '음악공연' }).click();
+await page.locator('.content-type-tab', { hasText: '뮤지컬' }).click();
 await page.waitForTimeout(300);
 await page.evaluate(() => window.scrollTo(0, 600));
 await page.waitForTimeout(300);
