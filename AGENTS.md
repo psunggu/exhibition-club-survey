@@ -40,6 +40,7 @@
 - `validate-survey-admin-ui` 는 `.admin-card` · `.note*` 같은 클래스 이름을 차례로 짚어 「몇 번째 설문」 을 고른다. **새 구역은 새 이름**(`.admin-news-card` · `.admin-guide*` · `.gdoc-*`)을 쓰고, 모양이 같으면 CSS 선택자만 더한다.
 - 새 표 · 함수는 `validate-survey-schema.mjs` 의 `LOCKED` · `CALLABLE` 목록에 함께 적는다. 안 적으면 검사 밖이다.
 - 검사기가 `dist/` 를 띄울 때는 `scripts/static-server.mjs` 의 `serveStatic` 만 쓰고 `http://127.0.0.1:포트` 로 연다(localhost 아님). `http.createServer` 를 베끼지 않는다 — 베낀 서버가 모든 네트워크에 열리고 `dist/` 밖 파일을 내줬다(2026-09-27).
+- **비밀값 · 보안 설정**(2026-11-17): `validate-secrets`(API 키 · 토큰 · 암호 · 구글 문서 편집 주소 — 찾은 값은 가려 찍는다)와 `validate-security`(워크플로 권한 · 글자를 코드로 돌리는 화면 코드 · CSP 문구 · `.gitignore` 그물)가 `check:quick` 과 CI 에 있다. 커밋 · 푸시 직전 검사는 git 훅 — 컴퓨터마다 한 번 `npm run hooks:install`, `--no-verify` 로 건너뛰지 않는다. 키는 저장소 밖(`~/.config/exhibition-club/`, 600)에 두고 코드가 읽는다. 오탐은 그 줄에 `secret-scan:allow` — 이 표시나 두 검사기를 고치는 PR 은 사람이 본 뒤 머지한다. 걸렸을 때와 가끔 하는 점검(`npm run check:security` · 기록 전체)은 `docs/OPERATIONS.md` 6번.
 
 ## 개발 규칙
 
@@ -100,7 +101,7 @@
 
 작성자 `psunggu <psunggu@users.noreply.github.com>`. 메시지는 한국어 또는 영어 명령형 한 줄. 근거가 길면 `docs/HISTORY.md` 에 한 문단.
 
-## 다음 작업 후보 (2026-11-14)
+## 다음 작업 후보 (2026-11-17)
 
 한 줄씩만 적는다 — 자세한 내용 · 확인 방법 · 진행 기록은 `docs/BACKLOG.md`(세션마다 읽히지 않는다). 후보를 바꾸면 두 곳을 함께 고친다.
 
@@ -115,6 +116,7 @@
 9. **공연 순위 자동 갱신 — KOPIS 인증키(사람)** — 운영자: 다음에(11/14). 그때까지 `/rank` 때 세션이 KOPIS 화면에서 옮긴다(지금 자료는 11/6~11/12 집계). 신청은 회원가입 없이 kopis.or.kr 고객센터 → OPEN API(방법은 BACKLOG). 키는 저장소에 넣지 않는다.
 10. **11/28 영화관람 상영작 반영(사람 대기)** — 달력에는 올렸다(#289, 후보 세 편). 톡방 투표로 상영작이 정해지면 `november-movie` 의 제목 · 소개와 정리봇 카드를 고친다.
 11. **공연장 공식 음악공연 추천 — 결정** — 예술의전당 · 세종문화회관 · 경기 · 인천 후보를 모아 봤지만 넣지 않았다(KOPIS 순위가 같은 탭을 채우고, 넣으면 CSP 그림 호스트가 다섯 는다). 넣기로 하면 그때 다시 모은다.
+12. **보안 점검에서 나온 것(2026-11-17)** — npm 취약점 「높음」 둘(vite · source-map-js, 개발 도구 쪽 — `npm audit fix` 를 PR 로, 화면 검사까지). Dependabot 취약점 알림이 꺼져 있다(사람 — GitHub 설정). git 훅은 컴퓨터마다 `npm run hooks:install`.
 
 ## AI 에이전트 역할
 

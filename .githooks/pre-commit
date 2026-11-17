@@ -1,0 +1,6 @@
+#!/bin/sh
+# 커밋에 API 키 · 토큰 · 암호가 실리지 않게 막는다 — 올려 둔(staged) 파일을 본다.
+# 켜기: npm run hooks:install (이 컴퓨터에 한 번). 규칙은 scripts/validate-secrets.mjs.
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+command -v node >/dev/null 2>&1 || { echo "pre-commit: node 를 찾지 못해 비밀값 검사를 못 했다 — 커밋을 멈춘다" >&2; exit 1; }
+exec node "$(git rev-parse --show-toplevel)/scripts/validate-secrets.mjs" --staged
