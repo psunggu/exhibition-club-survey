@@ -28,7 +28,7 @@ git fetch origin --prune && git status -sb && git log --oneline main..origin/mai
 npm run check:quick
 ```
 
-콘텐츠만 바꿨으면 이것으로 충분하다(빌드 · CSP · 위생 · 정리봇 · 픽스처 · 일정 분류 · 설문 스키마 · 읽기 전용 경계). 화면이나 기능을 바꿨으면 전체를 돌린다 — Playwright 화면 검사까지 약 2분이다.
+콘텐츠만 바꿨으면 이것으로 충분하다(빌드 · CSP · 위생 · 비밀값 · 보안 설정 · 정리봇 · 픽스처 · 일정 분류 · 설문 스키마 · 읽기 전용 경계). 화면이나 기능을 바꿨으면 전체를 돌린다 — Playwright 화면 검사까지 약 2분이다.
 
 ```bash
 npm run check

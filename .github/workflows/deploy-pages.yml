@@ -60,6 +60,13 @@ jobs:
       - name: Check repository hygiene
         run: node scripts/validate-repository-hygiene.mjs
 
+      # API 키 · 토큰 · 암호가 저장소에 들어왔는지(값은 가려서 찍는다) · 보안 설정이 느슨해졌는지
+      - name: Scan for secrets
+        run: node scripts/validate-secrets.mjs
+
+      - name: Validate security settings
+        run: node scripts/validate-security.mjs
+
       - name: Validate public weekly digest
         run: node scripts/validate-weekly-digest.mjs
 
