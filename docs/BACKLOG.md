@@ -93,7 +93,7 @@
 ## 보안 점검에서 나온 것 (2026-11-17)
 
 - `npm run check:security` 가 알린 것 — 고친 것이 아니라 남은 것이다.
-- **npm 취약점 「높음」 둘** — vite 와 source-map-js. 둘 다 개발 서버 · 빌드 도구 쪽이고 배포되는 번들에는 들어가지 않는다. `npm audit fix` 로 올릴 수 있다(주 버전은 그대로). 빌드 도구가 바뀌므로 `npm run check` 전체를 돌리고, 화면 기준이 달라지면 무엇이 달라졌는지 읽은 뒤 PR.
+- ~~npm 취약점 「높음」 둘~~ — 11/18 에 `npm audit fix` 로 올렸다(vite 6.4.3 → 6.4.6, source-map-js 1.2.1 → 1.2.2, 잠금 파일만). 빌드 결과물은 파일 이름까지 그대로였고 `npm run check` 전체가 통과했다. 개발 서버도 띄워 봤다 — 화면 · 설정 · 글꼴은 나오고 허용 목록(`fs.allow`) 밖의 파일은 403. 다음에 또 뜨면 같은 순서로 — `npm audit fix` → `npm run check` → PR. 잠금 파일만 바뀌고(주 버전 그대로) 무결성 해시가 레지스트리와 같고 검사가 통과하면 머지한다(2026-11-18 운영자). 주 버전이 오르거나 빌드 결과물이 달라지면 사람이 본다.
 - **Dependabot 취약점 알림** — 꺼져 있다. 켜면 위 같은 것을 GitHub 가 먼저 알려 준다(Settings → Advanced Security → Dependabot alerts). 저장소 설정이라 운영자가 정한다. 비밀값 스캔 · 푸시 보호 · main 보호 규칙은 켜져 있다.
 - **git 훅** — `.githooks/` 는 저장소에 있지만 켜는 것은 컴퓨터마다 한 번(`npm run hooks:install`). 새 컴퓨터로 옮기면 다시 켠다 — `npm run check:security` 의 마지막 줄이 켜졌는지 알려 준다.
 - 기록 전체 검사(`npm run check:secrets -- --history`)는 분기에 한 번쯤. 2026-11-17 결과: 키 · 토큰 없음.
