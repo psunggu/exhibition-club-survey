@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static-server.mjs';
+import { HERMETIC_LAUNCH } from './hermetic-browser.mjs';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
 import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
@@ -172,7 +173,7 @@ const MEAL_LOOSE = {
 
 /* ── 브라우저 ────────────────────────────────────────────── */
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(HERMETIC_LAUNCH);
 const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
 // 브라우저 시계를 가짜 자료의 「지금」 과 묶는다 (위 가짜 데이터 설명)

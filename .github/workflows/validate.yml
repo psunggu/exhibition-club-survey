@@ -58,6 +58,10 @@ jobs:
       - name: Validate sample member fixtures
         run: node scripts/validate-fixtures.mjs
 
+      # 보드 그림 호스트 ↔ CSP img-src ↔ 순위 자료 꼴 (check:quick 에만 있고 여기에는 빠져 있었다)
+      - name: Validate board data against CSP
+        run: node scripts/validate-board-data.mjs
+
       # 설문 화면을 여는 검사가 CI 에 하나도 없었다 — 그래서 이 화면의 회귀는
       # 로컬에서 npm run check 를 돌린 사람 눈에만 걸렸다.
       - name: Validate survey history rule

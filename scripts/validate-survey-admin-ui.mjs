@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static-server.mjs';
+import { HERMETIC_LAUNCH } from './hermetic-browser.mjs';
 import { dimTexts, measureA11y } from './a11y-probe.mjs';
 import { serveSelfSurveyConfig } from './self-survey-config.mjs';
 
@@ -131,7 +132,7 @@ let surveys = [{
   audience: 'members', option_count: 13, response_count: 13,
 }];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(HERMETIC_LAUNCH);
 const ctx = await browser.newContext({ viewport: { width: 390, height: 900 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
 

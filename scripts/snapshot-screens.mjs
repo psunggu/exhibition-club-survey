@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static-server.mjs';
+import { HERMETIC_LAUNCH } from './hermetic-browser.mjs';
 import { FROZEN_AT, FROZEN_DAY, freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -152,7 +153,7 @@ async function measure(page, url, width) {
   }, { watch: WATCH, props: PROPS });
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(HERMETIC_LAUNCH);
 const page = await browser.newPage();
 // 날짜를 타는 화면이라 시계를 묶는다 — 안 묶으면 내일 이 검사가 거짓으로 실패한다
 await freezeClock(page);
