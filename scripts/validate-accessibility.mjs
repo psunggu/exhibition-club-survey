@@ -20,6 +20,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static-server.mjs';
+import { HERMETIC_LAUNCH } from './hermetic-browser.mjs';
 import { freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -42,7 +43,7 @@ const contrast = (a, b) => {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 };
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(HERMETIC_LAUNCH);
 const page = await browser.newPage({ viewport: { width: 390, height: 844 },
   locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
 // 날짜와 DB 를 묶는다 — 안 묶으면 보드가 빈 채로 재져서 「통과」 가 헛돈다

@@ -25,6 +25,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static-server.mjs';
+import { HERMETIC_LAUNCH } from './hermetic-browser.mjs';
 import { freezeClock } from './frozen-clock.mjs';
 import { serveFrozenData, failOnFrozenMisses } from './frozen-data.mjs';
 
@@ -67,7 +68,7 @@ const ROUTES = [
   ['#/no-such-screen', null, null, '문화 콘텐츠 공유 보드'],
 ];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(HERMETIC_LAUNCH);
 const context = await browser.newContext({ locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
 const page = await context.newPage();
 await freezeClock(page);
