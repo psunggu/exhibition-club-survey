@@ -1960,7 +1960,7 @@
    "count": 1,
    "box": {
     "w": 309,
-    "h": 145
+    "h": 305
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -1992,7 +1992,7 @@
    "count": 1,
    "box": {
     "w": 309,
-    "h": 119
+    "h": 167
    },
    "style": {
     "color": "rgb(88, 73, 31)",
@@ -2699,7 +2699,7 @@
   },
   "#문서": {
    "scrollWidth": 375,
-   "textLength": 2345,
+   "textLength": 2346,
    "cardCount": 0,
    "chipCount": 18
   }
@@ -2861,7 +2861,7 @@
    "count": 1,
    "box": {
     "w": 474,
-    "h": 124
+    "h": 241
    },
    "style": {
     "color": "rgb(85, 83, 75)",
@@ -2893,7 +2893,7 @@
    "count": 1,
    "box": {
     "w": 474,
-    "h": 76
+    "h": 102
    },
    "style": {
     "color": "rgb(88, 73, 31)",
@@ -3600,7 +3600,7 @@
   },
   "#문서": {
    "scrollWidth": 1280,
-   "textLength": 2345,
+   "textLength": 2346,
    "cardCount": 0,
    "chipCount": 18
   }
