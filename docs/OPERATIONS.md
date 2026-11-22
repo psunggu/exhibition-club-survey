@@ -85,7 +85,8 @@ bash scripts/digest-public-task.sh --no-pr   # 변환·검사까지만 보고 �
 - 같은 기간의 공개본이 이미 `main` 에 있으면 PR 을 열지 않는다. `--force` 는 이미 처리한 요약을 다시 올릴 때만 — 손질한 문구가 되돌아간다.
 - 네트워크 호출(git fetch · pull · push · gh)마다 시간 제한이 있다(`scripts/batch-lib.sh`, 영화 배치와 같이 쓴다). PR 생성이 실패로 끝나면 그 브랜치의 열린 PR 을 찾아 있으면 그것으로 받는다(2026-10).
 - PR 의 공개본을 한 번 훑는다. 확인사항의 `severity`(urgent · check · planning)와 문구가 어색하면 새 브랜치에서 JSON 을 직접 고치고 `node scripts/validate-weekly-digest.mjs` 를 다시 돌린다. 확인사항의 `date`(ISO)는 화면이 지난 카드를 빼는 값이라 본문 날짜를 고치면 같이 고친다 — 검사기가 둘을 맞춰 본다.
-- 머지 뒤 **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
+- 머지 뒤 일정 화면 맨 위 **「이번 주 소식」** 을 한 번 본다(2026-11-23) — 확인사항이 접히지 않고 셋까지, 줄마다 제목과 `text` 의 첫 문장만 뜬다. 모임 소식이 먼저 뜨는지, 첫 문장만으로 뜻이 통하는지 보고 아니면 공개본을 고친다. 톡방에 올릴 글은 **운영자가 달라고 할 때만** 아래 명령으로 만든다.
+- (요청할 때만) **`npm run notice`** — 정리봇 + 다가오는 모임 + 톡방에서 진행 중인 투표 + 보드 순위를 「주간 소식」 한 통으로 조립해 `logs/weekly-notice-YYYYMMDD.txt` 에 쓰고 클립보드에 넣는다. 톡방에는 사람이 붙여 넣는다(자동 게시는 만들지 않는다). 봇 트리거 `#` 는 전각으로 바꿔 나간다.
 - **원본 `digest-*.json` 은 이 저장소에 넣지 않는다** (`.gitignore` 가 막고 있지만 `git add -f` 는 못 막는다).
 - `kakao-digest` 의 launchd `com.psunggu.kakao-weekly` 가 `~/KakaoDigest/inbox` 를 지켜보다(WatchPaths) 저장 즉시 병합·요약하고, `com.psunggu.kakao-weekly-remind` 가 화·금 22:00 에 마지막 저장(inbox · archive 의 내보내기 파일)이 7일 이상이면 저장 안내 알림을 띄운다 — inbox 에 한 시간 넘게 남은(처리 못 한) 파일이 있으면 저장 안내 대신 그 알림을. 조용해 요약을 건너뛴 주라도 저장했으면 조르지 않는다. 등록은 `kakao-digest/scripts/install-launchd.sh <weekly|weekly-remind>`, 로그는 `~/Library/Logs/com.psunggu.kakao-<작업>.log`. 종료 2 는 저장 파일이 오래됐다는 뜻이라(맥 CSV 는 저장한 지 36시간) 카톡에서 다시 저장한다. 방이 조용했으면 종료 0 에 새 0건, 8일 넘게 조용하면 종료 3 이다. 종료 1(오류)이면 inbox 파일이 일부러 남는다 — 로그로 원인을 고친 뒤 `launchctl kickstart gui/$(id -u)/com.psunggu.kakao-weekly`.
 

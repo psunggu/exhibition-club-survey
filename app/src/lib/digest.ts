@@ -93,6 +93,32 @@ function parseHighlights(v: unknown): Highlight[] {
 export const shownHighlights = (list: readonly Highlight[], today: string): Highlight[] =>
   list.filter((h) => !h.date || h.date >= today)
 
+/**
+ * 「이번 주 소식」 — 첫 화면에 접지 않고 보여 주는 줄 (2026-11-23, 운영자 요청).
+ * 톡방에 주간 소식 글을 따로 올리지 않고, 들어오면 바로 읽히게 한다.
+ */
+
+/** 딱지 색. 색은 상태만 말한다 — 확정 · 취소 · 아직 정하는 중, 나머지(전시 정보 등)는 중립. */
+export type NewsTone = 'conf' | 'stop' | 'warn' | 'info'
+const NEWS_TONE: Readonly<Record<string, NewsTone>> = { 확정: 'conf', 취소: 'stop', '조율 중': 'warn', 미정: 'warn' }
+export const newsTone = (h: Highlight): NewsTone => NEWS_TONE[h.label] ?? 'info'
+
+/** 한 줄로 줄인 글 — 첫 문장만. 전문은 바로 아래 「자세히 보기」 에 있다. 날짜의 점(2026. 11. 22.)에서는 끊지 않는다. */
+export const newsLine = (text: string): string => {
+  const cut = text.search(/(?<!\d)[.。]\s/)
+  return (cut < 0 ? text : text.slice(0, cut)).replace(/[.。]\s*$/, '')
+}
+
+/**
+ * 바로 보이는 줄 — 모임에 관한 것(확정 · 취소 · 조율 중)을 앞에 두고 모두 합쳐 셋까지.
+ * 모임 소식만 셋을 넘으면 다섯까지 다 보여 준다 — 모임이 바뀐 것을 「더 보기」 뒤에 숨기지 않는다.
+ */
+export function topNews(list: readonly Highlight[]): Highlight[] {
+  const meet = list.filter((h) => newsTone(h) !== 'info').slice(0, 5)
+  const info = list.filter((h) => newsTone(h) === 'info')
+  return [...meet, ...info].slice(0, Math.max(3, meet.length))
+}
+
 export function parseDigest(raw: unknown): Digest | null {
   if (!raw || typeof raw !== 'object') return null
   const d = raw as Record<string, unknown>

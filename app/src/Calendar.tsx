@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { monthGrid, seoulToday, WEEKDAYS } from './lib/calendar'
-import { fetchDigest, highlightIcon, shownHighlights, type Digest } from './lib/digest'
+import { fetchDigest, highlightIcon, newsLine, newsTone, shownHighlights, topNews, type Digest } from './lib/digest'
 import { meetupFacts } from './lib/meetupFacts'
 import {
   isDone, MEETUPS, monthsToShow, pastMonthsToShow, shownKind, shownStatus, TENTATIVE, type Meetup,
@@ -128,6 +128,7 @@ export function Calendar() {
   const upcoming = MEETUPS.filter((m) => m.kind === 'conf' && m.date >= today)
   const done = MEETUPS.filter((m) => isDone(m, today)).sort((a, b) => b.date.localeCompare(a.date))
   const highlights = digest ? shownHighlights(digest.highlights, today) : []
+  const news = topNews(highlights)
 
   /**
    * 완료된 모임을 **해 → 달**로 묶는다.
@@ -265,19 +266,37 @@ export function Calendar() {
       {/* 8월 운영 설문 결과 카드는 여기 있다가 2026-09-25 에 뺐다 — 구글 설문 탭 1회차가
           같은 결과 페이지(`survey-result.html`)로 잇는다. 투표 현황 카드는 투표 화면으로 옮겼다. */}
 
-      <details className="digest">
+      {/* 이번 주 소식 (2026-11-23, 운영자 요청 — 「사이트에 들어가서 한눈에」).
+          전에는 접힌 「주간 정리봇」 상자 안에 있어 눌러야 보였고, 그래서 같은 내용을 톡방에 글로 또 올렸다.
+          이제 모임에 관한 줄부터 셋을 접지 않고 보여 준다(고르는 규칙은 lib/digest.ts 의 topNews).
+          전문 · 정해진 것 · 확인 중은 바로 아래 「자세히 보기」 에 그대로 있다. */}
+      <section className="week-news" aria-labelledby="week-news-title">
+        <div className="week-news-head">
+          <h2 className="sec" id="week-news-title"><span className="dot dot-dark" />이번 주 소식</h2>
+          <span className="week-news-period">
+            {digestError ? '불러오지 못함' : digest ? digest.periodLabel : '불러오는 중'}
+          </span>
+        </div>
+        {digest && news.length > 0 && (
+          <ul className="week-news-list">
+            {news.map((h, i) => (
+              <li key={i} className="week-news-row">
+                <span className={`week-news-tag week-news-tag-${newsTone(h)}`}>{h.label}</span>
+                <span className="week-news-body"><strong>{h.title}</strong>{newsLine(h.text)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {digest && news.length === 0 && <p className="week-news-empty">이번 주에 새로 알릴 소식이 없습니다.</p>}
+        {digestError && <p className="week-news-empty">소식을 불러오지 못했습니다.</p>}
+      </section>
+
+      <details className="digest digest-more">
         <summary className="digest-head">
           <span className="digest-title-group">
-            <span className="digest-eyebrow">운영진 확인용 · 공개 요약</span>
-            <span className="digest-title" role="heading" aria-level={2}>주간 정리봇</span>
+            <span className="digest-title" role="heading" aria-level={3}>자세히 보기 · AI 요약</span>
           </span>
           <span className="digest-summary-meta">
-            {/* 기간만 넣는다. 갱신 시각은 위 `.upd` 가 맡는다 —
-                둘을 한 알약에 넣었더니 알약이 넓어져 옆의 '주간 정리봇' 이
-                글자당 한 줄씩 세로로 접혔다. 옛 화면도 여기는 기간만 뒀다. */}
-            <span className="digest-period">
-              {digestError ? '불러오지 못함' : digest ? digest.periodLabel : '불러오는 중'}
-            </span>
             <span className="digest-toggle" aria-hidden="true">
               <span className="digest-toggle-open">펼치기</span>
               <span className="digest-toggle-close">접기</span>

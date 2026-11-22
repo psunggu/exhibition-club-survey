@@ -1275,3 +1275,54 @@ main h1[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
     font-size: 14px;
   }
 }
+
+/* ── 이번 주 소식 (2026-11-23) ─────────────────────────────
+   일정 화면 맨 위에 접지 않고 보여 주는 줄. 딱지 색은 상태만 말한다 —
+   확정(초록) · 취소(--stop) · 아직 정하는 중(--warn), 나머지는 중립.
+   칸 높이를 박지 않는다 — 글이 길면 두 줄로 내려간다. */
+.week-news { margin-top: 16px; }
+.week-news-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.week-news-head .sec { margin: 0 0 12px; }
+.week-news-period { flex-shrink: 0; font-size: 13px; color: var(--ink-3); }
+.week-news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+.week-news-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+.week-news-row + .week-news-row { border-top: 1px solid var(--line); }
+.week-news-tag {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: var(--r-control);
+  background: var(--sunken);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.week-news-tag-conf { background: var(--green-tint); color: var(--green-dark); }
+.week-news-tag-stop { background: var(--stop-tint); color: var(--stop); }
+.week-news-tag-warn { background: var(--warn-tint); color: var(--warn); }
+.week-news-body { min-width: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.week-news-body strong { display: block; color: var(--ink); font-weight: 700; }
+.week-news-empty {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  font-size: 15px;
+  color: var(--ink-2);
+}
+/* 전문은 한 단 작은 접힌 줄로 — 소식 목록에 붙여 둔다 */
+/* 여백을 상자가 아니라 누르는 줄에 준다 — 줄 전체가 누르는 자리라 높이가 24px 을 넘어야 한다 */
+.digest.digest-more { margin-top: 8px; padding: 0; box-shadow: none; }
+.digest.digest-more .digest-body { padding: 0 16px 16px; }
+/* 좁은 화면에서 옛 상자는 제목과 「펼치기」 를 위아래로 쌓는다 — 한 줄짜리라 나란히 둔다 */
+.digest.digest-more .digest-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+.digest.digest-more .digest-summary-meta { flex: 0 0 auto; margin-top: 0; }
+.digest.digest-more .digest-title { font-size: 15px; font-weight: 600; color: var(--ink-2); }
