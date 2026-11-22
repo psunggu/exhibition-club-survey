@@ -596,8 +596,23 @@ export const MEETUPS: Meetup[] = withDefaults([
       + '16:30부터 저녁 식사와 친목 교류는 희망자만 함께합니다.',
     // 지도는 걷는 길 전체가 아니라 모이는 곳으로 — venue 글 전체로는 검색이 안 잡힌다
     mapUrl: 'https://map.kakao.com/?q=%EB%8F%99%EB%8C%80%EB%AC%B8%EC%97%AD%201%EB%B2%88%EC%B6%9C%EA%B5%AC',
-  }
+  },
   // 11/28 「11월 정기 영화관람」 은 교회 설비 호환 문제로 취소돼 뺐다(2026-11-22 정리봇) — 취소된 모임은 달력에 남기지 않는다
+  {
+    id: 'year-end-party-2026',
+    date: '2026-12-13',
+    chip: '송년회',
+    kind: 'conf',
+    regular: false,
+    venueKind: '모임',
+    title: '2026 송년회',
+    time: '시간 미정',
+    venue: '장소 미정',
+    description: '한 해를 마무리하는 송년회입니다. 톡방 재투표(11월 22일 마감)에서 12월 13일(둘째 주일)이 가장 많이 선택됐습니다(21명 중 17명).',
+    note: '시간과 장소는 톡방 공지를 확인해 주세요.',
+    // 장소가 정해지기 전이라 지도 링크를 달지 않는다 — 정해지면 time · venue 와 함께 채운다
+    mapUrl: '',
+  }
 ])
 
 /**
