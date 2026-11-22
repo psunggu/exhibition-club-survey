@@ -4,6 +4,7 @@ import {
   type Area, type ContentType, type Event,
 } from './lib/events'
 import { pickNews } from './lib/news'
+import { boardWeek, weekName, WEEK_SHOWN, type WeekItem } from './lib/boardWeek'
 import { readEntry, writeEntry } from './lib/scrollMemory'
 import {
   MOVIES, MOVIE_BOOKING_URL, MOVIE_RANKING_UPDATED_AT,
@@ -490,6 +491,43 @@ function tabKeys<T>(items: readonly T[], current: T, set: (v: T) => void) {
 }
 
 /** 이 기록 칸에서 고르던 필터 — 뒤로 가기 · 새로 고침으로 돌아오면 자리와 함께 되살린다(lib/scrollMemory). */
+/**
+ * 「이번 주 전시 소식」 — 새로 올린 전시와 곧 끝나는 전시 (2026-11-23, 운영자 요청 — 「사이트에 들어가서 한눈에」).
+ * 줄을 누르면 그 제목으로 검색한다 — 순위 없는 전시(곧 끝나는 것 대부분)는 검색해야 카드가 나온다.
+ */
+function WeekBlock({ added, ending, onPick }: { added: WeekItem[]; ending: WeekItem[]; onPick: (title: string) => void }) {
+  // 묶음마다 셋까지 보이고 나머지는 「더 보기」 로 편다 — 접힌 채로는 제목을 알 길이 없다
+  const [open, setOpen] = useState<{ new: boolean; end: boolean }>({ new: false, end: false })
+  const row = (label: string, tone: 'new' | 'end', items: WeekItem[]) => items.length > 0 && (
+    <div className="board-week-row">
+      <span className={`board-week-tag board-week-tag-${tone}`}>{label} {items.length}건</span>
+      <ul className="board-week-items">
+        {(open[tone] ? items : items.slice(0, WEEK_SHOWN)).map(({ event, when }) => (
+          <li key={event.id}>
+            <button type="button" className="board-week-item" onClick={() => onPick(event.title)}>
+              <span className="board-week-title">{weekName(event.title)}</span>
+              <span className="board-week-when">{when}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {items.length > WEEK_SHOWN && (
+        <button type="button" className="board-week-more" aria-expanded={open[tone]}
+          onClick={() => setOpen((o) => ({ ...o, [tone]: !o[tone] }))}>
+          {open[tone] ? '접기' : `외 ${items.length - WEEK_SHOWN}건 더 보기`}
+        </button>
+      )}
+    </div>
+  )
+  return (
+    <section className="board-week" aria-labelledby="boardWeekTitle">
+      <h3 className="board-week-heading" id="boardWeekTitle" role="heading" aria-level={2}>이번 주 전시 소식</h3>
+      {row('새로 올림', 'new', added)}
+      {row('곧 끝남', 'end', ending)}
+    </section>
+  )
+}
+
 function savedFilter(): { area: Area; type: ContentType; search: string } {
   const v = readEntry('board') as { area?: unknown; type?: unknown; search?: unknown } | undefined
   return {
@@ -549,6 +587,11 @@ export function Board() {
    * 「올렸는데 안 보인다」 가 생기지 않는다.
    */
   const news = useMemo(() => (events ? pickNews(events, today()) : null), [events])
+  const week = useMemo(() => {
+    if (!events) return null
+    const now = today()
+    return boardWeek(events, area, now, visitedEventIds(now))
+  }, [events, area])
 
   const groups = useMemo(() => {
     const out: { key: string; title: string; subtitle: string; nodes: React.ReactNode[] }[] = []
@@ -671,6 +714,10 @@ export function Board() {
             order:0 으로 올라가 목록 위로 튀어 오른다.
             검색 중에는 감춘다 — 찾는 것과 상관없는 줄이 결과 맨 앞을 차지한다. */}
         {news && !search && <NewsLine e={news} />}
+        {/* 전시 갈래에서만 — 공연 · 영화 순위 탭에 전시 소식을 끼우지 않는다. 검색 중에는 감춘다(소식 한 줄과 같다). */}
+        {week && !search && (type === '전체' || type === '전시') && (week.added.length > 0 || week.ending.length > 0) && (
+          <WeekBlock added={week.added} ending={week.ending} onPick={setSearch} />
+        )}
         {groups.length === 0 ? (
           <div className="empty-state">
             <strong>조건에 맞는 정보가 없습니다.</strong>

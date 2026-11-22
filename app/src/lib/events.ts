@@ -35,6 +35,8 @@ export type Event = {
   notes: string | null
   ratingReason: string | null
   updatedAt: string | null
+  /** 보드에 들어온 때(UTC 시각). 「이번 주 전시 소식」 의 「새로 올림」 이 쓴다 */
+  createdAt: string | null
   // 큐레이션 필드 — D-24 로 더한 것들
   recommendedRank: number | null
   verified: boolean | null
@@ -90,6 +92,7 @@ export function toEvent(row: Row): Event {
     notes: str(row.notes),
     ratingReason: str(row.rating_reason),
     updatedAt: str(row.updated_at),
+    createdAt: str(row.created_at),
     recommendedRank: num(row.recommended_rank),
     verified: row.verified === null || row.verified === undefined ? null : Boolean(row.verified),
     discount: str(row.discount),
