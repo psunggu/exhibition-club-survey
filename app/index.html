@@ -13,6 +13,27 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>문화 콘텐츠 공유 보드</title>
   <meta name="description" content="100주년 기념교회 41교구 전시·박물관 동아리에서 서울·경기·인천의 전시·음악공연·영화 정보를 함께 나누는 문화 콘텐츠 공유 보드" />
+  <!--
+    링크 미리보기 카드(카카오톡 · 문자)와 홈 화면 아이콘 (2026-11-23).
+    그림은 scripts/make-share-images.mjs 가 그린다 — 바꾸면 아래 ?v= 를 올린다(카카오톡이 옛 카드를 붙들고 있다).
+    주소의 # 뒤는 미리보기를 만드는 쪽에 가지 않는다 — #/calendar 를 붙여도 같은 카드다.
+    og:image 는 절대 주소여야 한다. meta 의 content 는 불러오는 자리가 아니라 CSP 와 상관없다.
+  -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:site_name" content="41교구 전시·박물관 동아리" />
+  <meta property="og:title" content="41교구 전시·박물관 동아리" />
+  <meta property="og:description" content="모임 일정 · 관람 정보 · 투표 — 다가오는 모임과 서울·경기·인천의 전시·공연·영화를 한곳에서 봅니다." />
+  <meta property="og:url" content="https://psunggu.github.io/exhibition-club-survey/" />
+  <meta property="og:image" content="https://psunggu.github.io/exhibition-club-survey/og-card.png?v=20261123-1" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="/exhibition-club-survey/icons/icon.svg?v=20261123-1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/exhibition-club-survey/icons/icon-32.png?v=20261123-1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/exhibition-club-survey/icons/icon-180.png?v=20261123-1" />
+  <link rel="manifest" href="/exhibition-club-survey/manifest.webmanifest?v=20261123-1" />
+  <meta name="apple-mobile-web-app-title" content="전시 동아리" />
 </head>
 <body>
   <div id="root"></div>

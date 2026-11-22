@@ -46,6 +46,7 @@
 
 - **CSP 엄격.** 외부 CDN · 인라인 `<style>` · `style=` · 인라인 `<script>` 금지. 되는 것: React `style={{}}`, SVG 표현 속성(`<rect width fill>`). 안 되는 것: `style="…"` · `setAttribute('style')` · `<style>` 주입 · iframe. meta 의 `frame-ancestors` 는 브라우저가 무시한다 — 막고 있다고 믿지 말 것.
 - 캐시 버스팅 `?v=YYYYMMDD-n`. `app/public/config.js` 를 고치면 `app/index.html` 의 `config.js?v=` 도 올린다(2026-09-27 부터 붙인다). 모바일 우선(375px 가로 스크롤 없음). `word-break: keep-all` 은 `body` 에 있다.
+- **링크 미리보기 카드 · 홈 화면 아이콘**(2026-11-23): `app/index.html` 의 `og:*` · `<link rel="icon">` · `manifest.webmanifest`. 그림(`og-card.png` · `icons/`)은 `scripts/make-share-images.mjs` 가 그린다 — 문구 · 모양을 바꾸면 다시 돌리고 `?v=` 를 올린다(카카오톡이 옛 카드를 붙들고 있다). `og:image` 는 절대 주소, 주소의 `#` 뒤는 미리보기에 닿지 않아 화면마다 다른 카드를 만들 수 없다.
 - **색 · 모서리 · 그림자 · 서체는 `app/public/tokens.css` 한 곳.** 다른 CSS 는 `var(--…)` 만. 팔레트 열다섯(중립 8 · 브랜드 3 · 상태 4), 새 색 금지. 그림 파일(포스터 · 보드 갈래 아이콘 `app/src/assets/board-icons/`)의 색은 예외 — 콘텐츠로 본다(2026-11-13). 색은 **상태**만 말한다 — 갈래는 글자로. `--warn` 은 확인 필요, `--stop` 은 마감 · 오류 전용.
 - 여백은 4 · 8 · 12 · 16 · 22 · 32 눈금 — **새로 쓰는 값에만.** 기존 값은 손대지 않는다.
 - 서체는 `app/public/fonts/` 의 Pretendard 서브셋(OFL). `@font-face` 는 `tokens.css`.

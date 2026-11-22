@@ -45,6 +45,15 @@ function copyLiveAssets(): Plugin {
     'fonts/Pretendard-Black.subset.woff2',
     // 재배포 조건이 붙은 라이선스다. 서체와 함께 나간다.
     'fonts/OFL.txt',
+    // 링크 미리보기 카드와 홈 화면 아이콘(2026-11-23) — index.html 의 og:image · <link rel="icon"> 가 가리킨다.
+    // scripts/make-share-images.mjs 가 그린다.
+    'og-card.png',
+    'manifest.webmanifest',
+    'icons/icon.svg',
+    'icons/icon-32.png',
+    'icons/icon-180.png',
+    'icons/icon-192.png',
+    'icons/icon-512.png',
   ]
   const from = (f: string) => path.resolve(HERE, 'app/public', f)
   return {
@@ -120,7 +129,7 @@ function serveLiveAssets(): Plugin {
       server.middlewares.use((req, res, next) => {
         // 경로 부분에만 건다 — index.html 이 `config.js?v=…` 로 부르기 시작하자(2026-09-27) 끝의 `$` 가
         // 쿼리 때문에 안 맞아 dev 에서만 config.js 가 404 였다.
-        const m = /\/(config\.js|weekly-digest\.public\.json|fonts\/[\w.-]+\.(?:woff2|txt))$/
+        const m = /\/(config\.js|weekly-digest\.public\.json|fonts\/[\w.-]+\.(?:woff2|txt)|og-card\.png|manifest\.webmanifest|icons\/[\w.-]+\.(?:png|svg))$/
           .exec((req.url ?? '').split('?')[0] ?? '')
         if (!m) return next()
         const name = m[1] as string
@@ -129,6 +138,9 @@ function serveLiveAssets(): Plugin {
         const type = name.endsWith('.js') ? 'text/javascript'
           : name.endsWith('.woff2') ? 'font/woff2'
           : name.endsWith('.txt') ? 'text/plain; charset=utf-8'
+          : name.endsWith('.png') ? 'image/png'
+          : name.endsWith('.svg') ? 'image/svg+xml'
+          : name.endsWith('.webmanifest') ? 'application/manifest+json'
           : 'application/json'
         res.setHeader('content-type', type)
         res.end(fs.readFileSync(p))
